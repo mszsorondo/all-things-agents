@@ -5,6 +5,24 @@ import pm4py
 #metadata
 h_billing_description = open('benchmark/Hospital Billing - Event Log_1_all/readme.txt', 'r').read()
 
+
+class Benchmark:
+    def __init__(self):
+        cases = ["hiring", "renting", "lending", "hospital"]
+        self.logs = [pm4py.read_xes(f"/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/{case}/{case}_log_high.xes") for case in cases]
+
+
+
+class CompundMiner:
+    def __init__(self):
+        self.mining_algorithms = [pm4py.discover_bpmn_inductive, pm4py.discover_heuristics_net, pm4py.llm.abstract_dfg, pm4py.discover_petri_net_inductive]
+
+    def run(self, log):
+        return [miner(log) for miner in self.mining_algorithms]
+
+
+
+
 hiring_log = hiring = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/hiring/hiring_log_high.xes")
 renting_log = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/renting/renting_log_high.xes")
 lending_log = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/lending/lending_log_high.xes")
