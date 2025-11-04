@@ -63,7 +63,7 @@ class BusinessContext:
 **Timeline**: Weeks 3-4 (1.3), Weeks 7-8 (1.1-1.2)
 **Dependencies**: Phase 0
 
-#### 1.1 Compact Representation Summarization
+#### 1.1 Compact Representation Summarization (configurable, optimization of each representation should be optional)
 
 **Objective**: Reduce token usage by 60-80% while preserving semantic information
 
@@ -128,44 +128,73 @@ class RepresentationCache:
         """Clear matching cache entries"""
 ```
 
-### PHASE 2: Intelligent Log Sampling & Preprocessing
+### PHASE 2: Two-Stage Analysis Pipeline
 
 **Priority**: HIGH
 **Timeline**: Weeks 3-4
-**Dependencies**: None
+**Dependencies**: Phase 1 (for compact representations)
 
-#### 2.1 Sampling Strategies
+#### Stage 1: Detailed Textual Analysis Agent
+
+**Input**: Compact representations + sampled traces
+**Model**: Configurable (default: same as Stage 2)
+**Output**: Comprehensive textual analysis
 
 ```python
-class LogSampler:
-    def random_sample(self, log: EventLog, n: int) -> EventLog
-    def stratified_sample(self, log: EventLog, n: int, by: str) -> EventLog
-    def temporal_sample(self, log: EventLog, start: datetime, end: datetime) -> EventLog
-    def coverage_sample(self, log: EventLog, n: int) -> EventLog:
-        """Select traces that maximize activity coverage"""
+@dataclass
+class TextualAnalysis:
+    # Process structure
+    process_overview: str
+    main_flow_description: str
+    decision_points: List[DecisionPoint]
+    parallel_activities: List[ParallelBlock]
+
+    # Issues and inefficiencies
+    bottlenecks: List[Bottleneck]
+    rework_patterns: List[ReworkPattern]
+    undesired_traces: List[UndesiredFlow]  # CRITICAL: Include faulty flows
+    compliance_violations: List[Violation]
+
+    # Optimization opportunities
+    improvement_suggestions: List[Improvement]
+    automation_candidates: List[Activity]
+
+    # Metrics
+    key_metrics: Dict[str, float]
 ```
 
-#### 2.2 Non-Ideal Trace Selection [CRITICAL]
+#### Stage 2: BPMN Generation Agent
 
-**Requirement**: Include 20% outliers/exceptions to represent real-world faults
+**Input**: Textual analysis from Stage 1 (NOT raw representations)
+**Output**: Two BPMN models
 
 ```python
-class OutlierSelector:
-    def detect_outliers(self, log: EventLog) -> Dict[str, List[Trace]]:
-        """Classify outliers by type"""
-        return {
-            "temporal": traces_with_unusual_duration,
-            "structural": traces_with_unusual_sequence,
-            "frequency": rare_process_variants,
-            "compliance": traces_violating_rules,
-            "rework": traces_with_repetitions
-        }
+class BPMNGenerationAgent:
+    def generate_as_is_bpmn(self, analysis: TextualAnalysis) -> str:
+        """Generate BPMN of ACTUAL process with all faults"""
+        # Include: loops, rework, bottlenecks, violations
 
-    def select_with_outliers(self, log: EventLog, n: int, outlier_ratio: float = 0.2):
-        """Ensure sample includes outliers"""
-        normal_count = int(n * (1 - outlier_ratio))
-        outlier_count = n - normal_count
-        # Sample both populations
+    def generate_ideal_bpmn(self, analysis: TextualAnalysis) -> str:
+        """Generate OPTIMIZED process without issues"""
+        # Remove: unnecessary loops, bottlenecks
+        # Add: proper controls, optimizations
+```
+
+#### Model Configuration Options
+
+```python
+@dataclass
+class TwoStageConfig:
+    # Model selection
+    textual_analysis_model: str  # Default: same as BPMN generation
+    bpmn_generation_model: str
+
+    # Testing modes
+    use_cheap_model_for_testing: bool = False  # Use GPT-3.5 for pipeline testing
+    baseline_comparison_models: List[str] = []  # Compare quality across models
+
+    # Cost optimization
+    cost_optimized_mode: bool = False  # Cheaper for Stage 1, better for Stage 2
 ```
 
 ### PHASE 3: Dynamic Algorithms & Agent Tools
@@ -248,73 +277,44 @@ class LogSamplingTool:
         """Get best/worst performing traces"""
 ```
 
-### PHASE 4: Two-Stage Analysis Pipeline
+### PHASE 4: Intelligent Log Sampling & Preprocessing
 
 **Priority**: HIGH
 **Timeline**: Weeks 9-10
-**Dependencies**: Phase 1 (for compact representations)
+**Dependencies**: None
 
-#### Stage 1: Detailed Textual Analysis Agent
-
-**Input**: Compact representations + sampled traces
-**Model**: Configurable (default: same as Stage 2)
-**Output**: Comprehensive textual analysis
+#### 4.1 Sampling Strategies
 
 ```python
-@dataclass
-class TextualAnalysis:
-    # Process structure
-    process_overview: str
-    main_flow_description: str
-    decision_points: List[DecisionPoint]
-    parallel_activities: List[ParallelBlock]
-
-    # Issues and inefficiencies
-    bottlenecks: List[Bottleneck]
-    rework_patterns: List[ReworkPattern]
-    undesired_traces: List[UndesiredFlow]  # CRITICAL: Include faulty flows
-    compliance_violations: List[Violation]
-
-    # Optimization opportunities
-    improvement_suggestions: List[Improvement]
-    automation_candidates: List[Activity]
-
-    # Metrics
-    key_metrics: Dict[str, float]
+class LogSampler:
+    def random_sample(self, log: EventLog, n: int) -> EventLog
+    def stratified_sample(self, log: EventLog, n: int, by: str) -> EventLog
+    def temporal_sample(self, log: EventLog, start: datetime, end: datetime) -> EventLog
+    def coverage_sample(self, log: EventLog, n: int) -> EventLog:
+        """Select traces that maximize activity coverage"""
 ```
 
-#### Stage 2: BPMN Generation Agent
+#### 4.2 Non-Ideal Trace Selection [CRITICAL]
 
-**Input**: Textual analysis from Stage 1 (NOT raw representations)
-**Output**: Two BPMN models
-
-```python
-class BPMNGenerationAgent:
-    def generate_as_is_bpmn(self, analysis: TextualAnalysis) -> str:
-        """Generate BPMN of ACTUAL process with all faults"""
-        # Include: loops, rework, bottlenecks, violations
-
-    def generate_ideal_bpmn(self, analysis: TextualAnalysis) -> str:
-        """Generate OPTIMIZED process without issues"""
-        # Remove: unnecessary loops, bottlenecks
-        # Add: proper controls, optimizations
-```
-
-#### Model Configuration Options
+**Requirement**: Include 20% outliers/exceptions to represent real-world faults
 
 ```python
-@dataclass
-class TwoStageConfig:
-    # Model selection
-    textual_analysis_model: str  # Default: same as BPMN generation
-    bpmn_generation_model: str
+class OutlierSelector:
+    def detect_outliers(self, log: EventLog) -> Dict[str, List[Trace]]:
+        """Classify outliers by type"""
+        return {
+            "temporal": traces_with_unusual_duration,
+            "structural": traces_with_unusual_sequence,
+            "frequency": rare_process_variants,
+            "compliance": traces_violating_rules,
+            "rework": traces_with_repetitions
+        }
 
-    # Testing modes
-    use_cheap_model_for_testing: bool = False  # Use GPT-3.5 for pipeline testing
-    baseline_comparison_models: List[str] = []  # Compare quality across models
-
-    # Cost optimization
-    cost_optimized_mode: bool = False  # Cheaper for Stage 1, better for Stage 2
+    def select_with_outliers(self, log: EventLog, n: int, outlier_ratio: float = 0.2):
+        """Ensure sample includes outliers"""
+        normal_count = int(n * (1 - outlier_ratio))
+        outlier_count = n - normal_count
+        # Sample both populations
 ```
 
 ### PHASE 5: Testing Benchmark - Analysis Quality Validation
@@ -541,13 +541,13 @@ class ExperimentTracker:
 |-------|------------|----------|-------|--------------|
 | 0 | Documentation & Context | CRITICAL | 1-2 | None |
 | 1.3 | Caching System | HIGH | 3-4 | Phase 0 |
-| 2 | Sampling with Outliers | HIGH | 3-4 | None |
+| 2 | Two-Stage Analysis | HIGH | 3-4 | Phase 1 |
 | 3 | Dynamic Algorithms & Tools | HIGH | 5-6 | Phase 1.3 |
 | 1.1-1.2 | Compact & Conditional | HIGH | 7-8 | Phase 0 |
-| 4 | Two-Stage Analysis | HIGH | 9-10 | Phase 1 |
-| 5 | Testing Benchmark | MEDIUM | 11-12 | Phase 4 |
-| 6 | Conformance Checking | MEDIUM | 13-14 | Phase 4 |
-| 7 | Multi-Agent Analysis | LOW | 15-16 | Phase 4 |
+| 4 | Sampling with Outliers | HIGH | 9-10 | None |
+| 5 | Testing Benchmark | MEDIUM | 11-12 | Phase 2 |
+| 6 | Conformance Checking | MEDIUM | 13-14 | Phase 2 |
+| 7 | Multi-Agent Analysis | LOW | 15-16 | Phase 2 |
 | 8 | Automation Framework | LOW | 17-19 | Phase 7 |
 | 9 | Experiment Tracking | LOW | 20 | All |
 | 10 | Output Enhancement | LOW | 21 | None |
