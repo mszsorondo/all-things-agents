@@ -110,7 +110,7 @@ breakpoint()
 
 with open(log_file, "w", encoding="utf-8") as log:
     log.write(f"{'=' * 80}\nAGENT RUN LOG\nTimestamp: {datetime.now().isoformat()}\n{'=' * 80}\n\nUSER PROMPT:\n{'-' * 80}\n{user_prompt}\n\n{'=' * 80}\nAGENT RESPONSE STREAM:\n{'=' * 80}\n\n")
-    
+    breakpoint()
     # Stream agent updates and log them
     for chunk in graph.stream(inputs, stream_mode="updates"):
         # Convert chunk to string representation
