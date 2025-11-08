@@ -46,8 +46,11 @@ class MiningConfiguration:
     """Configuration for the mining process."""
     representations: List[RepresentationType] = field(default_factory=lambda: [
         RepresentationType.PETRI_NET,
-        RepresentationType.BPMN,
-        RepresentationType.DFG
+        #RepresentationType.BPMN,
+        RepresentationType.DFG,
+        RepresentationType.ABSTRACT_VARIANTS,
+        RepresentationType.PROCESS_TREE,
+        RepresentationType.HEURISTICS_NET
     ])
     model_name: str = "anthropic:claude-sonnet-4-5"  # Match original template
     prompt_file: str = "new_prompt.txt"
@@ -80,6 +83,11 @@ class ProcessRepresentation(ABC):
     def get_interpretation_guide(self) -> str:
         """Return the interpretation guide for this representation."""
         pass
+
+    # TODO: Implement compact string methods in Phase 1.1
+    # def to_compact_string(self) -> str:
+    #     """Convert to compact format for token optimization."""
+    #     pass
 
     def get_full_description(self) -> str:
         """Get the complete description including interpretation guide."""
@@ -152,6 +160,23 @@ A Petri net is a mathematical model for distributed systems consisting of:
    - Guarantees sound workflow nets (proper completion)
    - May introduce silent transitions for control flow
    - Handles noise and incomplete behavior in logs
+"""
+class AbstractVariantsRepresentation(ProcessRepresentation):
+    """Abstract variants representation with interpretation guide."""
+
+    def discover(self):
+        """Discover abstract variants using LLM."""
+        self.representation = pm4py.llm.abstract_variants(self.log)
+        return self.representation
+
+    def to_string(self) -> str:
+        """Convert abstract variants to string representation."""
+        if not self.representation:
+            return "No abstract variants discovered yet"
+
+        return f"""
+Abstract Variants:
+{str(self.representation)}
 """
 
 
@@ -606,6 +631,7 @@ class AgenticProcessMiner:
         self.representations = {}
         self.run_folder = None
         self.log_file = None
+        self.log = None  # Event log, loaded only when needed
 
         # Initialize cache if enabled
         self.cache = RepresentationCache() if self.config.use_cache else None
@@ -665,42 +691,85 @@ class AgenticProcessMiner:
             logger.warning(f"Could not extract activities: {e}")
         return self.log
 
+    def check_cache_status(self, log_file: str) -> Tuple[List[RepresentationType], List[RepresentationType]]:
+        """
+        Check which representations are cached and which need discovery.
+
+        Args:
+            log_file: Path to the XES file
+
+        Returns:
+            Tuple of (cached_representations, uncached_representations)
+        """
+        cached = []
+        uncached = []
+
+        for rep_type in self.config.representations:
+            if self.cache and self.cache.get(log_file, rep_type.value):
+                cached.append(rep_type)
+            else:
+                uncached.append(rep_type)
+
+        return cached, uncached
+
     def discover_representations(self):
         """Discover all configured representations."""
         logger.info(f"Discovering {len(self.config.representations)} representations")
 
-        for rep_type in self.config.representations:
-            logger.info(f"Discovering {rep_type.value}...")
-            try:
-                # Check cache first if enabled
-                if self.cache and self.log_file:
-                    cached_rep = self.cache.get(
-                        self.log_file,
-                        rep_type.value
-                    )
-                    if cached_rep:
-                        self.representations[rep_type] = cached_rep
-                        logger.info(f"Loaded {rep_type.value} from cache")
-                        continue
+        # Check cache status BEFORE loading the log
+        if self.cache and self.log_file:
+            cached_types, uncached_types = self.check_cache_status(self.log_file)
 
-                # Discover the representation if not cached
-                rep_class = self.REPRESENTATION_CLASSES[rep_type]
-                representation = rep_class(self.log)
-                representation.discover()
-                self.representations[rep_type] = representation
+            if cached_types:
+                logger.info(f"Found {len(cached_types)} cached representations: {[t.value for t in cached_types]}")
 
-                # Store in cache if enabled
-                if self.cache and self.log_file:
-                    self.cache.set(
-                        self.log_file,
-                        rep_type.value,
-                        representation
-                    )
+            # Load cached representations
+            for rep_type in cached_types:
+                cached_rep = self.cache.get(self.log_file, rep_type.value)
+                if cached_rep:
+                    self.representations[rep_type] = cached_rep
+                    logger.info(f"Loaded {rep_type.value} from cache")
 
-                logger.info(f"Successfully discovered {rep_type.value}")
-            except Exception as e:
-                logger.error(f"Failed to discover {rep_type.value}: {e}")
-                self.representations[rep_type] = None
+            # Only load the log if we need to discover something
+            if uncached_types:
+                if self.log is None:
+                    logger.info(f"Loading event log to discover {len(uncached_types)} representations...")
+                    self.load_event_log(self.log_file)
+
+                # Discover uncached representations
+                for rep_type in uncached_types:
+                    logger.info(f"Discovering {rep_type.value}...")
+                    try:
+                        rep_class = self.REPRESENTATION_CLASSES[rep_type]
+                        representation = rep_class(self.log)
+                        representation.discover()
+                        self.representations[rep_type] = representation
+
+                        # Store in cache
+                        self.cache.set(self.log_file, rep_type.value, representation)
+                        logger.info(f"Successfully discovered and cached {rep_type.value}")
+                    except Exception as e:
+                        logger.error(f"Failed to discover {rep_type.value}: {e}")
+                        self.representations[rep_type] = None
+            else:
+                logger.info("All representations loaded from cache - no log loading needed!")
+        else:
+            # No cache - traditional flow
+            if self.log is None:
+                logger.info("Loading event log for discovery...")
+                self.load_event_log(self.log_file)
+
+            for rep_type in self.config.representations:
+                logger.info(f"Discovering {rep_type.value}...")
+                try:
+                    rep_class = self.REPRESENTATION_CLASSES[rep_type]
+                    representation = rep_class(self.log)
+                    representation.discover()
+                    self.representations[rep_type] = representation
+                    logger.info(f"Successfully discovered {rep_type.value}")
+                except Exception as e:
+                    logger.error(f"Failed to discover {rep_type.value}: {e}")
+                    self.representations[rep_type] = None
 
     def build_prompt(self) -> str:
         """Build the prompt with all representations and their guides."""
@@ -782,7 +851,6 @@ class AgenticProcessMiner:
 
         # Prepare input
         inputs = {"messages": [{"role": "user", "content": user_prompt}]}
-        breakpoint()
         # Setup logging
         if self.config.enable_logging:
             log_file = self.run_folder / "agent_logs.txt"
@@ -917,7 +985,7 @@ Examples:
         "--representations",
         nargs="+",
         choices=[r.value for r in RepresentationType],
-        default=["petri_net", "bpmn", "dfg"],
+        default=["petri_net", "dfg", "abstract_variants"],
         help="Representations to discover"
     )
     parser.add_argument(
@@ -1038,10 +1106,13 @@ Examples:
     try:
         miner = AgenticProcessMiner(config)
 
-        print("Loading event log...")
-        miner.load_event_log(xes_path)
+        # Set the log file path and dataset name (needed even when using cache)
+        miner.log_file = xes_path
+        miner.xes_path = xes_path
+        miner.dataset_name = Path(xes_path).stem
 
         print("Discovering representations...")
+        # This will now check cache first and only load log if needed
         miner.discover_representations()
 
         print("Running agent analysis...")
