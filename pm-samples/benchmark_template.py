@@ -92,13 +92,15 @@ for trace in valid_traces_300:
 print(len(invalid_traces))
 
 
+
 # sample 100 valid traces
 # sample 100 invalid traces
 # load LLM with the system prompt and drop
 def eval_model(valid_traces, invalid_traces):
     llm = ChatOpenAI(
     model="gpt-5-nano", api_key="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")
-    business_model_description = "The business process allows ANY trace, always say yes"
+    with open("/home/marco/Escritorio/austral/all-things-agents/pm-samples/runs/run_hiring_log_high_20251114_183810/AS-IS_Process_Model.txt", "r") as f:
+        business_model_description = f.read()
     system_prompt = f"""You are an expert business process analyst. You \
   will be given a business process description and a trace (sequence of \
   activities).\
@@ -115,17 +117,10 @@ def eval_model(valid_traces, invalid_traces):
 \
   Respond with ONLY one word: "VALID" or "INVALID"."""
   
+    breakpoint()
     n_valid_detected, n_invalid_detected = 0, 0
     false_negatives, false_positives = 0, 0
     ilegal_outputs = []
-    for valid_trace in valid_traces:
-        #breakpoint()
-        messages = [("system",system_prompt,),("human", f"{df_to_key_value_rows(valid_trace)}"),]
-        ai_msg = llm.invoke(messages)
-        response = ai_msg.content; print(response)
-        if response=="VALID": n_valid_detected+=1
-        elif response=="INVALID": false_negatives+=1
-        else: ilegal_outputs.append(response)
     for invalid_trace in invalid_traces:
         #breakpoint()
         messages = [("system",system_prompt,),("human", f"{df_to_key_value_rows(invalid_trace)}"),]
@@ -134,6 +129,20 @@ def eval_model(valid_traces, invalid_traces):
         if response=="INVALID": n_invalid_detected+=1
         elif response=="VALID": false_positives+=1
         else: ilegal_outputs.append(response)
+        print(f"should be INVALID, labeled as {str(response)}")
+        print(f"False positives: {str(false_positives)}")
+
+    for valid_trace in valid_traces:
+        #breakpoint()
+        messages = [("system",system_prompt,),("human", f"{df_to_key_value_rows(valid_trace)}"),]
+        ai_msg = llm.invoke(messages)
+        response = ai_msg.content; print(response)
+        if response=="VALID": n_valid_detected+=1
+        elif response=="INVALID": false_negatives+=1
+        else: ilegal_outputs.append(response)
+        print(f"should be VALID, labeled as {str(response)}")
+        print(f"False negatives: {str(false_negatives)}")
+    
 
     TP = n_valid_detected
     TN = n_invalid_detected
@@ -151,9 +160,14 @@ def eval_model(valid_traces, invalid_traces):
     breakpoint()
 
 
-eval_model(random.sample(valid_traces_300, 10),random.sample(invalid_traces, 10))
+eval_model(random.sample(valid_traces_300,20),random.sample(invalid_traces,20))
 
 #generalization
+
+class Benchmark:
+    def __init__(self):
+        problems = ["hiring", "hospital", "lending", "renting"]
+
 
 class TSADDatasetGenerator:
     #after "hardcoding" the full evaluation pipeline we will generalize using classes like this one

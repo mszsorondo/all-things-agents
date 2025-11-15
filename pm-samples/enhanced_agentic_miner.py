@@ -17,13 +17,13 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from abc import ABC, abstractmethod
-
+from dotenv import load_dotenv
 import pm4py
 from pm4py.objects.bpmn.exporter import exporter as bpmn_exporter
 from pm4py.objects.petri_net.exporter import exporter as pnml_exporter
 from langgraph.prebuilt import create_react_agent
 
-
+load_dotenv()
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -39,6 +39,7 @@ class RepresentationType(Enum):
     DFG = "dfg"
     HEURISTICS_NET = "heuristics_net"
     PROCESS_TREE = "process_tree"
+    ABSTRACT_VARIANTS = "abstract_variants"
 
 
 @dataclass
@@ -46,14 +47,13 @@ class MiningConfiguration:
     """Configuration for the mining process."""
     representations: List[RepresentationType] = field(default_factory=lambda: [
         RepresentationType.PETRI_NET,
-        #RepresentationType.BPMN,
         RepresentationType.DFG,
         RepresentationType.ABSTRACT_VARIANTS,
         RepresentationType.PROCESS_TREE,
         RepresentationType.HEURISTICS_NET
     ])
     model_name: str = "anthropic:claude-sonnet-4-5"  # Match original template
-    prompt_file: str = "new_prompt.txt"
+    prompt_file: str = "ONLY_GENERATE_TEXTUAL_MODEL.txt"
     output_dir: str = "runs"
     enable_logging: bool = True
     save_experiment_config: bool = True
@@ -174,10 +174,91 @@ class AbstractVariantsRepresentation(ProcessRepresentation):
         if not self.representation:
             return "No abstract variants discovered yet"
 
-        return f"""
-Abstract Variants:
-{str(self.representation)}
-"""
+        return f"""Abstract Variants:{str(self.representation)}"""
+    def get_interpretation_guide(self):
+        return """
+        ============================================================================
+        ABSTRACT VARIANTS INTERPRETATION GUIDE
+        ============================================================================
+        
+        The abstract variants representation shows simplified process execution patterns
+        with their frequency and performance metrics.
+        
+        FORMAT STRUCTURE:
+        -----------------
+        Each line represents one variant pattern in the format:
+        
+        [Header] Activity1 -> Activity2 -> ... -> ActivityN: [Metrics]
+        
+        COMPONENTS:
+        -----------
+        1. HEADER (if response_header=True):
+        - Shows variant rank or identifier
+        - Example: "Variant 1:" or "1."
+        
+        2. ACTIVITY SEQUENCE:
+        - Activities separated by " -> " arrows
+        - Represents the order of execution
+        - Example: "Register -> Analyze -> Decide -> Reject"
+        
+        3. METRICS (after the colon):
+        
+        a) FREQUENCY METRICS:
+            - Absolute: Number in parentheses, e.g., "(42)"
+                Meaning: This variant occurred 42 times
+            
+            - Relative: Percentage value, e.g., "15.3%"
+                Meaning: This variant represents 15.3% of all cases
+        
+        b) PERFORMANCE METRICS (if include_performance=True):
+            - Format: [aggregation_method: value unit]
+            - Common aggregations:
+                • mean: Average duration
+                • median: Middle value (50th percentile)
+                • min: Fastest execution
+                • max: Slowest execution
+                • stdev: Standard deviation (variability)
+            
+            - Time units vary by scale:
+                • seconds, minutes, hours, days
+            
+            - Example: "mean: 3.5 days, stdev: 1.2 days"
+        
+        READING EXAMPLES:
+        -----------------
+        Example 1 (Simple):
+        "A -> B -> C: (150) 25.5%"
+        → Pattern A→B→C occurred 150 times, representing 25.5% of all cases
+        
+        Example 2 (With Performance):
+        "Register -> Check -> Approve: (89) 18.2%, mean: 2.3 hours, max: 8.1 hours"
+        → This pattern occurred 89 times (18.2% of cases)
+        → On average takes 2.3 hours, longest instance took 8.1 hours
+        
+        Example 3 (With Secondary Aggregation):
+        "Start -> Process -> End: (200) 40%, mean: 1.5 days (median: 1.2 days)"
+        → Main metric is mean (1.5 days), secondary metric is median (1.2 days)
+        → If median < mean, indicates positive skew (some very long cases)
+        
+        INTERPRETATION TIPS:
+        --------------------
+        • HIGH FREQUENCY (>20%): Main process flow, optimize for efficiency
+        • MEDIUM FREQUENCY (5-20%): Common variations, monitor regularly  
+        • LOW FREQUENCY (<5%): Exceptions or edge cases, check if needed
+        • HIGH VARIABILITY (stdev > 50% of mean): Unstable process, investigate
+        • OUTLIERS (max >> mean): Bottlenecks or problems in specific cases
+        
+        ACTIVITY/CASE IDENTIFIERS:
+        --------------------------
+        • activity_key: Specifies which column represents activities
+        • case_id_key: Specifies which column identifies cases
+        • timestamp_key: Specifies which column contains timestamps
+        
+        These determine how activities and cases are extracted from your data.
+        
+        ============================================================================
+        """
+        
 
 
 class BPMNRepresentation(ProcessRepresentation):
@@ -622,7 +703,8 @@ class AgenticProcessMiner:
         RepresentationType.BPMN: BPMNRepresentation,
         RepresentationType.DFG: DFGRepresentation,
         RepresentationType.HEURISTICS_NET: HeuristicsNetRepresentation,
-        RepresentationType.PROCESS_TREE: ProcessTreeRepresentation
+        RepresentationType.PROCESS_TREE: ProcessTreeRepresentation,
+        RepresentationType.ABSTRACT_VARIANTS: AbstractVariantsRepresentation
     }
 
     def __init__(self, config: MiningConfiguration):
@@ -722,7 +804,7 @@ class AgenticProcessMiner:
 
             if cached_types:
                 logger.info(f"Found {len(cached_types)} cached representations: {[t.value for t in cached_types]}")
-
+            breakpoint()
             # Load cached representations
             for rep_type in cached_types:
                 cached_rep = self.cache.get(self.log_file, rep_type.value)
@@ -740,6 +822,7 @@ class AgenticProcessMiner:
                 for rep_type in uncached_types:
                     logger.info(f"Discovering {rep_type.value}...")
                     try:
+                        breakpoint()
                         rep_class = self.REPRESENTATION_CLASSES[rep_type]
                         representation = rep_class(self.log)
                         representation.discover()
@@ -778,7 +861,7 @@ class AgenticProcessMiner:
 
         # Add each representation in a simple format (matching original template style)
         counter = 1
-
+        breakpoint()
         for rep_type, representation in self.representations.items():
             if representation:
                 if rep_type == RepresentationType.PETRI_NET and hasattr(representation, 'net'):
@@ -805,14 +888,20 @@ class AgenticProcessMiner:
                 file.write(content)
             logger.info(f"Wrote BPMN file: {filepath}")
 
-        def write_comprehensive_textual_description(fname: str, content: str):
+        def write_AS_IS_comprehensive_textual_description(content: str):
             """Write textual description to file."""
-            filepath = self.run_folder / fname
+            filepath = self.run_folder / "textual_model.txt"
             with open(filepath, "w") as file:
                 file.write(content)
             logger.info(f"Wrote description file: {filepath}")
 
-        return [write_bpmn_file, write_comprehensive_textual_description]
+        def write_IDEAL_comprehensive_textual_description(content: str):
+            """Write textual description to file."""
+            filepath = self.run_folder / "textual_model.txt"
+            with open(filepath, "w") as file:
+                file.write(content)
+            logger.info(f"Wrote description file: {filepath}")
+        return [write_AS_IS_comprehensive_textual_description, write_IDEAL_comprehensive_textual_description]#[write_bpmn_file, write_comprehensive_textual_description]
 
     def run_agent(self, system_prompt: Optional[str] = None):
         """Run the LLM agent with discovered representations."""
@@ -860,6 +949,7 @@ class AgenticProcessMiner:
         # Stream agent responses
         logger.info("Starting agent stream...")
         try:
+            breakpoint()
             for chunk in graph.stream(inputs, stream_mode=self.config.stream_mode):
                 chunk_str = json.dumps(chunk, indent=2, default=str) if isinstance(chunk, dict) else str(chunk)
                 print(chunk)
@@ -994,7 +1084,7 @@ Examples:
         default="anthropic:claude-sonnet-4-5",  # Match original template
         help="LLM model to use"
     )
-    parser.add_argument("--prompt-file", type=str, default="new_prompt.txt", help="System prompt file")
+    parser.add_argument("--prompt-file", type=str, default="ONLY_GENERATE_TEXTUAL_MODEL.txt", help="System prompt file")
     parser.add_argument("--output-dir", type=str, default="runs", help="Output directory")
     parser.add_argument("--no-logging", action="store_true", help="Disable logging")
     parser.add_argument("--benchmark-dir", type=str, default="benchmark", help="Benchmark directory")
