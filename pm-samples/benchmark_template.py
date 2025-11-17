@@ -3,34 +3,16 @@ from copy import deepcopy
 import random
 from langchain_openai import ChatOpenAI
 
-# load log file from benchmark/problem_name/problem_name_log_high.xes
-problem_logs = [
-    "benchmark/hiring/hiring_log_high.xes",
-    "benchmark/hospital/hospital_log_high.xes",
-    "benchmark/lending/lending_log_high.xes",
-    "benchmark/renting/renting_log_high.xes"
-]
 
-log = pm4py.read_xes(problem_logs[0])
-#get list of traces
-
-"""
-(Pdb) log.columns
-Index(['activity', 'resource', 'time', 'concept:name', 'time:timestamp',
-       '@@index', 'case:concept:name', 'case:german speaking',
-       'case:yearsOfEducation', 'case:age', 'case:gender', 'case:citizen',
-       'case:protected', 'case:@@case_index', 'case:case', 'case:religious'],
-      dtype='object')
-
-"""
 # A trace is a sequence of events (each row in the log dataframe is an event in a trace) that have the same 'case:case' column value
 def random_swap_events(trace, verbose=False):
     #this is one type of perturbation
-    num_rows = len(trace)
+    perturbed_trace = deepcopy(trace)
+    num_rows = len(perturbed_trace)
     idx1, idx2 = random.sample(range(num_rows), 2)
     if verbose: print(f"Swapped {idx1} with {idx2}")
-    trace.iloc[idx1], trace.iloc[idx2] = trace.iloc[idx2], trace.iloc[idx1]
-    return trace
+    perturbed_trace.iloc[idx1], perturbed_trace.iloc[idx2] = perturbed_trace.iloc[idx2], perturbed_trace.iloc[idx1]
+    return perturbed_trace
 
 def skip_mandatory_activity(trace):
     #this is another type of perturbation
@@ -65,32 +47,6 @@ def df_to_key_value_rows(df, max_rows=50):
     return "\n".join(lines)
 
 
-ignored_columns = ["time", "@@index", "time:timestamp"]
-log = log.drop(ignored_columns, axis=1)
-traces = log.groupby('case:case')
-trace_ids = traces.groups.keys()
-valid_traces = [traces.get_group(trace_id) for trace_id in trace_ids]
-
-valid_traces_300 = random.sample(valid_traces, 300)
-invalid_traces = []
-
-
-
-for trace in valid_traces_300:
-    candidate = random_swap_events(deepcopy(trace))
-    if all(not candidate.equals(t) for t in invalid_traces) and \
-        all(not candidate.equals(t) for t in valid_traces_300):
-        #print(f"Invalid Candidate generated: \n{candidate}")
-        invalid_traces.append(candidate)
-    else: print("Candidate was valid")
-
-
-
-
-
-
-print(len(invalid_traces))
-
 
 
 # sample 100 valid traces
@@ -99,7 +55,7 @@ print(len(invalid_traces))
 def eval_model(valid_traces, invalid_traces):
     llm = ChatOpenAI(
     model="gpt-5-nano", api_key="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")
-    with open("/home/marco/Escritorio/austral/all-things-agents/pm-samples/runs/run_hiring_log_high_20251114_183810/AS-IS_Process_Model.txt", "r") as f:
+    with open("/home/marco/Escritorio/austral/all-things-agents/pm-samples/runs/run_hiring_log_high_20251116_210442/textual_model.txt", "r") as f:
         business_model_description = f.read()
     system_prompt = f"""You are an expert business process analyst. You \
   will be given a business process description and a trace (sequence of \
@@ -117,20 +73,11 @@ def eval_model(valid_traces, invalid_traces):
 \
   Respond with ONLY one word: "VALID" or "INVALID"."""
   
-    breakpoint()
+    #breakpoint()
     n_valid_detected, n_invalid_detected = 0, 0
     false_negatives, false_positives = 0, 0
     ilegal_outputs = []
-    for invalid_trace in invalid_traces:
-        #breakpoint()
-        messages = [("system",system_prompt,),("human", f"{df_to_key_value_rows(invalid_trace)}"),]
-        ai_msg = llm.invoke(messages)
-        response = ai_msg.content; print(response)
-        if response=="INVALID": n_invalid_detected+=1
-        elif response=="VALID": false_positives+=1
-        else: ilegal_outputs.append(response)
-        print(f"should be INVALID, labeled as {str(response)}")
-        print(f"False positives: {str(false_positives)}")
+    
 
     for valid_trace in valid_traces:
         #breakpoint()
@@ -142,7 +89,16 @@ def eval_model(valid_traces, invalid_traces):
         else: ilegal_outputs.append(response)
         print(f"should be VALID, labeled as {str(response)}")
         print(f"False negatives: {str(false_negatives)}")
-    
+    for invalid_trace in invalid_traces:
+        #breakpoint()
+        messages = [("system",system_prompt,),("human", f"{df_to_key_value_rows(invalid_trace)}"),]
+        ai_msg = llm.invoke(messages)
+        response = ai_msg.content; print(response)
+        if response=="INVALID": n_invalid_detected+=1
+        elif response=="VALID": false_positives+=1
+        else: ilegal_outputs.append(response)
+        print(f"should be INVALID, labeled as {str(response)}")
+        print(f"False positives: {str(false_positives)}")
 
     TP = n_valid_detected
     TN = n_invalid_detected
@@ -157,10 +113,9 @@ def eval_model(valid_traces, invalid_traces):
         \nF1: {f1}\n False Positives: {false_positives}\
         \n False Negatives: {false_negatives}\
         TP: {TP}, FP: {FP}, TN: {TN}, FN: {FN}")
-    breakpoint()
+    #breakpoint()
 
 
-eval_model(random.sample(valid_traces_300,20),random.sample(invalid_traces,20))
 
 #generalization
 
@@ -194,3 +149,51 @@ class TSADEvaluator:
                 \
                 KEEP IN MIND THAT THE BUSINESS MODEL ALSO DESCRIBES TRACES THAT HAPPEN EVEN IF THEY WOULD NOT BE DESIRED IN AN IDEAL ONE"
         #self.dataset = TSAD
+
+def main():
+    # load log file from benchmark/problem_name/problem_name_log_high.xes
+    problem_logs = [
+        "benchmark/hiring/hiring_log_high.xes",
+        "benchmark/hospital/hospital_log_high.xes",
+        "benchmark/lending/lending_log_high.xes",
+        "benchmark/renting/renting_log_high.xes"
+    ]
+
+    log = pm4py.read_xes(problem_logs[0])
+    #get list of traces
+
+    """
+    (Pdb) log.columns
+    Index(['activity', 'resource', 'time', 'concept:name', 'time:timestamp',
+        '@@index', 'case:concept:name', 'case:german speaking',
+        'case:yearsOfEducation', 'case:age', 'case:gender', 'case:citizen',
+        'case:protected', 'case:@@case_index', 'case:case', 'case:religious'],
+        dtype='object')
+
+    """
+
+    ignored_columns = ["time", "@@index", "time:timestamp"]
+    log = log.drop(ignored_columns, axis=1)
+    traces = log.groupby('case:case')
+    trace_ids = traces.groups.keys()
+    valid_traces = [traces.get_group(trace_id) for trace_id in trace_ids]
+
+    valid_traces_300 = random.sample(valid_traces, 300)
+    invalid_traces = []
+
+
+
+    for trace in valid_traces_300:
+        candidate = random_swap_events(deepcopy(trace))
+        if all(not candidate.equals(t) for t in invalid_traces) and \
+            all(not candidate.equals(t) for t in valid_traces_300):
+            #print(f"Invalid Candidate generated: \n{candidate}")
+            invalid_traces.append(candidate)
+        else: print("Candidate was valid")
+
+    print(len(invalid_traces))
+
+    eval_model(random.sample(valid_traces_300,20),random.sample(invalid_traces,20))
+
+if __name__ == "__main__":
+    exit(main())

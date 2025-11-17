@@ -804,7 +804,7 @@ class AgenticProcessMiner:
 
             if cached_types:
                 logger.info(f"Found {len(cached_types)} cached representations: {[t.value for t in cached_types]}")
-            breakpoint()
+            #breakpoint()
             # Load cached representations
             for rep_type in cached_types:
                 cached_rep = self.cache.get(self.log_file, rep_type.value)
@@ -822,7 +822,7 @@ class AgenticProcessMiner:
                 for rep_type in uncached_types:
                     logger.info(f"Discovering {rep_type.value}...")
                     try:
-                        breakpoint()
+                        #breakpoint()
                         rep_class = self.REPRESENTATION_CLASSES[rep_type]
                         representation = rep_class(self.log)
                         representation.discover()
@@ -861,7 +861,7 @@ class AgenticProcessMiner:
 
         # Add each representation in a simple format (matching original template style)
         counter = 1
-        breakpoint()
+        #breakpoint()
         for rep_type, representation in self.representations.items():
             if representation:
                 if rep_type == RepresentationType.PETRI_NET and hasattr(representation, 'net'):
@@ -897,7 +897,7 @@ class AgenticProcessMiner:
 
         def write_IDEAL_comprehensive_textual_description(content: str):
             """Write textual description to file."""
-            filepath = self.run_folder / "textual_model.txt"
+            filepath = self.run_folder / "ideal_textual_model.txt"
             with open(filepath, "w") as file:
                 file.write(content)
             logger.info(f"Wrote description file: {filepath}")
@@ -907,7 +907,7 @@ class AgenticProcessMiner:
         """Run the LLM agent with discovered representations."""
         # Create run folder
         self._create_run_folder(self.dataset_name)
-
+        #breakpoint()
         # Load system prompt
         if system_prompt is None and os.path.exists(self.config.prompt_file):
             with open(self.config.prompt_file, 'r') as f:
@@ -1209,6 +1209,9 @@ Examples:
         miner.run_agent()
 
         print(f"\nResults saved to: {miner.run_folder}/")
+
+        results_folder = miner.run_folder
+
 
     except Exception as e:
         logger.error(f"Process mining failed: {e}")
