@@ -949,7 +949,7 @@ class AgenticProcessMiner:
         # Stream agent responses
         logger.info("Starting agent stream...")
         try:
-            breakpoint()
+            #breakpoint()
             for chunk in graph.stream(inputs, stream_mode=self.config.stream_mode):
                 chunk_str = json.dumps(chunk, indent=2, default=str) if isinstance(chunk, dict) else str(chunk)
                 print(chunk)
