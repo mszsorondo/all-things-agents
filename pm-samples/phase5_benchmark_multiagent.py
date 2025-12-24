@@ -239,6 +239,12 @@ class MultiAgentBenchmark:
 
         # Create miner instance
         miner = architecture_class(config)
+
+        # Set up the miner with the XES file (following phase5_benchmark.py pattern)
+        miner.log_file = xes_path
+        miner.xes_path = xes_path
+        miner.dataset_name = Path(xes_path).stem
+
         breakpoint()
 
         # Run the agent

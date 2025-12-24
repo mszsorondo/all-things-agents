@@ -22,7 +22,9 @@ import pm4py
 from pm4py.objects.bpmn.exporter import exporter as bpmn_exporter
 from pm4py.objects.petri_net.exporter import exporter as pnml_exporter
 from langgraph.prebuilt import create_react_agent
-
+from deepagents import create_deep_agent
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 load_dotenv()
 # Configure logging
 logging.basicConfig(
@@ -966,6 +968,271 @@ class AgenticProcessMiner:
                 self._write_log_footer()
                 self.log_file.close()
 
+    def run_without_tools(self,
+                          prompt_file_as_is: str = "GENERATE_AS_IS_MODEL.txt",
+                          prompt_file_ideal: str = "GENERATE_IDEAL_MODEL.txt"):
+        """
+        Run LLM to generate AS-IS and IDEAL models without tool calling.
+        Uses two-step conversation with shared context.
+
+        Args:
+            prompt_file_as_is: Path to the AS-IS generation prompt file
+            prompt_file_ideal: Path to the IDEAL generation prompt file
+
+        Returns:
+            Tuple of (as_is_model, ideal_model) strings
+        """
+        # Create run folder
+        self._create_run_folder(self.dataset_name)
+
+        # Load prompts from files
+        if os.path.exists(prompt_file_as_is):
+            with open(prompt_file_as_is, 'r') as f:
+                system_prompt_as_is = f.read()
+        else:
+            raise FileNotFoundError(f"AS-IS prompt file not found: {prompt_file_as_is}")
+
+        if os.path.exists(prompt_file_ideal):
+            with open(prompt_file_ideal, 'r') as f:
+                system_prompt_ideal = f.read()
+        else:
+            raise FileNotFoundError(f"IDEAL prompt file not found: {prompt_file_ideal}")
+
+        # Copy prompt files to run folder
+        shutil.copy(prompt_file_as_is, self.run_folder)
+        shutil.copy(prompt_file_ideal, self.run_folder)
+
+        # Build user prompt with representations
+        user_prompt = self.build_prompt()
+
+        # Create LLM client based on model name
+        model_name = self.config.model_name
+        if ':' in model_name:
+            # Format: "provider:model" -> extract just the model name
+            provider, model_id = model_name.split(':', 1)
+        else:
+            provider = 'openai'  # default
+            model_id = model_name
+
+        if 'anthropic' in provider.lower():
+            llm = ChatAnthropic(model=model_id)
+            logger.info(f"Using Anthropic model: {model_id}")
+        else:
+            llm = ChatOpenAI(model=model_id)
+            logger.info(f"Using OpenAI model: {model_id}")
+
+        # Initialize conversation with system prompt and user representations
+        messages = [
+            ("system", system_prompt_as_is),
+            ("human", user_prompt)
+        ]
+
+        # Step 1: Generate AS-IS model
+        logger.info("Generating AS-IS model...")
+        try:
+            as_is_response = llm.invoke(messages)
+            as_is_model = as_is_response.content
+            logger.info(f"AS-IS model generated ({len(as_is_model)} characters)")
+        except Exception as e:
+            logger.error(f"Failed to generate AS-IS model: {e}")
+            raise
+
+        # Save AS-IS model immediately
+        as_is_path = self.run_folder / "textual_model.txt"
+        with open(as_is_path, 'w', encoding='utf-8') as f:
+            f.write(as_is_model)
+        logger.info(f"Saved AS-IS model to: {as_is_path}")
+
+        # Step 2: Generate IDEAL model with conversation context
+        # Add the AS-IS response to conversation, then ask for IDEAL
+        messages.append(("assistant", as_is_model))
+        messages.append(("human", system_prompt_ideal))
+
+        logger.info("Generating IDEAL model...")
+        try:
+            ideal_response = llm.invoke(messages)
+            ideal_model = ideal_response.content
+            logger.info(f"IDEAL model generated ({len(ideal_model)} characters)")
+        except Exception as e:
+            logger.error(f"Failed to generate IDEAL model: {e}")
+            raise
+
+        # Save IDEAL model
+        ideal_path = self.run_folder / "ideal_textual_model.txt"
+        with open(ideal_path, 'w', encoding='utf-8') as f:
+            f.write(ideal_model)
+        logger.info(f"Saved IDEAL model to: {ideal_path}")
+
+        # Save full conversation log
+        conversation_log = []
+        conversation_log.append("=" * 80)
+        conversation_log.append("FULL CONVERSATION LOG")
+        conversation_log.append(f"Timestamp: {datetime.now().isoformat()}")
+        conversation_log.append(f"Dataset: {self.dataset_name}")
+        conversation_log.append(f"Model: {self.config.model_name}")
+        conversation_log.append("=" * 80)
+        conversation_log.append("")
+        conversation_log.append("[SYSTEM PROMPT - AS-IS]")
+        conversation_log.append("-" * 40)
+        conversation_log.append(system_prompt_as_is)
+        conversation_log.append("")
+        conversation_log.append("[USER - Process Representations]")
+        conversation_log.append("-" * 40)
+        conversation_log.append(user_prompt)
+        conversation_log.append("")
+        conversation_log.append("[ASSISTANT - AS-IS Model]")
+        conversation_log.append("-" * 40)
+        conversation_log.append(as_is_model)
+        conversation_log.append("")
+        conversation_log.append("[USER - IDEAL Request]")
+        conversation_log.append("-" * 40)
+        conversation_log.append(system_prompt_ideal)
+        conversation_log.append("")
+        conversation_log.append("[ASSISTANT - IDEAL Model]")
+        conversation_log.append("-" * 40)
+        conversation_log.append(ideal_model)
+        conversation_log.append("")
+        conversation_log.append("=" * 80)
+        conversation_log.append("END OF CONVERSATION")
+        conversation_log.append("=" * 80)
+
+        conversation_path = self.run_folder / "full_conversation.txt"
+        with open(conversation_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(conversation_log))
+        logger.info(f"Saved conversation log to: {conversation_path}")
+
+        # Save experiment configuration
+        if self.config.save_experiment_config:
+            self._save_experiment_config_without_tools(
+                system_prompt_as_is,
+                system_prompt_ideal,
+                user_prompt
+            )
+
+        # Save prompts separately
+        with open(self.run_folder / "system_prompt_as_is.txt", 'w', encoding='utf-8') as f:
+            f.write(system_prompt_as_is)
+        with open(self.run_folder / "system_prompt_ideal.txt", 'w', encoding='utf-8') as f:
+            f.write(system_prompt_ideal)
+        with open(self.run_folder / "user_prompt.txt", 'w', encoding='utf-8') as f:
+            f.write(user_prompt)
+
+        logger.info(f"Run completed. All outputs saved to: {self.run_folder}")
+
+        return as_is_model, ideal_model
+
+    def _save_experiment_config_without_tools(self, system_prompt_as_is: str,
+                                               system_prompt_ideal: str,
+                                               user_prompt: str):
+        """Save experiment configuration for run_without_tools method."""
+        config_dict = asdict(self.config)
+        config_dict["representations"] = [r.value for r in self.config.representations]
+
+        config = {
+            "run_timestamp": datetime.now().isoformat(),
+            "dataset_name": self.dataset_name,
+            "xes_path": self.xes_path,
+            "model": self.config.model_name,
+            "method": "run_without_tools",
+            "representations": [r.value for r in self.config.representations],
+            "system_prompt_as_is_preview": system_prompt_as_is[:500] + "..." if len(system_prompt_as_is) > 500 else system_prompt_as_is,
+            "system_prompt_ideal_preview": system_prompt_ideal[:500] + "..." if len(system_prompt_ideal) > 500 else system_prompt_ideal,
+            "user_prompt_preview": user_prompt[:500] + "..." if len(user_prompt) > 500 else user_prompt,
+            "config": config_dict
+        }
+
+        config_file = self.run_folder / "experiment_config.json"
+        with open(config_file, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"Saved experiment config to: {config_file}")
+
+    def create_subagents(self) -> list:
+        """Create sub-agents for multi-agent collaboration."""
+        subagents = []
+        for rep_type, representation in self.representations.items():
+            if representation:
+                system_prompt = f"You are a process mining expert specializing in {rep_type.value} representation. You will analyze the provided representation and give feedback to the main agent when he sends you his own analysis.\n\n"
+                user_prompt = f"Analyze the following {rep_type.value} representation:\n{representation.to_string()}"
+                system_prompt+=user_prompt
+                
+                agent = {
+                    "name":f"{rep_type.value}-subagent",
+                    "description":f"Send {rep_type.value} representation analysis review to this specialized agent so that he gives you feedback.",
+                    "model":self.config.model_name,
+                    #"tools":[],
+                    "system_prompt":system_prompt
+                }
+                
+                subagents.append(agent)
+        return subagents
+    
+
+    def run_multi_agent(self, system_prompt: Optional[str] = None):
+        """Run the LLM agent with discovered representations."""
+        # Create run folder
+        self._create_run_folder(self.dataset_name)
+        #breakpoint()
+        # Load system prompt
+        if system_prompt is None and os.path.exists(self.config.prompt_file):
+            with open(self.config.prompt_file, 'r') as f:
+                system_prompt = f.read()
+        elif system_prompt is None:
+            system_prompt = "You are a process mining expert. Analyze the provided process representations."
+
+        # Copy prompt file to run folder
+        if os.path.exists(self.config.prompt_file):
+            shutil.copy(self.config.prompt_file, self.run_folder)
+
+        # Build user prompt
+        user_prompt = self.build_prompt()
+
+        # Save configuration
+        if self.config.save_experiment_config:
+            self._save_experiment_config(system_prompt, user_prompt)
+
+        # Setup tools
+        tools = self._setup_tools()
+
+        # Create agent
+        logger.info(f"Creating agent with model: {self.config.model_name}")
+        breakpoint()
+        subagents = self.create_subagents()
+
+        graph = create_deep_agent(
+            model=self.config.model_name,
+            tools=tools,
+            system_prompt=system_prompt,
+            subagents=subagents
+        )
+
+        # Prepare input
+        inputs = {"messages": [{"role": "user", "content": user_prompt}]}
+        # Setup logging
+        if self.config.enable_logging:
+            log_file = self.run_folder / "agent_logs.txt"
+            self.log_file = open(log_file, "w", encoding="utf-8")
+            self._write_log_header(user_prompt)
+
+        # Stream agent responses
+        logger.info("Starting agent stream...")
+        try:
+            #breakpoint()
+            for chunk in graph.stream(inputs, stream_mode=self.config.stream_mode):
+                chunk_str = json.dumps(chunk, indent=2, default=str) if isinstance(chunk, dict) else str(chunk)
+                print(chunk)
+
+                if self.config.enable_logging and self.log_file:
+                    self._write_log_chunk(chunk_str)
+
+            logger.info("Agent processing completed successfully")
+        except Exception as e:
+            logger.error(f"Agent processing failed: {e}")
+            raise
+        finally:
+            if self.log_file:
+                self._write_log_footer()
+                self.log_file.close()
     def _save_experiment_config(self, system_prompt: str, user_prompt: str):
         """Save experiment configuration."""
         # Convert config to dict with proper serialization
@@ -978,6 +1245,7 @@ class AgenticProcessMiner:
             "dataset_name": self.dataset_name,
             "xes_path": self.xes_path,
             "model": self.config.model_name,
+            "method": "run_agent",
             "representations": [r.value for r in self.config.representations],
             "system_prompt_preview": system_prompt[:500] + "..." if len(system_prompt) > 500 else system_prompt,
             "user_prompt_preview": user_prompt[:500] + "..." if len(user_prompt) > 500 else user_prompt,
