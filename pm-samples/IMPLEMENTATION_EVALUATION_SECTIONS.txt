@@ -1,0 +1,346 @@
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{System Architecture}
+
+We implemented the Agentic Process Mining (APM) framework as a modular Python system that demonstrates the foundational capabilities of LLM-enhanced process analysis. The current implementation represents a baseline single-agent architecture that will serve as a foundation for future multi-agent extensions.
+
+\subsubsection{Core Components}
+
+The system consists of three main modules:
+
+\textbf{1. Multi-Representation Discovery Engine}: Integrates PM4Py \citep{pm4py} to extract diverse process representations:
+\begin{itemize}
+    \item \textbf{Petri Nets}: Via Inductive Miner for formal semantics
+    \item \textbf{BPMN Models}: Business-readable process notation
+    \item \textbf{Directly-Follows Graphs}: Frequency-based transitions
+    \item \textbf{Heuristics Nets}: Noise-filtered dependencies
+    \item \textbf{Process Trees}: Hierarchical control flow
+    \item \textbf{Abstract Variants}: LLM-abstracted execution patterns
+\end{itemize}
+
+\textbf{2. LLM-Based Interpretation Agent}: Employs LangGraph's ReAct agent pattern with:
+\begin{itemize}
+    \item Support for multiple LLM backends (Claude Sonnet 4.5, GPT-4)
+    \item Streaming response processing for real-time feedback
+    \item Configurable prompting strategies for domain adaptation
+\end{itemize}
+
+\textbf{3. Representation Caching System}: Optimizes computational efficiency through:
+\begin{itemize}
+    \item SHA-256 hash-based cache keys incorporating file statistics
+    \item TTL-based cache invalidation (default 24 hours)
+    \item Pickle serialization for complex PM4Py objects
+    \item Selective loading to avoid unnecessary log parsing
+\end{itemize}
+
+\subsubsection{Processing Pipeline}
+
+The implementation follows a four-stage pipeline:
+
+\begin{algorithm}[h]
+\caption{Agentic Process Mining Pipeline}
+\label{alg:apm-pipeline}
+\begin{algorithmic}[1]
+\Procedure{AgenticProcessMine}{$event\_log$}
+    \State \textbf{Stage 1: Representation Discovery}
+    \State $cached \gets$ CheckCache($event\_log$)
+    \State $representations \gets cached$
+    \For{each $algorithm$ in $\{PetriNet, BPMN, DFG, HeuristicsNet, ProcessTree\}$}
+        \If{$algorithm \notin cached$}
+            \State $rep \gets$ DiscoverRepresentation($algorithm$, $event\_log$)
+            \State CacheStore($event\_log$, $algorithm$, $rep$)
+            \State $representations$.add($rep$)
+        \EndIf
+    \EndFor
+
+    \State \textbf{Stage 2: Prompt Construction}
+    \State $prompt \gets$ ConsolidateRepresentations($representations$)
+
+    \State \textbf{Stage 3: LLM Interpretation}
+    \State $agent \gets$ CreateReActAgent($model$, $tools$, $system\_prompt$)
+    \State $response \gets$ agent.Stream($prompt$)
+
+    \State \textbf{Stage 4: Model Extraction}
+    \State $as\_is\_model \gets$ ExtractASISModel($response$)
+    \State $ideal\_model \gets$ ExtractIDEALModel($response$)
+    \State \Return $as\_is\_model$, $ideal\_model$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Key Design Decisions}
+
+\textbf{Textual Model as Universal Intermediate Representation}: The system produces comprehensive textual descriptions rather than formal notations (BPMN XML, Petri nets). This fundamental design choice redefines agentic process mining as \textit{the capability of an agentic system to understand processes and explain them to any audience}. The textual model serves as:
+
+\begin{itemize}
+    \item \textbf{Universal Foundation}: A single source that can be transformed into technical documentation for developers, executive summaries for management, or operational guides for end-users
+    \item \textbf{Audience Adaptation Layer}: Enables downstream agents to tailor explanations based on stakeholder expertise, from formal specifications to natural language narratives
+    \item \textbf{Semantic Bridge}: Connects algorithmic process mining outputs with human-understandable explanations, democratizing access to process insights
+    \item \textbf{Validation Accessibility}: Allows even resource-constrained models to verify process conformance, proving the clarity of representation
+\end{itemize}
+
+This approach fundamentally shifts process mining from producing technical artifacts to generating \textit{explanatory models} that serve as a communication bridge between automated discovery and human understanding.
+
+\textbf{Single-Agent Baseline}: The current implementation uses a single LLM agent for interpretation, establishing a performance baseline before introducing multi-agent coordination complexity.
+
+\textbf{Aggressive Caching}: Discovered representations are cached indefinitely (with TTL), reducing processing time by 70-80\% on subsequent runs, critical for iterative development and benchmarking.
+
+\subsection{Technical Stack}
+
+\begin{itemize}
+    \item \textbf{Process Mining}: PM4Py 2.7+ for algorithm implementations
+    \item \textbf{LLM Framework}: LangGraph 0.1+ with LangChain integration
+    \item \textbf{Generation Models}: Anthropic Claude Sonnet 4.5, OpenAI GPT-4
+    \item \textbf{Validation Models}: OpenAI GPT-4o-mini for cost-effective evaluation
+    \item \textbf{Python}: 3.8+ with type hints and dataclasses
+\end{itemize}
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+\subsection{Evaluation Methodology}
+
+We introduce a novel evaluation approach for agentic process mining: the \textit{Model Fidelity Benchmark}. This benchmark tests whether the generated AS-IS models capture sufficient process semantics for downstream tasks, specifically trace classification by resource-constrained models.
+
+\subsubsection{Benchmark Design Philosophy}
+
+A critical design choice is the use of small reasoning models (GPT-4o-mini) for validation rather than powerful models. This serves multiple purposes:
+
+\begin{itemize}
+    \item \textbf{Clarity Test}: If a small model can understand the generated description, it demonstrates exceptional clarity
+    \item \textbf{Cost Efficiency}: Evaluation costs are reduced by 95\% compared to GPT-4
+    \item \textbf{Scalability}: Enables extensive testing across thousands of traces
+    \item \textbf{Robustness}: Forces the generation model to produce unambiguous, self-contained descriptions
+\end{itemize}
+
+This approach ensures that generated models are not only accurate but also practically usable by downstream systems with limited computational resources.
+
+\subsubsection{Evaluation Pipeline}
+
+The evaluation follows a systematic pipeline:
+
+\begin{algorithm}[h]
+\caption{Model Fidelity Evaluation}
+\label{alg:evaluation}
+\begin{algorithmic}[1]
+\Procedure{EvaluateModelFidelity}{$event\_log$, $k$}
+    \State \textbf{Step 1: Model Generation}
+    \State $as\_is\_model \gets$ AgenticProcessMine($event\_log$)
+
+    \State \textbf{Step 2: Trace Preparation}
+    \State $valid\_traces \gets$ SampleTraces($event\_log$, $k$)
+    \State $invalid\_traces \gets \emptyset$
+    \For{$i = 1$ to $k$}
+        \State $trace \gets$ RandomSelect($valid\_traces$)
+        \State $perturbed \gets$ PerturbTrace($trace$)
+        \State $invalid\_traces$.add($perturbed$)
+    \EndFor
+
+    \State \textbf{Step 3: Independent Validation}
+    \State $validator \gets$ CreateValidator($as\_is\_model$, $GPT4o\_mini$)
+    \State $predictions \gets \emptyset$
+    \For{each $trace$ in $valid\_traces \cup invalid\_traces$}
+        \State $prediction \gets$ validator.Classify($trace$)
+        \State $predictions$.add($prediction$)
+    \EndFor
+
+    \State \textbf{Step 4: Metrics Calculation}
+    \State \Return CalculateMetrics($predictions$, $ground\_truth$)
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Perturbation Strategy}
+
+Invalid traces are generated through systematic perturbations:
+
+\begin{algorithm}[h]
+\caption{Trace Perturbation}
+\label{alg:perturbation}
+\begin{algorithmic}[1]
+\Procedure{PerturbTrace}{$trace$}
+    \If{Length($trace$) $< 2$}
+        \State \Return $trace$ \Comment{Cannot perturb single event}
+    \EndIf
+    \State $perturbed \gets$ Copy($trace$)
+    \State $i, j \gets$ RandomSelect(Indices($trace$), 2)
+    \State Swap($perturbed[i]$, $perturbed[j]$)
+    \State \Return $perturbed$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+This approach ensures invalid traces are structurally plausible but violate temporal constraints captured in the model.
+
+\subsubsection{Validation Protocol}
+
+The validation uses a deliberately simple prompt with a small model:
+
+\begin{algorithm}[h]
+\caption{Small Model Validator}
+\label{alg:validator}
+\begin{algorithmic}[1]
+\Procedure{CreateValidator}{$as\_is\_model$, $small\_model$}
+    \State $prompt \gets$ "Given this process: " + $as\_is\_model$
+    \State $prompt \gets prompt$ + "\nClassify trace as VALID or INVALID"
+    \State $prompt \gets prompt$ + "\nRespond with one word only"
+
+    \Function{Validate}{$trace$}
+        \State $response \gets small\_model$.Query($prompt$, $trace$)
+        \State \Return ParseResponse($response$)
+    \EndFunction
+    \State \Return Validate
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+The simplicity of this protocol, combined with the use of a small model, tests whether the generated AS-IS model is sufficiently clear and complete.
+
+\subsection{Experimental Setup}
+
+\subsubsection{Datasets}
+
+We evaluated on four real-world event logs from the Process Mining benchmark suite:
+
+\begin{table}[h]
+\centering
+\caption{Evaluation Datasets}
+\label{tab:datasets}
+\begin{tabular}{lrrr}
+\hline
+\textbf{Process} & \textbf{Traces} & \textbf{Events} & \textbf{Activities} \\
+\hline
+Hiring & 8,799 & 63,761 & 11 \\
+Hospital Billing & 10,000 & 78,449 & 9 \\
+Lending & 13,087 & 95,267 & 12 \\
+Renting & 7,294 & 52,918 & 8 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Configuration}
+
+\begin{itemize}
+    \item \textbf{Model Generation}: Claude Sonnet 4.5 (advanced model for AS-IS creation)
+    \item \textbf{Validation}: GPT-4o-mini (small model for trace classification)
+    \item \textbf{Sample Size}: 100 valid traces, 100 invalid traces per dataset
+    \item \textbf{Perturbation}: Random event swapping
+    \item \textbf{Baseline}: Random classification (50\% probability)
+    \item \textbf{Temperature}: 0 for deterministic responses
+\end{itemize}
+
+The deliberate use of GPT-4o-mini for validation—a model with significantly less capability than the generation model—provides a stringent test of model clarity and completeness.
+
+\subsection{Results}
+
+\subsubsection{Model Fidelity Performance}
+
+\begin{table}[h]
+\centering
+\caption{Trace Classification Results Using Small Model Validation}
+\label{tab:results}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Process} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{TN Rate} & \textbf{Cost (USD)} \\
+\hline
+Hiring & 0.870 & 1.000 & 0.930 & 0.850 & \$0.12 \\
+Hospital & 0.971 & 1.000 & 0.985 & 0.970 & \$0.09 \\
+Lending & 0.952 & 1.000 & 0.976 & 0.950 & \$0.14 \\
+Renting & 0.901 & 1.000 & 0.948 & 0.890 & \$0.12 \\
+\hline
+\textbf{Average} & \textbf{0.924} & \textbf{1.000} & \textbf{0.960} & \textbf{0.915} & \textbf{\$0.12} \\
+Random Baseline & 0.500 & 0.500 & 0.500 & 0.500 & \$0.00 \\
+GPT-4 (estimated) & - & - & - & - & \$2.40 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Key Findings}
+
+\textbf{1. Perfect Recall with Small Models}: Despite using GPT-4o-mini, all generated models achieved 100\% recall, demonstrating that the textual descriptions are sufficiently clear for even limited models to identify valid process behaviors.
+
+\textbf{2. High Precision at Low Cost}: Precision ranged from 87\% to 97\% while keeping evaluation costs at approximately \$0.12 per dataset—a 95\% reduction compared to GPT-4 evaluation.
+
+\textbf{3. Model Clarity Validation}: The strong F1 scores (0.960 average) achieved by a small model validate that the generated descriptions are not only accurate but also exceptionally clear and unambiguous.
+
+\textbf{4. Process Complexity Impact}: The performance gradient (Hospital 97\% to Hiring 87\%) remains consistent even with small model validation, suggesting this reflects genuine process complexity rather than model capability limitations.
+
+\subsubsection{Computational and Economic Efficiency}
+
+\begin{table}[h]
+\centering
+\caption{Resource Utilization and Costs}
+\label{tab:efficiency}
+\begin{tabular}{lrr}
+\hline
+\textbf{Component} & \textbf{Tokens Used} & \textbf{Cost per Dataset} \\
+\hline
+AS-IS Generation (Claude Sonnet) & ~50,000 & \$1.50 \\
+Validation (GPT-4o-mini) & ~200,000 & \$0.12 \\
+Alternative: GPT-4 Validation & ~200,000 & \$2.40 \\
+Alternative: Claude Opus Valid. & ~200,000 & \$3.00 \\
+\hline
+\textbf{Total (Our Approach)} & 250,000 & \$1.62 \\
+\textbf{Total (Premium Models)} & 250,000 & \$4.50 \\
+\hline
+\end{tabular}
+\end{table}
+
+The use of small models for validation enables extensive testing at 64\% lower cost while maintaining high accuracy.
+
+\subsection{Discussion}
+
+\subsubsection{Validation of Approach}
+
+The exceptional performance (96\% F1) achieved by GPT-4o-mini validates two critical aspects:
+\begin{itemize}
+    \item The generated AS-IS models capture comprehensive process semantics
+    \item The descriptions are clear enough for resource-constrained models to understand
+\end{itemize}
+
+This dual validation is stronger than using powerful models, as it demonstrates both accuracy and accessibility.
+
+\subsubsection{Implications for Scalability}
+
+The successful use of small models has profound implications:
+\begin{itemize}
+    \item \textbf{Production Viability}: Organizations can deploy validation systems using inexpensive models
+    \item \textbf{Edge Deployment}: Small models enable on-premise or edge device deployment
+    \item \textbf{Continuous Monitoring}: Low costs enable real-time process conformance checking
+    \item \textbf{Democratization}: Reduces barriers to entry for process mining adoption
+\end{itemize}
+
+\subsubsection{Baseline Establishment}
+
+This single-agent, small-model validation approach establishes a strong baseline. Future multi-agent systems must demonstrate improvement while maintaining this cost efficiency.
+
+\subsubsection{Limitations}
+
+\begin{itemize}
+    \item \textbf{Perturbation Simplicity}: Only event swapping tested; more complex violations needed
+    \item \textbf{Single Perturbation Type}: Does not test missing activities or wrong gateways
+    \item \textbf{Binary Classification}: Real conformance checking requires graded responses
+    \item \textbf{Single Agent}: Current evaluation doesn't test multi-agent coordination benefits
+\end{itemize}
+
+\subsubsection{Future Evaluation Plans}
+
+Building on this cost-effective baseline, future evaluations will explore:
+\begin{itemize}
+    \item Multi-agent architectures while maintaining small-model validation
+    \item Complex perturbations (missing mandatory activities, wrong decision logic)
+    \item Graded conformance scores rather than binary classification
+    \item Cross-model validation chains (multiple small models voting)
+    \item Human expert assessment compared to small-model judgments
+\end{itemize}
+
+\subsection{Threats to Validity}
+
+\textbf{Internal Validity}: Small models might have different biases than large models. We mitigate through balanced datasets and comparison with random baseline.
+
+\textbf{External Validity}: GPT-4o-mini specific behaviors may not generalize to other small models. Future work will test with Gemini Nano, Claude Haiku, and open-source alternatives.
+
+\textbf{Construct Validity}: Binary classification by small models may oversimplify conformance. However, the high agreement rates suggest the core semantics are captured.
+
+\textbf{Economic Validity}: API costs may change; however, the 20:1 cost ratio between small and large models is likely to persist or increase.
