@@ -91,20 +91,14 @@ Respond with ONLY one word: "VALID" or "INVALID"."""
     return validate, system_prompt
 
 def evaluate_traces(valid_traces, invalid_traces, validator):
+    """Evaluate traces in interleaved order (one valid, one invalid at a time)."""
     valid_predictions = []
     invalid_predictions = []
     total_compute_time = 0
     total_tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
-    for i, trace in enumerate(valid_traces):
-        pred, compute_time, tokens_used = validator(trace)
-        is_correct = pred == "VALID"
-        valid_predictions.append(is_correct)
-
-        total_compute_time += compute_time
-        for key in total_tokens:
-            total_tokens[key] += tokens_used.get(key, 0)
-
+    # Helper to compute and print metrics
+    def print_metrics(trace_type: str, idx: int, total: int, pred: str, is_correct: bool, compute_time: float, tokens_used: dict):
         TP = sum(valid_predictions)
         FN = len(valid_predictions) - TP
         TN = sum(invalid_predictions)
@@ -114,29 +108,43 @@ def evaluate_traces(valid_traces, invalid_traces, validator):
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
-        print(f"Valid trace {i+1}/{len(valid_traces)}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
-        time.sleep(1)
+        print(f"{trace_type} trace {idx+1}/{total}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
 
-    for i, trace in enumerate(invalid_traces):
-        pred, compute_time, tokens_used = validator(trace)
-        is_correct = pred == "INVALID"
-        invalid_predictions.append(is_correct)
+    # Interleaved evaluation: one valid, one invalid at a time
+    max_len = max(len(valid_traces), len(invalid_traces))
+    valid_idx = 0
+    invalid_idx = 0
 
-        total_compute_time += compute_time
-        for key in total_tokens:
-            total_tokens[key] += tokens_used.get(key, 0)
+    for i in range(max_len):
+        # Evaluate one valid trace
+        if valid_idx < len(valid_traces):
+            trace = valid_traces[valid_idx]
+            pred, compute_time, tokens_used = validator(trace)
+            is_correct = pred == "VALID"
+            valid_predictions.append(is_correct)
 
-        TP = sum(valid_predictions)
-        FN = len(valid_predictions) - TP
-        TN = sum(invalid_predictions)
-        FP = len(invalid_predictions) - TN
+            total_compute_time += compute_time
+            for key in total_tokens:
+                total_tokens[key] += tokens_used.get(key, 0)
 
-        precision = TP / (TP + FP) if (TP + FP) > 0 else 0
-        recall = TP / (TP + FN) if (TP + FN) > 0 else 0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+            print_metrics("Valid", valid_idx, len(valid_traces), pred, is_correct, compute_time, tokens_used)
+            valid_idx += 1
+            time.sleep(1)
 
-        print(f"Invalid trace {i+1}/{len(invalid_traces)}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
-        time.sleep(1)
+        # Evaluate one invalid trace
+        if invalid_idx < len(invalid_traces):
+            trace = invalid_traces[invalid_idx]
+            pred, compute_time, tokens_used = validator(trace)
+            is_correct = pred == "INVALID"
+            invalid_predictions.append(is_correct)
+
+            total_compute_time += compute_time
+            for key in total_tokens:
+                total_tokens[key] += tokens_used.get(key, 0)
+
+            print_metrics("Invalid", invalid_idx, len(invalid_traces), pred, is_correct, compute_time, tokens_used)
+            invalid_idx += 1
+            time.sleep(1)
 
     return valid_predictions, invalid_predictions, total_compute_time, total_tokens
 

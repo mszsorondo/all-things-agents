@@ -725,21 +725,93 @@ class AgenticProcessMiner:
 
     def _setup_api_keys(self):
         """Setup API keys from environment variables."""
-        # Check for API keys in environment
-        if 'anthropic' in self.config.model_name.lower():
+        # Check for API keys in environment based on provider
+        model_lower = self.config.model_name.lower()
+
+        if 'anthropic' in model_lower:
             api_key = os.getenv("ANTHROPIC_API_KEY")
             if not api_key:
                 raise ValueError(
                     "ANTHROPIC_API_KEY not found in environment. "
                     "Please set it using: export ANTHROPIC_API_KEY='your-key'"
                 )
-        elif 'openai' in self.config.model_name.lower():
+        elif 'grok' in model_lower or 'xai' in model_lower:
+            api_key = os.getenv("XAI_API_KEY")
+            if not api_key:
+                raise ValueError(
+                    "XAI_API_KEY not found in environment. "
+                    "Please set it using: export XAI_API_KEY='your-key'"
+                )
+        elif 'deepseek' in model_lower:
+            api_key = os.getenv("DEEPSEEK_API_KEY")
+            if not api_key:
+                raise ValueError(
+                    "DEEPSEEK_API_KEY not found in environment. "
+                    "Please set it using: export DEEPSEEK_API_KEY='your-key'"
+                )
+        elif 'openai' in model_lower:
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
                 raise ValueError(
                     "OPENAI_API_KEY not found in environment. "
                     "Please set it using: export OPENAI_API_KEY='your-key'"
                 )
+
+    def _create_model_client(self, model_name: Optional[str] = None):
+        """
+        Create an LLM client for the specified model.
+
+        For grok and deepseek models, returns a ChatOpenAI instance with custom base_url.
+        For other models, returns None (use model name string directly).
+
+        Args:
+            model_name: Model name in format "provider:model" or just "model"
+
+        Returns:
+            LLM client object for grok/deepseek, None otherwise
+        """
+        if model_name is None:
+            model_name = self.config.model_name
+
+        # Parse provider:model format
+        if ':' in model_name:
+            provider, model_id = model_name.split(':', 1)
+        else:
+            provider = 'openai'  # default
+            model_id = model_name
+
+        provider_lower = provider.lower()
+        model_lower = model_name.lower()
+
+        # xAI (Grok) - uses OpenAI-compatible API
+        if 'grok' in model_lower or 'xai' in provider_lower:
+            api_key = os.getenv("XAI_API_KEY")
+            logger.info(f"Creating xAI (Grok) client with model: {model_id}")
+            return ChatOpenAI(
+                model=model_id,
+                api_key=api_key,
+                base_url="https://api.x.ai/v1"
+            )
+
+        # DeepSeek - uses OpenAI-compatible API
+        if 'deepseek' in model_lower or 'deepseek' in provider_lower:
+            api_key = os.getenv("DEEPSEEK_API_KEY")
+            logger.info(f"Creating DeepSeek client with model: {model_id}")
+            return ChatOpenAI(
+                model=model_id,
+                api_key=api_key,
+                base_url="https://api.deepseek.com"
+            )
+
+        # For other providers (openai, anthropic), return None to use model name string
+        return None
+
+    def _requires_model_object(self, model_name: Optional[str] = None) -> bool:
+        """Check if this model requires passing a model object instead of model name string."""
+        if model_name is None:
+            model_name = self.config.model_name
+        model_lower = model_name.lower()
+        return 'grok' in model_lower or 'xai' in model_lower or 'deepseek' in model_lower
 
     def _create_run_folder(self, dataset_name: str) -> Path:
         """Create a folder for this run."""
@@ -934,11 +1006,20 @@ class AgenticProcessMiner:
         # Create agent
         logger.info(f"Creating agent with model: {self.config.model_name}")
 
-        graph = create_react_agent(
-            model=self.config.model_name,
-            tools=tools,
-            prompt=system_prompt
-        )
+        # For grok/deepseek, pass model object; for others, pass model name string
+        if self._requires_model_object():
+            model_client = self._create_model_client()
+            graph = create_react_agent(
+                model=model_client,
+                tools=tools,
+                prompt=system_prompt
+            )
+        else:
+            graph = create_react_agent(
+                model=self.config.model_name,
+                tools=tools,
+                prompt=system_prompt
+            )
 
         # Prepare input
         inputs = {"messages": [{"role": "user", "content": user_prompt}]}
@@ -1014,7 +1095,11 @@ class AgenticProcessMiner:
             provider = 'openai'  # default
             model_id = model_name
 
-        if 'anthropic' in provider.lower():
+        # Check if we need to use the special model client for grok/deepseek
+        if self._requires_model_object():
+            llm = self._create_model_client()
+            logger.info(f"Using custom model client for: {model_id}")
+        elif 'anthropic' in provider.lower():
             llm = ChatAnthropic(model=model_id)
             logger.info(f"Using Anthropic model: {model_id}")
         else:
@@ -1196,15 +1281,24 @@ class AgenticProcessMiner:
 
         # Create agent
         logger.info(f"Creating agent with model: {self.config.model_name}")
-        breakpoint()
         subagents = self.create_subagents()
 
-        graph = create_deep_agent(
-            model=self.config.model_name,
-            tools=tools,
-            system_prompt=system_prompt,
-            subagents=subagents
-        )
+        # For grok/deepseek, pass model object; for others, pass model name string
+        if self._requires_model_object():
+            model_client = self._create_model_client()
+            graph = create_deep_agent(
+                model=model_client,
+                tools=tools,
+                system_prompt=system_prompt,
+                subagents=subagents
+            )
+        else:
+            graph = create_deep_agent(
+                model=self.config.model_name,
+                tools=tools,
+                system_prompt=system_prompt,
+                subagents=subagents
+            )
 
         # Prepare input
         inputs = {"messages": [{"role": "user", "content": user_prompt}]}
@@ -1328,8 +1422,14 @@ Examples:
   # Run with specific representations
   python enhanced_agentic_miner.py --dataset hospital --representations petri_net bpmn
 
-  # Use custom model
-  python enhanced_agentic_miner.py --dataset lending --model openai:gpt-4o-mini
+  # Use custom model (OpenAI)
+  python enhanced_agentic_miner.py --dataset lending --model openai:gpt-5-mini
+
+  # Use xAI Grok model
+  python enhanced_agentic_miner.py --dataset hiring --model xai:grok-4-1-fast-reasoning
+
+  # Use DeepSeek model
+  python enhanced_agentic_miner.py --dataset hiring --model deepseek:DeepSeek-V3.2-Thinking
 
   # Run on specific XES file
   python enhanced_agentic_miner.py --xes-file /path/to/custom.xes

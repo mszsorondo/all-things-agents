@@ -46,6 +46,7 @@ def get_as_is_model(xes_path, precomputed_model_path=None, llm_model="openai:gpt
     miner.log_file = xes_path
     miner.xes_path = xes_path
     miner.dataset_name = Path(xes_path).stem
+    breakpoint()
     miner.discover_representations()
     miner.run_agent()
 
@@ -66,7 +67,7 @@ def get_as_is_model(xes_path, precomputed_model_path=None, llm_model="openai:gpt
     return model_text, mining_config_info
 
 
-def get_as_is_model_no_tools(xes_path, precomputed_model_path=None, llm_model="openai:gpt-4o-mini",
+def get_as_is_model_no_tools(xes_path, precomputed_model_path=None, llm_model="openai:gpt-5-mini",
                               prompt_file_as_is="GENERATE_AS_IS_MODEL.txt",
                               prompt_file_ideal="GENERATE_IDEAL_MODEL.txt"):
     """
@@ -76,7 +77,7 @@ def get_as_is_model_no_tools(xes_path, precomputed_model_path=None, llm_model="o
     Args:
         xes_path: Path to the XES event log file
         precomputed_model_path: Optional path to a precomputed textual model
-        llm_model: LLM model to use (format: "provider:model", e.g., "openai:gpt-4o-mini")
+        llm_model: LLM model to use (format: "provider:model", e.g., "openai:gpt-5-mini")
         prompt_file_as_is: Path to the AS-IS generation prompt file
         prompt_file_ideal: Path to the IDEAL generation prompt file
 
@@ -166,8 +167,29 @@ def generate_invalid_traces(valid_traces, k):
             invalid.append(invalid_trace)
     return invalid
 
-def create_validator(as_is_model, model_name="gpt-5-nano"):
-    llm = ChatOpenAI(model=model_name, api_key=os.getenv("OPENAI_API_KEY"))
+def create_validator(as_is_model, model_name="gpt-5-mini"):
+    """Create a validator LLM. model_name can be 'model' or 'provider:model' format."""
+    # Parse provider:model format
+    if ":" in model_name:
+        provider, model_id = model_name.split(":", 1)
+    else:
+        provider, model_id = "openai", model_name
+
+    # Create LLM client based on provider
+    if "grok" in provider.lower() or "xai" in provider.lower():
+        llm = ChatOpenAI(
+            model=model_id,
+            api_key=os.getenv("XAI_API_KEY"),
+            base_url="https://api.x.ai/v1"
+        )
+    elif "deepseek" in provider.lower():
+        llm = ChatOpenAI(
+            model=model_id,
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url="https://api.deepseek.com"
+        )
+    else:
+        llm = ChatOpenAI(model=model_id, api_key=os.getenv("OPENAI_API_KEY"))
     system_prompt = f"""You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
 
 Business Process Description:
@@ -255,7 +277,7 @@ def save_misclassified_trace(trace_df, folder: Path, error_type: str, index: int
 
 def evaluate_traces(valid_traces, invalid_traces, validator, misclassified_folder: Path = None):
     """
-    Evaluate traces and optionally save misclassified ones to files.
+    Evaluate traces in interleaved order (one valid, one invalid) and optionally save misclassified ones.
 
     Args:
         valid_traces: List of valid trace DataFrames
@@ -274,22 +296,8 @@ def evaluate_traces(valid_traces, invalid_traces, validator, misclassified_folde
         "false_positives": []   # Invalid traces classified as VALID
     }
 
-    for i, trace in enumerate(valid_traces):
-        pred, compute_time, tokens_used = validator(trace)
-        is_correct = pred == "VALID"
-        valid_predictions.append(is_correct)
-
-        # Track false negatives (valid traces misclassified as invalid)
-        if not is_correct and misclassified_folder:
-            trace_ref = save_misclassified_trace(
-                trace, misclassified_folder, "fn", i, "VALID", pred
-            )
-            misclassified["false_negatives"].append(trace_ref)
-
-        total_compute_time += compute_time
-        for key in total_tokens:
-            total_tokens[key] += tokens_used.get(key, 0)
-
+    # Helper to compute and print metrics
+    def print_metrics(trace_type: str, idx: int, total: int, pred: str, is_correct: bool, compute_time: float, tokens_used: dict):
         TP = sum(valid_predictions)
         FN = len(valid_predictions) - TP
         TN = sum(invalid_predictions)
@@ -299,36 +307,57 @@ def evaluate_traces(valid_traces, invalid_traces, validator, misclassified_folde
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
-        print(f"Valid trace {i+1}/{len(valid_traces)}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
-        time.sleep(1)
+        print(f"{trace_type} trace {idx+1}/{total}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
 
-    for i, trace in enumerate(invalid_traces):
-        pred, compute_time, tokens_used = validator(trace)
-        is_correct = pred == "INVALID"
-        invalid_predictions.append(is_correct)
+    # Interleaved evaluation: one valid, one invalid at a time
+    max_len = max(len(valid_traces), len(invalid_traces))
+    valid_idx = 0
+    invalid_idx = 0
 
-        # Track false positives (invalid traces misclassified as valid)
-        if not is_correct and misclassified_folder:
-            trace_ref = save_misclassified_trace(
-                trace, misclassified_folder, "fp", i, "INVALID", pred
-            )
-            misclassified["false_positives"].append(trace_ref)
+    for i in range(max_len):
+        # Evaluate one valid trace
+        if valid_idx < len(valid_traces):
+            trace = valid_traces[valid_idx]
+            pred, compute_time, tokens_used = validator(trace)
+            is_correct = pred == "VALID"
+            valid_predictions.append(is_correct)
 
-        total_compute_time += compute_time
-        for key in total_tokens:
-            total_tokens[key] += tokens_used.get(key, 0)
+            # Track false negatives (valid traces misclassified as invalid)
+            if not is_correct and misclassified_folder:
+                trace_ref = save_misclassified_trace(
+                    trace, misclassified_folder, "fn", valid_idx, "VALID", pred
+                )
+                misclassified["false_negatives"].append(trace_ref)
 
-        TP = sum(valid_predictions)
-        FN = len(valid_predictions) - TP
-        TN = sum(invalid_predictions)
-        FP = len(invalid_predictions) - TN
+            total_compute_time += compute_time
+            for key in total_tokens:
+                total_tokens[key] += tokens_used.get(key, 0)
 
-        precision = TP / (TP + FP) if (TP + FP) > 0 else 0
-        recall = TP / (TP + FN) if (TP + FN) > 0 else 0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+            print_metrics("Valid", valid_idx, len(valid_traces), pred, is_correct, compute_time, tokens_used)
+            valid_idx += 1
+            time.sleep(1)
 
-        print(f"Invalid trace {i+1}/{len(invalid_traces)}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
-        time.sleep(1)
+        # Evaluate one invalid trace
+        if invalid_idx < len(invalid_traces):
+            trace = invalid_traces[invalid_idx]
+            pred, compute_time, tokens_used = validator(trace)
+            is_correct = pred == "INVALID"
+            invalid_predictions.append(is_correct)
+
+            # Track false positives (invalid traces misclassified as valid)
+            if not is_correct and misclassified_folder:
+                trace_ref = save_misclassified_trace(
+                    trace, misclassified_folder, "fp", invalid_idx, "INVALID", pred
+                )
+                misclassified["false_positives"].append(trace_ref)
+
+            total_compute_time += compute_time
+            for key in total_tokens:
+                total_tokens[key] += tokens_used.get(key, 0)
+
+            print_metrics("Invalid", invalid_idx, len(invalid_traces), pred, is_correct, compute_time, tokens_used)
+            invalid_idx += 1
+            time.sleep(1)
 
     return valid_predictions, invalid_predictions, total_compute_time, total_tokens, misclassified
 
@@ -376,6 +405,40 @@ def load_traces_from_cache(cache_key, cache_dir="cache/traces"):
             data = pickle.load(f)
             return data["valid"], data["invalid"]
     return None, None
+
+
+def save_traces_to_run_folder(run_folder: Path, problem_name: str, valid_traces: list, invalid_traces: list):
+    """Save traces to run folder for reproducibility."""
+    traces_folder = run_folder / "traces" / problem_name
+    traces_folder.mkdir(parents=True, exist_ok=True)
+
+    with open(traces_folder / "valid_traces.pkl", "wb") as f:
+        pickle.dump(valid_traces, f)
+    with open(traces_folder / "invalid_traces.pkl", "wb") as f:
+        pickle.dump(invalid_traces, f)
+
+    return {
+        "valid_traces_path": str(traces_folder / "valid_traces.pkl"),
+        "invalid_traces_path": str(traces_folder / "invalid_traces.pkl"),
+        "k_valid": len(valid_traces),
+        "k_invalid": len(invalid_traces)
+    }
+
+
+def load_traces_from_run_folder(run_folder: Path, problem_name: str):
+    """Load traces from run folder."""
+    traces_folder = run_folder / "traces" / problem_name
+    valid_path = traces_folder / "valid_traces.pkl"
+    invalid_path = traces_folder / "invalid_traces.pkl"
+
+    if valid_path.exists() and invalid_path.exists():
+        with open(valid_path, "rb") as f:
+            valid_traces = pickle.load(f)
+        with open(invalid_path, "rb") as f:
+            invalid_traces = pickle.load(f)
+        return valid_traces, invalid_traces
+    return None, None
+
 
 def create_random_baseline_validator():
     def validate(trace_df):
@@ -437,8 +500,8 @@ def initialize_results_structure(problems, config, precomputed_models, run_folde
             "run_folder": str(run_folder),
             "status": "initialized",
             "method": config.get("method", "tools"),
-            "llm_model": config.get("llm_model", "openai:gpt-4o-mini"),
-            "validator_model": config.get("validator_model", config.get("model", "gpt-4o-mini"))
+            "llm_model": config.get("llm_model", "openai:gpt-5-mini"),
+            "validator_model": config.get("validator_model", config.get("model", "gpt-5-mini"))
         }
     }
 
@@ -471,7 +534,7 @@ def initialize_results_structure(problems, config, precomputed_models, run_folde
             "experiment_info": {
                 "mining_configuration": mining_config_info,
                 "trace_classification": {
-                    "validator_model": config.get("validator_model", config.get("model", "gpt-4o-mini")),
+                    "validator_model": config.get("validator_model", config.get("model", "gpt-5-mini")),
                     "system_prompt_path": str(run_folder / f"{problem_name}_system_prompt.txt")
                 },
                 "trace_generation": {
@@ -503,7 +566,7 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run with default settings (tools method, gpt-4o-mini)
+  # Run with default settings (tools method, gpt-5-mini)
   python phase5_benchmark.py
 
   # Run with no-tools method (two-step conversation)
@@ -513,13 +576,19 @@ Examples:
   python phase5_benchmark.py --llm openai:gpt-4o
 
   # Specify LLM for trace validation
-  python phase5_benchmark.py --validator-llm gpt-4o-mini
+  python phase5_benchmark.py --validator-llm gpt-5-mini
 
   # Full example with all options
-  python phase5_benchmark.py --method no-tools --llm openai:gpt-4o --validator-llm gpt-4o-mini
+  python phase5_benchmark.py --method no-tools --llm openai:gpt-4o --validator-llm gpt-5-mini
 
   # Use Anthropic model
   python phase5_benchmark.py --llm anthropic:claude-sonnet-4-20250514
+
+  # Use xAI Grok model
+  python phase5_benchmark.py --llm xai:grok-4-1-fast-reasoning
+
+  # Use DeepSeek model
+  python phase5_benchmark.py --llm deepseek:DeepSeek-V3.2-Thinking
 """
     )
 
@@ -534,15 +603,15 @@ Examples:
     parser.add_argument(
         "--llm",
         type=str,
-        default="openai:gpt-4o-mini",
-        help="LLM for textual model generation (format: provider:model). Default: openai:gpt-4o-mini"
+        default="openai:gpt-5-mini",
+        help="LLM for textual model generation (format: provider:model). Default: openai:gpt-5-mini"
     )
 
     parser.add_argument(
         "--validator-llm",
         type=str,
-        default="gpt-4o-mini",
-        help="LLM model for trace validation (OpenAI model name). Default: gpt-4o-mini"
+        default="gpt-5-mini",
+        help="LLM model for trace validation (OpenAI model name). Default: gpt-5-mini"
     )
 
     parser.add_argument(
@@ -651,6 +720,11 @@ def main():
         else:
             print(f"[{problem_name}] Loaded {len(valid_traces)} valid + {len(invalid_traces)} invalid traces from cache")
             results[problem_name]["experiment_info"]["trace_generation"]["traces_generated_at"] = "loaded_from_cache"
+
+        # Save traces to run folder for reproducibility
+        trace_info = save_traces_to_run_folder(run_folder, problem_name, valid_traces, invalid_traces)
+        results[problem_name]["traces"] = trace_info
+        print(f"[{problem_name}] Saved traces to {run_folder / 'traces' / problem_name}")
 
         save_results(run_folder, results)
 
