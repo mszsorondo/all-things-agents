@@ -24,12 +24,21 @@ class CompundMiner:
 
 
 hiring_log = hiring = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/hiring/hiring_log_high.xes")
+
+breakpoint()
+
 renting_log = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/renting/renting_log_high.xes")
 lending_log = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/lending/lending_log_high.xes")
 hospital_log = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/hospital/hospital_log_high.xes")
 
+
+breakpoint()
+
 #logs
-h_billing_log = pm4py.read_xes("benchmark/Hospital Billing - Event Log_1_all/Hospital Billing - Event Log.xes")
+#h_billing_log = pm4py.read_xes("benchmark/Hospital Billing - Event Log_1_all/Hospital Billing - Event Log.xes")
+
+
+
 
 breakpoint()
 #miners
