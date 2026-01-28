@@ -21,8 +21,6 @@ LLM_MODELS = [
     "openai:gpt-5",
     "openai:gpt-5-mini",
     "openai:gpt-4o",
-    "openai:gpt-4o-mini",
-    "openai:gpt-4-turbo",
     "openai:o1",
     "openai:o1-mini",
     "anthropic:claude-sonnet-4-20250514",
@@ -297,8 +295,8 @@ def main():
     print(f"\n  Selected: {run_folder}")
 
     # Get default models from parent config
-    default_refine_model = config.get("llm_model", "openai:gpt-4o-mini")
-    default_validator_model = config.get("validator_model", config.get("model", "gpt-4o-mini"))
+    default_refine_model = config.get("llm_model", "openai:gpt-5-mini")
+    default_validator_model = config.get("validator_model", config.get("model", "gpt-5-mini"))
 
     # =========================================================================
     # If resuming, select the interrupted run

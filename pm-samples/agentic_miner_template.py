@@ -13,6 +13,38 @@ os.environ["OPENAI_API_KEY"] = "sk-proj-0eKpUj5oDHO4xtQln4tlxKAFDmaRueoIIzh8OOYT
 hiring_log = hiring = pm4py.read_xes("/home/marco/Escritorio/austral/all-things-agents/pm-samples/benchmark/hiring/hiring_log_high.xes")
 hiring_bpmn = pm4py.discover_bpmn_inductive(hiring_log)
 
+
+###############################NEW REPRESENTATIONS TO ADD TO THE AGENTIC PROCESS MINER #######################################################
+
+hiring_net, hiring_im, hiring_fm = pm4py.discover_petri_net_inductive(hiring_log)
+hiring_net_alpha, hiring_im_alpha, hiring_fm_alpha = pm4py.discover_petri_net_alpha(hiring_log)
+hiring_net_heuristics, hiring_im_heuristics, hiring_fm_heuristics = pm4py.discover_petri_net_heuristics(hiring_log)
+hiring_net_ilp, hiring_im_ilp, hiring_fm_ilp  = pm4py.discover_petri_net_ilp(hiring_log)
+
+hiring_log_ske = pm4py.discover_log_skeleton(hiring_log)
+hiring_log_ske = pm4py.discover_declare(hiring_log)
+hiring_log_heuristics = pm4py.discover_heuristics_net(hiring_log)
+breakpoint()
+
+#STRING VERSIONS
+log_abstract_attributes = pm4py.llm.abstract_log_attributes(hiring_log)
+log_abstract_petri_net = pm4py.llm.abstract_petri_net(hiring_net, hiring_im, hiring_fm)
+log_abstract_skeleton = pm4py.llm.abstract_log_skeleton(hiring_log_ske)
+log_abstract_declare = pm4py.llm.abstract_declare(hiring_log_ske)
+log_abstract_heuristics = pm4py.llm.abstract_heuristics_net(hiring_log_heuristics)
+log_abstract_alpha = pm4py.llm.abstract_petri_net(hiring_net_alpha, hiring_im_alpha, hiring_fm_alpha)
+log_abstract_heuristics_pn = pm4py.llm.abstract_petri_net(hiring_net_heuristics, hiring_im_heuristics, hiring_fm_heuristics)
+log_abstract_ilp = pm4py.llm.abstract_petri_net(hiring_net_ilp, hiring_im_ilp, hiring_fm_ilp) #Uses Integer Linear Programming to find a Petri net that perfectly fits the behavior observed in the log
+
+
+###############################NEW REPRESENTATIONS TO ADD TO THE AGENTIC PROCESS MINER #######################################################
+
+# Trie extraction - although pm4py provides a way to extract the trie from the event log,
+# we still dont know how to convert this to an appropriate textual format that can be fed to the LLM, we need to build a script that converts the trie to an appropriate textual representation
+trie = pm4py.discovery.discover_prefix_tree(hiring_log)
+
+
+
 hiring_bpmn_file = bpmn_exporter.apply(hiring_bpmn, "discovered_model.bpmn")
 with open("discovered_model.bpmn","r") as prompt:
     hiring_bpmn_str = prompt.read()
@@ -20,7 +52,7 @@ with open("discovered_model.bpmn","r") as prompt:
 #TODO MAYBE IMAGES ARE BETTER THAN TEXT, .BPMN FILE CAN BE FULL OF MISLEADING CHARACTERS
 
 
-hiring_net, hiring_im, hiring_fm = pm4py.discover_petri_net_inductive(hiring_log)
+
 hiring_dfg = pm4py.llm.abstract_dfg(hiring_log)
 
 
