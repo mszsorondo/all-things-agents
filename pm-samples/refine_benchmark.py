@@ -141,7 +141,7 @@ def create_llm(model_spec: str):
     elif "grok" in provider.lower() or "xai" in provider.lower():
         return ChatOpenAI(
             model=model_id,
-            api_key=os.getenv("GROK_API_KEY"),
+            api_key=os.getenv("XAI_API_KEY"),
             base_url="https://api.x.ai/v1"
         )
     elif "deepseek" in provider.lower():

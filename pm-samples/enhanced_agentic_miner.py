@@ -1380,6 +1380,39 @@ class AgenticProcessMiner:
         self.log_file.write(f"Timestamp: {datetime.now().isoformat()}\n")
         self.log_file.write(f"{'=' * 80}\n")
 
+    def modify_interpretation_guides(self, guides_dir: str):
+        """
+        Override interpretation guides by loading from external directory.
+
+        Args:
+            guides_dir: Path to directory containing .txt guide files
+        """
+        guides_path = Path(guides_dir)
+        if not guides_path.exists():
+            logger.warning(f"Guides directory not found: {guides_dir}")
+            return
+
+        # Map of representation types to guide filenames
+        guide_mapping = {
+            RepresentationType.PETRI_NET: "petri_net_inductive.txt",
+            RepresentationType.DFG: "dfg.txt",
+            RepresentationType.PROCESS_TREE: "process_tree.txt",
+            RepresentationType.HEURISTICS_NET: "heuristics_net.txt",
+            RepresentationType.ABSTRACT_VARIANTS: "abstract_variants.txt",
+            RepresentationType.BPMN: "bpmn.txt"
+        }
+
+        # Patch get_interpretation_guide methods
+        for rep_type, filename in guide_mapping.items():
+            guide_file = guides_path / filename
+            if guide_file.exists() and rep_type in self.representations:
+                guide_content = guide_file.read_text()
+                # Dynamically override the method
+                representation = self.representations[rep_type]
+                if representation:
+                    representation.get_interpretation_guide = lambda gc=guide_content: gc
+                    logger.info(f"Loaded custom guide for {rep_type.value} from {filename}")
+
 
 def list_available_datasets(benchmark_dir: str = "benchmark") -> List[Dict[str, Any]]:
     """List all available XES files in the benchmark directory."""

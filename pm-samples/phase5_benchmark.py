@@ -46,7 +46,7 @@ def get_as_is_model(xes_path, precomputed_model_path=None, llm_model="openai:gpt
     miner.log_file = xes_path
     miner.xes_path = xes_path
     miner.dataset_name = Path(xes_path).stem
-    breakpoint()
+    #breakpoint()
     miner.discover_representations()
     miner.run_agent()
 
@@ -589,6 +589,9 @@ Examples:
 
   # Use DeepSeek model
   python phase5_benchmark.py --llm deepseek:DeepSeek-V3.2-Thinking
+
+  # Resume an interrupted run
+  python phase5_benchmark.py --resume benchmark_runs/run_20251231_005055
 """
     )
 
@@ -640,26 +643,19 @@ Examples:
         help="Disable trace caching"
     )
 
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default=None,
+        metavar="RUN_FOLDER",
+        help="Resume an interrupted benchmark run from the specified folder (e.g., benchmark_runs/run_20251231_005055)"
+    )
+
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-
-    run_folder = create_run_folder()
-
-    config = {
-        "method": args.method,
-        "llm_model": args.llm,
-        "validator_model": args.validator_llm,
-        "k_valid": args.k_valid,
-        "k_invalid": args.k_invalid,
-        "perturbations": ["random_swap_events"],
-        "use_cache": not args.no_cache,
-        "run_baseline": not args.no_baseline,
-        # Legacy field for backward compatibility
-        "model": args.validator_llm
-    }
 
     problems = [
         "benchmark/hiring/hiring_log_high.xes",
@@ -668,26 +664,98 @@ def main():
         "benchmark/renting/renting_log_high.xes"
     ]
 
-    precomputed_models = {
-        #"hiring_log_high": "runs/run_hiring_log_high_20251116_210442/textual_model.txt",
-    }
+    # Handle resume mode
+    if args.resume:
+        run_folder = Path(args.resume)
+        if not run_folder.exists():
+            print(f"Error: Run folder '{run_folder}' does not exist")
+            return
 
-    # Save benchmark config
-    (run_folder / "config.json").write_text(json.dumps(config, indent=2))
+        results_file = run_folder / "results.json"
+        if not results_file.exists():
+            print(f"Error: No results.json found in '{run_folder}'")
+            return
 
-    # Initialize complete results structure with empty metrics BEFORE any computation
-    print(f"\n{'='*80}")
-    print(f"INITIALIZING BENCHMARK")
-    print(f"{'='*80}")
-    print(f"Run folder: {run_folder}")
-    print(f"Method: {config['method']}")
-    print(f"LLM (textual model): {config['llm_model']}")
-    print(f"LLM (validator): {config['validator_model']}")
-    print(f"Problems: {[Path(p).stem for p in problems]}")
+        # Load existing results and config
+        results = json.loads(results_file.read_text())
+        config_file = run_folder / "config.json"
+        if config_file.exists():
+            config = json.loads(config_file.read_text())
+        else:
+            # Fallback to meta info
+            config = {
+                "method": results["_meta"].get("method", "tools"),
+                "llm_model": results["_meta"].get("llm_model", args.llm),
+                "validator_model": results["_meta"].get("validator_model", args.validator_llm),
+                "k_valid": args.k_valid,
+                "k_invalid": args.k_invalid,
+                "perturbations": ["random_swap_events"],
+                "use_cache": not args.no_cache,
+                "run_baseline": not args.no_baseline,
+                "model": results["_meta"].get("validator_model", args.validator_llm)
+            }
 
-    results = initialize_results_structure(problems, config, precomputed_models, run_folder)
-    save_results(run_folder, results)
-    print(f"Initial experiment structure saved to {run_folder / 'results.json'}")
+        # Build precomputed_models from already-generated textual models
+        precomputed_models = {}
+        for xes_path in problems:
+            problem_name = Path(xes_path).stem
+            if problem_name in results:
+                textual_model_path = results[problem_name].get("textual_model_path")
+                if textual_model_path and Path(textual_model_path).exists():
+                    precomputed_models[problem_name] = textual_model_path
+
+        print(f"\n{'='*80}")
+        print(f"RESUMING BENCHMARK")
+        print(f"{'='*80}")
+        print(f"Run folder: {run_folder}")
+        print(f"Method: {config.get('method', 'tools')}")
+        print(f"LLM (textual model): {config.get('llm_model', 'unknown')}")
+        print(f"LLM (validator): {config.get('validator_model', 'unknown')}")
+
+        # Show status of each problem
+        for xes_path in problems:
+            problem_name = Path(xes_path).stem
+            status = results.get(problem_name, {}).get("status", "unknown")
+            precomputed = "✓ precomputed" if problem_name in precomputed_models else ""
+            print(f"  {problem_name}: {status} {precomputed}")
+
+    else:
+        # Normal mode: create new run folder
+        run_folder = create_run_folder()
+
+        config = {
+            "method": args.method,
+            "llm_model": args.llm,
+            "validator_model": args.validator_llm,
+            "k_valid": args.k_valid,
+            "k_invalid": args.k_invalid,
+            "perturbations": ["random_swap_events"],
+            "use_cache": not args.no_cache,
+            "run_baseline": not args.no_baseline,
+            # Legacy field for backward compatibility
+            "model": args.validator_llm
+        }
+
+        precomputed_models = {
+            #"hiring_log_high": "runs/run_hiring_log_high_20251116_210442/textual_model.txt",
+        }
+
+        # Save benchmark config
+        (run_folder / "config.json").write_text(json.dumps(config, indent=2))
+
+        # Initialize complete results structure with empty metrics BEFORE any computation
+        print(f"\n{'='*80}")
+        print(f"INITIALIZING BENCHMARK")
+        print(f"{'='*80}")
+        print(f"Run folder: {run_folder}")
+        print(f"Method: {config['method']}")
+        print(f"LLM (textual model): {config['llm_model']}")
+        print(f"LLM (validator): {config['validator_model']}")
+        print(f"Problems: {[Path(p).stem for p in problems]}")
+
+        results = initialize_results_structure(problems, config, precomputed_models, run_folder)
+        save_results(run_folder, results)
+        print(f"Initial experiment structure saved to {run_folder / 'results.json'}")
 
     # Update meta status
     results["_meta"]["status"] = "running"
@@ -698,6 +766,13 @@ def main():
         problem_name = Path(xes_path).stem
         precomputed_path = precomputed_models.get(problem_name)
 
+        # Skip completed problems when resuming
+        if results.get(problem_name, {}).get("status") == "completed":
+            print(f"\n{'='*80}")
+            print(f"SKIPPING (already completed): {problem_name}")
+            print(f"{'='*80}")
+            continue
+
         print(f"\n{'='*80}")
         print(f"PROCESSING: {problem_name}")
         print(f"{'='*80}")
@@ -707,24 +782,37 @@ def main():
         save_results(run_folder, results)
 
         # Step 1: Generate/load traces
-        cache_key = results[problem_name]["experiment_info"]["trace_generation"]["cache_key"]
-        valid_traces, invalid_traces = load_traces_from_cache(cache_key)
+        # When resuming, first try to load from run folder (exact traces for this run)
+        valid_traces, invalid_traces = None, None
+        if args.resume:
+            valid_traces, invalid_traces = load_traces_from_run_folder(run_folder, problem_name)
+            if valid_traces is not None:
+                print(f"[{problem_name}] Loaded {len(valid_traces)} valid + {len(invalid_traces)} invalid traces from run folder")
 
+        # Fall back to cache
+        if valid_traces is None or invalid_traces is None:
+            cache_key = results[problem_name]["experiment_info"]["trace_generation"]["cache_key"]
+            valid_traces, invalid_traces = load_traces_from_cache(cache_key)
+            if valid_traces is not None:
+                print(f"[{problem_name}] Loaded {len(valid_traces)} valid + {len(invalid_traces)} invalid traces from cache")
+                results[problem_name]["experiment_info"]["trace_generation"]["traces_generated_at"] = "loaded_from_cache"
+
+        # Generate new traces if not found
         if valid_traces is None or invalid_traces is None:
             print(f"[{problem_name}] Generating traces...")
             valid_traces = sample_valid_traces(xes_path, k=config["k_valid"])
             invalid_traces = generate_invalid_traces(valid_traces, k=config["k_invalid"])
             if config["use_cache"]:
+                cache_key = results[problem_name]["experiment_info"]["trace_generation"]["cache_key"]
                 save_traces_to_cache(cache_key, valid_traces, invalid_traces)
             results[problem_name]["experiment_info"]["trace_generation"]["traces_generated_at"] = datetime.now().isoformat()
-        else:
-            print(f"[{problem_name}] Loaded {len(valid_traces)} valid + {len(invalid_traces)} invalid traces from cache")
-            results[problem_name]["experiment_info"]["trace_generation"]["traces_generated_at"] = "loaded_from_cache"
 
-        # Save traces to run folder for reproducibility
-        trace_info = save_traces_to_run_folder(run_folder, problem_name, valid_traces, invalid_traces)
-        results[problem_name]["traces"] = trace_info
-        print(f"[{problem_name}] Saved traces to {run_folder / 'traces' / problem_name}")
+        # Save traces to run folder for reproducibility (skip if already there)
+        traces_folder = run_folder / "traces" / problem_name
+        if not traces_folder.exists():
+            trace_info = save_traces_to_run_folder(run_folder, problem_name, valid_traces, invalid_traces)
+            results[problem_name]["traces"] = trace_info
+            print(f"[{problem_name}] Saved traces to {traces_folder}")
 
         save_results(run_folder, results)
 
