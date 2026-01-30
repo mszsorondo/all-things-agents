@@ -1,0 +1,143 @@
+Executive summary
+- This is the full end-to-end patient episode, from initial registration at the Front Desk (FD) or Emergency Room (ER) through examinations, diagnosis, treatment, and discharge. The process is entirely sequential with decision points and a rework loop if treatment fails.
+- Recorded outcomes show that approximately 76.6% of treatments explicitly document success, 14.9% trigger rework due to unsuccessful treatment, and 8.5% discharge patients without recording an outcome, creating a measurable compliance risk.
+- Cycle time is materially affected by rework and documentation practices: discharging without a recorded outcome takes longer on average than documenting success first, and multiple unsuccessful loops can extend end-to-end times substantially.
+- Two entry channels (FD, ER) lead to broadly similar downstream paths, yet the model shows no formal triage criteria for choosing examination depth or when to escalate to specialist or thorough assessments.
+
+Scope and governance
+- Scope: Single patient journey from first registration to discharge; strictly one case at a time. No parallel activities are modeled; the flow is sequential with decision points requiring a choice and a possible rework loop.
+- Stakeholders and roles: Roles are not explicitly defined in the source; the following activities imply involvement by Front Desk, Emergency Room, examiners, specialists, diagnosticians, treatment teams, and discharge administration. Activities that must appear in every path description: Register at FD, Register at ER, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge.
+
+End-to-end flow with decision points and outcomes
+1) Intake and start conditions (exclusive start options)
+- Trigger: Patient arrival.
+- Exactly one of the following starts the case:
+  - Register at FD
+  - Register at ER
+- Business note: These are exclusive alternatives for the same case start.
+
+2) Assessment and examination (sequential with two decision points; optional steps permitted)
+- After registration, a decision point requiring a choice:
+  - One of the following occurs:
+    - Examination (standard)
+    - Expert Examination (specialist-level)
+    - Skip both preliminary examinations and move toward the next stage
+- Following either Examination or Expert Examination, there is a second decision point:
+  - Either perform Thorough Examination or skip it, then proceed to Diagnosis.
+- Control logic preserved:
+  - Register at FD or Register at ER → decision point {Examination | Expert Examination | skip} → decision point {Thorough Examination | skip} → Diagnosis
+- Business implication: Assessment depth varies by case and may be skipped entirely, which can affect downstream rework risk.
+
+3) Diagnostic stage (mandatory before any treatment)
+- Diagnosis always occurs before Treatment in all observed runs. No cases bypass Diagnosis.
+
+4) Treatment and immediate outcomes (exclusive decision with three observed paths)
+- After Diagnosis, Treatment is performed.
+- Post-treatment decision point with three observed outcomes:
+  - Treatment successful (explicitly recorded) → proceed to Discharge via a brief administrative step.
+  - Treatment unsuccessful → return to Diagnosis for re-evaluation and potential re-treatment (rework loop). This can repeat multiple times (double or triple loops observed).
+  - Direct Discharge without recording success (Treatment → Discharge). The system currently permits bypassing the “Treatment successful” documentation step, resulting in discharge with missing outcome data. This path is less common than the recorded-success path but is material.
+- Business implication: The no-outcome discharge path is a compliance and analytics risk; unsuccessful outcomes drive rework, increasing cycle time and resource use.
+
+5) Rework loop and escalation rules
+- If Treatment unsuccessful occurs:
+  - The case returns to Diagnosis.
+  - From Diagnosis, the same assessment options remain allowed as in the first pass:
+    - Examination OR Expert Examination OR skip preliminary exams
+    - Optional Thorough Examination OR skip
+  - Then Treatment is performed again, followed by the same three post-treatment outcomes above.
+- Multiple unsuccessful cycles are observed (two or three consecutive unsuccessful treatments before success) and meaningfully extend cycle time.
+
+6) End conditions (process termination)
+- All cases end with Discharge.
+- Discharge is reached either:
+  - After Treatment successful is recorded, or
+  - Directly after Treatment when the success label is skipped.
+- Discharge directly after a Treatment unsuccessful event does not occur; unsuccessful always loops back to Diagnosis.
+
+KPI snapshot and volumes (counts and rates)
+- Treatment cycle baseline:
+  - Diagnosis → Treatment: 11,746 occurrences (baseline count of treatment executions).
+- Post-treatment outcomes:
+  - Treatment → Treatment successful: 9,005 occurrences, approximately 76.6% of treatments.
+  - Treatment → Treatment unsuccessful: 1,746 occurrences, approximately 14.9% of treatments (rework path).
+  - Treatment → Discharge without success recorded: 995 occurrences, approximately 8.5% of treatments (documentation gap/compliance risk).
+- Examination routing after registration (counts by path):
+  - Expert Examination totals about 5,754 occurrences:
+    - Register at FD → Expert Examination: 2,888
+    - Register at ER → Expert Examination: 2,866
+  - Examination totals about 3,609 occurrences:
+    - Register at ER → Examination: 1,826
+    - Register at FD → Examination: 1,783
+  - Direct to Diagnosis without preliminary examination:
+    - Register at FD → Diagnosis: 163
+    - Register at ER → Diagnosis: 157
+  - There are also small counts directly to Thorough Examination immediately after registration (present but low volume).
+- Assessment depth after initial exam (counts):
+  - Expert Examination → Thorough Examination: 3,637
+  - Expert Examination → Diagnosis (skip Thorough): 2,117
+  - Examination → Thorough Examination: 1,968
+  - Examination → Diagnosis (skip Thorough): 1,641
+- Routing observation:
+  - Both ER and FD registrations feed into Examination or Expert Examination in similar volumes; the model does not specify selection criteria.
+- Success, rework, and compliance KPIs:
+  - Success conversion rate per treatment attempt: ~76.6%
+  - Rework rate per treatment attempt: ~14.9%
+  - Discharge without documented outcome: ~8.5% of treatment attempts
+
+Performance and timing (relative magnitudes; units not specified)
+- Registration → Examination/Expert Examination: ~40,000 time units
+- Examination/Expert Examination → Thorough Examination: ~60,000 time units
+- Thorough Examination → Diagnosis: ~60,000 time units
+- Diagnosis → Treatment: ~60,000 time units
+- Treatment → Treatment successful: ~60,000 time units
+- Treatment → Discharge (no success recorded): ~100,000 time units
+- Treatment successful → Discharge: ~40,000 time units
+- Cycle time implication:
+  - Documenting success then discharging (~60,000 + 40,000) is typically faster than discharging without recorded success (~100,000), suggesting administrative or documentation delays on the no-outcome path.
+  - Rework loops (Treatment unsuccessful → Diagnosis → assessments → Treatment) can add multiples of the above durations; extreme variants extend total cycle time up to approximately 640,000 time units.
+
+Variant prevalence (by cases; partial, preserves observed sequences)
+- Register (FD or ER) → Expert Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge:
+  - 3,035 cases (~26% of the 11,746 baseline treatments)
+- Register (FD or ER) → Expert Examination → Diagnosis (skip Thorough) → Treatment → Treatment successful → Discharge:
+  - 1,598 cases (~14%)
+- Register (FD or ER) → Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge:
+  - 1,502 cases (~13%)
+- Register (FD or ER) → Examination → Diagnosis (skip Thorough) → Treatment → Treatment successful → Discharge:
+  - 1,094 cases (~9%)
+- Variants with at least one Treatment unsuccessful occur frequently; multi-loop variants (two or three unsuccessful outcomes before success) exist but are rarer.
+
+Controls, risks, and compliance notes
+- Compliance gap: 8.5% of treatments discharge without a recorded success outcome. This is permitted by the current system path and undermines clinical outcome tracking and analytics.
+- Rework overhead: 14.9% of treatments are unsuccessful, forcing return to Diagnosis and potentially repeating examinations and Thorough Examination. This extends cycle time and consumes specialist capacity.
+- Inconsistent assessment depth: The process allows Examination or Expert Examination, with or without Thorough Examination, or skipping preliminary assessments entirely. Lack of explicit governance on when to require Expert Examination or Thorough Examination may increase rework risk.
+- Intake variability: Two alternative registrations (FD vs ER) drive similar downstream behavior but add entry-point variation without explicit triage criteria in the model.
+- Throughput variability: Discharging without outcome documentation takes longer on average than documenting success first, suggesting administrative bottlenecks or process inconsistencies.
+- Parallelism and synchronization: None. The process is fully sequential with decision points and a rework loop from Treatment unsuccessful back to Diagnosis.
+
+Business decision points and their options (explicit criteria not provided; all outcomes preserved)
+- Post-registration examination selection (exclusive choice):
+  - Outcomes: Examination OR Expert Examination OR skip to next stage.
+  - Observation: ER and FD cases route with similar volumes.
+- Optional Thorough Examination (exclusive choice with skip):
+  - Outcomes: Perform Thorough Examination OR skip, then proceed to Diagnosis.
+- Post-treatment outcome (exclusive choice):
+  - Outcomes:
+    - Treatment successful (recorded) → Discharge
+    - Treatment unsuccessful → loop to Diagnosis
+    - Treatment → Discharge (no outcome label recorded) → Discharge
+
+Strategic recommendations
+- Close the documentation gap:
+  - Introduce a hard stop that requires recording Treatment successful or Treatment unsuccessful before Discharge. This will eliminate the 8.5% no-outcome path and improve compliance and analytics integrity.
+- Reduce rework with clearer assessment rules:
+  - Define triage criteria for when to send patients to Expert Examination and when to require Thorough Examination, especially after any Treatment unsuccessful event. Target a lower rework rate than the current 14.9%.
+- Standardize intake criteria:
+  - Establish clear rules for routing from FD vs ER and for skipping versus performing preliminary examinations to reduce variability and prevent avoidable rework.
+- Optimize cycle time:
+  - Streamline administrative steps that delay Discharge when success is not recorded. Given timing data, enforcing outcome documentation prior to Discharge may improve throughput rather than hinder it.
+- Monitor and govern loops:
+  - Set escalation thresholds (e.g., mandatory Expert Examination and Thorough Examination) after the first unsuccessful treatment to prevent multiple loops and contain cycle time and cost.
+
+This description preserves all activities, decisions, sequences, loops, start/end conditions, exceptional flows, timing estimates, and stakeholder implications from the original model, expressed in business terms for executive decision-making.

@@ -1,0 +1,160 @@
+Executive summary
+- Purpose and scope: This is the current end-to-end hiring process from candidate application to either Application Rejected or Make Job Offer, reconstructed from event data. It includes optional steps, parallel work, and multiple rework loops.
+- Key findings: Early rejections are common (12% immediately after application; a further 10–14% at later gates), pre-technical steps run in parallel and often drive unnecessary background-check costs for candidates later rejected, and the final stage allows both rejection and offer activities to occur concurrently with loops, enabling contradictory outcomes. Cycle times are long on complex paths (up to ~530,000 system time units).
+- Business impact: Inconsistent gating criteria and unbounded loops inflate cycle time and workload, parallelization leads to redundant spend, and ambiguous end-state semantics and contradictory outcomes create governance and candidate experience risks.
+- Action: Tighten decision criteria and sequencing, restrict loops, make final outcomes mutually exclusive, and set SLAs for long waits.
+
+Stakeholders and roles
+- Roles are not specified in the source data. Activities are described without explicit actor assignments.
+
+Start condition and trigger
+- Start: Candidate submits Hand In Job Application.
+
+Phase 1 — Initial assessment (telephonic screening optional; early rejection possible)
+Activities and decisions
+- Hand In Job Application triggers the process.
+- Telephonic Screening is common but can be skipped entirely (path permitted by the model; no frequency quantified in the DFG).
+- Early rejection is allowed from two points:
+  - Directly after application: Hand In Job Application -> Application Rejected in 1,201 transitions, equal to 12.01% of applications (avg ~146,346 time units).
+  - After telephonic screening: Telephonic Screening -> Application Rejected in 990 transitions, equal to 9.90% of applications and 11.25% of telephonic-screened cases (avg ~143,282 time units).
+
+Volumes and timing from start
+- Applications proceeding to Telephonic Screening: 8,799 transitions (87.99% of applications; avg ~82,440 time units).
+- Early direct rejection from the application: 1,201 transitions (12.01%; avg ~146,346 time units).
+
+Phase 2 — Pre-technical evaluations in parallel (screening interview and background check)
+Control logic
+- After Telephonic Screening, the process branches to run Screening Interview and Background Check concurrently. Both are required before proceeding; they may complete in any order. Near-zero reordering times indicate genuine concurrency.
+
+Observed flows and timings
+- Telephonic Screening -> Background Check: 3,961 transitions (39.61% of applications; 45.03% of telephonic-screened cases; avg ~81,906 time units).
+- Telephonic Screening -> Screening Interview: 3,848 (38.48% of applications; 43.75% of telephonic-screened cases; avg ~81,903 time units).
+- Screening Interview -> Background Check: 3,848; Background Check -> Screening Interview: 3,961; both with near-zero average delay, consistent with parallel execution and flexible ordering.
+
+Optional step after both complete
+- Extensive Background Check may occur after both Screening Interview and Background Check are done; it can also be skipped.
+  - Observed transitions into Extensive Background Check:
+    - Background Check -> Extensive Background Check: 1,044 (10.44% of applications).
+    - Screening Interview -> Extensive Background Check: 1,055 (10.55% of applications).
+  - Outcomes from Extensive Background Check:
+    - Extensive Background Check -> Application Rejected: 1,125 (11.25% of applications).
+    - Extensive Background Check -> Coding Interview: 974 (9.74% of applications).
+Notes: Transitions are reported exactly to preserve trace validation; because the two parallel paths can both precede Extensive Background Check and a case can contribute multiple transitions, percentages represent shares of all observed applications per direct transition.
+
+Phase 3 — Technical assessment (coding optional; up to three interviews in parallel)
+Control logic
+- Coding Interview is optional: from the pre-technical merge the process either proceeds to Coding Interview or skips ahead.
+- After Coding Interview, the process can branch into up to three technical interviews—ML Interview, Backend Interview, Frontend Interview. Each is optional, can be executed or skipped independently, and can occur in any order. The process waits for all selected technical interviews to complete before moving on.
+
+Observed flows and timings
+- Entry to Coding Interview:
+  - Screening Interview -> Coding Interview: 1,517 (15.17% of applications; avg ~129,892 time units).
+  - Background Check -> Coding Interview: 1,413 (14.13% of applications; avg ~129,885 time units).
+- From Coding Interview to technical interviews (optional, flexible order):
+  - Coding Interview -> ML Interview: 1,304 (13.04% of applications).
+  - Coding Interview -> Backend Interview: 701 (7.01%).
+  - Coding Interview -> Frontend Interview: 1,513 (15.13%).
+- Bidirectional, near-zero-delay transitions among pairs of technical interviews are observed, consistent with reordering and/or parallelism; some of these interviews may be omitted entirely in a given case.
+
+Phase 4 — Final decision stage (rejection and behavioral/offer branches run concurrently; loops allowed)
+Control logic
+- The process splits into two end-phase branches that proceed in parallel; both branches must reach their exit conditions before the process ends. Each branch includes loops:
+  A) Rejection branch
+     - Application Rejected can occur one or multiple times (self-loop observed).
+     - Observed loop: Application Rejected -> Application Rejected: 654 transitions (6.54% of applications).
+  B) Behavioral-and-offer branch
+     - Behavioral Interview can repeat: Behavioral Interview -> Behavioral Interview: 1,032 (10.32% of applications).
+     - Make Job Offer can occur and repeat: Make Job Offer -> Make Job Offer: 861 (8.61% of applications).
+     - This entire branch can be skipped.
+
+Observed cross-branch behaviors (because the branches run concurrently)
+- Application Rejected -> Behavioral Interview: 740 transitions (7.40% of applications).
+- Application Rejected -> Make Job Offer: 690 (6.90%).
+- Make Job Offer -> Application Rejected: 110 (1.10%).
+- Behavioral Interview -> Make Job Offer: 1,850 (18.50%; avg ~80,430 time units).
+These behaviors mean a case may both receive an offer and be rejected in the same process, in either order.
+
+End conditions and synchronization
+- Both final-phase branches converge at a final synchronization point, after which the case ends.
+- Because skipping is allowed on both branches, a case may end without an explicit rejection or offer, although observed variants commonly include at least one.
+- Business-visible end states observed:
+  - Application Rejected as the last visible activity.
+  - Make Job Offer as the last visible activity.
+  - Cases where both occur (order varies) before the end.
+
+Decision points and criteria (business wording of control logic)
+- After application: decision point allowing either an optional Telephonic Screening or immediate rejection.
+- After Telephonic Screening: process branches to run Screening Interview and Background Check concurrently; both must complete before moving on; rejection from Telephonic Screening remains possible.
+- After the pre-technical merge: optional decision to include an Extensive Background Check; optionally proceed to Coding Interview or skip coding entirely.
+- After Coding Interview: decision to run up to three technical interviews (ML, Backend, Frontend); each is optional; any order; process waits for all selected ones to finish.
+- Final phase: process branches concurrently into a rejection loop and a behavioral/offer loop; either or both may loop; both must exit (or be skipped) before the case ends.
+
+Representative process variants (for trace completeness)
+- Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected:
+  - 1,391 cases/occurrences observed (13.91% of applications); avg end-to-end ~319,390 time units.
+- Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected:
+  - 1,389 (13.89%); avg ~320,030 time units.
+- Application -> Application Rejected directly:
+  - 1,201 (12.01%); avg ~146,346 time units.
+- Longer “successful-to-offer” variants with full technical stack and repeated behavioral/offer loops:
+  - Observed end-to-end duration ~530,000 time units.
+
+KPI snapshot (based on observed direct transitions; percentages are relative to all applications unless noted)
+Throughput and conversion
+- Telephonic Screening reached: 8,799 (87.99%).
+- Early rejection:
+  - Directly after application: 1,201 (12.01%).
+  - After Telephonic Screening: 990 (9.90%; 11.25% of telephonic).
+  - After Background/Screening: 1,391 (13.91%) and 1,389 (13.89%).
+- Movement into technical:
+  - Screening -> Coding Interview: 1,517 (15.17%).
+  - Background -> Coding Interview: 1,413 (14.13%).
+  - Coding -> ML: 1,304 (13.04%); Coding -> Backend: 701 (7.01%); Coding -> Frontend: 1,513 (15.13%).
+- Behavioral pipeline:
+  - Behavioral Interview -> Make Job Offer: 1,850 (18.50%).
+- Contradictory outcomes permitted and observed:
+  - Application Rejected -> Behavioral Interview: 740 (7.40%).
+  - Application Rejected -> Make Job Offer: 690 (6.90%).
+  - Make Job Offer -> Application Rejected: 110 (1.10%).
+
+Cycle time indicators (average “time units” from system; exact unit not specified)
+- Application -> Telephonic Screening: ~82,440.
+- Telephonic Screening -> Background Check: ~81,906; -> Screening Interview: ~81,903.
+- Screening <-> Background: near 0 between re-ordered pairs (true concurrency).
+- Screening -> Coding Interview: ~129,892; Background -> Coding Interview: ~129,885.
+- Rejection timings:
+  - Background -> Application Rejected: ~155,320.
+  - Screening -> Application Rejected: ~155,969.
+  - Telephonic Screening -> Application Rejected: ~143,282.
+  - Application -> Application Rejected: ~146,346.
+- Behavioral Interview -> Make Job Offer: ~80,430.
+- End-to-end examples:
+  - Two common rejection variants: ~319,390 to ~320,030.
+  - Longer “successful-to-offer” paths: ~530,000.
+
+Exception handling, rework, and parallelism (business semantics)
+- Early rejection is permitted at multiple points.
+- Rework loops:
+  - Application Rejected may repeat (self-loop 654).
+  - Behavioral Interview may repeat (self-loop 1,032).
+  - Make Job Offer may repeat (self-loop 861).
+- Parallelism and synchronization:
+  - Screening Interview and Background Check run in parallel and must both complete before moving forward.
+  - Technical assessment can run up to three tracks in parallel with optional skips; a merge waits for all selected tracks.
+  - The final phase runs a rejection branch and a behavioral/offer branch in parallel; a final merge ends the process once both branches have exited (or been skipped).
+- The process allows contradictory outcomes (an offer issued after a rejection or a rejection after an offer) and allows completion without an explicit final outcome.
+
+Business risks and pain points
+- Governance risk: Final-stage design allows both rejection and offer activities to occur concurrently and in loops, enabling contradictory outcomes (offer and rejection in the same case) and ambiguous end states.
+- Cost and efficiency: Running Screening Interview and Background Check in parallel before a pass/fail gate results in background checks for candidates who are later rejected, driving unnecessary spend and workload.
+- Consistency and fairness: Extensive optionality (skipping Telephonic Screening, Coding Interview, and any subset of ML/Backend/Frontend) reduces comparability across candidates and may weaken compliance controls.
+- Cycle time: Long waits between steps (e.g., ~130k from pre-tech to coding; ~155k from pre-tech to rejection; ~80k from behavioral to offer) and unbounded loops contribute to long end-to-end durations (~530k on complex offer paths).
+
+Strategic recommendations
+- Make final outcomes mutually exclusive and enforce a single business-meaningful end state. Prohibit concurrent execution of rejection and behavioral/offer branches for the same case; remove or strictly govern cross-branch transitions (Rejected -> Behavioral/Offer and Offer -> Rejected).
+- Gate background checks after a pass/fail screening decision. Sequence Screening Interview before Background Check (or set clear criteria to trigger Background Check) to reduce unnecessary checks and cost.
+- Define and enforce entry/exit criteria for optional steps. Specify when Telephonic Screening, Coding Interview, and each technical interview is required vs. skipped to improve consistency and equity.
+- Limit rework loops. Cap the number of Behavioral Interview and Make Job Offer repetitions or require escalation for repeats beyond a threshold.
+- Establish SLAs for long waits. Set target times for key handoffs (Application -> Telephonic; Screening/Background -> next step; Behavioral -> Offer) and monitor adherence.
+- Clarify end-of-case requirements. Require explicit terminal state (Offer or Rejection) unless an authorized exception is recorded, to avoid ambiguous completions.
+- Maintain trace visibility. Continue to preserve all activities and decisions in logs to validate conformance while implementing the above controls.

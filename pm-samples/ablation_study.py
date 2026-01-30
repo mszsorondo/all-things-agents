@@ -346,7 +346,7 @@ REPRESENTATION {i}: {rep_type.value.upper()}
 @dataclass
 class AblationMiningConfig:
     """Configuration for ablation mining."""
-    model_name: str = "openai:gpt-4o-mini"
+    model_name: str = "openai:gpt-5-mini"
     prompt_file: str = "GENERATE_AS_IS_MODEL.txt"
     use_interpretations: bool = True
 
@@ -394,7 +394,7 @@ class AblationMiner:
         print(f"User prompt length: {len(user_prompt)} characters")
         print("\nCheck that each representation has its interpretation guide included.")
         print("User prompt saved to:", run_folder / "user_prompt.txt")
-        breakpoint()  # <-- BREAKPOINT FOR VERIFICATION
+        #breakpoint()  # <-- BREAKPOINT FOR VERIFICATION
         # ================================================================
 
         # Create LLM
@@ -513,7 +513,7 @@ def generate_invalid_traces(valid_traces: list, k: int):
     return invalid
 
 
-def create_validator(as_is_model: str, model_name: str = "gpt-4o-mini"):
+def create_validator(as_is_model: str, model_name: str = "gpt-5-mini"):
     """Create a validator LLM."""
     if ":" in model_name:
         provider, model_id = model_name.split(":", 1)
@@ -562,8 +562,8 @@ Respond with ONLY one word: "VALID" or "INVALID"."""
 
 
 def evaluate_model(textual_model: str, valid_traces: list, invalid_traces: list,
-                   validator_model: str = "gpt-4o-mini") -> dict:
-    """Evaluate a textual model on trace classification."""
+                   validator_model: str = "gpt-5-mini") -> dict:
+    """Evaluate a textual model on trace classification using interleaved evaluation."""
     validator, _ = create_validator(textual_model, model_name=validator_model)
 
     valid_predictions = []
@@ -571,33 +571,56 @@ def evaluate_model(textual_model: str, valid_traces: list, invalid_traces: list,
     total_compute_time = 0
     total_tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
-    # Evaluate valid traces
-    for i, trace in enumerate(valid_traces):
-        pred, compute_time, tokens_used = validator(trace)
-        is_correct = pred == "VALID"
-        valid_predictions.append(is_correct)
-        total_compute_time += compute_time
-        for key in total_tokens:
-            total_tokens[key] += tokens_used.get(key, 0)
+    # Helper to compute and print metrics (same as run_with_new_guides.py / phase5_benchmark.py)
+    def print_metrics(trace_type: str, idx: int, total: int, pred: str, is_correct: bool, compute_time: float, tokens_used: dict):
+        TP = sum(valid_predictions)
+        FN = len(valid_predictions) - TP
+        TN = sum(invalid_predictions)
+        FP = len(invalid_predictions) - TN
 
-        status = "✓" if is_correct else "✗"
-        print(f"    Valid {i+1}/{len(valid_traces)}: {pred} {status}")
-        time.sleep(0.5)
+        precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+        recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
-    # Evaluate invalid traces
-    for i, trace in enumerate(invalid_traces):
-        pred, compute_time, tokens_used = validator(trace)
-        is_correct = pred == "INVALID"
-        invalid_predictions.append(is_correct)
-        total_compute_time += compute_time
-        for key in total_tokens:
-            total_tokens[key] += tokens_used.get(key, 0)
+        print(f"    {trace_type} trace {idx+1}/{total}: {pred} ({'✓' if is_correct else '✗'}) | P={precision:.3f} R={recall:.3f} F1={f1:.3f} | TP={TP} FP={FP} TN={TN} FN={FN} | Time={compute_time:.2f}s Tokens={tokens_used.get('total_tokens', 0)}")
 
-        status = "✓" if is_correct else "✗"
-        print(f"    Invalid {i+1}/{len(invalid_traces)}: {pred} {status}")
-        time.sleep(0.5)
+    # Interleaved evaluation: one valid, one invalid at a time
+    max_len = max(len(valid_traces), len(invalid_traces))
+    valid_idx = 0
+    invalid_idx = 0
 
-    # Calculate metrics
+    for i in range(max_len):
+        # Evaluate one valid trace
+        if valid_idx < len(valid_traces):
+            trace = valid_traces[valid_idx]
+            pred, compute_time, tokens_used = validator(trace)
+            is_correct = pred == "VALID"
+            valid_predictions.append(is_correct)
+
+            total_compute_time += compute_time
+            for key in total_tokens:
+                total_tokens[key] += tokens_used.get(key, 0)
+
+            print_metrics("Valid", valid_idx, len(valid_traces), pred, is_correct, compute_time, tokens_used)
+            valid_idx += 1
+            time.sleep(1)
+
+        # Evaluate one invalid trace
+        if invalid_idx < len(invalid_traces):
+            trace = invalid_traces[invalid_idx]
+            pred, compute_time, tokens_used = validator(trace)
+            is_correct = pred == "INVALID"
+            invalid_predictions.append(is_correct)
+
+            total_compute_time += compute_time
+            for key in total_tokens:
+                total_tokens[key] += tokens_used.get(key, 0)
+
+            print_metrics("Invalid", invalid_idx, len(invalid_traces), pred, is_correct, compute_time, tokens_used)
+            invalid_idx += 1
+            time.sleep(1)
+
+    # Calculate final metrics
     TP = sum(valid_predictions)
     TN = sum(invalid_predictions)
     FN = len(valid_predictions) - TP
@@ -675,7 +698,7 @@ class AblationStudy:
 
         # Initialize miner
         mining_config = AblationMiningConfig(
-            model_name=self.config.get("model_name", "openai:gpt-4o-mini"),
+            model_name=self.config.get("model_name", "openai:gpt-5-mini"),
             prompt_file=self.config.get("prompt_file", "GENERATE_AS_IS_MODEL.txt")
         )
         miner = AblationMiner(self.discoverer, mining_config, self.output_dir)
@@ -711,7 +734,7 @@ class AblationStudy:
         print("\n  Evaluating baseline model...")
         baseline_metrics = evaluate_model(
             baseline_model, valid_traces, invalid_traces,
-            self.config.get("validator_model", "gpt-4o-mini")
+            self.config.get("validator_model", "gpt-5-mini")
         )
 
         self.results["baseline"] = {
@@ -742,7 +765,7 @@ class AblationStudy:
             print(f"\n  Evaluating ablated model (without {rep_to_remove.value})...")
             ablated_metrics = evaluate_model(
                 ablated_model, valid_traces, invalid_traces,
-                self.config.get("validator_model", "gpt-4o-mini")
+                self.config.get("validator_model", "gpt-5-mini")
             )
 
             f1_delta = ablated_metrics['f1'] - baseline_metrics['f1']
@@ -843,7 +866,7 @@ Examples:
     python ablation_study.py --xes benchmark/hospital/hospital_log_high.xes
 
     # Specify models
-    python ablation_study.py --dataset hiring --model openai:gpt-4o --validator-model gpt-4o-mini
+    python ablation_study.py --dataset hiring --model openai:gpt-4o --validator-model gpt-5-mini
 """
     )
 
@@ -851,9 +874,9 @@ Examples:
                         help="Dataset name (hiring, hospital, lending, renting)")
     parser.add_argument("--xes", type=str, default=None,
                         help="Path to XES file (overrides --dataset)")
-    parser.add_argument("--model", type=str, default="openai:gpt-4o-mini",
+    parser.add_argument("--model", type=str, default="openai:gpt-5-mini",
                         help="LLM for textual model generation")
-    parser.add_argument("--validator-model", type=str, default="gpt-4o-mini",
+    parser.add_argument("--validator-model", type=str, default="gpt-5-mini",
                         help="LLM for trace validation")
     parser.add_argument("--k-valid", type=int, default=30,
                         help="Number of valid traces (default: 30)")
