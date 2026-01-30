@@ -1,0 +1,151 @@
+This is the story of how our hiring journey works, from “I applied!” to either “We’re not moving forward” or “We’d like to hire you.” We rebuilt this story from a smart activity map (like footprints of what really happened) and a process net. The map showed paths, choices, things that run at the same time, and loops where we repeat steps. Roles are not labeled in the source, so we say “the team” for the people doing the steps.
+
+Beginning: the trigger
+- First, the candidate hands in a job application. (Start event)
+
+Early look: quick call is common, but not required
+- After the application, the team often does a Telephonic Screening (a short phone call). This is very common. We saw 8,799 moves from Application to Telephonic Screening (about 88 in 100; average wait ~82,440 time units).
+- But the phone call can be skipped. The model allows jumping ahead without it.
+- Early rejection can also happen:
+  - From Application straight to Application Rejected: 1,201 times (about 12 in 100; ~146,346 time units).
+  - From Telephonic Screening to Application Rejected: 990 times (about 10 in 100; ~143,282 time units).
+
+Pre-technical checks: two things happen at the same time
+- If the phone call happens, the team opens a “do both” fork in the road. They start:
+  - Screening Interview, and
+  - Background Check
+- These two run in parallel. That means they can happen in any order, and even overlap.
+  - From Telephonic Screening to Background Check: 3,961 times (about 40 in 100; ~81,906 time units).
+  - From Telephonic Screening to Screening Interview: 3,848 times (about 38 in 100; ~81,903 time units).
+  - Screening Interview to Background Check: 3,848 times; Background Check to Screening Interview: 3,961 times (we saw switching with almost no wait, which fits “at the same time”).
+- The team waits until both are finished before moving on (they “wait for all tasks to finish before moving on”).
+- After both are done, there is an optional deeper check called Extensive Background Check. It can happen or be skipped. We saw it start from either path:
+  - Background Check to Extensive Background Check: 1,044 times (about 10 in 100).
+  - Screening Interview to Extensive Background Check: 1,055 times (about 11 in 100).
+- After the Extensive Background Check:
+  - The team might reject: Extensive Background Check to Application Rejected happened 1,125 times (about 11 in 100).
+  - Or they might keep going to more testing, like a Coding Interview: 974 times (about 10 in 100).
+
+Technical assessment: coding is optional; up to three tech interviews can run
+- Now the team chooses whether to do a Coding Interview. It is optional. It can be skipped.
+  - From Screening Interview to Coding Interview: 1,517 times (about 15 in 100; ~129,892 time units).
+  - From Background Check to Coding Interview: 1,413 times (about 14 in 100; ~129,885 time units).
+- After Coding Interview, the team opens a “do up to three things” fork. They can run these three tracks in any order. Each one can be done or skipped:
+  - ML Interview (optional)
+  - Backend Interview (optional)
+  - Frontend Interview (optional)
+- They can even overlap, and switching between them can happen with almost no wait.
+  - From Coding Interview to ML Interview: 1,304 times (about 13 in 100).
+  - From Coding Interview to Backend Interview: 701 times (about 7 in 100).
+  - From Coding Interview to Frontend Interview: 1,513 times (about 15 in 100).
+  - We also saw quick back-and-forth between pairs (ML <-> Frontend, Frontend <-> Backend, etc.), which fits “at the same time.”
+- When the team finishes whatever technical tracks they chose (including skipping some), they “wait for all to finish” and then move to the final stage.
+
+Final stage: two branches run at the same time until the end
+- The team opens a final “do both” fork. Two branches run together:
+  A) Rejection branch
+     - Here, the team can say Application Rejected. This can happen once or many times. Sometimes it repeats. We saw Application Rejected -> Application Rejected 654 times (about 7 in 100).
+     - When they are done with this branch, they move to the finish line and wait for the other branch.
+  B) Behavioral-and-offer branch
+     - The team can do a Behavioral Interview. This can repeat too. We saw Behavioral Interview -> Behavioral Interview 1,032 times (about 10 in 100).
+     - The team can Make Job Offer. Offers can repeat as well. We saw Make Job Offer -> Make Job Offer 861 times (about 9 in 100).
+     - This whole branch can also be skipped.
+- Because these two branches run at the same time, unusual mixes can happen, and they are allowed:
+  - A rejection can be followed by a Behavioral Interview: 740 times (about 7 in 100).
+  - A rejection can be followed by an Offer: 690 times (about 7 in 100).
+  - An Offer can be followed by a rejection: 110 times (about 1 in 100).
+  - These are not treated as mistakes. The process allows them.
+- The end: the story ends only when both branches are done (either they did their activities or they were skipped). Then the team “waits for all to finish” and the journey ends.
+  - This means a case can end even if there was no visible rejection or offer, because both branches can be skipped. In practice, most cases do have at least one of these.
+
+Important decision points and choices (what can be skipped, and what runs together)
+- Start: Hand In Job Application (the journey begins here).
+- After the application:
+  - Choose one path (like a fork in the road): do a Telephonic Screening (common) or skip it.
+  - Another path: reject right away is also possible.
+- After Telephonic Screening:
+  - Do both at the same time: Screening Interview AND Background Check. Then wait for both to finish.
+- After those two finish:
+  - Choose: do an Extensive Background Check, or skip it.
+  - If Extensive Background Check happens: it can lead to rejection or continue to more assessments (like Coding Interview).
+- Technical assessment:
+  - Choose: do a Coding Interview, or skip it.
+  - After Coding Interview: open three optional tracks (ML, Backend, Frontend). Each can be skipped or done. They can run in any order and even overlap. Wait for all chosen tracks to finish.
+- Final stage:
+  - Do both branches at the same time:
+    - Rejection branch (Application Rejected can repeat).
+    - Behavioral-and-offer branch (Behavioral Interview can repeat; Make Job Offer can repeat; the entire branch can be skipped).
+  - Wait for both branches to be done. Then end.
+
+Concrete examples (to make it vivid)
+- Imagine Sam applies. First, the team calls Sam (Telephonic Screening). Then two things happen together: a Screening Interview and a Background Check. After both finish, the team does not need the deeper check, so they skip it. They go to a Coding Interview. Then Sam does Frontend first, then Backend. They skip ML. Finally, the last stage runs both branches together. Sam gets a Behavioral Interview and then an Offer. At the same time, the rejection branch stays quiet. Both branches finish, and the journey ends.
+- Imagine Alex applies and is not a match. The team rejects Alex right away after the application. That is allowed and happens 1,201 times (about 12 in 100).
+
+What the numbers tell us (counts, “about out of 100,” and waits)
+- Common early moves:
+  - Application -> Telephonic Screening: 8,799 cases (about 88 in 100; ~82,440 time units).
+  - Application -> Application Rejected: 1,201 cases (about 12 in 100; ~146,346 time units).
+  - Telephonic Screening -> Application Rejected: 990 cases (about 10 in 100; ~143,282 time units).
+- Pre-technical concurrency:
+  - Telephonic Screening -> Background Check: 3,961 (about 40 in 100; ~81,906).
+  - Telephonic Screening -> Screening Interview: 3,848 (about 38 in 100; ~81,903).
+  - Screening Interview <-> Background Check (each direction): 3,848–3,961 (near-zero switching time).
+- Optional deeper check:
+  - Background Check -> Extensive Background Check: 1,044 (about 10 in 100).
+  - Screening Interview -> Extensive Background Check: 1,055 (about 11 in 100).
+  - Extensive Background Check -> Application Rejected: 1,125 (about 11 in 100).
+  - Extensive Background Check -> Coding Interview: 974 (about 10 in 100).
+- Coding stage:
+  - Screening Interview -> Coding Interview: 1,517 (about 15 in 100; ~129,892).
+  - Background Check -> Coding Interview: 1,413 (about 14 in 100; ~129,885).
+- Three technical interview tracks (each optional, any order, can overlap):
+  - Coding -> ML: 1,304 (about 13 in 100).
+  - Coding -> Backend: 701 (about 7 in 100).
+  - Coding -> Frontend: 1,513 (about 15 in 100).
+  - We observed quick back-and-forth between pairs (no waiting), matching parallel or flexible ordering.
+- Rejections after pre-technical steps:
+  - Background Check -> Application Rejected: 1,391 (about 14 in 100; ~155,320).
+  - Screening Interview -> Application Rejected: 1,389 (about 14 in 100; ~155,969).
+- Behavioral and offer:
+  - Behavioral Interview -> Make Job Offer: 1,850 (about 19 in 100; ~80,430).
+  - Make Job Offer -> Application Rejected: 110 (about 1 in 100).
+- Repeating loops:
+  - Application Rejected -> Application Rejected: 654 (about 7 in 100).
+  - Behavioral Interview -> Behavioral Interview: 1,032 (about 10 in 100).
+  - Make Job Offer -> Make Job Offer: 861 (about 9 in 100).
+- Cross-branch “both can happen”:
+  - Application Rejected -> Behavioral Interview: 740 (about 7 in 100).
+  - Application Rejected -> Make Job Offer: 690 (about 7 in 100).
+- Representative full paths (examples we saw often):
+  - Application -> Telephonic -> Screening -> Background -> Application Rejected: 1,391 cases (about 14 in 100; ~319,390 time units).
+  - Application -> Telephonic -> Background -> Screening -> Application Rejected: 1,389 cases (about 14 in 100; ~320,030 time units).
+  - Application -> Application Rejected directly: 1,201 cases (about 12 in 100; ~146,346 time units).
+  - Longer “successful-to-offer” paths that include many technical steps and repeat Behavioral/Offer loops can take about ~530,000 time units end to end.
+
+Who does what?
+- The source did not label roles. We do not know exactly who carries out each step. So we say “the team” for the people running the journey.
+
+If something is not quite right, we go back and try again (loops and retries)
+- Application Rejected can repeat (loop). This happened 654 times (about 7 in 100).
+- Behavioral Interview can repeat (loop). This happened 1,032 times (about 10 in 100).
+- Make Job Offer can repeat (loop). This happened 861 times (about 9 in 100).
+- Technical interviews can be done in different orders and can switch quickly (like hopping between rooms). Some may be skipped. Some may repeat.
+
+Start and end, clearly
+- Start: when the candidate Hands In Job Application.
+- End: when both final branches (the rejection branch and the behavioral/offer branch) finish or get skipped, and the team waits for both to be done. Then the story ends.
+- What people see near the end:
+  - Sometimes the last visible step is Application Rejected.
+  - Sometimes the last visible step is Make Job Offer.
+  - Sometimes we see both of these before the end (in either order).
+  - It is also possible (by design) to end without a visible rejection or offer, because both end-branches can be skipped.
+
+Why some parts feel tricky (pain points the story reveals)
+- Mixed messages can happen. An Offer and a Rejection can both appear in the same case. The process allows it. This can confuse candidates and weaken rules.
+- We repeat Behavioral Interviews and Offers a lot. These loops add time and work without clear limits.
+- We start Screening Interviews and Background Checks at the same time. This can cause extra background checks for people who will be rejected later anyway. The final “do both” split also mixes reject and offer events.
+- Many steps are optional (phone call, coding interview, each technical interview). Without clear rules, candidates are not always comparable.
+- Some paths are very long. The biggest offer paths take about ~530,000 time units end to end. Waiting time between steps like Coding -> next interviews is large (often ~80,000+ time units). Rejections after Screening/Background also wait a long time (~155,000+ time units).
+- The ending rule is technical, not business-friendly. The process can finish even if we never see a rejection or an offer.
+
+And that’s how the whole process works! It starts with the application, moves through choices and sometimes-parallel steps, may repeat some actions, and ends only after both final branches are finished or skipped. Every turn, skip, loop, and timing above comes from what we observed in the real journeys.

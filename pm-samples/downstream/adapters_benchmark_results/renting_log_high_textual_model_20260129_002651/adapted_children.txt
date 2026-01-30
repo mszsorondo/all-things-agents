@@ -1,0 +1,153 @@
+This is the story of how renting a home works, from first interest to move-out. We tell it like a journey. We keep every step, every choice, and every number. We use simple words so everyone can follow along.
+
+Who is in the story
+- Prospective Tenant (the person who wants the home). They apply, visit, hand in papers, sign, move in, pay rent, or cancel.
+- Property Team (the people who manage the home). They set appointments, check papers, screen, accept or reject, warn, accept late payments, and evict.
+(Note: We guessed these roles from step names. Real job titles may be different.)
+
+How the journey starts (the trigger)
+- The journey begins when a person sends “Apply for Viewing Appointment.” This is the starting point.
+
+Part 1 — From applying to a decision (before moving in)
+1) Apply for Viewing Appointment
+- Most of the time, the next step in the journey is “Set Appointment.” This happened about 9,151 times.
+- Sometimes there is an early exit. The person is rejected right after applying, with no appointment. This happened about 849 times (about 1 in 12 starts).
+
+Timing note between these early steps
+- Apply → Set Appointment takes about 82,731 time units (we don’t know the unit). Think of it as “about eighty-two thousand units of time.”
+
+2) Set Appointment → 3) View The Property
+- After setting the appointment, the person visits the home. This path happened about 9,151 times.
+- Time between Set Appointment → View is about 82,730 time units.
+
+4) After viewing, there is a choice (a fork in the road)
+- Stop path: Reject Prospective Tenant right after viewing. This happened about 1,710 times.
+- Continue path: Go on to the paperwork.
+- Time from View → Hand In The Paperwork is about 81,965 time units.
+
+5) Hand In The Paperwork
+- From viewing, about 7,441 people hand in their papers (that’s about 81 out of 100 viewers).
+- Time from Hand In → Check Paperwork is about 44,106 time units.
+
+6) Check Paperwork → 7) Screen Prospective Tenant
+- Everyone who handed in papers had them checked, then got screened. Hand In → Check → Screen happened about 7,441 times.
+- Time from Check Paperwork → Screen Prospective Tenant is about 37,860 time units.
+
+8) Screening decision (another fork in the road)
+There are three ways this part can go:
+- Option 1: Reject Prospective Tenant right after screening. This happened about 2,856 times.
+- Option 2: Do Extensive Screening (a deeper check). This happened about 2,793 times. After Extensive Screening:
+  • Extensive Screening → Reject Prospective Tenant happened about 1,815 times.
+  • Extensive Screening → Sign Contract happened about 978 times.
+- Option 3: Sign Contract right after regular screening. This happened about 1,792 times.
+- Time from Screen → Sign Contract is about 80,492 time units.
+
+A note about invisible shortcuts (system skips)
+- The “map” of the process allows invisible shortcuts (that means the story can jump ahead even if we didn’t see all steps in the logs). So, it is possible, though rare, to reach a decision and even sign without finishing every earlier step (like viewing or handing in papers). This is allowed by the system but not often seen in the data.
+
+9) Sign Contract → 10) Move In
+- After signing, the person moves in. This happened about 2,770 times out of about 10,000 starts (about 28 in 100).
+- Time from Sign Contract → Move In is about 81,093 time units.
+
+Part 2 — Living in the home: the month-to-month rent cycle (this repeats)
+11) Recurring monthly cycle (a loop)
+After move-in, each month brings a choice of what happens next.
+
+Path A: Pay Rent (the normal path)
+- Move In → Pay Rent happened about 2,656 times (first payment after moving in).
+- Pay Rent → Pay Rent happens again and again each month. This “do it again” loop happened about 14,819 times.
+- From Pay Rent, sometimes the tenant decides to end their stay: Pay Rent → Tenant Cancels Apartment happened about 2,680 times. This ends the story for that tenant.
+
+Path B: Miss Rent Payment (the trouble path)
+- Sometimes rent is missed right after move-in: Move In → Miss Rent Payment happened about 114 times (a small number).
+- Sometimes rent is missed after paying before: Pay Rent → Miss Rent Payment happened about 770 times.
+- When rent is missed, the Property Team sends a warning: Miss Rent Payment → Issue Warning happened about 945 times.
+- After the warning, there is a choice:
+  • Accept Late Payment happened about 855 times. From there:
+    – Most go back to regular paying: Accept Late Payment → Pay Rent happened about 794 times.
+    – A few miss again: Accept Late Payment → Miss Rent Payment happened about 61 times. This is a loop (you might need to do this more than once).
+  • Evict Tenant happened about 90 times. Eviction ends the story.
+- Timing for these late-payment handling steps is also around 80,000–84,000 time units between events.
+
+Another note about invisible routing during the rent cycle
+- After Accept Late Payment, the journey can go back to normal paying or back to missing a payment again. The map allows both.
+- After each Pay Rent, an invisible choice can lead to:
+  • another Pay Rent (next month),
+  • Tenant Cancels Apartment (ending the story),
+  • or a missed payment next month (less common).
+
+How the journey can end (end conditions)
+- Reject Prospective Tenant: This can happen in four places:
+  • right after Apply,
+  • right after View,
+  • right after Screen,
+  • or right after Extensive Screening.
+  Any of these ends the story early.
+- Tenant Cancels Apartment: This usually happens after one or more paid rent cycles (Pay Rent → Tenant Cancels Apartment ≈ 2,680). This ends the story.
+- Evict Tenant: This can happen after Miss Rent Payment → Issue Warning if things are not fixed (Issue Warning → Evict Tenant ≈ 90). This ends the story.
+
+All the important numbers in one place (told simply but completely)
+- Volume and outcomes:
+  • Starts: About 10,000 total (≈ 9,151 Apply → Set Appointment + 849 Apply → Reject).
+  • Signed and moved in: About 2,770 (about 28 out of 100 starts).
+  • Rejected before signing: About 7,230 (about 72 out of 100 starts) across the different reject points.
+- Funnel details:
+  • Set Appointment → View: ≈ 9,151.
+  • View → Hand In The Paperwork: ≈ 7,441 (about 81 in 100 viewers continue).
+  • Screening mix: Extensive Screening happened ≈ 2,793 times out of ≈ 7,441 screened (about 38 in 100).
+  • Acceptance routes:
+    – Sign right after regular screening: ≈ 1,792.
+    – Sign after Extensive Screening: ≈ 978.
+    – Total signs: ≈ 2,770 out of ≈ 7,441 screened (about 37 in 100 screened were accepted).
+- Post-move-in life:
+  • Move In → Pay Rent (first payment): ≈ 2,656.
+  • Pay Rent → Pay Rent (monthly loop): ≈ 14,819.
+  • Pay Rent → Tenant Cancels Apartment: ≈ 2,680.
+  • Miss Rent Payment → Issue Warning: ≈ 945.
+  • Issue Warning → Accept Late Payment: ≈ 855.
+  • Issue Warning → Evict Tenant: ≈ 90.
+  • Accept Late Payment → Pay Rent: ≈ 794.
+  • Accept Late Payment → Miss Rent Payment: ≈ 61.
+  • Move In → Miss Rent Payment: ≈ 114.
+  • Pay Rent → Miss Rent Payment: ≈ 770.
+- Time between steps (typical values; units not given):
+  • Apply → Set Appointment: ≈ 82,731.
+  • Set Appointment → View: ≈ 82,730.
+  • View → Hand In: ≈ 81,965.
+  • Hand In → Check: ≈ 44,106.
+  • Check → Screen: ≈ 37,860.
+  • Screen → Sign: ≈ 80,492.
+  • Sign → Move In: ≈ 81,093.
+  • Late-payment handling steps: ≈ 80,000–84,000.
+
+Special rules, exceptions, and loops (kept in plain words)
+- Early rejections are allowed at four different moments: after Apply, after View, after Screen, and after Extensive Screening.
+- Late payments trigger a warning. After the warning, the tenant can:
+  • pay late (and usually go back to normal),
+  • or be evicted (this is rare).
+- Loops happen in two places:
+  • The normal monthly rent cycle: Pay Rent → Pay Rent repeated about 14,819 times.
+  • The late-payment rework: Accept Late Payment → Miss Rent Payment happened about 61 times, showing some repeated trouble for a few tenants.
+- Invisible shortcuts (skips) exist:
+  • The system design allows skipping ahead to decide or sign even if earlier steps are missing (rare but possible).
+  • After each Pay Rent, the system allows an invisible choice: pay again next month, cancel, or miss next month.
+
+Challenges in this journey (what makes it hard)
+- Many people do not make it to signing. About 72 out of 100 starters are rejected (sometimes after spending time to view, hand in papers, and get screened). This wastes effort and time.
+- Invisible shortcuts can let someone sign without finishing all steps (viewing, papers, screening). This is rare but risky for rules and fairness.
+- Late payments often get accepted (about 855 warnings led to about 794 accepted late payments). This can create a loop where some tenants pay late again. Evictions (about 90) are rare compared to warnings.
+- Waiting times are long in some places:
+  • Setting and attending the viewing takes about eighty-two thousand time units between each step.
+  • Paperwork to screening takes about thirty-eight to forty-four thousand time units.
+  • Extra (extensive) screening adds more waiting.
+- When a tenant cancels, it often happens after paying rent. The map does not force a check that every balance is fully cleared before cancellation. The invisible routing could allow cancellation even after a recent missed payment.
+
+Stakeholder jobs in each step (simple mapping)
+- Prospective Tenant: applies, goes to view, hands in papers, waits for screening, signs (or is rejected), moves in, pays rent each month, can miss a payment, can pay late, can cancel.
+- Property Team: schedules viewings, checks papers, screens, decides to accept or reject, sends warnings, accepts late payments, and sometimes evicts.
+
+Putting it all together as a story
+- First, a person applies to see a home. Most get an appointment, a few are rejected right away. After the appointment, they visit the home. Some are rejected, while most who keep going hand in their papers. The team checks the papers and screens the person. Some are rejected now. Some people need extra screening; after that, some sign and some are rejected. Some sign right after regular screening. Then they move in.
+- After moving in, each month is like a new chapter. Usually, they pay rent again and again. After paying, they may choose to cancel and move out. Sometimes, they miss a payment. If they miss, the team warns them. After the warning, they either pay late (and usually get back on track) or, if things are not fixed, they are evicted. A few people fall into a loop of missing and paying late more than once.
+- Invisible shortcuts exist in the map. They can skip steps to reach a decision or let a person cancel even if timing is tricky. These shortcuts are allowed by the system but are not common in the data we saw.
+- And that’s how the whole process works! Every step, every choice, every loop, and every ending is part of the journey.

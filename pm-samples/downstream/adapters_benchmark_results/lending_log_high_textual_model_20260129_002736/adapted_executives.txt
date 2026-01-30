@@ -1,0 +1,179 @@
+Executive summary
+- Purpose and scope: This process originates and decides consumer credit/loans from the initial appointment request to one of four visible outcomes: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement.
+- Scale and outcomes: Approximately 10,000 cases observed. Outcome mix: 9.6% Appointment Denied, 16.2% Application Rejected, 47.9% Loan Denied, 26.2% Sign Loan Agreement. Overall conversion to signed loans is 26.2%.
+- Key findings: A parallel decision structure after verification drives long cycle times and late denials; nearly half of all cases are denied after substantial work. Fast-track signing without formal submission occurs in 332 cases (3.3%), raising compliance risk. Collateral assessment rework (563 repeat visits) and long waits between early steps inflate lead time.
+- Strategic impact: Bottlenecks and rework concentrate cost in preparation and waiting stages. Lack of a visible approval step reduces auditability. Governance is required to manage the fast-track and to reduce late denials.
+
+Stakeholders and roles
+- Applicant/Requester: initiates, provides application.
+- Underwriter: evaluates submitted files.
+- Internal operations/systems: schedule appointments, verify borrower information, manage co-signer requests, perform collateral visits, orchestrate parallel tracks and synchronizations (some steps are automated “silent” system transitions).
+
+Start condition and trigger
+- Trigger: Customer action “Request Appointment” starts the case.
+
+Process phases and decision logic (complete and auditable view)
+Phase 1 — Appointment request to scheduling
+- Activity: Request Appointment.
+- Decision point (exclusive choice):
+  • Appointment Denied → case ends (observed 962 cases, 9.6% of all cases).
+  • Set Appointment → proceed (observed 9,038 cases, 90.4%).
+- Performance: Request Appointment → Set Appointment average wait ≈ 82,658 time units (n=9,038).
+
+Phase 2 — Application intake and verification
+- Activities (in order): Set Appointment → Hand In Credit Application → Verify Borrowers Information.
+  • Set Appointment → Hand In Credit Application: avg ≈ 82,659 time units.
+  • Hand In Credit Application → Verify Borrowers Information: avg ≈ 42,028 time units.
+- Decision point (exclusive choice after verification):
+  • Application Rejected → case ends early (1,624 cases, 16.2% of all cases).
+  • Continue → process branches to alternative paths in parallel (automatic parallel launch; parallel split tauSplit_1).
+
+Phase 3 — Parallel evaluation and preparation (both tracks run concurrently and must both complete)
+Notes on parallelism and synchronization
+- From verification, the process splits into two concurrent tracks that must both reach completion before the case can end. A final synchronization (parallel activities converge; tauJoin_2) waits for:
+  • Branch A (Decision/denial track) to either register a denial or complete with no visible action, and
+  • Branch B (Preparation/contract track) to either reach signing or complete with no visible action if the other branch denied.
+- Because tracks run in parallel, event ordering can show Submit File to Underwriter before Loan Denied even though they are on different tracks. This is expected and not a data error.
+
+Branch A — Decision/denial track
+- Options on this track (decision point requiring a choice):
+  • Loan Denied (visible) — registers the denial on this track.
+  • Allow to continue (automatic completion with no visible activity; skip_3) — used when the case progresses positively.
+- Either outcome signals readiness for final synchronization (state: ready for final outcome synchronization; formerly p_8).
+
+Branch B — Preparation and submission track
+- Start state of Branch B: state after branching from verification (formerly p_9).
+- Three alternatives from Branch B start (decision point requiring a choice):
+  Option B1: Fast-track to signing (visible fast-track step “skipped_examination”)
+  - Activities: skipped_examination (visible) → proceed directly to contract stage (state: contract/signing stage; formerly p_11).
+  - From contract/signing stage:
+    • Sign Loan Agreement (visible) → completes Branch B, or
+    • Automatic completion with no visible activity (skip_13) if Branch A ended with Loan Denied.
+  - Observed fast-track occurrences: 332 cases (3.3% of all cases) went via skipped_examination → Sign Loan Agreement. Compliance governance required (see Risks).
+
+  Option B2: Direct submission without co-signer/collateral sub-work
+  - Activities: Automatic bypass of prerequisite sub-work (skip_4) → submission stage → Submit File to Underwriter → reach contract/signing stage (state: contract/signing stage; formerly p_11).
+  - From contract/signing stage:
+    • Sign Loan Agreement (visible), or
+    • Automatic completion (skip_13) if Branch A denied.
+
+  Option B3: Do prerequisite sub-work in parallel, then submit (parallel split tauSplit_5)
+  - Two sub-branches must both complete before submission; they then converge (parallel activities converge; tauJoin_6) at submission staging (state: submission staging; formerly p_12), followed by Submit File to Underwriter.
+    • Co-signer sub-branch (decision point requiring a choice):
+      - Request Co-Signer On Loan (visible), or
+      - Automatic bypass if not needed (skip_7).
+      - On completion, the case reaches the co-signer/collateral join state (formerly p_14).
+    • Collateral assessment sub-branch (loop with potential rework):
+      - Enter loop (init_loop_9) → Make Visit to Assess Collateral (visible).
+      - After each visit, decision point:
+        - Repeat visit (automatic loop-back; skip_11), or
+        - Complete collateral sub-branch (automatic completion; skip_8) when sufficient assessment is done.
+      - Rework evidence: 1,226 cases include collateral visits (12.3%); 563 repeated visits recorded across cases.
+  - After both sub-branches complete (tauJoin_6): Submit File to Underwriter (visible) → proceed to contract/signing stage (state: contract/signing stage; formerly p_11).
+
+Contract/signing stage actions and synchronization with the decision track
+- From the contract/signing stage (state formerly p_11):
+  • Sign Loan Agreement (visible) — completes Branch B, or
+  • Automatic completion with no visible action (skip_13) — used when Branch A ended in Loan Denied (no signing occurs).
+- Case closure only occurs after final synchronization (parallel activities converge; tauJoin_2) confirms:
+  • Branch A completed (Loan Denied or automatic allow), and
+  • Branch B completed (Sign or automatic completion if denial on the other branch).
+- Visible end states remain exactly one of: Appointment Denied, Application Rejected, Loan Denied, Sign Loan Agreement.
+
+Business outcomes and complete path coverage
+Outcome 1 — Appointment Denied (9.6%)
+- Path: Request Appointment → Decision: Appointment Denied → End.
+
+Outcome 2 — Application Rejected (16.2%)
+- Path: Request Appointment → Set Appointment → Hand In Credit Application → Verify Borrowers Information → Decision: Application Rejected → End.
+
+Outcome 3 — Loan Denied (47.9%)
+- Path pattern (all must pass verification and enter parallel mode):
+  • After Verify Borrowers Information → parallel launch (tauSplit_1) of Branch A and Branch B.
+  • Branch A selects Loan Denied (visible).
+  • Branch B may be in any of its three alternatives:
+    - B1 fast-track (skipped_examination) moving toward contract/signing, or
+    - B2 direct submission (skip_4 → Submit File to Underwriter), or
+    - B3 co-signer and collateral sub-work in parallel, possibly with repeated collateral visits (loop), then Submit File to Underwriter.
+  • Regardless of Branch B status, when Branch A denotes Loan Denied, Branch B completes automatically with no signing (skip_13).
+  • Final synchronization (tauJoin_2) → visible end: Loan Denied.
+- Ordering note: Due to concurrency, Submit File to Underwriter often appears before Loan Denied in the event log, though they occur on different tracks.
+
+Outcome 4 — Sign Loan Agreement (26.2%)
+- Path pattern (must pass verification and enter parallel mode):
+  • After Verify Borrowers Information → parallel launch (tauSplit_1) of Branch A and Branch B.
+  • Branch A completes with no visible denial (automatic allow; skip_3).
+  • Branch B reaches contract/signing via one of:
+    - B1: fast-track (skipped_examination → Sign Loan Agreement), or
+    - B2: direct submission (skip_4 → Submit File to Underwriter → Sign Loan Agreement), or
+    - B3: complete co-signer and collateral sub-work in parallel (with possible collateral rework loop), converge (tauJoin_6) → Submit File to Underwriter → Sign Loan Agreement.
+  • Final synchronization (tauJoin_2) → visible end: Sign Loan Agreement.
+
+Key performance indicators and operational metrics
+- Funnel and outcomes (≈10,000 cases):
+  • Appointment Denied: 962 cases (9.6%).
+  • Application Rejected: 1,624 cases (16.2%).
+  • Loan Denied: ~4,787 cases (47.9%).
+  • Sign Loan Agreement: ~2,624 cases (26.2%).
+- Optional/conditional activity volumes:
+  • Request Co-Signer On Loan: 1,233 cases (12.3%).
+  • Make Visit to Assess Collateral: 1,226 cases (12.3%); 563 repeat visits recorded (rework loop).
+  • Fast-track to signing (skipped_examination): 332 cases (3.3%); in these, skipped_examination directly precedes signing.
+- Throughput tendencies (average time between events; system time units as recorded):
+  • Request Appointment → Set Appointment: ≈ 82,658 (n=9,038).
+  • Set Appointment → Hand In Credit Application: ≈ 82,659.
+  • Hand In Credit Application → Verify Borrowers Information: ≈ 42,028.
+  • Verify Borrowers Information → Submit File to Underwriter: ≈ 48,327 (n=4,623).
+  • Make Visit to Assess Collateral → Submit File to Underwriter: ≈ 33,927 (n=1,420).
+  • Request Co-Signer On Loan → Submit File to Underwriter: ≈ 37,792 (n=1,039).
+  • Submit File to Underwriter → Loan Denied: ≈ 82,666 (n=4,787).
+  • Submit File to Underwriter → Sign Loan Agreement: ≈ 80,725 (n=2,295).
+- Synchronization states (for audit traceability; business descriptions of internal states):
+  • State: start of Branch B after verification (formerly p_9).
+  • State: both co-signer and collateral sub-branches completed (formerly p_14).
+  • State: submission staging before Submit File to Underwriter (formerly p_12).
+  • State: contract/signing stage (formerly p_11).
+  • State: ready for final outcome synchronization (formerly p_8).
+
+Controls and decision points (business criteria placeholders)
+- After Request Appointment: schedule vs immediate denial.
+- After Verify Borrowers Information: verification fails (Application Rejected) vs continue.
+- On Branch A: deny (Loan Denied) vs allow (automatic).
+- On Branch B start: choose fast-track (skipped_examination), direct submission (skip_4), or prerequisite sub-work (co-signer and/or collateral assessment in parallel).
+- Within co-signer sub-branch: request co-signer vs bypass (skip_7).
+- Within collateral sub-branch: repeat visit (skip_11) vs complete (skip_8).
+- After reaching contract/signing stage: sign vs automatic completion without signing if denial occurred on the other branch (skip_13).
+- Final case closure: occurs only when both parallel tracks complete (tauJoin_2).
+
+Compliance, risk, and audit considerations
+- Concurrency semantics: Parallel branches cause event orders such as Submit File to Underwriter appearing before Loan Denied; controls and monitoring must consider this by design.
+- Late denials: ~47.9% Loan Denied often occur after substantial processing and waiting (≈80k+ time units after submission), driving cost and customer dissatisfaction.
+- Fast-track signing: 332 cases bypass formal submission via skipped_examination; unless governed by strict eligibility criteria, this is a compliance and credit risk exposure.
+- Optionality via automatic bypasses: Co-signer and collateral decisions often occur via automatic skips (skip_7, skip_8), reducing visibility of the business rationale.
+- No explicit visible approval: Approval is inferred from the absence of a denial on Branch A and a silent completion. This weakens traceability and complicates audits.
+
+Bottlenecks and cost centers
+- Long waits:
+  • Appointment scheduling and intake show two long waits (~82,658 and ~82,659 time units).
+  • Post-submission waits to decision/signing (~80k+ time units) inflate cycle time and working capital tied up in WIP.
+- Rework:
+  • Collateral visits show 563 repeat instances; variability increases handling costs and delays submission.
+- High-prep denials:
+  • A large share of cases proceed through submission/collateral/co-signer work only to be denied, implying poor early triage and costly late-stage attrition.
+
+Strategic recommendations
+- Reduce late-stage denials:
+  • Introduce an explicit, visible pre-underwriting decision gate before submission to the underwriter (replacing the implicit “automatic allow” on Branch A with a visible “Pre-Approve to Submit” step).
+  • Tighten verification criteria and leverage early risk scoring to divert likely denials before expensive sub-work.
+- Govern fast-track signing:
+  • Define and enforce eligibility rules for skipped_examination; require a documented justification and audit trail when bypassing submission.
+- Make optionality explicit:
+  • Replace automatic bypasses (skip_7, skip_8, skip_4) with visible “Not Required” decisions recording rationale for co-signer and collateral determinations.
+- Collapse waiting time:
+  • Set SLAs for appointment scheduling and application hand-in; digitize intake; proactively chase missing information to reduce the 80k+ time unit waits.
+- Control collateral rework:
+  • Standardize collateral data requirements; introduce remote pre-checks to reduce repeat visits; monitor rework KPIs by branch/asset type.
+- Align metrics and monitoring to concurrency:
+  • Update dashboards to respect the parallel design (e.g., measure time-to-outcome by branch and overall synchronization), preventing misinterpretation of event order and improving compliance.
+
+This executive summary preserves all activities, decisions, sequences, parallel branches, loops, start/end conditions, and performance metrics while translating technical constructs into business language for decision-making and governance.

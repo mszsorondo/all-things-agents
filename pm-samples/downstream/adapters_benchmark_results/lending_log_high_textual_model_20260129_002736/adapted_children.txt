@@ -1,0 +1,174 @@
+This is the story of how getting a loan starts, moves forward, and ends
+
+Characters in our story
+- Applicant (let’s imagine a person named Alex)
+- Underwriter (Uma, who reviews files)
+- Helper team and computer systems (they schedule, check, and assess things)
+
+Where the journey starts and why
+- Trigger: Alex asks for an appointment. The step is called Request Appointment. This is the starting gun for every case.
+
+First fork in the road after the request
+- Now comes a choice (choose one path like a fork in the road):
+  1) Appointment Denied. The story ends right here. This happened in 962 out of about 10,000 cases (about 1 in 10; ~9.6%).
+  2) Set Appointment. The story continues. This happened in 9,038 cases.
+
+Getting ready and checking papers
+- First: Set Appointment.
+- Then: Hand In Credit Application (Alex gives the application).
+- Then: Verify Borrowers Information (the team checks Alex’s details).
+
+Second fork in the road after the check
+- Now comes a choice (choose one path like a fork in the road):
+  1) Application Rejected. The story ends early. This happened 1,624 times (about 1 in 6; ~16.2%).
+  2) Continue forward. If we continue, two big tracks start at the same time.
+
+The big split: two tracks happen together
+- A hidden fork called tauSplit_1 (think: the journey splits) creates two tracks that run at the same time:
+  - Branch A: the decision/denial track.
+  - Branch B: the preparation and contract track.
+- Important rule (wait for all): The journey does not finish until both tracks are done. A hidden meeting point called tauJoin_2 waits for both tracks to finish before the story ends.
+
+Branch A (decision/denial track)
+- This track decides if the loan is denied or allowed to keep going quietly.
+- Now comes a choice (choose one path like a fork in the road):
+  1) Loan Denied (visible step). If this happens, the loan is denied on this track.
+  2) Hidden “okay for now” step (skip_3; invisible). This means no denial happened on this track.
+- Either result puts a marker at the waiting spot p_8 (the point where the decision track is done). This lets the final meeting point know Branch A finished.
+- Note about timing: Because Branch A and Branch B run at the same time, the event list can look odd. You might see “Submit File to Underwriter” or even “Sign Loan Agreement” on Branch B before you see “Loan Denied” on Branch A. They are on different tracks, so the order you see in logs does not always mean “one caused the other.”
+
+Branch B (preparation and contract track)
+- We start at p_9 (the point where preparation begins).
+- Now there are three ways to move forward from here. Only one is chosen per case (choose one path like a fork in the road):
+
+Option B1: Fast-track to signing
+- Step: skipped_examination (visible). Think of it as: we skip extra checks and jump ahead.
+- After this, we go straight to the contract stage p_11 (the point where signing can happen).
+- Then:
+  - If the other track (Branch A) did not deny the loan, we Sign Loan Agreement (visible).
+  - If the other track denied, we take a hidden finish on this track (skip_13; invisible) so we do not sign.
+- This fast-track path happened 332 times (about 3 out of every 100 cases). It went as: skipped_examination -> Sign Loan Agreement in those cases.
+
+Option B2: Direct submission without extra sub-work
+- Hidden step: skip_4 (invisible), meaning we skip the extra sub-work.
+- Then: Submit File to Underwriter (visible).
+- After this, the case is ready for the contract stage.
+
+Option B3: Do prerequisite sub-work in parallel, then submit
+- A second hidden fork called tauSplit_5 starts two sub-branches at the same time. We must finish both before we can submit (wait for all).
+  - Co-signer sub-branch:
+    • Sometimes we Request Co-Signer On Loan (visible). This happened in 1,233 cases.
+    • Other times we skip it with a hidden step (skip_7; invisible), because it is not needed.
+    • Either way, we reach a meeting spot p_14 (the point where co-signer work is done).
+  - Collateral assessment sub-branch:
+    • We enter a loop (sometimes you have to go back and do this step again) using init_loop_9.
+    • We Make Visit to Assess Collateral (visible). This occurred in 1,226 cases.
+    • After each visit, we decide:
+      – Do another visit using a back-road (skip_11; invisible). This repeat happened 563 times across cases.
+      – Or finish the visits with a hidden step (skip_8; invisible) when the checks are enough. The loop allows zero or more visits (sometimes none, sometimes many).
+- A hidden meeting point called tauJoin_6 waits for both sub-branches to finish. This leads to p_12 (the point where we are ready to submit).
+- Then we Submit File to Underwriter (visible).
+- After submission, we move to the contract stage p_11.
+
+Contract/signing stage on Branch B
+- At p_11 (the point where signing happens):
+  - If the loan is moving toward approval, we Sign Loan Agreement (visible).
+  - If the other track (Branch A) already denied the loan, we do a hidden finish here (skip_13; invisible) so no signing happens.
+- Branch B is then complete.
+
+How the whole story ends
+- The journey ends when both tracks (Branch A and Branch B) are done. The hidden meeting point tauJoin_2 checks this.
+- On the outside, people see one of these four endings:
+  1) Appointment Denied (ends right after the request).
+  2) Application Rejected (ends right after verification).
+  3) Loan Denied (happens on Branch A).
+  4) Sign Loan Agreement (happens on Branch B if no denial happened on Branch A).
+- Important detail: There is no visible “approval” step. Approval is understood by “no denial happened on Branch A” plus finishing the signing on Branch B.
+
+Who does what along the way
+- Alex (Applicant) requests the appointment and hands in the application.
+- Uma (Underwriter) receives the file when we Submit File to Underwriter.
+- The helper team and systems schedule the appointment, verify the information, and assess collateral.
+
+All possible paths, clearly listed
+- Start: Request Appointment.
+  - Choice 1: Appointment Denied. End.
+  - Choice 2: Set Appointment -> Hand In Credit Application -> Verify Borrowers Information.
+    • Choice at this point:
+      – Application Rejected. End.
+      – Continue with two tracks at the same time (tauSplit_1):
+        Branch A (Decision/denial track):
+          · Loan Denied (visible), then signal done at p_8; or
+          · Hidden “okay for now” (skip_3; invisible), then signal done at p_8.
+        Branch B (Preparation/contract track) starting at p_9, choose one:
+          · B1 Fast-track: skipped_examination (visible) -> p_11 -> Sign Loan Agreement (visible) or hidden finish (skip_13; invisible).
+          · B2 Direct submission: skip_4 (invisible) -> Submit File to Underwriter (visible) -> p_11 -> Sign Loan Agreement (visible) or hidden finish (skip_13; invisible).
+          · B3 Sub-work in parallel:
+            - Hidden fork tauSplit_5 starts:
+              Co-signer sub-branch:
+                · Request Co-Signer On Loan (visible) or skip_7 (invisible) -> p_14.
+              Collateral sub-branch:
+                · init_loop_9 -> Make Visit to Assess Collateral (visible)
+                  -> maybe repeat via skip_11 (invisible) zero or more times
+                  -> finish via skip_8 (invisible).
+            - Hidden join tauJoin_6 -> p_12 -> Submit File to Underwriter (visible) -> p_11
+              -> Sign Loan Agreement (visible) or hidden finish (skip_13; invisible).
+        - Final hidden join tauJoin_2 ends the case when both branches finish.
+
+How often things happened (out of about 10,000 cases)
+- Appointment Denied: 962 cases (~9.6%; about 1 in 10).
+- Application Rejected: 1,624 cases (~16.2%; about 1 in 6).
+- Loan Denied: about 4,787 cases (~47.9%; about 1 in 2).
+- Sign Loan Agreement: about 2,624 cases (~26.2%; about 1 in 4).
+- Optional steps:
+  - Request Co-Signer On Loan: 1,233 cases (about 1 in 8).
+  - Make Visit to Assess Collateral: 1,226 cases (about 1 in 8). The repeated-visit loop occurred 563 times (some cases had multiple visits).
+  - Fast-track skipped_examination: 332 cases (about 1 in 30) and directly before signing in those cases.
+
+Timing facts (how long things typically waited)
+- These are average waits between steps (in “time units,” exactly as measured in the model):
+  - Request Appointment -> Set Appointment: about 82,658 time units (n=9,038).
+  - Set Appointment -> Hand In Credit Application: about 82,659 time units.
+  - Hand In Credit Application -> Verify Borrowers Information: about 42,028 time units.
+  - Verify Borrowers Information -> Submit File to Underwriter: about 48,327 time units (n=4,623).
+  - Make Visit to Assess Collateral -> Submit File to Underwriter: about 33,927 time units (n=1,420).
+  - Request Co-Signer On Loan -> Submit File to Underwriter: about 37,792 time units (n=1,039).
+  - Submit File to Underwriter -> Loan Denied: about 82,666 time units (n=4,787).
+  - Submit File to Underwriter -> Sign Loan Agreement: about 80,725 time units (n=2,295).
+
+Why some steps look out of order
+- Remember, after verification, Branch A and Branch B run at the same time. So you might see “Submit File to Underwriter” or even “Sign Loan Agreement” in the event list before “Loan Denied.” They are on separate tracks. The final result still waits for both tracks to finish (tauJoin_2), no matter what order you see events in.
+
+Special cases and exceptions
+- Early exits:
+  - Appointment Denied happens right after the request.
+  - Application Rejected happens right after verification.
+- Fast-track:
+  - skipped_examination allows jumping to signing without submitting to the underwriter. This happened 332 times.
+- Collateral loop:
+  - Make Visit to Assess Collateral can happen zero, one, or many times. The loop can repeat (563 repeats seen), which can slow things down.
+- Hidden steps:
+  - Some steps are invisible (named skip_3, skip_4, skip_7, skip_8, skip_11, skip_13). They mean “this step can be skipped sometimes” or “finish quietly.” They control the flow but do not show as visible actions.
+- Hidden forks and joins:
+  - tauSplit_1 and tauSplit_5 are hidden “start both paths now” points.
+  - tauJoin_6 and tauJoin_2 are hidden “wait for all tasks to finish before moving on” points.
+
+What makes this journey hard sometimes
+- Things happening at the same time can confuse people (Submit may show up before Denied in the list). It is correct, but it looks odd.
+- Late denials: Many stories end with Loan Denied (about 1 in 2). Often this is late, after submission and long waits (about 80,000+ time units), which means a lot of work and then a “no.”
+- Fast-track risk: skipped_examination lets 332 cases sign without formal submission. This needs clear rules so it stays safe and fair.
+- Rework: Collateral visits can repeat many times, which adds delays and ups-and-downs.
+- Hidden steps: Choices like needing a co-signer or not are sometimes done with invisible skips. That makes it harder to audit and improve the process later.
+- No visible “approved!” step: Approval is simply “no denial happened” plus “we signed.” That makes tracking approvals less clear.
+- Long waits early on: There are big waits between appointment setting, application hand-in, and verification, which stretch the total time.
+
+A tiny example: Alex’s possible journeys
+- Quick “no”: Alex requests an appointment, and the team says Appointment Denied. End.
+- Paper “no”: Alex sets the appointment, hands in the application, and after verification gets Application Rejected. End.
+- Late “no”: Alex passes verification, the two tracks start. On Branch B, the file is submitted. On Branch A, later, Loan Denied happens. Branch B quietly finishes (skip_13) with no signing. End shows as Loan Denied.
+- Happy “yes”: Alex passes verification. Branch A does the hidden “okay for now” (skip_3). Branch B either:
+  - Uses fast-track skipped_examination and then signs, or
+  - Submits the file (with or without co-signer and/or collateral visits), then signs.
+  The end shows Sign Loan Agreement.
+
+And that’s how the whole process works! Every step, every choice, every loop, and every ending is part of the journey from asking for an appointment to either a clear “no” or a signed loan.

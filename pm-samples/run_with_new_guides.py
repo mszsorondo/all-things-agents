@@ -6,23 +6,22 @@ Usage:
   # Default: All representations with new guides
   python run_with_new_guides.py
 
+  # With separate generator and validator LLMs
+  python run_with_new_guides.py --generator-llm openai:gpt-5 --validator-llm gpt-5-mini
+
   # Without interpretation guides
   python run_with_new_guides.py --no-guides
 
   # Ablation study: Run separate benchmark for EACH of 11 representations
   python run_with_new_guides.py --one-rep
-  python run_with_new_guides.py --one-rep openai:gpt-5-mini 50 50
+  python run_with_new_guides.py --one-rep --generator-llm openai:gpt-5-mini --k-valid 50 --k-invalid 50
 
   # Single representation only
   python run_with_new_guides.py --one-rep petri_net_inductive
-  python run_with_new_guides.py --one-rep dfg
-  python run_with_new_guides.py --one-rep log_skeleton
-
-  # With custom parameters
-  python run_with_new_guides.py --one-rep dfg openai:gpt-5-mini 100 100
+  python run_with_new_guides.py --one-rep dfg --generator-llm openai:gpt-4o
 
   # Resume from folder
-  python run_with_new_guides.py openai:gpt-5-mini 100 100 benchmark_runs/new_guides_run_20260126_194400
+  python run_with_new_guides.py --resume benchmark_runs/new_guides_run_20260126_194400
 
 Available representations (for --one-rep <name>) - from ablation_study.py:
   - petri_net_inductive (Petri Net - Inductive Miner)
@@ -43,6 +42,7 @@ Backward compatible: "petri_net" maps to "petri_net_inductive"
 
 import sys
 import json
+import argparse
 from pathlib import Path
 from datetime import datetime
 from enhanced_agentic_miner import AgenticProcessMiner, MiningConfiguration, RepresentationType
@@ -58,7 +58,7 @@ from ablation_study import (
 )
 import pm4py
 
-def run_problem(xes_path: str, llm: str, k_valid: int, k_invalid: int, run_folder: Path, use_guides: bool = True, one_rep: str = None):
+def run_problem(xes_path: str, generator_llm: str, validator_llm: str, k_valid: int, k_invalid: int, run_folder: Path, use_guides: bool = True, one_rep: str = None):
     """Run benchmark for a single problem."""
     problem_name = Path(xes_path).stem
 
@@ -92,7 +92,7 @@ def run_problem(xes_path: str, llm: str, k_valid: int, k_invalid: int, run_folde
         # Configure miner
         config = MiningConfiguration(
             representations=representations,
-            model_name=llm,
+            model_name=generator_llm,
             prompt_file="ONLY_GENERATE_TEXTUAL_MODEL.txt",
             use_cache=True
         )
@@ -102,7 +102,7 @@ def run_problem(xes_path: str, llm: str, k_valid: int, k_invalid: int, run_folde
         miner.xes_path = xes_path
         miner.dataset_name = problem_name
 
-        print("Discovering representations...")
+        print(f"Discovering representations using: {generator_llm}")
         miner.discover_representations()
 
         if use_guides:
@@ -123,11 +123,11 @@ def run_problem(xes_path: str, llm: str, k_valid: int, k_invalid: int, run_folde
         miner_run_folder = str(miner.run_folder)
 
     # Run validation
-    print("\nRunning trace validation...")
+    print(f"\nRunning trace validation using: {validator_llm}")
     valid_traces = sample_valid_traces(xes_path, k=k_valid)
     invalid_traces = generate_invalid_traces(valid_traces, k=k_invalid)
 
-    validator, system_prompt = create_validator(model_text, llm)
+    validator, system_prompt = create_validator(model_text, validator_llm)
 
     valid_preds, invalid_preds, total_time, total_tokens, misclassified = evaluate_traces(
         valid_traces, invalid_traces, validator
@@ -148,7 +148,7 @@ def run_problem(xes_path: str, llm: str, k_valid: int, k_invalid: int, run_folde
     }
 
 
-def run_problem_ablation_style(xes_path: str, llm: str, k_valid: int, k_invalid: int,
+def run_problem_ablation_style(xes_path: str, generator_llm: str, validator_llm: str, k_valid: int, k_invalid: int,
                                  run_folder: Path, use_guides: bool, rep_type: AblationRepresentationType):
     """Run benchmark for a single problem using ablation_study.py logic (supports all 11 representations)."""
     problem_name = Path(xes_path).stem
@@ -173,12 +173,12 @@ def run_problem_ablation_style(xes_path: str, llm: str, k_valid: int, k_invalid:
         # Initialize discoverer (from ablation_study.py)
         discoverer = RepresentationDiscoverer(log, xes_path)
 
-        print("Discovering all representations (ablation_study mode)...")
+        print(f"Discovering all representations (ablation_study mode) using: {generator_llm}")
         discoverer.discover_all()
 
         # Configure ablation miner
         mining_config = AblationMiningConfig(
-            model_name=llm,
+            model_name=generator_llm,
             prompt_file="ONLY_GENERATE_TEXTUAL_MODEL.txt",
             use_interpretations=use_guides
         )
@@ -197,11 +197,11 @@ def run_problem_ablation_style(xes_path: str, llm: str, k_valid: int, k_invalid:
         print(f"Saved textual model to: {model_file}")
 
     # Run validation
-    print("\nRunning trace validation...")
+    print(f"\nRunning trace validation using: {validator_llm}")
     valid_traces = sample_valid_traces(xes_path, k=k_valid)
     invalid_traces = generate_invalid_traces(valid_traces, k=k_invalid)
 
-    validator, system_prompt = create_validator(model_text, llm)
+    validator, system_prompt = create_validator(model_text, validator_llm)
 
     valid_preds, invalid_preds, total_time, total_tokens, misclassified = evaluate_traces(
         valid_traces, invalid_traces, validator
@@ -223,17 +223,107 @@ def run_problem_ablation_style(xes_path: str, llm: str, k_valid: int, k_invalid:
 
 
 def main():
-    # Check for --no-guides flag
-    use_guides = "--no-guides" not in sys.argv
+    parser = argparse.ArgumentParser(
+        description='Run process mining benchmark with interpretation guides',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Default: All representations with new guides
+  python run_with_new_guides.py
 
-    # Check for --each-rep flag (test each representation separately)
-    test_each_rep = "--each-rep" in sys.argv
+  # With separate generator and validator LLMs
+  python run_with_new_guides.py --generator-llm openai:gpt-5 --validator-llm gpt-5-mini
 
-    # Check for --one-rep flag
-    # Three modes:
-    # 1. --one-rep <name>: Run with single specific representation
-    # 2. --one-rep (no name): Run ablation study (each representation separately)
-    # 3. No --one-rep: Run with all representations together (default)
+  # Without interpretation guides
+  python run_with_new_guides.py --no-guides
+
+  # Single representation
+  python run_with_new_guides.py --one-rep dfg
+
+  # Ablation study (all representations separately)
+  python run_with_new_guides.py --one-rep
+
+  # Custom trace counts
+  python run_with_new_guides.py --k-valid 50 --k-invalid 50
+
+  # Resume from folder
+  python run_with_new_guides.py --resume benchmark_runs/new_guides_run_20260126_194400
+        """
+    )
+
+    # LLM configuration
+    parser.add_argument(
+        '--generator-llm',
+        type=str,
+        default='openai:gpt-5-mini',
+        help='LLM for textual model generation (default: openai:gpt-5-mini)'
+    )
+    parser.add_argument(
+        '--validator-llm',
+        type=str,
+        default='gpt-5-mini',
+        help='LLM for trace validation (default: gpt-5-mini)'
+    )
+
+    # Trace configuration
+    parser.add_argument(
+        '--k-valid',
+        type=int,
+        default=100,
+        help='Number of valid traces to test (default: 100)'
+    )
+    parser.add_argument(
+        '--k-invalid',
+        type=int,
+        default=100,
+        help='Number of invalid traces to generate (default: 100)'
+    )
+
+    # Interpretation guides
+    parser.add_argument(
+        '--no-guides',
+        action='store_true',
+        help='Run without interpretation guides (use hardcoded defaults)'
+    )
+
+    # Representation configuration
+    parser.add_argument(
+        '--one-rep',
+        nargs='?',
+        const='__ABLATION__',
+        default=None,
+        metavar='REPRESENTATION',
+        help='Run with single representation, or run ablation study if no name provided'
+    )
+
+    # Resume
+    parser.add_argument(
+        '--resume',
+        type=str,
+        default=None,
+        metavar='FOLDER',
+        help='Resume from existing run folder'
+    )
+
+    # Backward compatibility: support old positional argument format
+    # python run_with_new_guides.py openai:gpt-5-mini 100 100
+    args, unknown = parser.parse_known_args()
+
+    # If there are unknown positional arguments, treat them as old format
+    if unknown and not unknown[0].startswith('--'):
+        print("Note: Detected legacy positional argument format")
+        print("  Converting to new format: use --generator-llm, --validator-llm, --k-valid, --k-invalid")
+        if len(unknown) >= 1:
+            args.generator_llm = unknown[0]
+            args.validator_llm = unknown[0]  # Same LLM for both in legacy mode
+        if len(unknown) >= 2:
+            args.k_valid = int(unknown[1])
+        if len(unknown) >= 3:
+            args.k_invalid = int(unknown[2])
+        if len(unknown) >= 4:
+            args.resume = unknown[3]
+
+    use_guides = not args.no_guides
     one_rep = None
     ablation_study = False
 
@@ -249,43 +339,35 @@ def main():
         "petri_net": "petri_net_inductive",  # Old enhanced_agentic_miner name -> ablation name
     }
 
-    if "--one-rep" in sys.argv:
-        idx = sys.argv.index("--one-rep")
-        # Check if next argument exists and is a valid representation
-        if idx + 1 < len(sys.argv):
-            next_arg = sys.argv[idx + 1]
+    # Parse --one-rep argument
+    if args.one_rep is not None:
+        if args.one_rep == '__ABLATION__':
+            # --one-rep without argument: ablation study
+            ablation_study = True
+        else:
+            # --one-rep with argument: single representation
+            rep_arg = args.one_rep
 
             # Apply backward compatibility mapping
-            if next_arg in rep_name_mapping:
-                mapped_arg = rep_name_mapping[next_arg]
-                print(f"Note: Mapping '{next_arg}' to '{mapped_arg}' for compatibility")
-                next_arg = mapped_arg
+            if rep_arg in rep_name_mapping:
+                mapped_arg = rep_name_mapping[rep_arg]
+                print(f"Note: Mapping '{rep_arg}' to '{mapped_arg}' for compatibility")
+                rep_arg = mapped_arg
 
-            # Check if it's a valid representation (not a flag or other argument)
-            if next_arg in valid_reps:
-                # Mode 1: Single specific representation
-                one_rep = next_arg
-            elif next_arg.startswith("--") or next_arg.replace(":", "").replace("-", "").replace(".", "").isalnum():
-                # Next arg is a flag or looks like a model name/number
-                # Mode 2: Ablation study
-                ablation_study = True
+            # Validate representation
+            if rep_arg in valid_reps:
+                one_rep = rep_arg
             else:
-                print(f"Error: Invalid representation type: {next_arg}")
+                print(f"Error: Invalid representation type: {rep_arg}")
                 print(f"Available: {', '.join(sorted(valid_reps))}")
                 print(f"Backward compatible: {', '.join(rep_name_mapping.keys())}")
-                print(f"Or use '--one-rep' without a name to run ablation study")
                 sys.exit(1)
-        else:
-            # Mode 2: Ablation study (--one-rep is last argument)
-            ablation_study = True
 
-    # Filter out flags from argv for positional parsing
-    filtered_argv = [arg for arg in sys.argv if arg not in ["--no-guides", "--one-rep", "--each-rep"] and (not one_rep or arg != one_rep)]
-
-    llm = filtered_argv[1] if len(filtered_argv) > 1 else "openai:gpt-5-mini"
-    k_valid = int(filtered_argv[2]) if len(filtered_argv) > 2 else 100
-    k_invalid = int(filtered_argv[3]) if len(filtered_argv) > 3 else 100
-    resume_folder = filtered_argv[4] if len(filtered_argv) > 4 else None
+    generator_llm = args.generator_llm
+    validator_llm = args.validator_llm
+    k_valid = args.k_valid
+    k_invalid = args.k_invalid
+    resume_folder = args.resume
 
     problems = [
         "benchmark/hiring/hiring_log_high.xes",
@@ -360,7 +442,8 @@ def main():
         else:
             print(f"FULL BENCHMARK WITHOUT INTERPRETATION GUIDES (DEFAULT HARDCODED)")
         print(f"{'='*80}")
-        print(f"LLM: {llm}")
+        print(f"Generator LLM: {generator_llm}")
+        print(f"Validator LLM: {validator_llm}")
         print(f"Valid traces: {k_valid}")
         print(f"Invalid traces: {k_invalid}")
         print(f"Interpretation guides: {'representation_interpretation_guides/' if use_guides else 'NONE (hardcoded defaults)'}")
@@ -375,8 +458,8 @@ def main():
         if "_meta" not in results:
             results["_meta"] = {
                 "benchmark_start_time": datetime.now().isoformat(),
-                "llm_model": llm,
-                "validator_model": llm,
+                "generator_llm": generator_llm,
+                "validator_llm": validator_llm,
                 "k_valid": k_valid,
                 "k_invalid": k_invalid,
                 "interpretation_guides": "representation_interpretation_guides" if use_guides else "none_hardcoded_defaults",
@@ -400,12 +483,12 @@ def main():
                 # Use ablation_study.py logic for full representation support
                 rep_enum = AblationRepresentationType(current_rep)
                 results[problem_name] = run_problem_ablation_style(
-                    xes_path, llm, k_valid, k_invalid, run_folder, use_guides, rep_enum
+                    xes_path, generator_llm, validator_llm, k_valid, k_invalid, run_folder, use_guides, rep_enum
                 )
             else:
                 # Use enhanced_agentic_miner.py for default mode
                 results[problem_name] = run_problem(
-                    xes_path, llm, k_valid, k_invalid, run_folder, use_guides, current_rep
+                    xes_path, generator_llm, validator_llm, k_valid, k_invalid, run_folder, use_guides, current_rep
                 )
             results[problem_name]["status"] = "completed"
 

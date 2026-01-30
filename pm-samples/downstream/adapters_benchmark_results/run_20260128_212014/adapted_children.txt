@@ -1,0 +1,182 @@
+This is the story of how the hiring journey works, from “I applied!” to either “We’re sorry” or “You get an offer.”
+
+Where this story came from (in simple words)
+- We rebuilt this journey by reading a process map (a “next step in the journey” map called a Petri net), a path picture that shows what follows what (a directly-follows graph), and the most common full paths people took (top abstract variants).
+- The map includes:
+  - Invisible helper steps that split the road into two at once or join roads back together (that means things can run at the same time, or we must “wait for all tasks to finish before moving on”).
+  - Choices where you pick only one road (like a fork in the road).
+  - Loops (sometimes you have to go back and do a step again).
+  - Steps you can skip (some steps do not always happen).
+- Roles are not named in the source, so we don’t know exactly who presses which button or calls whom. We still keep every step and rule.
+
+Meet Alex (our example traveler)
+- Alex is a candidate. Alex wants a job. Alex walks through the steps below. Others (recruiters, interviewers, systems) help, but the map doesn’t say exactly who does each step.
+
+Start of the journey
+- First step: Hand In Job Application.
+  - This is the start signal for the whole journey.
+
+Stage 1: First look at the application (with an optional phone call and possible early “no”)
+- Alex hands in the application.
+- Now comes a choice (a fork in the road):
+  - Most of the time we talk on the phone next. This Telephonic Screening happens very often: we saw Hand In Job Application -> Telephonic Screening 8,799 times (average wait about 82,440 time units).
+  - Sometimes, the phone call is skipped (that means it does not happen at all in some cases).
+  - Sometimes, there is an early “no” right after the application. We saw Hand In Job Application -> Application Rejected 1,201 times (about 12 out of every 100 applications), with an average wait of about 146,346 time units.
+- If the phone call does happen, another choice appears:
+  - We may say “no” here. We saw Telephonic Screening -> Application Rejected 990 times (about 10 out of every 100), with an average wait of about 143,282 time units.
+  - Or we continue to pre-technical checks.
+
+Stage 2: Pre-technical checks that can happen at the same time
+- After the Telephonic Screening, the road splits into two at once (an invisible helper step makes a parallel split):
+  - Screening Interview can start.
+  - Background Check can start.
+  - These two can run at the same time, in any order. We saw:
+    - Telephonic Screening -> Background Check 3,961 times (~81,906 average wait).
+    - Telephonic Screening -> Screening Interview 3,848 times (~81,903 average wait).
+    - Screening Interview -> Background Check 3,848 times with almost zero extra wait (this looks like “at the same time” or “back-to-back”).
+    - Background Check -> Screening Interview 3,961 times with almost zero extra wait (also like “at the same time”).
+- We must “wait for all tasks to finish before moving on.” So we only move forward after both Screening Interview and Background Check are done (they rejoin at a parallel join).
+- After both finish, there is an optional extra check:
+  - Extensive Background Check may happen, or it may be skipped.
+  - We saw:
+    - Background Check -> Extensive Background Check 1,044 times.
+    - Screening Interview -> Extensive Background Check 1,055 times.
+  - From Extensive Background Check, two things can happen:
+    - Application Rejected 1,125 times (a direct “no”).
+    - Or we go to more assessments, like Coding Interview 974 times.
+
+Stage 3: Technical assessment (coding plus up to three tech interviews)
+- Coding Interview is optional. After the pre-technical join, we can go straight ahead (skip coding), or we can do Coding Interview.
+  - We saw Coding Interview starting from both earlier paths:
+    - Screening Interview -> Coding Interview 1,517 times (~129,892 average wait).
+    - Background Check -> Coding Interview 1,413 times (~129,885 average wait).
+- After Coding Interview, an invisible helper step splits the road into three technical interview tracks. This is another “at the same time” moment:
+  - ML Interview
+  - Backend Interview
+  - Frontend Interview
+- Rules for these three:
+  - Each one can be done or skipped. So, you might do all three, some of them, or none.
+  - They can happen in any order, and they can overlap.
+  - We saw:
+    - Coding Interview -> ML Interview 1,304 times.
+    - Coding Interview -> Backend Interview 701 times.
+    - Coding Interview -> Frontend Interview 1,513 times.
+    - There were near-zero-time switches between pairs (like ML <-> Frontend, Frontend <-> Backend), which tells us interviews can shuffle order or happen nearly at the same time.
+- We “wait for all the chosen tasks to finish before moving on.” So after the chosen set of technical interviews ends (including any that were skipped), we rejoin and go to the final stage.
+
+Stage 4: Final decisions run in parallel, with loops
+- Now the road splits into two big branches that run at the same time (parallel split):
+  A) Rejection branch
+    - This branch can say “Application Rejected.”
+    - It also has a loop. That means “Application Rejected” can happen more than once, one after another if the process keeps circling. We saw Application Rejected -> Application Rejected 654 times (a self-loop).
+    - When this branch leaves the loop, it heads to the final waiting point (the last join).
+  B) Behavioral-and-offer branch
+    - Behavioral Interview can happen here. It also has a loop, so Behavioral Interview can repeat. We saw Behavioral Interview -> Behavioral Interview 1,032 times (a self-loop).
+    - Make Job Offer can happen here, and it can also repeat. We saw Make Job Offer -> Make Job Offer 861 times (a self-loop).
+    - This whole branch can also be skipped (nothing happens here in some cases).
+- Because both branches run at the same time, surprising things can happen:
+  - We can see a “no” and still do more steps on the other branch.
+  - We saw:
+    - Application Rejected -> Behavioral Interview 740 times.
+    - Application Rejected -> Make Job Offer 690 times.
+    - Make Job Offer -> Application Rejected 110 times.
+  - So, a person might get an offer and later be rejected, or be rejected and later get more interviews or even an offer. The model allows this.
+- At the end, both branches meet at a final “wait for all to finish” point (final join) and then the journey ends.
+  - Because both branches can be skipped, it is also possible (even if uncommon) to end without seeing a clear offer or a clear rejection as the last visible step.
+
+All decisions and choices (explained simply)
+- After the application:
+  - Choose one path: do a phone call (Telephonic Screening) or skip it, or say “no” right away.
+- After the phone call:
+  - Split the road in two: Screening Interview and Background Check happen “at the same time,” in any order, and we wait for both to finish.
+- After both of those:
+  - Choose one path: do Extensive Background Check or skip it.
+  - From Extensive Background Check: choose one path: reject now or continue to more assessments like coding.
+- For the technical stage:
+  - Choose one path: do Coding Interview or skip it.
+  - If we do coding, then split into up to three tracks “at the same time”: ML, Backend, Frontend. Each track can be done or skipped. We wait for all chosen tracks to finish.
+- Final stage:
+  - Split into two branches “at the same time”:
+    - Rejection branch (can loop on “Application Rejected”).
+    - Behavioral-and-offer branch (can loop on “Behavioral Interview” and “Make Job Offer,” and the branch can be skipped).
+  - We end only after both branches reach their stopping points (leaving loops or being skipped) and meet at the final join.
+
+Early exits, special cases, and rework
+- Early “no” can happen:
+  - Directly after the application: 1,201 times (~146,346 average wait).
+  - After the phone call: 990 times (~143,282 average wait).
+  - After Screening Interview or Background Check:
+    - Background Check -> Application Rejected 1,391 times (about 14 out of every 100), with ~155,320 average wait.
+    - Screening Interview -> Application Rejected 1,389 times (about 14 out of every 100), with ~155,969 average wait.
+  - After Extensive Background Check: 1,125 times.
+- Loops (you might need to do these more than once):
+  - Application Rejected -> Application Rejected: 654 times.
+  - Behavioral Interview -> Behavioral Interview: 1,032 times.
+  - Make Job Offer -> Make Job Offer: 861 times.
+- Technical interviews can be reordered and can practically “touch” each other with no wait (we saw near-zero-time back-and-forth among ML, Backend, and Frontend), which is consistent with doing them in any order or in parallel-like ways.
+
+How long things tend to take (performance hints)
+- Common moves and their average waits (time units):
+  - Hand In Job Application -> Telephonic Screening: 8,799 times (~82,440).
+  - Telephonic Screening -> Background Check: 3,961 (~81,906).
+  - Telephonic Screening -> Screening Interview: 3,848 (~81,903).
+  - Screening Interview <-> Background Check both directions: ~3,848–3,961 with about zero extra wait (shows concurrency).
+  - Screening Interview -> Coding Interview: 1,517 (~129,892).
+  - Background Check -> Coding Interview: 1,413 (~129,885).
+  - Behavioral Interview -> Make Job Offer: 1,850 (~80,430).
+- Rejection edges and their average waits:
+  - Background Check -> Application Rejected: 1,391 (~155,320).
+  - Screening Interview -> Application Rejected: 1,389 (~155,969).
+  - Telephonic Screening -> Application Rejected: 990 (~143,282).
+  - Hand In Job Application -> Application Rejected: 1,201 (~146,346).
+- Long journeys:
+  - Some full “successful-to-offer” paths with lots of steps and repeated Behavioral/Offer loops took about 530,000 time units end-to-end.
+
+Examples of full paths we saw (representative variants)
+- Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected:
+  - 1,391 times (~319,390 time units total).
+- Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected:
+  - 1,389 times (~320,030 time units total).
+- Application -> Application Rejected directly:
+  - 1,201 times (~146,346 time units).
+- Longer “offer” paths with coding plus multiple technical interviews and repeated Behavioral/Offer loops:
+  - About 530,000 time units total.
+
+End of the journey
+- There is one formal end. We reach it only after the two final branches (the rejection branch and the behavioral/offer branch) both finish what they need to do (or get skipped) and meet at the last join.
+- What people see as the last visible step can be:
+  - Application Rejected.
+  - Make Job Offer.
+  - Or both appeared before the end (in either order), because the two branches can run at the same time.
+  - It is possible to end without seeing a clear offer or a clear rejection as a last visible event, because both final branches can be skipped (this is allowed by the map, even if uncommon).
+
+What makes this journey tricky (but still allowed by the rules)
+- Offers and rejections can cross over each other:
+  - We saw Application Rejected -> Behavioral Interview 740 times.
+  - Application Rejected -> Make Job Offer 690 times.
+  - Make Job Offer -> Application Rejected 110 times.
+  - This means someone can be rejected and later get an interview or even an offer, or get an offer and later be rejected.
+- Many loops:
+  - Behavioral Interview and Make Job Offer repeat a lot. This adds waiting and work.
+- A lot of “at the same time”:
+  - Screening Interview and Background Check happen in parallel, which can lead to doing checks for people who will later be rejected.
+  - The two final branches run in parallel, which is why “offer” and “rejection” can interleave.
+- Many skips:
+  - Telephonic Screening can be skipped.
+  - Coding Interview can be skipped.
+  - ML, Backend, and Frontend can each be skipped.
+  - The entire Behavioral/Offer branch can be skipped.
+  - All this makes paths different from person to person.
+- Long waits:
+  - Some steps, like moving from Screening/Background to Rejection (~155,000 time units), or from Coding to next interviews (~80,000+ time units), take a long time.
+- Ambiguous ending:
+  - Because both final branches can be skipped, the journey can end without a clear offer or rejection as the last visible action.
+
+Quick glossary in kid-friendly words
+- Choose one path (like a fork in the road): only one of the options happens next.
+- Wait for all tasks to finish before moving on: tasks run at the same time; we pause until all are done.
+- Loop: we do a step again.
+- Skip: sometimes a step is not done at all.
+- Invisible helper step: an automatic step that splits the road into two or joins two roads, without a visible activity.
+
+And that’s how the whole process works!
