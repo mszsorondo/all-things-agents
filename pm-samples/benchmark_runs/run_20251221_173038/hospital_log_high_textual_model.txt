@@ -1,0 +1,109 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Overview: This AS-IS model describes the patient diagnostic and treatment flow discovered by process mining (inductive miner + DFG + abstract variants). The process starts when a patient registers at either the Family Doctor (Register at FD) or the Emergency Room (Register at ER) and ends when the case is discharged (Discharge). The model captures real operational behavior including branching between Examination, Expert Examination and Thorough Examination, diagnosis and treatment, treatment outcomes (successful / unsuccessful), rework loops where unsuccessful treatment leads back to Diagnosis, and occasional direct discharge from Treatment.
+- Purpose: Document observed behavior, frequencies and performance so stakeholders can understand current control-flow, rework, bottlenecks and variance in patient handling.
+
+Key stakeholders and roles involved (as implied by the source model)
+- Patient (implicit actor) — the person receiving care; initiates the process by registering.
+- Registration/Reception (FD) — performs Register at FD activity.
+- Registration/Reception (ER) — performs Register at ER activity.
+- Examiner / Nurse / General clinician — performs Examination activities.
+- Expert clinician / Specialist — performs Expert Examination activities.
+- Specialist / Senior clinician — performs Thorough Examination activities.
+- Diagnosing clinician / Doctor — performs Diagnosis activity.
+- Treatment team / Clinician — performs Treatment, Treatment successful, Treatment unsuccessful activities.
+- Discharge staff / Clinician — performs Discharge activity.
+Note: Roles are stated only where implied by activity names (FD = family doctor environment, ER = emergency room, Expert/Thorough = different examination intensities). No new activities have been invented.
+
+Detailed step-by-step process flow (observed behavior)
+Start conditions and triggers
+1. Start event: patient arrival / registration. The source place in the Petri net indicates two initial registration choices: "Register at FD" or "Register at ER".
+
+Primary sequence and branching
+2. Registration
+  - The patient registers at either Register at FD or Register at ER. Both registration activities are observed as start points in the mined Petri net and DFG.
+  - Frequencies (DFG): Register at FD → various next steps (total outgoing recorded frequencies ≈ 6,992); Register at ER → various next steps (total outgoing recorded frequencies ≈ 6,008).
+
+3. Post-registration routing (decision / gateway)
+  - After registration, the observed process branches to one of:
+    a) Expert Examination
+    b) Examination (general exam)
+    c) In a small number of cases the process skips straight to Diagnosis or Thorough Examination (skip arcs in the Petri net indicate optional bypasses).
+  - Distribution (DFG snapshots):
+    - Register at FD → Expert Examination (frequency = 2,888), → Examination (1,783), → Diagnosis (163), → Thorough Examination (158).
+    - Register at ER → Expert Examination (2,866), → Examination (1,826), → Thorough Examination (159), → Diagnosis (157).
+  - Likely decision drivers (inferred from naming): triage level, suspected severity, or route preference at registration; the model captures that both FD and ER can route to Expert Examination or to a general Examination.
+
+4. Examination paths
+  - Examination → Thorough Examination (DFG frequency = 1,968) OR Examination → Diagnosis directly (frequency = 1,641). The Petri net contains a skip transition from Examination to Diagnosis indicating some cases go straight to Diagnosis without a Thorough Examination.
+  - Expert Examination → Thorough Examination (frequency = 3,637) OR Expert Examination → Diagnosis (frequency = 2,117). Expert Examination is more frequently routed into thorough follow-up than a general Examination (higher flow into Thorough Examination).
+  - Thorough Examination → Diagnosis (frequency = 5,922).
+
+5. Diagnosis → Treatment
+  - Diagnosis is almost always followed by Treatment (Diagnosis → Treatment frequency = 11,746). The Petri net connects Diagnosis place to Treatment transition.
+
+6. Treatment outcomes and branching (critical behavior)
+  - From Treatment there are three observed outcomes (these three outcomes exhaust the observed follow-ups from Treatment):
+    a) Treatment → Treatment successful (frequency = 9,005), then Treatment successful → Discharge (frequency = 9,005).
+    b) Treatment → Treatment unsuccessful (frequency = 1,746), then Treatment unsuccessful → Diagnosis (frequency = 1,746) — this creates a rework loop (diagnosis → treatment → may loop again).
+    c) Treatment → Discharge directly (frequency = 995) — a shorter path where Treatment is followed immediately by Discharge without an explicitly logged "Treatment successful" event.
+  - The total Treatment exits sum to Diagnosis→Treatment frequency (11,746), confirming these three outcomes capture actual behavior.
+
+7. Rework loops
+  - When Treatment is unsuccessful, the process loops back: Treatment unsuccessful → Diagnosis → Treatment. These loops may occur once or multiple times; the abstract variants show occurrences with one or more unsuccessful iterations (variants with sequences containing repeated unsuccessful→Diagnosis→Treatment cycles).
+  - Observed rework frequency: 1,746 Treatment→Treatment unsuccessful occurrences out of 11,746 Diagnosis→Treatment (≈ 14.9%). Many variants illustrate repeated unsuccessful cycles (see variants listing), though the majority of unsuccessful cases resolve after one re-diagnosis and re-treatment.
+
+8. Finalization
+  - Discharge is the final event (Petri net sink place reached). Cases reach Discharge either after a recorded Treatment successful or via direct Treatment→Discharge.
+
+Exception handling and uncommon paths
+- Skipped examinations: The Petri net contains skip_x invisible transitions allowing direct jumps (e.g., Register → skip → Examination/Thorough Examination/Diagnosis) — these represent observed cases where intermediate examination steps were omitted.
+- Direct diagnosis from registration: small but non-zero occurrences where Register at FD/ER → Diagnosis occur without observed Examination or Expert Examination (DFG: Register at FD → Diagnosis = 163; Register at ER → Diagnosis = 157).
+- Multiple unsuccessful cycles: variants show rare long sequences with repeated Treatment unsuccessful → Diagnosis → Treatment unsuccessful → Diagnosis → ... → Treatment successful (some variants with frequencies down to single digits and very high end-to-end performance).
+
+Decision points with criteria and possible outcomes (as observed or reasonably inferred)
+- Initial routing (Register at FD vs Register at ER): outcome determines triage and next actors (Expert vs general Examination).
+- Post-registration clinical routing (to Expert Examination, Examination, or direct Diagnosis): decisions appear driven by triage or suspicion of complexity; Expert Examination tends more often to go on to Thorough Examination.
+- From Examination/Expert → either go to Thorough Examination or Diagnosis directly. Choice likely determined by preliminary findings; Thorough Examination is a deeper diagnostic step.
+- Treatment outcome decision: after Treatment clinicians record either Treatment successful or Treatment unsuccessful or, sometimes, skip the success event and discharge immediately. The explicit criteria for success are clinical and not provided in the mined model; the control-flow shows that unsuccessful outcomes cause re-diagnosis and re-treatment.
+
+End conditions and outcomes
+- End event: Discharge (the Petri net sink). Business meaning: patient episode is closed and patient leaves the tracked care flow.
+- Observed end-state distribution from treatment outcomes: of patients reaching Treatment, ~76.7% are logged as Treatment successful and discharged; ~14.9% are logged as Treatment unsuccessful and return to Diagnosis; ~8.5% go directly from Treatment to Discharge without a separate success event.
+
+Process metrics and performance characteristics (from DFG and variants)
+- High-level volumes observed:
+  - Diagnosis → Treatment frequency = 11,746 (core transition).
+  - Treatment successful → Discharge frequency = 9,005.
+  - Treatment → Treatment unsuccessful frequency = 1,746.
+- Treatment outcome proportions (computed):
+  - Treatment successful: 9,005 / 11,746 ≈ 76.7%.
+  - Treatment unsuccessful (rework): 1,746 / 11,746 ≈ 14.9%.
+  - Direct Treatment→Discharge: 995 / 11,746 ≈ 8.5%.
+- Average/observed performance (as reported in the DFG; units = as in source):
+  - Diagnosis → Treatment: 60,000.515
+  - Treatment → Treatment successful: 60,000.920
+  - Treatment successful → Discharge: 40,000.809
+  - Treatment → Treatment unsuccessful: 60,001.635
+  - Treatment → Discharge: 100,002.807
+  - Typical end-to-end variant performance examples:
+    - FD → Expert → Thorough → Diagnosis → Treatment → Success → Discharge (most frequent variant) performance ≈ 320,005.308
+    - ER → Expert → Thorough → ... → Discharge (2nd most common) performance ≈ 320,000.149
+    - Variants with Treatment unsuccessful loops show higher performance values (examples ~480k, 420k, 640k, up to ~800k for long multi-loop cases), indicating rework significantly increases cycle time.
+- Implication: rework (unsuccessful treatment loops) increases cycle time by roughly 50%–200% depending on the number of repeated cycles (e.g., 320k → 480k with one unsuccessful loop in many variants).
+
+Key challenges and pain points (AS-IS)
+- Non-negligible rework rate: ~15% of treatments are unsuccessful and require re-diagnosis and re-treatment, increasing patient stay and resource use.
+- Variability in routing after registration: large branching between Expert vs general Examination, with evidence of skipped steps and inconsistent triage rules (Register → Diagnosis direct in some cases).
+- Bottlenecks at Expert Examination and Thorough Examination: these activities have high inbound frequencies (Expert Examination→Thorough Examination = 3,637; Thorough Examination→Diagnosis = 5,922) and likely create queues.
+- Inconsistent logging of outcomes: direct Treatment→Discharge events (995) suggest occasional omission of the explicit "Treatment successful" event, degrading data quality.
+- Long tail of complex variants: rare but present extremely long sequences with repeated unsuccessful cycles (some variants show very high performance values), indicating a subset of patients consume disproportionate resources.
+- Multiple handoffs: frequent transitions between registration, examination types, diagnosis and treatment create coordination overhead.
+- Lack of explicit decision criteria in system: the mined model shows where decisions happen, but not why, which hinders governance and targeted improvements.
+
+AS-IS summary (concise)
+- Start: Register at FD or Register at ER.
+- Typical path: Register → Expert Examination or Examination → (maybe) Thorough Examination → Diagnosis → Treatment → (Success → Discharge | Unsuccessful → back to Diagnosis → re-treatment | Direct Discharge from Treatment).
+- Rework affects ~15% of treatment cases and causes materially longer case durations; Expert/Thorough Examination nodes are frequent and likely congested.
+

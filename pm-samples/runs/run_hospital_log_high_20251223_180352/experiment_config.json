@@ -1,0 +1,29 @@
+{
+  "run_timestamp": "2025-12-23T18:06:07.765443",
+  "dataset_name": "hospital_log_high",
+  "xes_path": "benchmark/hospital/hospital_log_high.xes",
+  "model": "gpt-5-mini",
+  "method": "run_without_tools",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_as_is_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conformance check...",
+  "system_prompt_ideal_preview": "You are a Process Model Translator. You have just generated an AS-IS process model description based on process mining outputs.\n\nNow, based on that AS-IS model you created, generate the IDEAL process model description.\n\nThe IDEAL model description:\n\n* Represents the improved or \"to-be\" version of the process:\n  * Remove or streamline obviously faulty, wasteful, or noncompliant behavior\n  * Fix bottlenecks\n  * Collapse redundant approvals\n  * Enforce correct sequencing\n  * Eliminate unnecessary r...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_11, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (18089fc5-40d7-4796-b4f4-088d790c025f, 'Treatment successful'), (229f0dbf-5083-487e-a157-076231f22401, 'Register at ER'), (22b25462-3b92-4a65-ad33-a463b63420b1, 'Register at FD'), (33a91bcd-b859-4ce6-8138-5f695e188968, 'Examination'), (4b2ded07-17ba-4e44-ac0f-6db3935ad810, 'Diagnosis'), (6d3997d6-df6f-485c-b5b5-c208c671f173, 'Thorough Examinati...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "gpt-5-mini",
+    "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

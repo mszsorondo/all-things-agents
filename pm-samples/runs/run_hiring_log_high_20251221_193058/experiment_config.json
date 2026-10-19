@@ -1,0 +1,27 @@
+{
+  "run_timestamp": "2025-12-21T19:30:58.752542",
+  "dataset_name": "hiring_log_high",
+  "xes_path": "benchmark/hiring/hiring_log_high.xes",
+  "model": "openai:gpt-5",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (36f627fe-c1bc-495b-acf5-9e8d837dd10a, 'Frontend Interview'), (5896a394-308f-4705-8ecd-d113113d756c, 'Backend Interview'), (6c3e9186-ad6e-4661-bc1e-5045f88a76ab, 'ML Interview'), (75c8c7cf-b139-49ff-a5e5-b5d00bd9d394, 'Behavioral I...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "openai:gpt-5",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

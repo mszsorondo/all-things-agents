@@ -1,0 +1,46 @@
+AS-IS Process Model — Hiring Decision Maker
+============================================================
+
+Title: AS-IS Process Model — Hiring Decision Maker
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Make final decisions on candidate outcomes: proceed to Behavioral Interview, extend Make Job Offer, or confirm Application Rejected.
+- Responsibilities: conduct or co-conduct Behavioral Interview (with HR-pro and Senior Partner), decide on Make Job Offer, and occasionally mark Application Rejected at late stages.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Behavioral Interview: late-stage interview focusing on fit and soft skills; can occur multiple times.
+- Make Job Offer: extend an offer to the candidate (observed repeated in some traces).
+- Application Rejected: occasionally recorded by Hiring Decision Maker when rejecting after interviews.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation: The Hiring Decision Maker gets involved after technical interviews and sometimes after extensive background checks. Behavioral Interview is typically triggered by Technical Interviewers or HR-pro/Senior Partner.
+- Observed flow choices (AS-IS):
+  - Technical/HR track -> Behavioral Interview -> Make Job Offer (or Application Rejected)
+  - Behavioral Interview can loop (repeat multiple times) before a Make Job Offer is recorded.
+  - There are cases where Application Rejected appears after Behavioral Interview and then later Make Job Offer occurs (data shows duplicates and conflicting outcomes).
+- Decision points handled:
+  - After Behavioral Interview(s): decide whether to issue Make Job Offer or to reject.
+  - Make Job Offer may be repeated (system logs multiple offer events); decisions may be reversed or duplicated in observed traces.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+- Inputs to Hiring Decision Maker: Technical Interviewers (handoff after technical track), HR-pro and Senior Partner (for escalations and inputs from background checks).
+- Outputs from Hiring Decision Maker:
+  - Make Job Offer (handed to candidate / recorded in system),
+  - Application Rejected (final post-interview rejection),
+  - Sometimes cases are handed back to HR-pro or Senior Partner for further action.
+- Notable handover weights: HR-pro and Senior Partner co-conduct Behavioral Interviews; HR-pro and Senior Partner interactions are frequent.
+
+Section 5: Variants and Exceptions (all observed paths)
+- Observed variants (AS-IS):
+  - Behavioral Interview -> Make Job Offer (common end path)
+  - Behavioral Interview -> Behavioral Interview (repeat loop; observed 0..n times) -> Make Job Offer or Application Rejected
+  - Application Rejected -> Behavioral Interview (observed in the log; suggests post-rejection interviews or data inconsistencies)
+  - Make Job Offer -> Make Job Offer (repeated events) and Make Job Offer -> Application Rejected (some traces show offers followed by rejections)
+- Exceptions/escalations: Senior Partner involvement occurs for some Behavioral Interviews and offer decisions; sometimes multiple decision-makers are involved leading to duplicated events.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Behavioral Interview repeats frequently and sometimes occurs after Application Rejected — this indicates inconsistency in how outcomes are recorded or possible re-openings of cases.
+- Make Job Offer and Application Rejected both repeat and alternate in traces; this is a strong indication of logging artefacts or manual reversals rather than an intended process.
+- High handover between HR-pro and Senior Partner suggests unclear ownership of final decision, causing coordination overhead.
+
+(End of AS-IS description for Hiring Decision Maker)

@@ -1,0 +1,33 @@
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Existence: Hand In Job Application, Telephonic Screening, Application Rejected
+Responded Existence: ('Telephonic Screening', 'Screening Interview'), ('Telephonic Screening', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Application Rejected', 'Telephonic Screening'), ('Telephonic Screening', 'Hand In Job Application'), ('Telephonic Screening', 'Background Check'), ('Application Rejected', 'Hand In Job Application'), ('Hand In Job Application', 'Application Rejected')
+Initialization: Hand In Job Application
+Precedence: ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected')
+Response: ('Telephonic Screening', 'Background Check'), ('Hand In Job Application', 'Application Rejected'), ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Application Rejected')
+Alternate response: ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Background Check')
+Exactly 1: Application Rejected, Telephonic Screening, Hand In Job Application
+Chain precedence: ('Hand In Job Application', 'Telephonic Screening')
+Alternate precedence: ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening')
+Chain response: ('Hand In Job Application', 'Telephonic Screening')
+Absence: Backend Interview
+Succession: ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Application Rejected'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview')
+Alternate succession: ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview')
+Chain succession: ('Hand In Job Application', 'Telephonic Screening')
+Co-Existence: ('Application Rejected', 'Hand In Job Application'), ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Background Check', 'Telephonic Screening'), ('Telephonic Screening', 'Hand In Job Application'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview'), ('Screening Interview', 'Telephonic Screening')

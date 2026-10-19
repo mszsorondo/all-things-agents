@@ -1,0 +1,235 @@
+Below is the corrected, complete, and purely semantic interpretation guide for the **Log Skeleton textual abstraction** produced by
+`pm4py.llm.abstract_log_skeleton(...)`, based strictly on the provided code and your base description.
+
+---
+
+# === LOG SKELETON INTERPRETATION GUIDE (SOURCE-EXACT) ===
+
+---
+
+## 1. WHAT THIS REPRESENTATION DESCRIBES
+
+This representation describes a **Log Skeleton process model**, which is a **declarative summary of behavioral constraints** observed across all cases in an event log.
+
+It does **not** describe individual traces.
+It describes **global constraints** that must hold for *all (or almost all)* cases in the log, depending on the noise threshold used during discovery.
+
+The representation expresses:
+• which activities must precede or follow others
+• which activities must occur together or never together
+• which activities must occur the same number of times
+• which activities have bounded numbers of occurrences
+• which activities must directly follow others
+
+It is a **constraint-based behavioral model**, not a procedural flow model.
+
+---
+
+## 2. TYPICAL OUTPUT FORM (conceptual)
+
+Conceptually, the output is:
+
+• A short header explaining that the model contains declarative constraints
+• Followed by labeled sections, each listing constraint pairs or bounds
+
+Example structure (conceptual):
+
+```
+The Log Skeleton process model contains the following declarative constraints:
+
+Equivalence:
+(A, B), (C, D), ...
+
+Always Before:
+(A, B), ...
+
+Always After:
+(A, B), ...
+
+Never Together:
+(A, B), ...
+
+Directly-Follows:
+(A, B), ...
+
+Activity Occurrences:
+A: [min, max]
+B: [min, max]
+...
+```
+
+Only constraint types that are present appear.
+Each constraint is represented as either:
+• a pair of activities
+• or an activity with numeric bounds
+
+---
+
+## 3. HOW TO READ EACH LINE
+
+### Meaning of the sequence
+
+Each line lists **independent constraint instances**.
+Each tuple or bound must be interpreted as a **global rule** that applies to all cases.
+
+---
+
+### Meaning of each reported constraint type
+
+#### Equivalence: `(A, B)`
+
+Activity **A and B always occur the same number of times in each case**.
+If one appears *n* times in a case, the other also appears *n* times.
+
+This does **not** impose ordering — only equality of counts.
+
+---
+
+#### Always Before: `(A, B)`
+
+If activity **A occurs in a case**, then **B must have occurred earlier in that same case**.
+
+This is a **precedence requirement**:
+A cannot appear unless B has already appeared before it.
+
+It does **not** require B to occur after A.
+
+---
+
+#### Always After: `(A, B)`
+
+If activity **A occurs in a case**, then **B must occur later in that same case**.
+
+This is a **response requirement**:
+A cannot appear unless B will appear afterward.
+
+It does **not** require A to occur before B.
+
+---
+
+#### Never Together: `(A, B)`
+
+Activities **A and B cannot both appear in the same case**.
+
+If A appears, B must not appear in that case, and vice versa.
+
+---
+
+#### Directly-Follows: `(A, B)`
+
+Whenever **A occurs**, **B must immediately follow it in the trace**.
+
+There can be **no intervening activity** between A and B when this constraint applies.
+
+This expresses a **strict adjacency constraint**, not just ordering.
+
+---
+
+#### Activity Occurrences: `A: [min, max]`
+
+Activity **A can occur only between `min` and `max` times per case** (inclusive).
+
+This expresses **cardinality bounds** per case:
+• lower bound
+• upper bound
+
+It does not describe position or ordering.
+
+---
+
+## 4. GLOBAL SEMANTIC MEANING
+
+The model represents the **strongest behavioral regularities** found across cases:
+
+It encodes:
+• mandatory precedences
+• mandatory responses
+• mutual exclusions
+• equal repetition patterns
+• strict adjacency rules
+• occurrence bounds
+
+All constraints are:
+• case-level (per trace)
+• declarative (rules, not flows)
+• independent (no combined logic)
+
+The model assumes:
+These constraints hold for **all valid cases**, except those allowed by the noise threshold.
+
+---
+
+## 5. HOW TO INTERPRET THE LIST AS A WHOLE
+
+The full list must be interpreted as a **set of simultaneous constraints**.
+
+A trace is compliant with the model **iff it satisfies all listed constraints**.
+
+The list does **not**:
+• define start or end activities
+• define branching probabilities
+• define execution order globally
+• define concurrency explicitly
+
+It defines **what is allowed and forbidden**, not how the process executes.
+
+---
+
+## 6. WHAT THIS REPRESENTATION IS FOR
+
+It is meant for:
+
+• compliance checking
+• anomaly detection
+• behavioral auditing
+• rule-based validation
+• high-level behavioral explanation
+• constraint-based comparison of logs
+
+It answers questions like:
+“Which behaviors are mandatory?”
+“Which combinations are impossible?”
+“What must precede or follow what?”
+“How many times can something occur?”
+
+---
+
+## 7. WHAT THIS REPRESENTATION IS NOT
+
+It is **not**:
+
+• a procedural process model
+• a Petri net
+• a BPMN diagram
+• a probability model
+• a performance model
+• a trace enumeration
+• a workflow graph
+
+It does **not** encode:
+• frequencies
+• durations
+• transition probabilities
+• execution paths
+• loops explicitly
+• concurrency structure
+
+It expresses only **logical behavioral constraints**.
+
+---
+
+## 8. ONE-SENTENCE CORE SUMMARY
+
+**This representation is a declarative model that summarizes which activities must, must not, or must equally occur — and in what required relative order or adjacency — across all traces of an event log.**
+
+---
+
+If you want, next we can do the same for:
+• Declare
+• DFG
+• Variants
+• Heuristics Net
+• Petri net abstractions
+• or any other pm4py textual abstraction
+
+Just say which one.

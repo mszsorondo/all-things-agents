@@ -1,0 +1,76 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_ILP
+============================================================
+
+
+=== PETRI NET (ILP MINER) INTERPRETATION GUIDE ===
+
+The ILP (Integer Linear Programming) Miner constructs Petri nets that perfectly
+fit the observed behavior by solving an optimization problem.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ 3, 4, 5, ..., sink, source ]
+transitions: [ (Activity, 'Activity'), (■, None), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+PLACE NAMING:
+- Numeric identifiers (3, 4, 5, ...) for intermediate places
+- 'source' and 'sink' for start/end
+- Minimized number of places (optimization objective)
+
+SPECIAL TRANSITIONS:
+- (■, None) or similar: Silent/tau transitions for routing
+- Visible activities: (ActivityName, 'ActivityName')
+
+KEY CHARACTERISTICS:
+- Perfect fitness: ALL observed traces can replay
+- Minimal structure: Fewest places/arcs that explain behavior
+- May include silent transitions for complex routing
+- Numerically named places (optimization result)
+
+OPTIMIZATION OBJECTIVE:
+- Minimize structural complexity
+- Subject to: All traces must be replayable
+- Token flow conservation at each step
+
+ADVANTAGES:
+- Guaranteed perfect fitness
+- Mathematically rigorous
+- No heuristic parameters to tune
+- Finds minimal explaining structure
+
+LIMITATIONS:
+- Computationally expensive for large logs
+- May overfit to observed behavior
+- Does not handle noise well
+- Scalability issues with many activities
+
+WHEN TO USE:
+- Small to medium-sized logs
+- When perfect fitness is required
+- Clean logs without noise
+- Understanding exact behavioral boundaries
+
+
+--- DISCOVERED MODEL ---
+[ILP Miner]
+
+
+If I have a Petri net:
+
+places: [ 10, 11, 12, 13, 3, 4, 5, 6, 7, 8, 9, sink, source ]
+transitions: [ (Accept Late Payment, 'Accept Late Payment'), (Apply for Viewing Appointment, 'Apply for Viewing Appointment'), (Check Paperwork, 'Check Paperwork'), (Evict Tenant, 'Evict Tenant'), (Extensive Screening, 'Extensive Screening'), (Hand In The Paperwork, 'Hand In The Paperwork'), (Issue Warning, 'Issue Warning'), (Miss Rent Payment, 'Miss Rent Payment'), (Move In, 'Move In'), (Pay Rent, 'Pay Rent'), (Reject Prospective Tenant, 'Reject Prospective Tenant'), (Screen Prospective Tenant, 'Screen Prospective Tenant'), (Set Appointment, 'Set Appointment'), (Sign Contract, 'Sign Contract'), (Tenant Cancels Appartment, 'Tenant Cancels Appartment'), (View The Property, 'View The Property'), (■, None) ]
+arcs: [ (Accept Late Payment, 'Accept Late Payment')->13, (Accept Late Payment, 'Accept Late Payment')->9, (Apply for Viewing Appointment, 'Apply for Viewing Appointment')->3, (Apply for Viewing Appointment, 'Apply for Viewing Appointment')->7, (Check Paperwork, 'Check Paperwork')->6, (Evict Tenant, 'Evict Tenant')->12, (Extensive Screening, 'Extensive Screening')->7, (Hand In The Paperwork, 'Hand In The Paperwork')->5, (Issue Warning, 'Issue Warning')->11, (Miss Rent Payment, 'Miss Rent Payment')->10, (Move In, 'Move In')->13, (Move In, 'Move In')->9, (Pay Rent, 'Pay Rent')->9, (Reject Prospective Tenant, 'Reject Prospective Tenant')->12, (Screen Prospective Tenant, 'Screen Prospective Tenant')->3, (Screen Prospective Tenant, 'Screen Prospective Tenant')->7, (Set Appointment, 'Set Appointment')->4, (Sign Contract, 'Sign Contract')->8, (Tenant Cancels Appartment, 'Tenant Cancels Appartment')->12, (View The Property, 'View The Property')->3, (View The Property, 'View The Property')->7, (■, None)->sink, 10->(Issue Warning, 'Issue Warning'), 11->(Accept Late Payment, 'Accept Late Payment'), 11->(Evict Tenant, 'Evict Tenant'), 12->(■, None), 13->(Miss Rent Payment, 'Miss Rent Payment'), 13->(Tenant Cancels Appartment, 'Tenant Cancels Appartment'), 3->(Hand In The Paperwork, 'Hand In The Paperwork'), 3->(Reject Prospective Tenant, 'Reject Prospective Tenant'), 3->(Set Appointment, 'Set Appointment'), 3->(Sign Contract, 'Sign Contract'), 4->(View The Property, 'View The Property'), 5->(Check Paperwork, 'Check Paperwork'), 6->(Screen Prospective Tenant, 'Screen Prospective Tenant'), 7->(Extensive Screening, 'Extensive Screening'), 7->(Hand In The Paperwork, 'Hand In The Paperwork'), 7->(Reject Prospective Tenant, 'Reject Prospective Tenant'), 7->(Set Appointment, 'Set Appointment'), 7->(Sign Contract, 'Sign Contract'), 8->(Move In, 'Move In'), 9->(Miss Rent Payment, 'Miss Rent Payment'), 9->(Pay Rent, 'Pay Rent'), 9->(Tenant Cancels Appartment, 'Tenant Cancels Appartment'), source->(Apply for Viewing Appointment, 'Apply for Viewing Appointment') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

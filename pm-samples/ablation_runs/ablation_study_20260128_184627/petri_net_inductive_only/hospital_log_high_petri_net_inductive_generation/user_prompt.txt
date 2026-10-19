@@ -1,0 +1,71 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_11, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (28c4c0cd-3363-4240-ab53-572265d95851, 'Register at ER'), (43f53135-8201-45ec-a7b6-762e3eaa000b, 'Register at FD'), (45acd770-10bc-42d7-ad8e-ab86a303ba60, 'Diagnosis'), (4be91d75-e5ab-4595-8700-49d867880adb, 'Thorough Examination'), (70b3556b-e901-45a9-95dc-6bb484382758, 'Treatment'), (7ac2a13b-285d-4384-8ce9-35e2328c3f93, 'Expert Examination'), (92e4b9d4-65f6-4ebe-b05c-d16e50a1eb63, 'Discharge'), (dee3bfa5-8830-4476-bea0-5d41e4e8f1b7, 'Treatment successful'), (f14fb27d-8f03-4fc6-a117-99bd8b4aad12, 'Examination'), (f2bd3a58-4ca5-4c77-898e-3d76ecc1af82, 'Treatment unsuccessful'), (init_loop_3, None), (skip_1, None), (skip_2, None), (skip_5, None), (skip_6, None) ]
+arcs: [ (28c4c0cd-3363-4240-ab53-572265d95851, 'Register at ER')->p_3, (43f53135-8201-45ec-a7b6-762e3eaa000b, 'Register at FD')->p_3, (45acd770-10bc-42d7-ad8e-ab86a303ba60, 'Diagnosis')->p_9, (4be91d75-e5ab-4595-8700-49d867880adb, 'Thorough Examination')->p_5, (70b3556b-e901-45a9-95dc-6bb484382758, 'Treatment')->p_8, (7ac2a13b-285d-4384-8ce9-35e2328c3f93, 'Expert Examination')->p_4, (92e4b9d4-65f6-4ebe-b05c-d16e50a1eb63, 'Discharge')->sink, (dee3bfa5-8830-4476-bea0-5d41e4e8f1b7, 'Treatment successful')->p_11, (f14fb27d-8f03-4fc6-a117-99bd8b4aad12, 'Examination')->p_4, (f2bd3a58-4ca5-4c77-898e-3d76ecc1af82, 'Treatment unsuccessful')->p_7, (init_loop_3, None)->p_7, (skip_1, None)->p_4, (skip_2, None)->p_5, (skip_5, None)->p_6, (skip_6, None)->p_11, p_11->(92e4b9d4-65f6-4ebe-b05c-d16e50a1eb63, 'Discharge'), p_3->(7ac2a13b-285d-4384-8ce9-35e2328c3f93, 'Expert Examination'), p_3->(f14fb27d-8f03-4fc6-a117-99bd8b4aad12, 'Examination'), p_3->(skip_1, None), p_4->(4be91d75-e5ab-4595-8700-49d867880adb, 'Thorough Examination'), p_4->(skip_2, None), p_5->(init_loop_3, None), p_6->(dee3bfa5-8830-4476-bea0-5d41e4e8f1b7, 'Treatment successful'), p_6->(skip_6, None), p_7->(45acd770-10bc-42d7-ad8e-ab86a303ba60, 'Diagnosis'), p_8->(f2bd3a58-4ca5-4c77-898e-3d76ecc1af82, 'Treatment unsuccessful'), p_8->(skip_5, None), p_9->(70b3556b-e901-45a9-95dc-6bb484382758, 'Treatment'), source->(28c4c0cd-3363-4240-ab53-572265d95851, 'Register at ER'), source->(43f53135-8201-45ec-a7b6-762e3eaa000b, 'Register at FD') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

@@ -1,0 +1,284 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Handle retail credit applications from initial appointment request through verification, optional risk-mitigation steps, credit decisioning, and finalization (signing) or termination (denial/rejection).
+- Source model: Directly-Follows Graph (DFG) from event data. Frequencies indicate how often each direct succession was observed; performance indicates average time between activities (seconds).
+- Scope: From initial appointment request to one of four observed end states: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement.
+
+Key stakeholders and roles involved
+- Applicant/Borrower: Requests appointment, hands in the credit application, and signs the loan agreement if approved.
+- Underwriter: Receives the file for decisioning; outcomes observed are Loan Denied or progression to signing.
+- Co-signer: May be requested to support the application (when required).
+- Note: Other internal roles (e.g., verifiers, collateral assessors) are implied by activity names but not explicitly specified in the source; responsibilities are therefore described without assigning a specific role name.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Applicant initiates a Request Appointment.
+
+2) Intake and appointment handling
+- Activity: Request Appointment.
+  - Observed outcomes:
+    - Appointment Denied (frequency 962; avg time from request ≈ 23.9 hours).
+      - End state: Appointment Denied (process terminates here).
+    - Set Appointment (frequency 9038; avg time ≈ 23.0 hours).
+      - Bottleneck indicator: ≈ 23 hours on average to schedule an appointment.
+
+- Activity: Set Appointment -> Hand In Credit Application (frequency 9038; avg time ≈ 23.0 hours).
+  - Applicant submits the application at or after the scheduled appointment.
+
+3) Verification
+- Activity: Hand In Credit Application -> Verify Borrowers Information (frequency 9038; avg time ≈ 11.7 hours).
+- Activity: Verify Borrowers Information.
+  - Post-verification outcomes (inclusive behavior observed; branches may occur singly or in combination across the case):
+    a) Submit File to Underwriter (frequency 4623; avg ≈ 13.4 hours).
+    b) Application Rejected (frequency 1624; avg ≈ 9.0 hours). End state.
+    c) Request Co-Signer On Loan (frequency 1233; avg ≈ 10.0 hours).
+    d) Make Visit to Assess Collateral (frequency 1226; avg ≈ 9.8 hours).
+    e) skipped_examination leading to direct signing (frequency 332; avg ≈ 13.9 hours to skipped_examination, then immediate to signing).
+
+4) Optional risk-mitigation activities (may occur, alone or together, in either order)
+- Activity: Request Co-Signer On Loan.
+  - Observed continuations:
+    - Submit File to Underwriter (frequency 1039; avg ≈ 10.5 hours).
+    - Make Visit to Assess Collateral (frequency 733; avg ≈ 1.38 hours).
+
+- Activity: Make Visit to Assess Collateral.
+  - Observed continuations:
+    - Submit File to Underwriter (frequency 1420; avg ≈ 9.4 hours).
+    - Request Co-Signer On Loan (frequency 539; avg 0.0 seconds, i.e., recorded as immediate succession).
+    - Rework loop: Make Visit to Assess Collateral -> Make Visit to Assess Collateral (self-loop frequency 563; avg ≈ 6.2 hours between repeated visits).
+
+- Synchronization and merge behavior:
+  - The DFG indicates that Request Co-Signer and Make Visit to Assess Collateral may both occur in a case, in either order, possibly with repeated collateral visits. Submission to Underwriter can occur after either or both, depending on the case. A logical inclusive merge (AND-join where both are required, OR-merge where only one is required) is implied before Submit File to Underwriter; exact rule is not explicit in the data.
+
+5) Direct bypass to signing
+- Activity: skipped_examination -> Sign Loan Agreement (frequency 332; 0 seconds).
+  - Interpretation: A subset of cases skip further examination and go straight to signing after verification. This path bypasses the underwriter entirely and may represent a compliance risk.
+
+6) Underwriting and outcomes
+- Activity: Submit File to Underwriter.
+  - Observed outcomes:
+    - Loan Denied (frequency 4787; avg ≈ 23.0 hours).
+      - End state: Loan Denied.
+    - Sign Loan Agreement (frequency 2295; avg ≈ 22.4 hours).
+      - End state: Sign Loan Agreement.
+
+End conditions and outcomes
+- Appointment Denied (after appointment request).
+- Application Rejected (post-verification).
+- Loan Denied (post-underwriting).
+- Sign Loan Agreement (either post-underwriting approval or via skipped_examination).
+
+Decision points with criteria and possible outcomes
+- After Request Appointment:
+  - Decision: Approve appointment vs. Appointment Denied.
+  - Outcomes: Set Appointment or Appointment Denied (end).
+
+- After Verify Borrowers Information:
+  - Decision: 
+    - Reject application outright (Application Rejected).
+    - Proceed to underwriting directly.
+    - Require risk mitigations:
+      - Request Co-Signer On Loan.
+      - Make Visit to Assess Collateral.
+    - Unusual path: skipped_examination leading to immediate signing.
+  - Outcomes can co-occur in various sequences (co-signer and collateral visit can happen in either order and potentially both).
+
+- At Underwriter decision:
+  - Decision: Deny vs. proceed to signing.
+  - Outcomes: Loan Denied (end) or Sign Loan Agreement (end).
+
+Parallel activities and synchronization points
+- The DFG cannot prove true parallelism, but behavior indicates inclusive branching:
+  - Co-signer request and collateral visit can both appear in a single case and in any order. A practical interpretation is an inclusive gateway with an inclusive merge prior to submission to the underwriter.
+
+Exception handling and error paths
+- Appointment Denied: Early termination following the appointment request.
+- Application Rejected: Early termination after verification.
+- skipped_examination: Observed fast-track to Sign Loan Agreement; may be an exception or policy bypass.
+- Rework loop: Repeated collateral visits (self-loop) indicate rework due to insufficient or repeated collateral assessment.
+
+Rework loops and escalation procedures
+- Rework:
+  - Collateral assessment can repeat (563 observed self-loops; ≈ 6.2 hours between visits), and can alternate with co-signer requests before submission.
+- The data does not show explicit escalations; prolonged times imply queueing/waiting as implicit escalation by delay rather than explicit activity.
+
+Process metrics and performance characteristics
+- Volume indicators (direct successions):
+  - Request Appointment -> Set Appointment: 9038
+  - Request Appointment -> Appointment Denied: 962
+  - Hand In Application -> Verify: 9038
+  - Verify -> Submit to Underwriter: 4623
+  - Verify -> Application Rejected: 1624
+  - Verify -> Request Co-Signer: 1233
+  - Verify -> Make Visit to Assess Collateral: 1226
+  - Submit to Underwriter -> Loan Denied: 4787
+  - Submit to Underwriter -> Sign Loan Agreement: 2295
+  - Verify -> skipped_examination -> Sign: 332
+
+- Time between key steps (avg, seconds → hours):
+  - Request Appointment -> Set Appointment: 82658 sec ≈ 23.0 h
+  - Set Appointment -> Hand In Credit Application: 82658 sec ≈ 23.0 h
+  - Hand In -> Verify: 42028 sec ≈ 11.7 h
+  - Verify -> Submit to Underwriter: 48327 sec ≈ 13.4 h
+  - Verify -> Application Rejected: 32266 sec ≈ 9.0 h
+  - Verify -> Request Co-Signer: 35838 sec ≈ 10.0 h
+  - Verify -> Make Visit to Assess Collateral: 35269 sec ≈ 9.8 h
+  - Request Co-Signer -> Submit to Underwriter: 37792 sec ≈ 10.5 h
+  - Request Co-Signer -> Make Visit to Assess Collateral: 4966 sec ≈ 1.38 h
+  - Make Visit -> Submit to Underwriter: 33927 sec ≈ 9.4 h
+  - Make Visit -> Make Visit (rework loop): 22399 sec ≈ 6.2 h
+  - Submit to Underwriter -> Loan Denied: 82666 sec ≈ 23.0 h
+  - Submit to Underwriter -> Sign Loan Agreement: 80725 sec ≈ 22.4 h
+  - Verify -> skipped_examination: 50001 sec ≈ 13.9 h; skipped_examination -> Sign: 0 sec
+
+- Bottlenecks:
+  - Appointment handling (≈ 23 h both to set appointment and to hand in application).
+  - Underwriter decision period (≈ 22–23 h to outcome).
+  - Mid-process waiting between verification and next action (≈ 9–13 h).
+  - Rework on collateral testing (multiple visits, ≈ 6.2 h between repeats).
+
+Key challenges and pain points
+- High denial rate after underwriting: 4787 denials vs. 2295 approvals (approximate ratio ~2.1:1), implying late-stage rejection and potential wasted upstream effort.
+- Long waiting times (≈ 23 h) at several handoffs: scheduling, applicant submission timing, and underwriting outcomes.
+- Uncontrolled rework on collateral assessments (563 repeated visits), causing delays and resource churn.
+- Non-standard, potentially noncompliant shortcut: skipped_examination leading directly to signing (332 instances).
+- Ambiguity and variability in risk-mitigation path: co-signer and collateral visit can happen in any order and potentially loop, suggesting unclear criteria or enforcement before underwriting submission.
+- Early attrition: Appointment Denied (962) and Application Rejected (1624) represent significant early terminations; while expected, the volumes may reflect insufficient pre-qualification or scheduling capacity constraints.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Streamline and govern the credit application lifecycle to reduce delays, eliminate noncompliant shortcuts, minimize rework, and ensure decisions are made with complete, consistent information.
+- Approach: Preserve the observed functional steps but enforce clear sequencing, inclusive decision logic for risk mitigations, controlled rework, and service-level expectations to address timing bottlenecks.
+
+Key stakeholders and roles involved
+- Applicant/Borrower: Requests appointment, submits application, signs agreement if approved.
+- Underwriter: Performs final decisioning (approve -> proceed to signing; deny -> terminate).
+- Co-signer: Provides support when explicitly required by risk criteria.
+- Note: Other internal roles remain unspecified; responsibilities are described by activity without assigning additional role names.
+
+Detailed step-by-step process flow (to-be)
+
+1) Start conditions and triggers
+- Trigger: Applicant submits Request Appointment.
+
+2) Appointment handling (controlled timing)
+- Decision: Appointment Approval.
+  - If approved: Set Appointment within an SLA (target ≤ 8 hours from request).
+  - If denied: Appointment Denied (end).
+- Activity: Hand In Credit Application promptly after appointment (target ≤ 8 hours from appointment setting).
+
+3) Verification (mandatory, standardized)
+- Activity: Verify Borrowers Information using a defined checklist (documentation and data completeness enforced).
+- Decision after verification (governed by explicit criteria):
+  - Reject for non-eligibility: Application Rejected (end).
+  - Proceed directly to underwriting (when criteria fully met and no mitigations required).
+  - Require risk mitigations:
+    - Request Co-Signer On Loan (when debt-to-income/creditworthiness thresholds indicate need).
+    - Make Visit to Assess Collateral (when collateralized loan requires on-site assessment).
+  - Note: The path "skipped_examination" is removed in the IDEAL model; all signings require either a completed underwriting decision or a defined, compliant fast-track that still includes underwriting approval.
+
+4) Risk mitigations (inclusive, ordered or parallelizable, with clear completion rules)
+- Inclusive gateway: One or both of the following may be required:
+  - Request Co-Signer On Loan.
+  - Make Visit to Assess Collateral.
+- Execution:
+  - The two activities may be performed in any order; where feasible, they may proceed in parallel to reduce cycle time.
+  - Completion criteria:
+    - Co-signer: signed and verified co-signer commitment on file.
+    - Collateral visit: completed assessment report meeting minimum quality standards.
+- Rework controls:
+  - Collateral Visit: allow at most one re-visit if initial assessment is insufficient; otherwise, return to verification decision point for resolution (e.g., revise terms or reject).
+  - Avoid oscillation between co-signer request and collateral visit—once both required items are satisfied (or conclusively deemed unattainable), proceed; no indefinite toggling.
+- Synchronization point:
+  - Inclusive join: If both mitigations are required, wait until both are completed before proceeding.
+
+5) Underwriting (mandatory before signing)
+- Activity: Submit File to Underwriter only after mandatory verification and any required mitigations are completed.
+- Activity: Underwriter reviews and decides:
+  - Approve: proceed to Sign Loan Agreement.
+  - Deny: Loan Denied (end).
+- Timing target: Underwriting decision SLA ≤ 12 hours from complete file submission.
+
+6) Finalization
+- Activity: Sign Loan Agreement (only post-underwriter approval).
+- End states:
+  - Appointment Denied (early termination).
+  - Application Rejected (post-verification).
+  - Loan Denied (post-underwriting).
+  - Sign Loan Agreement (approved).
+
+Decision points with criteria and possible outcomes
+- Appointment decision:
+  - Approve appointment within SLA or deny (end).
+- Post-verification decision:
+  - Reject (end) vs. proceed to underwriting vs. require mitigations (co-signer and/or collateral).
+- Inclusive mitigation logic:
+  - One or both branches may be selected based on defined risk criteria.
+  - Join requires all selected branches to complete.
+- Underwriter decision:
+  - Approve -> Sign Loan Agreement; Deny -> Loan Denied (end).
+
+Parallel activities and synchronization points
+- Risk mitigations (co-signer and collateral) are modeled as inclusive branches that may run in parallel when feasible.
+- Inclusive join enforces that all selected mitigations are complete before submission to underwriting.
+
+Exception handling and error paths
+- If mitigation requirements cannot be met within policy timelines:
+  - Return to post-verification decision for rejection or alternative terms (within the same verification step; no added activities beyond those implied).
+- Eliminate noncompliant shortcut:
+  - Remove skipped_examination -> Sign Loan Agreement path; signing is permitted only after underwriter approval.
+- Controlled rework:
+  - Allow at most one re-visit for collateral assessment; otherwise, conclude via rejection if unresolved.
+
+Rework loops and escalation procedures
+- Rework governed:
+  - Collateral re-visit limited to one iteration with documented reason.
+- Escalation by timing thresholds (policy controls, not new tasks):
+  - Appointment setting: escalate internally if SLA (> 8 hours) is missed.
+  - Verification to next action: escalate if no advancement within 8 hours of verification completion.
+  - Underwriter decision: escalate at 12 hours if no outcome.
+
+End conditions and outcomes
+- Appointment Denied (end).
+- Application Rejected (end).
+- Loan Denied (end).
+- Sign Loan Agreement (end; only after underwriting approval).
+
+Process metrics and performance characteristics (targets)
+- Throughput goals (from DFG baselines to improved targets):
+  - Appointment handling:
+    - Current ≈ 23 h; target ≤ 8 h from Request to Set Appointment.
+  - Applicant submission after appointment:
+    - Current ≈ 23 h; target ≤ 8 h from appointment to application hand-in.
+  - Verification to next action (submit/mitigation/reject):
+    - Current ≈ 9–13 h; target ≤ 8 h.
+  - Mitigations:
+    - Co-signer collection: target ≤ 8 h once requested.
+    - Collateral visit: target ≤ 12 h, with ≤ 1 re-visit allowed (target 0 repeats in ≥ 90% of cases).
+  - Underwriter decision:
+    - Current ≈ 22–23 h; target ≤ 12 h from complete file submission.
+- Quality and compliance:
+  - 0 instances of signing without underwriting approval (eliminate skipped_examination path).
+  - Reduce post-underwriting denial ratio by moving rejection criteria earlier (aim to reduce late-stage denials by ≥ 25% versus baseline).
+
+Improvements made (vs. AS-IS)
+- Compliance enforcement:
+  - Removed noncompliant shortcut (skipped_examination).
+  - Mandatory underwriting approval before signing.
+- Clear gating:
+  - Submit to underwriter only after verification and all required mitigations are complete.
+- Inclusive logic clarity:
+  - Co-signer and collateral visit governed by explicit criteria; inclusive join ensures completeness.
+- Rework reduction:
+  - Cap collateral re-visits; prevent oscillation between mitigation tasks.
+- Cycle time reduction:
+  - Introduced SLAs for appointment, verification handoffs, and underwriting decisions to address ~23-hour delays.
+- Decision quality:
+  - Earlier rejection via clear verification criteria reduces late-stage denials and wasted effort upstream.
+""")

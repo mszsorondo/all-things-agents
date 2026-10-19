@@ -1,0 +1,96 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This process captures the observed end-to-end tenant lifecycle for renting a property as discovered by process mining (inductive Petri net, directly-follows graph and variant analysis). It covers: applicant booking and viewing, documentation hand-in and checks, tenant screening (including an optional extensive screening), contracting and move-in, ongoing rent payments (including repeated payments), missed-payment handling (warnings, late-payment acceptance, and eviction), and tenant-initiated cancellations.
+- Purpose (observed): manage prospective tenants from initial interest through contract and occupancy, and handle payment compliance and termination.
+
+Key stakeholders and roles involved (as implied by events)
+- Prospective tenant / Applicant: initiates viewing applications, attends viewings, hands in paperwork, can cancel the apartment, pays rent or misses payment.
+- Property manager / Leasing agent: sets appointments, shows property, receives paperwork, signs contracts, finalizes move-in.
+- Screening team / Underwriting (implied): checks paperwork, performs screening and, when required, extensive screening; decides on rejection or approval.
+- Finance / Accounts Receivable (implied): receives rent payments, marks missed payments, issues warnings, records accepted late payments and coordinates eviction where needed.
+- Legal / Eviction team (implied): executes eviction where warnings fail or policy requires.
+
+Detailed step-by-step process flow (observed behavior)
+Start conditions and trigger
+1. Start: Apply for Viewing Appointment (source->Apply for Viewing Appointment). This is the observed case start event in the mined model.
+
+Primary happy-path sequence (one observed variant)
+1. Applicant: Apply for Viewing Appointment.
+2. Agent: Set Appointment (or occasionally the application is skipped directly to later steps by silent transitions; see exceptions).
+3. Applicant: View The Property.
+4. Applicant: Hand In The Paperwork following the viewing.
+5. Agent/Clerk: Check Paperwork (completeness/basic validation).
+6. Screening team: Screen Prospective Tenant (preliminary screening).
+7a. If screening passes, Sign Contract.
+8. Sign Contract -> Move In.
+9. After move-in, tenant starts Pay Rent activities (regularly recurring). Many cases show multiple repeated Pay Rent events.
+
+Observed decision points, criteria and outcomes (as implied from model and variants)
+- Apply for Viewing Appointment -> Set Appointment or Apply for Viewing Appointment -> Reject Prospective Tenant
+  - Criteria (observed): immediate rejection happens in some traces prior to scheduling (e.g., ineligible applicants). Frequency: 849 direct rejections recorded.
+- After Viewing and Paperwork -> Check Paperwork -> Screen Prospective Tenant
+  - Outcomes: Reject Prospective Tenant, Extensive Screening, or Sign Contract.
+  - Frequencies: Screen -> Reject (2856), Screen -> Extensive Screening (2793), Screen -> Sign Contract (1792).
+- Extensive Screening -> Reject or -> Sign Contract
+  - Frequencies: Extensive Screening -> Reject (1815), Extensive -> Sign Contract (978).
+- After Sign Contract -> Move In -> Pay Rent
+  - From Move In, most cases go to Pay Rent (Move In -> Pay Rent frequency 2656; Sign Contract->Move In frequency 2770).
+- Payment-related branching:
+  - Regular Pay Rent repeats (Pay Rent -> Pay Rent frequency 14819), reflecting monthly or periodic payments.
+  - Pay Rent -> Miss Rent Payment (770) shows transitions from on-time payments to missed payments.
+  - Miss Rent Payment -> Issue Warning (945) -> Accept Late Payment (855) -> Pay Rent (Accept Late Payment -> Pay Rent 794) OR Issue Warning -> Evict Tenant (90).
+  - Accept Late Payment -> Miss Rent Payment (61) indicates recurring late-payment cycles.
+- Tenant cancellation and eviction as end outcomes: Tenant Cancels Apartment and Evict Tenant appear as sink/outcomes; Pay Rent can lead to Tenant Cancels Apartment (2680).
+
+Parallel activities and synchronization (observed)
+- The mined Petri net contains silent transitions (skip_* and init_loop_7) that allow optional bypassing of some activities. Observed behavior shows optional paths, e.g., applicants can be rejected quickly without full paperwork/screening; some traces skip extensive screening; some skip appointment-setting.
+- There is implicit sequencing synchronization before Move In: Sign Contract must complete before Move In; Move In has outgoing arcs enabling the rent/payment lifecycle.
+
+Exception handling, rework loops, and escalation (observed)
+- Rework loops
+  - Pay Rent repeats frequently (observed long-run frequency 14819). Some traces show many consecutive Pay Rent events before a Tenant Cancels Apartment — variants show tenants paying many times (up to 10+ repeated Pay Rent events in rare variants before cancellation), which results in very long-case durations.
+  - Accept Late Payment may loop back to Miss Rent Payment (61 cases), resulting in repeated late-payment cycles.
+- Escalations
+  - Missed payments escalate to Issue Warning (945). From Issue Warning, two observed outcomes: Accept Late Payment (855) or Evict Tenant (90). Evictions are rare but occur.
+- Uncontrolled bypasses
+  - Several silent skip transitions and direct Apply->Reject traces indicate inconsistent enforcement of documented steps (some applicants are rejected before paperwork or screening; some steps are skipped by the model).
+
+End conditions and outcomes (observed)
+- Observed final outcomes (Petri net sink): Reject Prospective Tenant, Tenant Cancels Apartment, Evict Tenant. Cases ending in long-term ongoing tenancy (active tenants paying rent) may not reach the sink in the mined dataset.
+- Variant analysis shows many frequent endings in rejection after screening, and many tenant cancellations following repeated Pay Rent events.
+
+Process metrics and performance characteristics (observed)
+- Key direct-follows frequencies (samples):
+  - Pay Rent -> Pay Rent: frequency 14,819 (highest observed), performance 81,120.304
+  - Set Appointment -> View The Property: freq 9,151, perf 82,730.336
+  - Apply for Viewing Appointment -> Set Appointment: freq 9,151, perf 82,731.269
+  - View The Property -> Hand In The Paperwork: freq 7,441, perf 81,965.052
+  - Hand In The Paperwork -> Check Paperwork: freq 7,441, perf 44,106.173
+  - Check Paperwork -> Screen Prospective Tenant: freq 7,441, perf 37,860.048
+  - Screen Prospective Tenant -> Reject Prospective Tenant: freq 2,856, perf 81,282.616
+  - Sign Contract -> Move In: freq 2,770, perf 81,092.792
+  - Move In -> Pay Rent: freq 2,656, perf 81,081.306
+  - Miss Rent Payment -> Issue Warning: freq 945, perf 81,027.157
+  - Issue Warning -> Accept Late Payment: freq 855, perf 80,663.524
+  - Accept Late Payment -> Pay Rent: freq 794, perf 80,642.586
+  - Issue Warning -> Evict Tenant: freq 90, perf 84,447.367
+- Note on performance numbers: the provided mining output includes numeric performance values for directly-follows edges; these represent the average time observed between the two activities in the dataset (the dataset’s time unit is as-provided by the mining tool). Several edges have large performance values indicating slow throughput or long waiting/processing times between steps.
+- Variant durations: Variant analysis shows long total durations for cases with many repeated Pay Rent events; as the number of Pay Rent repetitions in a trace increases, the observed variant performance rises dramatically (some variants with numerous pays reach very large total performance values), suggesting long-lived tenancies or delays in case termination.
+
+Key challenges and pain points (AS-IS)
+- Inconsistent enforcement of mandatory steps: frequent silent-skips and direct rejections indicate that some applicants bypass paperwork or screening, causing potential compliance and fairness issues.
+- High variability and long durations: many edges have large average times; variant durations show some cases running for extremely long periods (especially where Pay Rent repeats many times), making throughput/case-closure unpredictable.
+- Payment churn and recovery inefficiency: repeated Pay Rent events and circular transitions between Accept Late Payment and Miss Rent Payment show recurring late-payment cycles rather than clean resolution; eviction occurs but rarely and sometimes late.
+- Fragmented screening: there are two screening levels (Screen Prospective Tenant and Extensive Screening) with overlaps and rework. Some applicants go back and forth or experience redundant checks.
+- High rejection volume: a large fraction of applicant flows end in rejection (many via screening and some directly from apply stage), which may be expected but suggests optimization possibilities (earlier filtering or improved pre-checks).
+- Cancellation after long engagement: many tenants cancel after multiple payments; this can be costly (administration, on-boarding, off-boarding) and indicates mismatch in expectations or contract terms.
+- Manual interventions and lack of automation: observed manual handoffs (set appointment, paperwork checks, warnings) create delays.
+
+Observed (explicit) Petri net structural notes
+- The mined Petri net contains multiple silent transitions (skip_*) that allow optional bypass of screening or other steps — these correspond to observed variant paths where parts of the process are skipped.
+- init_loop_7 and other loop constructs allow cycles (notably Move In -> init_loop -> ... enabling payment loops).
+- Sink is reached by Reject Prospective Tenant, Tenant Cancels Apartment, or Evict Tenant; many traces end at these points.
+
+Summary of AS-IS implications
+- The observed process is functionally complete but exhibits substantial variability, optional bypasses, payment-loop churn, and occasional late or rare evictions. There is room to standardize the front-end filtering of applicants, formalize screening pathways, and apply disciplined payment-recovery procedures to reduce churn and long-running cases.

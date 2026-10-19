@@ -1,0 +1,75 @@
+
+============================================================
+REPRESENTATION 1: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Pay Rent; freq. 18269) (Apply for Viewing Appointment; freq. 10000) (View The Property; freq. 9151) (Set Appointment; freq. 9151) (Screen Prospective Tenant; freq. 7441) (Hand In The Paperwork; freq. 7441) (Check Paperwork; freq. 7441) (Reject Prospective Tenant; freq. 7230) (Extensive Screening; freq. 2793) (Sign Contract; freq. 2770) (Move In; freq. 2770) (Tenant Cancels Appartment; freq. 2680) (Miss Rent Payment; freq. 945) (Issue Warning; freq. 945) (Accept Late Payment; freq. 855) (Evict Tenant; freq. 90)
+case:citizen  empty: 0 values: (False; freq. 44989) (True; freq. 44983)
+case:gender  empty: 0 values: (True; freq. 55329) (False; freq. 34643)
+case:german speaking  empty: 0 values: (False; freq. 45322) (True; freq. 44650)
+case:married  empty: 0 values: (True; freq. 45078) (False; freq. 44894)
+case:protected  empty: 0 values: (False; freq. 70765) (True; freq. 19207)
+concept:name  empty: 0 values: (Pay Rent; freq. 18269) (Apply for Viewing Appointment; freq. 10000) (View The Property; freq. 9151) (Set Appointment; freq. 9151) (Screen Prospective Tenant; freq. 7441) (Hand In The Paperwork; freq. 7441) (Check Paperwork; freq. 7441) (Reject Prospective Tenant; freq. 7230) (Extensive Screening; freq. 2793) (Sign Contract; freq. 2770) (Move In; freq. 2770) (Tenant Cancels Appartment; freq. 2680) (Miss Rent Payment; freq. 945) (Issue Warning; freq. 945) (Accept Late Payment; freq. 855) (Evict Tenant; freq. 90)
+resource  empty: 0 values: (Tenant; freq. 21894) (Real Estate Agent 2; freq. 17996) (Real Estate Agent 1; freq. 17967) (Real Estate Agent 5; freq. 8953) (Real Estate Agent 4; freq. 4562) (Real Estate Agent 3; freq. 4479) (Hotline; freq. 3910) (Lawyer 3; freq. 2509) (Lawyer 1; freq. 2469) (Lawyer 2; freq. 2463) (Landlord 1; freq. 1139) (Landlord 4; freq. 572) (Landlord 5; freq. 511) (Landlord 3; freq. 283) (Landlord 2; freq. 265)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-06 20:27:10+0000', tz='UTC'), 0.5: Timestamp('2015-01-08 08:36:38+0000', tz='UTC'), 0.75: Timestamp('2015-01-11 11:37:29.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-03-17 07:03:04+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-06 20:27:10+0000', tz='UTC'), 0.5: Timestamp('2015-01-08 08:36:38+0000', tz='UTC'), 0.75: Timestamp('2015-01-11 11:37:29.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-03-17 07:03:04+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-06 20:27:10+0000', tz='UTC'), 0.5: Timestamp('2015-01-08 08:36:38+0000', tz='UTC'), 0.75: Timestamp('2015-01-11 11:37:29.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-03-17 07:03:04+0000', tz='UTC')}

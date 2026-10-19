@@ -1,0 +1,108 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL model is a cleaned, streamlined, and governance-compliant target process for the hiring flow that preserves the observable activities but removes noisy, wasteful, and inconsistent behaviors found in the AS-IS. It enforces clear gating rules, sensible parallelization for technical interviews, reduces rework, and makes Application Rejected and Make Job Offer terminal. The model aims to reduce cycle time, improve candidate experience, limit unnecessary background checks, and ensure consistent logging and state transitions.
+
+Key stakeholders and roles involved (inferred)
+- Candidate (initiator)
+- Recruiter / HR (process owner; schedules screens, background checks, issues offers)
+- Technical Interviewers (coding, frontend, backend, ML panels)
+- Behavioral Interviewer / Hiring Manager (final assessments)
+- Background-check provider / HR (performs standard and extensive checks on request)
+
+High-level design principles applied
+- Enforce a single canonical sequence of gates with optional parallelism:
+  1. Hand In Job Application -> Telephonic Screening (mandatory gate)
+  2. If pass -> Screening Interview (mandatory gate)
+  3. If pass -> Technical assessment phase (parallelizable)
+  4. Synchronize technical outcomes -> Behavioral Interview -> Decision (Make Job Offer or Application Rejected)
+  5. Background Check: perform a standard Background Check after technical assessments but before the final Offer decision. Escalate to Extensive Background Check only on flags, with a short SLA. Background checks do not cause repeated technical rounds.
+- Make terminal states strictly terminal: Application Rejected and Make Job Offer have no outgoing transitions.
+- Limit rework: allow at most one formal retry for technical or behavioral rounds under defined criteria (e.g., technical retake allowed if candidate takes a corrective learning period); otherwise reject.
+- Improve logging and case handling: enforce unique case lifecycle and atomic state transitions so that Rejected or Offered cannot be followed by other substantive steps.
+
+Detailed step-by-step IDEAL process flow
+Start conditions and triggers
+1. Start: candidate hands in a job application (Hand In Job Application). This triggers a recruiter's triage and scheduling of Telephonic Screening within the SLA.
+
+Step 1: Telephonic Screening (mandatory)
+2. Telephonic Screening is a short (SLA: within 3 business days of application) phone/video call to verify minimum eligibility and interest.
+3. Decision after Telephonic Screening (exclusive gateway):
+   - Pass -> Screening Interview (typical technical recruiter screens, schedule within 5 business days).
+   - Fail -> Application Rejected (terminal).
+   - If insufficient clarity for role matching, route to Recruiter Review (internal action) — note: this is an internal decision, not a new activity added to the original set; its output is either Screening Interview or Application Rejected.
+
+Step 2: Screening Interview (mandatory)
+4. Screening Interview deeper technical/fit check (SLA: schedule within 7 business days of telephonic pass).
+5. Decision after Screening Interview (exclusive gateway):
+   - Pass -> Proceed to Technical Assessment Phase.
+   - Fail -> Application Rejected (terminal).
+   - If background concerns are suspected based on screening answers, trigger Background Check (see below) but do not re-run technical interviews.
+
+Step 3: Technical Assessment Phase (parallelizable)
+6. Technical assessment is organized to minimize rework and candidate fatigue. Observed technical activities: Coding Interview (primary technical filter), followed (or executed in parallel where feasible) by one or more role-specific interviews: Frontend Interview, Backend Interview, ML Interview.
+7. Parallelism model:
+   - Split (parallel): after a positive screening decision, the process splits into necessary technical tracks (Coding and any of Frontend/Backend/ML required by role). The Petri net originally allows up to three parallel tracks; the IDEAL model uses the same parallel split but with coordination constraints (parallel interviews should be scheduled within a fixed window e.g., two weeks).
+   - Synchronize: after the required technical interviews complete, a synchronization point aggregates technical results for a consolidated assessment.
+8. Rework rule for technical tracks:
+   - A single, disciplined retake is allowed only if the candidate shows mitigating circumstances and the hiring manager approves; otherwise a fail leads to Application Rejected.
+
+Step 4: Background Check (standard, with escalation)
+9. Background Check is performed after technical assessments and before the final decision to avoid wasted vendor effort on candidates who fail technical evaluation.
+   - Standard Background Check: executed for candidates who pass technical assessments. SLA: 3–5 business days vendor turnaround.
+   - If the standard check flags issues, escalate to Extensive Background Check (limited to cases where flags exist). Extensive check SLA: shorter and prioritized for finalist candidates (e.g., 5 business days). Extensive check outcome: either pass -> continue, or fail -> Application Rejected (terminal).
+10. Important constraint: Extensive Background Check should not redirect candidates back to additional technical interviews; instead, if additional evaluation of fit is required, that is handled by a designated Recruiter/Hiring Manager review step without reopening interview rounds.
+
+Step 5: Behavioral Interview and Final Decision
+11. Behavioral Interview: one final behavioral/hiring-manager interview to evaluate cultural fit and final endorsements. Limit repeats: allow at most one repeat instance (e.g., clarifying re-interview) upon hiring manager approval; recurring self-loops are removed.
+12. Final Decision (exclusive gateway after behavioral interview and after background check clearance):
+   - Pass -> Make Job Offer (terminal). The offer issuance is recorded as final; no outgoing transitions.
+   - Fail -> Application Rejected (terminal).
+
+Terminal states and logging discipline
+13. Make Job Offer and Application Rejected are strict terminal states. Once a case reaches one of them, the case lifecycle ends and no further interviewing or background-check activities are recorded for that case. Re-opened candidates are treated as new applications (new case id) to avoid the AS-IS phenomenon of reusing case ids for reopened processes.
+
+Exception handling and escalations (IDEAL)
+- If vendor delays occur in background checks beyond SLA, candidate status is escalated to Recruiter for decision (option to pause, withdraw, or proceed based on risk appetite).
+- If candidate or internal error causes mis-logged events, a data-correction workflow is available to correct timestamps/case mapping; corrections do not change business outcomes retroactively in the case log.
+- For borderline technical decisions, explicit hiring-manager signoff is required before a re-assessment is scheduled (formal re-evaluation limited to once per candidate).
+
+Process metrics, SLAs and KPIs (IDEAL)
+- Volume and conversion targets:
+  - Telephonic Screening scheduled for 100% of non-immediately-rejected applications within 3 business days.
+  - Telephonic -> Screening Interview conversion: expected ~40–60% depending on role.
+  - Screening -> Technical assessment conversion: expected ~20–30%.
+  - Technical -> Behavioral conversion: expected ~60–90% of those in technical tracks, depending on role.
+  - Behavioral -> Offer (conversion target): 30–50% (improving from AS-IS by reducing rework and standardizing criteria).
+
+- Timelines & performance targets:
+  - Telephonic Screening: 0–3 business days from application.
+  - Screening Interview: 0–7 business days from telephonic pass.
+  - Technical assessment window: 0–14 calendar days from screening pass (all required technical interviews to complete).
+  - Background Check (standard): vendor SLA 3–5 business days; Extensive Background Check on flagged cases prioritized to 5 business days.
+  - Final decision (offer/reject) after behavioral interview: within 2 business days.
+
+- Quality metrics:
+  - Percentage of cases with consistent terminal-state logging (target 100%).
+  - Rework rate: fraction of candidates that undergo repeated technical/behavioral interviews (target <10%).
+  - Vendor turnaround adherence for background checks (target >=90% within SLA).
+  - Offer-to-application ratio and time-to-offer median (target reduce median cycle time by 20–40% vs AS-IS baseline by removing unnecessary loops).
+
+Key improvements made (IDEAL vs AS-IS)
+- Removed incoherent transitions: Application Rejected and Make Job Offer are strict terminals (resolving AS-IS contradictions such as Application Rejected -> Make Job Offer and self-loops on terminal activities).
+- Standardized gating sequence: Telephonic -> Screening -> Technical (parallel) -> Background Check -> Behavioral -> Decision. This reduces back-and-forth between Screening and Background found in AS-IS.
+- Rationalized background checks: perform standard background checks only for candidates that pass technical assessment; escalate to Extensive only on flags (reduces wasted vendor checks and long delays seen in AS-IS).
+- Controlled parallelism and synchronization: maintain parallel technical interviews but synchronize results before behavioral and decision, minimizing ad-hoc revisits and disorderly interleavings.
+- Limit rework: at most one predefined retry for technical or behavioral interviews under controlled rules; prevents repeated behavioral loops and reduces interviewer fatigue.
+- Improved logging discipline and case lifecycle management: re-opened candidates must be treated as new cases to preserve clear event logs and remove paradoxical transitions.
+- SLAs and KPIs introduced to reduce cycle time and vendor delays (explicit turnaround goals for key activities).
+
+Risks and governance notes for IDEAL
+- Enforcement of strict terminal states requires operational and IT changes (case-id management and event-log discipline).
+- Shifting background-check timing may increase upfront vendor costs for finalists; must be balanced with savings from avoided checks of early rejects.
+- Limited rework policy should be accompanied by an appeals/review mechanism for exceptional candidates.
+
+Concluding summary (IDEAL)
+- The IDEAL model retains all visible activities from the discovered model but organizes them into a well-governed, efficient sequence with controlled parallelism and explicit SLAs. It eliminates the observed AS-IS noise (rework loops, nonterminal terminal states, long background-check delays) and provides a measurable target for operational improvement, data-quality correction, and faster, more consistent candidate decisions.
+
+-- end of IDEAL description --

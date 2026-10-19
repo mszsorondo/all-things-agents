@@ -1,0 +1,42 @@
+AS-IS Process Model — Landlord
+============================================================
+
+AS-IS Process Model — Landlord
+
+Section 1: Role Overview (purpose, responsibilities)
+The Landlord role is responsible for the Move In activity recorded in the log. Landlords perform or accept the final operational step of moving a tenant into the property and occasionally interact with tenants after move-in (handover to tenant). Multiple landlord resources (Landlord 1..5) are grouped into this role.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Move In: execute or coordinate the tenant move-in (handover of the property). This is the only explicit activity assigned to landlords in the resource–activity mapping.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation triggers
+- Sign Contract: after agents sign contracts and coordinate the process, Move In is triggered (Sign Contract -> Move In is a high-frequency transition).
+
+Typical sequences and decision points (all observed variants)
+- Standard move-in: Sign Contract -> Move In -> Pay Rent (tenant begins rent payment cycle). Move In is followed by the tenant’s Pay Rent events.
+- Move In may also be followed by occasional direct Miss Rent Payment events if tenants fail the initial payment.
+
+Decision criteria handled by the role
+- Landlord action is largely operational: enabling access and property turnover. The dataset does not show landlords making acceptance/rejection decisions — those are handled upstream by agents and screening.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Landlord
+- Real Estate Agents: agents hand the case to landlords to coordinate the move-in (REA -> Landlord edges observed, e.g., REA1/REA2 -> Landlord 1/4/5 etc.).
+
+Who Landlord hands work TO
+- Tenant: Landlord -> Tenant (observed handover) to complete move-in and enable rent payments; landlords may notify tenants about handover details.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- Standard: Sign Contract -> Move In -> Pay Rent (tenant payment cycle begins).
+- Rare exceptions: Move In -> Miss Rent Payment (immediate missed payment after move-in seen in a small number of traces). Move In can appear in any trace that reaches the sign-contract branch; traces that end in rejection never involve the landlord.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Landlords appear only in the move-in stage; their activity is narrow and operational, so they are unlikely to be a major source of control-flow complexity.
+- The bulk of delays and rework are upstream (screening, paperwork) and downstream (rent payment cycles). Landlords mainly receive completed cases from agents.
+
+Practical notes for someone assuming this role
+- Expect to receive handovers from agents after signature; your role is to operationalize the move-in and hand over the property to the tenant.
+- Coordinate with agents to ensure the tenant is properly briefed to avoid immediate missed payments or confusion.
+
+(End of Landlord role description)

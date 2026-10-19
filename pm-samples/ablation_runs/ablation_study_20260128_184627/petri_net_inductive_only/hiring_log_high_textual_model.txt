@@ -1,0 +1,206 @@
+write_AS_IS_comprehensive_textual_description(
+"""
+AS-IS Process Model
+
+Process overview and purpose
+- Title: Candidate Application to Outcome (Offer or Rejection)
+- Purpose: Capture the observed hiring process discovered from the Petri net. The process takes a candidate’s job application through screening, multiple possible interviews and background checks, and ends in either an offer ("Make Job Offer") or rejection ("Application Rejected"). The discovered model shows high variability: many optional/skipped activities, parallel technical interviews, repeated/looped checks, and multiple invisible routing steps (silent transitions) that represent optional paths, merges and splits.
+
+Key stakeholders and roles (explicit roles not specified in the source; implied actors are listed)
+- Candidate — originator of the application (implied by “Hand In Job Application”).
+- Recruiter / HR (implied) — coordinates screening, background checks, and final administrative steps.
+- Hiring Team / Interviewers / Technical Panel (implied) — conduct screening, coding, ML, backend, frontend, behavioral interviews.
+- Background Check Provider / HR (implied) — executes background and extensive background checks.
+
+Detailed step-by-step process flow (start → end)
+Start conditions and trigger
+1. Start: A candidate submits an application (transition: "Hand In Job Application"). This is the process entry token.
+
+Primary observed flows and activities (sequence and branching)
+2. After application submission there are two primary immediate alternatives:
+   - Telephonic Screening ("Telephonic Screening") is performed (common path).
+   - The telephonic screening is sometimes skipped (silent skip transition) and flow moves forward.
+
+3. Telephonic Screening outcomes:
+   - From Telephonic Screening the process may directly continue to a consolidation place (silent join) that advances the case toward later interview stages (skip path).
+   - Or Telephonic Screening can lead to a split into further parallel/independent activities:
+     - Screening Interview ("Screening Interview")
+     - Background Check ("Background Check")
+   These two may be enabled concurrently (parallel split); either or both may be skipped in observed traces.
+
+4. Screening Interview and Background Check merge (silent join):
+   - Both feed into a place that enables further steps. After their completion the process commonly proceeds to an "Extensive Background Check" or skips to technical interview stages depending on whether parts were run/omitted.
+
+5. Background / Extensive Background Check:
+   - An "Extensive Background Check" exists and may be triggered after earlier checks or via an alternate path; it feeds into the technical interview stream (specifically into "Coding Interview").
+   - Some instances skip the extensive check; the model shows both short and long background-check variants.
+
+6. Technical evaluation branch (Coding + technical interviews):
+   - Coding Interview ("Coding Interview") appears as a key gate in many observed traces. From the Coding Interview there is an observed split that can spawn up to three technical interviews in parallel:
+     - ML Interview ("ML Interview")
+     - Backend Interview ("Backend Interview")
+     - Frontend Interview ("Frontend Interview")
+   - These technical interviews frequently run in parallel (model shows a tau-split) and then synchronize (tau-join) before moving forward.
+
+7. Post-technical synchronization and next-phase split:
+   - After the technical interviews synchronize, the process proceeds to another split that leads either toward rejection processing (an "init_loop" leading to "Application Rejected") OR toward behavioral interviewing and finalization.
+   - There are silent transitions and skip paths controlling whether an instance goes to rejection or proceeds to Behavioral Interview.
+
+8. Behavioral Interview and finalization:
+   - Behavioral Interview ("Behavioral Interview") appears downstream of the technical sequence. After behavioral interview completion, the process moves toward the final decision area.
+   - Make Job Offer ("Make Job Offer") is observed as the visible transition representing a successful outcome. After the "Make Job Offer" transition there are silent transitions that route the case to final merge and process completion.
+
+9. Rejection path:
+   - Application Rejected ("Application Rejected") exists as a visible transition that leads to terminal places. Rejection can be invoked earlier (after background checks or earlier loops) or later after evaluation. Silent skip arcs show that rejected cases may skip certain downstream activities.
+
+Decision points with criteria and possible outcomes (inferred from structure)
+- Decision: Perform Telephonic Screening? — observed both performed and skipped.
+- Decision: Run Screening Interview and/or Background Check? — both may run; either may be skipped; if both run they synchronize before next stage.
+- Decision: Trigger Extensive Background Check? — optional, sometimes run before Coding Interview.
+- Decision: Coding Interview outcome → trigger parallel technical interviews or skip them. The model shows optional launch of ML/Backend/Frontend interviews after Coding Interview.
+- Decision: After technical interviews → proceed to Behavioral Interview and make offer OR route to rejection. The net indicates both outcomes exist.
+
+Parallel activities and synchronization points
+- Parallel runs:
+  - Screening Interview and Background Check may run concurrently after Telephonic Screening.
+  - ML, Backend, and Frontend interviews can run in parallel (tauSplit_9) and are synchronized (tauJoin_10) before continuing.
+- Synchronization points:
+  - Several tau-join places aggregate parallel branches (technical interviews join before next stage; screening/background join before extensive checks).
+
+Exception handling, rework loops and escalation
+- Loops / rework:
+  - The model contains "init_loop" silent transitions indicating loops or repeated iterations (init_loop_17, init_loop_22, init_loop_27). These suggest rework or repeated checks/iterations of evaluation (e.g., re-sending candidates for another interview or re-running checks).
+- Skips and silent transitions:
+  - Many skip_* silent transitions indicate optional omissions of activities. This behavior may reflect ad-hoc decisions, resource constraints, or non-standardized process variants, leading to exceptions in consistency.
+- Escalation:
+  - No explicit escalation activity is labeled in the model; escalation behavior might be captured implicitly by loop transitions (re-trying checks/interviews) but no explicit "escalate to manager" is present in the discovered net.
+
+End conditions and outcomes
+- Success (primary positive terminal): "Make Job Offer" → silent routing → final marking (sink). This is the successful completion path.
+- Failure: "Application Rejected" → silent routing → end places leading to termination. Rejection can happen at multiple points.
+- The net guarantees completion (sound workflow net), so all tokens eventually reach sink or equivalent terminal places in observed traces.
+
+Process metrics and performance characteristics (inferred from structure)
+- Variability: High. Many parallel branches and skip transitions cause high path variability and throughput variance.
+- Bottlenecks (likely):
+  - Coding Interview and the technical interview synchronization point (multiple interviews and their coordination present capacity constraints).
+  - Background checks (especially "Extensive Background Check") introduce additional sequential steps that can delay movement to final decision.
+- Cycle/rework risk: Presence of init_loop transitions implies repeated iterations which increase cycle time.
+- Control-flow complexity: Many silent routing transitions (skip_*) indicate frequent deviations from a canonical flow, increasing coordination overhead and mean time to decision.
+
+Key challenges and pain points (AS-IS)
+- High variability and inconsistent execution: Many skip transitions indicate steps are frequently omitted, producing non-repeatable candidate experience.
+- Coordination overhead: Parallel technical interviews (ML, Backend, Frontend) require scheduling and then synchronization, causing delays and resource contention.
+- Long, unclear background-check path: Both a basic Background Check and an Extensive Background Check exist; unclear gating causes unnecessary duplication or delay.
+- Implicit decision logic: Many decisions are implicit (silent transitions), making process governance and audits difficult.
+- Rework/loops: The presence of loops suggests repeated interviews/checks for the same candidate, increasing cost and time-to-hire.
+- Lack of explicit roles and SLAs in observed model: Role responsibilities and timing constraints are not enforced in the discovered model.
+- Multiple dead or unused variants: Many skips and silent branches indicate potential noise or inconsistent policy adherence.
+
+Summary (AS-IS)
+- The discovered hiring process allows multiple optional and parallel steps, with key decision points around screening, technical interviews, and background checks. The process produces either an offer or rejection, but the high number of optional skips and loops creates inconsistency, potential delays, and difficulty enforcing standard policy or performance targets.
+"""
+)
+
+write_IDEAL_comprehensive_textual_description(
+"""
+IDEAL Process Model
+
+Process overview and purpose
+- Title: Standardized Hiring Flow — Application to Offer/Reject (Target/To-Be)
+- Purpose: Provide a streamlined, auditable, and efficient hiring process that preserves necessary evaluation steps (screening, technical interviews, background checks, behavioral review) while removing redundant paths, eliminating unnecessary loops, enforcing gates and SLAs, and reducing coordination overhead through controlled parallelism.
+
+Key stakeholders and roles (roles are clarified here to enable governance; these roles are implied by source activities and are explicitly assigned in the IDEAL model)
+- Candidate — submits application.
+- Recruiter (HR) — responsible for intake, scheduling, administering background checks, and moving candidate between stages.
+- Hiring Manager — owner of hiring decision; approves progression to offer.
+- Technical Interviewers / Technical Panel — run coding and domain/role-specific interviews (ML, Backend, Frontend).
+- Behavioral Interviewer(s) / Panel — conducts behavioral assessment.
+- Background Check Provider (internal HR or external vendor) — executes background and extensive background checks.
+
+Detailed step-by-step process flow (start → end) — IDEAL standardized sequence
+Start conditions and trigger
+1. Start: Candidate "Hands In Job Application". Recruiter captures application into tracking system (mandatory first step).
+
+Mandatory initial screening and gating
+2. Telephonic Screening — mandatory short screening call conducted by Recruiter or designated screener within a defined SLA (e.g., within 48 hours of application). Decision:
+   - If candidate fails basic eligibility -> Immediate Rejection (Application Rejected, logged with reason).
+   - If candidate passes basic eligibility -> Proceed to consolidated evaluation stage.
+
+Parallel but coordinated pre-technical activities (controlled concurrency)
+3. Controlled parallel activities (triggered only for candidates who pass telephonic screening):
+   - Background Check (basic) — Recruiter initiates automated basic checks in parallel.
+   - Screening Interview — If job requires deeper initial screening, run a single screening interview. If not required, this step is explicitly skipped with documented reason.
+   These two activities are designed to run concurrently but must both be complete before the candidate proceeds to the technical assessment stage (synchronization point).
+
+Gate: Proceed to Technical Assessment only when:
+   - Telephonic Screening passed
+   - Basic Background Check completed with no disqualifying findings OR flagged for further review
+   - Screening Interview (if required) completed
+
+Technical evaluation: consolidated, scheduled and time-boxed
+4. Consolidated Technical Assessment (reorganization of existing technical activities):
+   - Execute Coding Interview plus role-specific technical evaluations (ML / Backend / Frontend) in a coordinated block to reduce scheduling overhead. Implementation options:
+     - Panel session that covers coding + role-specific assessments OR
+     - Two back-to-back technical interviews in one day.
+   - Scheduling: Recruiter coordinates technical sessions to occur within a fixed SLA window (e.g., within 5 business days of clearance).
+   - Outcome decision:
+     - Fail technical assessment -> Application Rejected (documented).
+     - Pass technical assessment -> Proceed to Behavioral Interview and (if required) an Extensive Background Check gating stage.
+
+Behavioral interview and final background verification
+5. Behavioral Interview (single step) — conducted by Hiring Manager or behavioral panel to evaluate fit and soft skills.
+6. Extensive Background Check (conditional):
+   - Only initiated for candidates who pass technical + behavioral assessments and are finalists for offer (reduce unnecessary extensive checks).
+   - If extensive check fails -> Application Rejected with documented rationale.
+   - If extensive check passes -> Proceed to decision.
+
+Decision and Offer
+7. Final Decision Gate (Hiring Manager + Recruiter):
+   - Consolidate evaluation results from Telephonic Screening, Screening Interview, Technical Assessment, Behavioral Interview, and Background Checks.
+   - If Hiring Manager approves -> "Make Job Offer" (visible action) executed by Recruiter; offer details and approvals logged.
+   - If decision is not to hire -> "Application Rejected" with documented reason.
+
+End conditions
+- Successful completion: "Make Job Offer" → administrative close-out (onboarding tasks handled outside this hiring workflow).
+- Negative completion: "Application Rejected" → candidate status updated and closed with reason code.
+
+Exception handling, rework loops and escalation (controlled)
+- Eliminate ad-hoc loops: Rework iterations (re-running interviews/checks) are restricted. If additional evaluation is needed, require explicit approval from Hiring Manager and Recruiter and a documented rationale; such rework is timeboxed (e.g., 3 business days).
+- Escalation rule: If any step exceeds SLA (e.g., telephonic screening >48h, technical scheduling >5 days, background check >7 days), case is escalated to Recruiter Lead for remediation.
+- Disqualification rules: Background-check failures or hard eligibility failures immediately route to rejection with automated notices.
+
+Process metrics and target performance characteristics (IDEAL)
+- Time-to-first-screen: Target ≤ 48 hours from application.
+- Time-to-technical-assessment: Target ≤ 5 business days after screening pass.
+- Time-to-final-decision: Target ≤ 2 business days after behavioral interview and background checks (or within defined vendor check SLA).
+- Reduced variability: Eliminate optional ad-hoc skips — all steps follow documented gating rules.
+- Throughput reduction for candidate cycle time: Aim to reduce average time-to-offer by eliminating repeated scheduling and consolidating technical interviews into single coordinated sessions.
+- Quality metrics: % of candidates with completed background checks before offer; interviewer satisfaction; hiring manager decision rate within SLA.
+
+Improvements made (how AS-IS issues are addressed)
+- Standardized flow: Enforce mandatory gating (telephonic screening, basic background check), remove ambiguous silent routes by making decision points explicit and documented.
+- Controlled concurrency: Keep parallel activities where useful (background check + screening interview) but require synchronization before moving to technical stage to reduce downstream variability.
+- Consolidated technical evaluation: Reduce scheduling overhead and waiting time by coordinating technical interviews as a single block or panel.
+- Limit expensive checks: Run Extensive Background Checks only for finalists to reduce wasted time and cost.
+- Eliminate unnecessary loops: Require documented and approved rework to prevent repeated cycles without governance.
+- Introduce SLAs and escalation: Measured SLAs reduce long waits and create accountability for delays.
+- Make decision logic explicit: Replace many silent/implicit skip transitions with clear decision criteria and recorded outcomes for auditability and analytics.
+
+Role/responsibility summary (IDEAL)
+- Recruiter: intake, initial screening, schedule coordination, background check orchestration, offer issuance.
+- Hiring Manager: technical/behavioral input, final decision authority.
+- Technical Panel: conduct technical assessments in coordinated manner.
+- Background Check Provider: execute basic and extensive checks per gating rules.
+
+Validation and transition notes
+- Transitioning from AS-IS to IDEAL requires:
+  - Defining formal policies for which steps are mandatory vs optional.
+  - Implementing scheduling coordination tools (to support consolidated technical blocks).
+  - Configuring the ATS/HRIS to enforce gates, SLAs, and record reasons for skips/rework.
+  - Training recruiters and hiring managers to follow the new gated approach and escalation rules.
+
+Summary (IDEAL)
+- The IDEAL model keeps all necessary evaluation activities from the discovered net (screening, coding and role-specific technical assessments, behavioral interview, background checks) but places them in a controlled, auditable, and efficient sequence: mandatory telephonic screening → parallel but synchronized screening/background → consolidated technical assessment → behavioral interview → gated extensive check for finalists → hire or reject. This reduces variability, removes ad-hoc loops, enforces SLAs, and improves candidate experience and time-to-hire.
+"""
+)

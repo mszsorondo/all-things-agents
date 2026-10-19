@@ -1,0 +1,55 @@
+AS-IS Process Model — Tenant
+============================================================
+
+AS-IS Process Model — Tenant
+
+Section 1: Role Overview (purpose, responsibilities)
+The Tenant role represents the person renting the property and performs the tenant-side actions recorded in the log: paying rent, occasionally missing payments, and sometimes cancelling the apartment. Tenants do not appear as the primary actors for application intake in the provided mapping (Hotline/Agents often enter applications), but they are the main actors in the post‑move lifecycle (payments and cancellations).
+
+Section 2: Activities Performed (complete list with descriptions)
+- Pay Rent: perform periodic rent payment events. Observed as the most frequent activity in the log and often repeated many times per case.
+- Miss Rent Payment: an event recording a missed payment; occurs multiple times in some cases.
+- Tenant Cancels Appartment: tenant-initiated cancellation/termination of the rental agreement.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation triggers
+- Move In: tenant activity typically becomes frequent after Move In (handled by agents/landlords). The first Pay Rent events start after Move In.
+- Notifications/Warnings: Miss Rent Payment events are recorded when a scheduled payment is not made; this triggers subsequent interactions handled by agents (Issue Warning, Accept Late Payment).
+- Dissolution: Tenant Cancels Appartment can occur any time after Move In and ends the tenant’s active payment lifecycle.
+
+Observed sequences and decision points (complete list of valid orderings)
+- Standard payment path: Move In -> Pay Rent (this repeats many times). Pay Rent may occur multiple consecutive times without intervening events.
+- Missed payment path: Pay Rent -> Miss Rent Payment -> Issue Warning (action by Agent) -> Accept Late Payment -> Pay Rent. After Accept Late Payment the tenant may resume paying rent, or later miss payment again (Accept Late Payment -> Miss Rent Payment observed in some traces).
+- Repeat cycles: The Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent loop can repeat multiple times. In some traces Miss Rent Payment recurs several times before final resolution (Tenant Cancels Appartment or Evict Tenant occurs).
+- Cancellation path: Tenant Cancels Appartment can happen after a sequence of Pay Rent events, or after repeated Miss Rent Payment / warnings; it ends the case.
+
+Decision criteria the tenant controls
+- Whether to pay rent on time (Pay Rent) or miss a payment (Miss Rent Payment) — the log records the result but does not show the underlying reason.
+- Whether to accept late-payment arrangements (Accept Late Payment is recorded as a role by agents, but tenant behavior determines if and when payment follows).
+- Whether to cancel the apartment (Tenant Cancels Appartment) which ends the tenant lifecycle.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Tenant
+- Landlord(s) and Real Estate Agents: agents and landlords send move-in confirmations, warnings, and notices (handover edges from Landlord -> Tenant and Real Estate Agent -> Tenant observed).
+- Occasionally landlords or agents trigger tenant actions (e.g., providing move‑in details that enable payments).
+
+Who Tenant hands work TO
+- Tenant -> Tenant (self): high self-handover frequency indicates repeated tenant actions over time (Pay Rent repeated sequences and recurring Miss Rent Payment events). This is represented as Tenant -> Tenant in the handover network.
+- Tenant -> Real Estate Agent: tenants cause follow-up by agents (e.g., missed payments prompt Issue Warning), though the direct tenant->agent handover weights are smaller compared to self-handover.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- Straightforward paying tenant: Move In -> Pay Rent (repeated; case may end by Tenant Cancels Appartment at some point). This is the simplest observed variant.
+- Payment trouble loops (observed across many low-frequency long-running variants): Move In -> Pay Rent (x N) -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> (possibly repeat Miss Rent Payment -> Issue Warning -> Accept Late Payment cycles) -> outcome may be continued payments, Tenant Cancels Appartment, or (rarely) Evict Tenant.
+- Tenant Cancels Appartment: observed both as a relatively rare termination option after many payments or after conflicts.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Payments dominate the event log and create long-running cases; repeated pay/miss cycles are a major driver of case duration and variance.
+- Self-handover is high: tenants generate multiple consecutive events, which indicates that most of the lifecycle after move-in is tenant-driven (payments), but the follow-up (warnings, acceptance of late payments) requires agent involvement.
+- Missed payments generate repeated cycles of manual intervention (Issue Warning, Accept Late Payment) — this creates operational load for agents and lengthens case lifetime.
+- Eviction is rare but visible; when it occurs it represents a costly exception and appears after repeated missed payments and warnings.
+
+Practical notes for someone assuming this role (tenant perspective)
+- After moving in, expect frequent periodic actions (Pay Rent) and that failures to pay will trigger forced interactions with the agent (warnings) and may escalate.
+- Tenant events are mostly recorded and reacted to by agents and landlords; tenants will observe delays and repeated cycles if payments are inconsistent.
+
+(End of Tenant role description)

@@ -1,0 +1,80 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The process described here is the recruitment and selection procedure followed by the organization. Its main purpose is to evaluate job candidates from the application stage through to the final decision on whether to hire or reject them. This model captures all the observed paths, including successful progressions toward job offers as well as various rejection scenarios.
+
+## Key Stakeholders and Roles Involved
+- **Job Applicants:** Individuals submitting job applications and undergoing the selection process.
+- **Recruiters:** Personnel responsible for initial screenings, interviews, and communications with applicants.
+- **Hiring Managers:** Managers involved in making final hiring decisions based on candidates' interviews and assessments.
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+- The process is initiated when an applicant submits a job application (`Hand In Job Application`).
+
+### Process Activities/Tasks in Sequence
+1. **Hand In Job Application**
+   - Applicants submit their job applications.
+
+2. **Telephonic Screening**
+   - Conduct a short telephonic interview to assess basic qualifications.
+   - *Optional branching:* This step can be skipped (`skip_2`), allowing applicants to proceed directly to interviews.
+
+3. **Screening Interview**
+   - Perform a more thorough interview to determine suitability for the position.
+
+4. **Background Check**
+   - Conduct a verification check on the candidate's background.
+
+5. **Extensive Background Check** (optional)
+   - If required, this further investigation may be initiated following the initial Background Check.
+
+6. **Coding Interview** (conditional)
+   - If applicable, candidates may participate in a technical coding assessment.
+
+7. **Behavioral Interview**
+   - Assess the candidate's behavioral fit within the company culture.
+
+8. **ML Interview** (optional)
+   - Possible interview focused on machine learning skills, depending on the job role.
+
+9. **Frontend Interview** / **Backend Interview** (conditional)
+   - Depending on the position applied for (frontend or backend), candidates may undergo these role-specific interviews.
+
+10. **Make Job Offer**
+    - If the candidate passes the interviews and background checks, a job offer is extended.
+
+### Decision Points with Criteria and Possible Outcomes
+- After each interview, there are decision points that may lead to:
+  - **Application Rejected**
+    - The candidate may be rejected at various stages based on unsatisfactory performance (e.g., after Telephonic Screening, Screening Interview, Background Check).
+  - **Continue to Next Step**
+    - A successful interview leads the candidate to the next step in the process.
+  
+### Parallel Activities and Synchronization Points
+- Both extensive background checks and coding interviews can occur alongside other interviews.
+- Interviews can occur in parallel or in sequence depending on availability and scheduling.
+
+### Exception Handling and Error Paths
+- If at any stage a candidate fails an interview, they can be directly moved to `Application Rejected`.
+- In various branches, candidates might also face repeated interviews (looping back for a `Behavioral Interview`).
+
+### Rework Loops and Escalation Procedures
+- Applicants may cycle back to earlier stages such as additional interviews (e.g., going back for a `Behavioral Interview` or repeating technical interviews after further vetting).
+
+### End Conditions and Outcomes
+- The process ends either with:
+  - **Successful Job Offer** (`Make Job Offer` followed by loops of the `Make Job Offer` task indicating that the offer could be negotiated or reconsidered),
+  - **Application Rejected** following various rejection pathways.
+
+## Process Metrics and Performance Characteristics
+- This process has been characterized by observed frequencies across paths, highlighting common flow routes, and some bottlenecks (e.g., high rejection rates after background checks).
+- Performance metrics such as time taken for each activity were identified, with substantial variability noted across different interview types.
+
+## Key Challenges and Pain Points Observed in the Current Process
+- Multiple rejection points indicate potential issues in candidate assessment accuracy early in the pipeline.
+- Loops for interviews might suggest inefficiencies or unclear criteria leading to repetitive assessments.
+- The reliance on various checks introduces variability in candidate experience and might lead to longer overall process timelines.
+
+Overall, this AS-IS process model captures a rich and detailed picture of the observed behaviors, including all decision paths and activities that occur throughout the recruitment process.

@@ -1,0 +1,74 @@
+=== DECLARE INTERPRETATION GUIDE ===
+
+DECLARE is a declarative process modeling language based on temporal logic constraints.
+
+1. CORE PHILOSOPHY:
+   - "Everything not forbidden is allowed"
+   - Specifies constraints that must be satisfied
+   - Any execution path respecting constraints is valid
+   - Opposite of procedural models (Petri nets, BPMN)
+
+2. CONSTRAINT TEMPLATES:
+
+   EXISTENCE CONSTRAINTS:
+   - Existence(A, n): A must occur at least n times
+   - Absence(A, n): A can occur at most n-1 times
+   - Exactly(A, n): A must occur exactly n times
+   - Init(A): A must be the first activity
+   - End(A): A must be the last activity
+
+   RELATION CONSTRAINTS:
+   - RespondedExistence(A, B): If A occurs, B must also occur (before or after)
+   - CoExistence(A, B): A and B always occur together or both absent
+   - Response(A, B): If A occurs, B must eventually follow
+   - Precedence(A, B): B can only occur if A has occurred before
+   - Succession(A, B): Response(A,B) AND Precedence(A,B)
+
+   NEGATIVE CONSTRAINTS:
+   - NotCoExistence(A, B): A and B cannot both occur in same trace
+   - NotSuccession(A, B): A cannot be followed by B
+   - NotChainSuccession(A, B): B cannot immediately follow A
+
+   CHAIN CONSTRAINTS (immediate succession):
+   - ChainResponse(A, B): B must immediately follow A
+   - ChainPrecedence(A, B): A must immediately precede B
+   - ChainSuccession(A, B): Both chain response and precedence
+
+   ALTERNATING CONSTRAINTS:
+   - AlternateResponse(A, B): Each A followed by B before next A
+   - AlternatePrecedence(A, B): Each B preceded by A after previous B
+   - AlternateSuccession(A, B): Both alternate response and precedence
+
+3. READING DECLARE OUTPUT:
+   - Template name with involved activities
+   - Support: Percentage of traces satisfying constraint
+   - Confidence: Strength of the constraint
+   - Example: "Response(Submit, Review): support=95%, confidence=0.98"
+
+4. SEMANTICS:
+   - Constraints as LTL (Linear Temporal Logic) formulas
+   - Trace valid iff all constraints satisfied
+   - Empty trace may be valid (if no mandatory constraints)
+
+5. DISCOVERY ALGORITHMS:
+   - Mine constraints from event logs
+   - Filter by support/confidence thresholds
+   - Remove redundant constraints
+
+6. ADVANTAGES:
+   - Flexible: Many valid executions
+   - Compact: Few rules describe complex behavior
+   - Natural for knowledge workers
+   - Easy to understand individual constraints
+
+7. LIMITATIONS:
+   - Can be hard to understand combined effect of many constraints
+   - May allow unintended behavior
+   - Checking all constraints can be complex
+
+8. USE FOR:
+   - Knowledge-intensive processes
+   - Compliance requirements
+   - Flexible workflow modeling
+   - Process monitoring and alerting
+   - Understanding what MUST happen vs what CAN happen

@@ -1,0 +1,145 @@
+## 1) WHAT THIS REPRESENTATION DESCRIBES
+
+This representation describes a **Petri net process model** discovered from an event log using the **ILP Miner** (the “classic” ILP-miner variant), together with:
+
+* the **net structure** (places, transitions, arcs)
+* the **initial marking** (where tokens start)
+* the **final marking** (what “completion” looks like)
+
+Semantically, it is a **token-flow model** of the behavior the miner extracted from the log: tokens move through places via transitions; **visible transitions** correspond to activities; **silent transitions** (if present) represent routing logic with no observable activity label.
+
+---
+
+## 2) TYPICAL OUTPUT FORM (conceptual)
+
+Because the exact `_petri_net_to_string(...)` function is not included, I cannot guarantee the *exact* punctuation/field names. But a typical Petri-net textual form for PM4Py-style outputs is conceptually:
+
+* A **header/label** identifying the miner (e.g., “ILP Miner”)
+* A **places** section (a list of place identifiers, often including a start/source and end/sink place)
+* A **transitions** section (a list of transitions; some have activity labels, some are silent)
+* An **arcs** section (directed edges connecting places↔transitions)
+* An **initial marking** (place→token count)
+* A **final marking** (place→token count)
+
+---
+
+## 3) HOW TO READ EACH LINE
+
+### 3.1 Places (the “states” that hold tokens)
+
+* Each listed **place** is a container that can hold **0, 1, 2, … tokens**.
+* Place identifiers may appear as:
+
+  * **named** places (often something like “source” / “sink”, or “start” / “end”), and/or
+  * **numeric/opaque** identifiers for intermediate places.
+* Do **not** assume numeric IDs have meaning beyond being unique identifiers.
+
+**Interpretation rule:** places do not correspond to activities; they are control-flow conditions between activities.
+
+---
+
+### 3.2 Transitions (events that move tokens)
+
+Each transition is a step that can *fire* if its input places contain enough tokens, consuming tokens from inputs and producing tokens in outputs.
+
+You will typically see two semantic types:
+
+1. **Visible transitions (activity transitions)**
+
+* These represent observable activities from the log.
+* The transition will have a **label** that corresponds to an activity name (e.g., `"A"`, `"Approve"`, `"Ship Order"`).
+
+2. **Silent / τ transitions (routing transitions)**
+
+* These represent unobserved routing decisions/synchronizations.
+* They usually show up with **no label** (e.g., `None`) or a placeholder symbol.
+* They should be interpreted as “the model can internally move tokens here without consuming an event in the trace”.
+
+**Interpretation rule:** when replaying/reading behavior, only **visible** transitions correspond to events in a trace; **silent** transitions may occur “in between” without appearing in the trace.
+
+---
+
+### 3.3 Arcs (directed flow relations)
+
+Arcs define which places are inputs/outputs of which transitions:
+
+* **Place → Transition**: that place is a **precondition** for firing the transition (token is consumed).
+* **Transition → Place**: firing the transition **produces** a token into that place.
+
+**Interpretation rule:** arcs fully define the causal/precedence constraints and the branching/merging structure (e.g., splits/joins).
+
+---
+
+### 3.4 Initial marking (where execution starts)
+
+The initial marking is a mapping like:
+
+* *place X has k tokens initially*
+
+Commonly, the “start/source” place has **1 token** (but the representation may allow other counts).
+
+**Interpretation rule:** this is the **starting state** for firing sequences. A trace is “replayable” only if you can start from this marking.
+
+---
+
+### 3.5 Final marking (what counts as completion)
+
+The final marking is a mapping like:
+
+* *place Y has k tokens when the case is complete*
+
+Commonly, the “end/sink” place has **1 token**.
+
+**Interpretation rule:** a run is considered **completed** if it can reach the final marking (possibly allowing silent transitions on the way).
+
+---
+
+## 4) GLOBAL SEMANTIC MEANING
+
+Overall, the representation encodes a **language of possible executions**:
+
+* An execution is any sequence of fired transitions that is **enabled by token availability** and arc structure.
+* The **observable behavior** is the sequence of **visible transition labels** produced along such an execution.
+* Silent transitions may occur without contributing labels.
+
+So the model defines **which activity sequences are possible**, and where concurrency/choice/synchronization exist, via token flow.
+
+---
+
+## 5) HOW TO INTERPRET THE LIST AS A WHOLE
+
+Read it as a complete specification of a process model:
+
+* **Places + transitions + arcs** define all allowable token movements.
+* **Initial marking** defines allowed starts.
+* **Final marking** defines accepted completion states.
+
+If you want to interpret “what the process allows”:
+
+* look for **branching** where a transition produces tokens into multiple places (potential parallelism),
+* look for **joins** where a transition needs tokens from multiple places (synchronization),
+* look for **choices** where multiple transitions compete for a token from the same place (exclusive branching),
+* and interpret silent transitions as internal routing connectors.
+
+---
+
+## 6) WHAT THIS REPRESENTATION IS FOR
+
+* **Control-flow discovery:** a compact, formal model of the process’ control-flow.
+* **Conformance checking / replay reasoning:** checking whether traces *can* be executed from initial to final marking (with optional silent routing).
+* **Explanation of constraints:** understanding which activities can follow which, where the process branches/merges, and where synchronization is required.
+
+---
+
+## 7) WHAT THIS REPRESENTATION IS NOT
+
+* **Not a probability model:** unless the string explicitly includes frequencies/probabilities (not shown in the provided code), you cannot infer likelihoods.
+* **Not a performance model:** no durations/waiting times are implied unless explicitly printed (not shown here).
+* **Not guaranteed “minimal” in a human sense:** without the exact ILP objective and without the string builder code, you must not interpret “fewest places/arcs” as a semantic guarantee.
+* **Not automatically noise-robust:** the presence of an `alpha` parameter indicates the discovery can be affected by filtering; do not assume the model reflects only “true” behavior vs noise unless you know how `alpha` was set and used.
+
+---
+
+## 8) ONE-SENTENCE CORE SUMMARY
+
+A Petri-net (places, transitions, arcs) plus initial/final markings discovered by the ILP Miner, encoding exactly which activity sequences are executable via token flow (with silent routing steps possibly included).

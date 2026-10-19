@@ -1,0 +1,28 @@
+{
+  "run_timestamp": "2025-12-31T14:18:08.224451",
+  "dataset_name": "renting_log_high",
+  "xes_path": "benchmark/renting/renting_log_high.xes",
+  "model": "deepseek:deepseek-chat",
+  "method": "run_agent",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_10, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (113b8fd3-c59d-4279-8d81-989e3ab31b9c, 'View The Property'), (32ec487b-a99b-48fe-8a1c-b665780fa5e1, 'Sign Contract'), (46bec5f8-60a6-488c-bf05-db4ea12bf44a, 'Set Appointment'), (492faf35-9386-41b6-b619-691ced9b8d00, 'Evict Tenant'), (51383e3a-7221-4a0c-b904-032b73da10a1, 'Reject Prospective Tenant...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "deepseek:deepseek-chat",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

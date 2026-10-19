@@ -1,0 +1,102 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a cleaned, governed, and efficient target recruitment process built from the mined AS-IS behavior while removing anomalies, eliminating redundant steps, reducing rework, and enforcing clear gating decisions. The IDEAL model keeps the same visible activities (Hand In Job Application, Telephonic Screening, Screening Interview, Coding/ML/Frontend/Backend interviews, Behavioral Interview, Background Check/Extensive Background Check, Make Job Offer, Application Rejected) but prescribes a consistent, auditable control flow and SLAs.
+- Scope: Candidate intake to final disposition with clear decision gates, minimal rework, and background checks executed only for shortlisted candidates.
+
+Recommended stakeholders and role assignments (conservative/inferred)
+- Candidate: applies and participates in assessments.
+- Recruiter (or Screening team): conducts initial telephonic screening and coordinates logistics.
+- Technical Interviewers (specialist panels: Coding, ML, Frontend, Backend): perform technical assessments according to a predefined panel plan.
+- Behavioral Interviewer / Hiring Manager: conducts behavioral assessment and makes hiring recommendation.
+- Background-check service / HR Operations: executes Background Check or Extensive Background Check only after conditional offer.
+- HR / Offer authority: issues Make Job Offer and closes case as Application Rejected where applicable.
+Note: Roles are recommended for governance; mining data did not explicitly contain role labels but these assignments reflect standard hiring practice consistent with mined activities.
+
+Detailed step-by-step IDEAL process flow
+Start conditions and triggers
+1. Start event: Candidate "Hand In Job Application".
+2. Recruiter validates minimal eligibility (automated screening of resume/requirements); if not eligible, terminate with Application Rejected (explicit recorded decision). This reduces the direct Hand In -> Application Rejected ad-hoc path by establishing consistent early criteria.
+
+Primary staged pipeline (gated and linear with optional parallelization where efficient)
+Stage A: Telephonic Screening (Recruiter)
+- Trigger: Candidate passes initial eligibility.
+- Purpose: validate interest, confirm role fit, schedule assessments.
+- Outcomes (exclusive decision):
+  - Fail telephonic screening -> Application Rejected (end).
+  - Pass -> proceed to Structured Technical Assessment phase.
+- SLA target: complete within X working days (recommend 3 business days).
+
+Stage B: Structured Technical Assessment (Technical panel)
+- Design: Define a panel consisting of required technical interviews depending on role (e.g., for data role: Coding + ML; for frontend role: Coding + Frontend; backend: Coding + Backend). The required set is pre-determined per job profile to avoid ad-hoc branching.
+- Execution options:
+  - Option 1 (sequential): Candidate completes Coding Interview -> role-specific technical interviews (ML, Frontend, Backend) in the pre-defined order.
+  - Option 2 (parallel/independent): For speed, some technical interviews may be scheduled in parallel but results are synchronized before behavioral and decision gates.
+- Mandatory synchronization: A single Technical Panel Vote (synchronization point) aggregates technical outcomes before moving on.
+- Rework policy: If a candidate fails a technical interview, there is a single controlled re-assessment opportunity (explicitly recorded) only for borderline cases; repeated indefinite re-interviews are disallowed.
+- SLA targets: complete technical panel within Y working days (recommend 7 business days). Average time between technical interviews reduced and measured.
+
+Stage C: Behavioral Interview (Hiring Manager)
+- Trigger: Candidate passes Technical Panel Vote.
+- Purpose: assess cultural fit and final suitability.
+- Outcome (exclusive): pass -> proceed to conditional Offer; fail -> Application Rejected (end) unless Hiring Manager requests escalation for borderline cases (formal appeal path).
+- Behavioral interview should be scheduled so that rework loops are minimized (no self-loops).
+
+Stage D: Background Check (reserved, performed after conditional offer)
+- Policy change vs AS-IS: Background Check and Extensive Background Check are executed only after the Hiring Manager approves a conditional offer. Background checks before that point are limited to lightweight identity verification if legally required.
+- Rationale: reduces unnecessary checks on candidates who will be rejected; eliminates redundant Extensive Background Checks early in the process.
+- Outcome: pass -> HR issues final Make Job Offer; fail -> cancel offer and record Application Rejected with rationale.
+- SLA target: background check completed within Z days (recommend 3–5 business days with vendor SLAs).
+
+Stage E: Make Job Offer (HR)
+- Trigger: Background Check passed (or explicitly waived for internal hires where policy allows).
+- Behavior: single, auditable Make Job Offer action; no repeated duplicate offer actions. Offer issuance includes record of approval, package, and timestamp.
+- Post-offer actions: candidate acceptance triggers onboarding; candidate rejection or withdrawal is recorded as closed.
+
+Decision points with criteria and possible outcomes (IDEAL)
+- Telephonic Screening decision: clear pass/fail criteria (skills, salary expectations, availability). Fail -> Application Rejected.
+- Technical Panel decision: pre-defined threshold (passing score / panel majority) -> pass to Behavioral Interview; fail -> Application Rejected.
+- Behavioral Interview decision: hiring manager final recommendation -> conditional offer or rejection. Borderline cases escalate to hiring committee (formal, time-boxed escalation).
+- Background Check decision: pass -> final offer; fail -> withdraw offer with documented reason.
+
+Parallel activities and synchronization
+- Technical interviews can be parallelized but must synchronize into a single Technical Panel Vote. No unsynchronized loops among technical interviews.
+- Background Check performed after the conditional offer to avoid wasted vendor effort.
+
+Exception handling, rework loops, and appeals (controlled)
+- Controlled re-assessment: Only one re-interview allowed for borderline failing technical cases; must be approved by hiring manager and recruiter.
+- Appeals: formal appeal route (time-boxed) where a hiring committee reviews new evidence within a defined SLA. Appeals produce a binary outcome: allow single re-assessment or maintain rejection.
+- Anomalies (e.g., candidate already rejected being considered later) are disallowed. System should prevent transitions from final Application Rejected back into interviewing; any such movement requires formal case re-opening with audit trail.
+- Duplicate offers: system enforces single offer action per candidate per requisition; further offer modifications are edits of the existing offer record, not repeated Make Job Offer events.
+
+End conditions and outcomes
+- Application Rejected: terminal end state with documented rejection reason and timestamp. Closed cases are archived.
+- Make Job Offer: terminal business outcome when candidate receives final, background-checked offer. Subsequent candidate acceptance leads to onboarding; otherwise the vacancy is re-opened.
+
+Process metrics and target performance characteristics
+- Volume metrics to monitor (examples): number of applications, telephonic screening rate, technical panel pass rate, behavioral pass rate, background check pass rate, offer acceptance rate.
+- Key KPI targets (examples/recommendations):
+  - Telephonic Screening turnaround <= 3 business days (current median is large per DFG).
+  - Technical Panel completion <= 7 business days.
+  - Background Check completion <= 5 business days.
+  - Rework rate (re-interviews) < 5% of candidates entering technical panel.
+  - Incidents of Application Rejected -> further activities = 0 (prevented by system controls).
+  - Offer issuance duplication = 0 (tracked by audit logs).
+  - Reduce number of candidates who receive extensive background checks pre-offer by at least 80% (only perform for shortlisted/hireable candidates).
+
+Improvements made vs AS-IS (summary)
+- Enforced gating: Telephonic Screening is a strict gate with documented criteria to reduce unnecessary downstream work.
+- Eliminated inconsistent sequencing: technical interviews follow a role-specific panel plan; no ad-hoc interleaving between ML/Frontend/Backend.
+- Background checks moved to after conditional offer, preventing wasted checks and reducing vendor load.
+- Removed uncontrolled rework loops: limited single re-assessment policy for borderline cases; formal appeals process introduced.
+- Governance and data integrity: prevent transitions from Application Rejected back to interview/offer; eliminate duplicate Make Job Offer events by making offer issuance a single auditable action.
+- SLA and KPI-driven operation: define explicit time targets for each stage to reduce the large delays visible in mined 'performance' numbers.
+
+Implementation and operational recommendations
+- Update applicant tracking system (ATS) to enforce gates, to restrict transitions from terminal states, and to log all decision rationales.
+- Configure interview scheduling and panel templates per job profile to remove ad-hoc interview sequences.
+- Introduce background-check workflow only after conditional offer, with vendor integration for SLA monitoring.
+- Add dashboards showing key KPIs and anomaly detection rules (e.g., Application Rejected then later activity) to catch data/process defects early.
+
+Summary of IDEAL
+The IDEAL model retains all visible activities but prescribes a controlled linear gating model with optional parallelism only where coordinated (technical panel), moves background checks to post-conditional-offer, eliminates anomalous rework loops, and enforces auditable, single-offer issuance and rejection closure. The expected benefits are shorter cycle times, reduced wasted effort and vendor costs, clearer decision accountability, and elimination of data/process anomalies observed in the AS-IS model.

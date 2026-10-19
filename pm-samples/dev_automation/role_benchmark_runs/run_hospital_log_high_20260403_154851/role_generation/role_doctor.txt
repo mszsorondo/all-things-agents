@@ -1,0 +1,87 @@
+AS-IS Process Model — Doctor
+============================================================
+
+AS-IS Process Model — Doctor
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Doctors (Doc. Low and Doc. Pro clustered together as the "Doctor" role) perform clinical assessment (examinations and expert examinations), establish diagnoses, execute treatments, and record treatment outcomes (Treatment successful). They are the primary clinical decision-makers observed in the log and repeatedly involved during the core diagnostic-treatment loop.
+- Responsibilities (as observed): perform Expert Examination or Examination, optionally order/perform a Thorough Examination, make a Diagnosis, execute Treatment activities, record Treatment successful outcomes, and participate in repeat diagnosis-treatment cycles when treatments fail.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Expert Examination: A clinical exam labeled as expert-level; observed often after registration. (Performed by Doc. Low and Doc. Pro.)
+- Examination: A non-expert clinical exam alternative to Expert Examination; mutually exclusive with Expert Examination in an instance.
+- Thorough Examination: An optional, more detailed exam that sometimes follows Expert Examination or Examination.
+- Diagnosis: Determine/record patient diagnosis based on examination(s). This activity occurs repeatedly in the loop and is executed by doctors.
+- Treatment: Deliver clinical treatment following Diagnosis. Treatment may result in a recorded outcome that determines next steps.
+- Treatment successful: Record the treatment as successful (observed outcome). When this occurs the patient proceeds toward Discharge.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation (when doctors start work on a case):
+  - Most commonly a doctor is activated after a patient is registered by a nurse at either Register at FD or Register at ER. The registration event is then followed by either Expert Examination or Examination (or sometimes none), which are performed by doctors.
+  - Nurses hand cases to doctors after registration and also after treatment-related events (see Interactions).
+  - Doctors may also receive handovers from other doctors (internal handovers/consultations) before or during clinical activities.
+
+- Typical sequence patterns involving doctors (all observed sequences must be considered):
+  - Register at FD/ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge
+  - Register at FD/ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge
+  - Register at FD/ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge
+  - Register at FD/ER -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge
+  - Register at FD/ER -> Diagnosis -> Treatment -> Treatment successful -> Discharge (rare; registration directly followed by Diagnosis without recorded Examination)
+  - Any of the Diagnosis->Treatment occurrences can be followed by Treatment unsuccessful, which leads back to Diagnosis and another Treatment (loop). Repetition count observed: 0..many (up to 5+ repeats observed in the log).
+  - Treatment -> Discharge (there are observed direct transitions from Treatment to Discharge in some cases; this occurs alongside the Treatment successful -> Discharge path in the log.)
+
+- Decision points and criteria the Doctor handles (observed behavior, not invented criteria):
+  - Choose between Expert Examination and Examination (exclusive options observed). The log shows either one or the other, or in a few cases neither.
+  - Decide whether to request/perform Thorough Examination (this activity is optional in traces).
+  - After Diagnosis, decide to perform Treatment (Diagnosis -> Treatment is the standard next step).
+  - After Treatment, the recorded outcome determines the next path: if Treatment successful activity occurs, doctor activity sequence moves toward Discharge; if Treatment unsuccessful occurs (performed by nurses in the log), the case returns to Diagnosis -> Treatment loop (doctors re-evaluate and carry out further diagnostics/treatment cycles).
+  - Note: The event log does not record explicit clinical criteria; decisions are observed as activity labels and their ordering rather than recorded rule sets.
+
+Section 4: Interactions (who hands work TO this role, who receives work FROM this role)
+- Who hands work TO Doctors (observed handovers aggregated to role-level):
+  - Nurses (Register at ER / Register at FD): Nurses perform registration and hand cases to doctors for examination/diagnosis. Handover network shows multiple nurse→doctor edges (Nurse 3, Nurse 1, Nurse 2 etc. handing to Doc. Pro/Doc. Low).
+  - Other Doctors: Doctors hand work among themselves (consultations / transfers). The handover network shows substantial doctor→doctor handovers (Doc. Pro↔Doc. Low), so doctors both receive and pass cases internally.
+
+- Who receives work FROM Doctors (observed handovers):
+  - Nurses: After doctors perform Treatment successful or when cases move toward Discharge, doctors hand work to nurses who perform Discharge. Doctors also hand to nurses in the context of Treatment unsuccessful (nurse records an unsuccessful outcome and then case returns to doctors).
+  - Other Doctors: Cases are sometimes transferred between doctors (peer-to-peer handovers are common), indicated by doctor→doctor edges.
+
+Section 5: Variants and Paths Involving Doctors (all observed)
+- Main recurring variant families (representative sequences and their relative prominence in the log):
+  - Registration at FD/ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (together these two symmetric variants across Register at FD vs ER are among the most frequent observed ~15% and ~14% respectively).
+  - Registration at FD/ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (common alternative when Thorough Examination is skipped).
+  - Registration at FD/ER -> Examination -> (optional Thorough Examination) -> Diagnosis -> Treatment -> Treatment successful -> Discharge.
+  - Rework-intense variants: Any of the above sequences where Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment repeats multiple times. Logs show cases with many repeated unsuccessful-treatment cycles (sequences with 1..5+ repetitions), which substantially increase total case duration.
+  - Rare variants: Registration -> Diagnosis directly (skip any Examination/Expert/Thorough) -> Treatment -> Discharge (rare but observed).
+- Ordering variability explicitly observed: Doctors can be involved in these valid orderings (all are observed):
+  - Expert Examination then Thorough Examination then Diagnosis
+  - Expert Examination then Diagnosis (skip Thorough Examination)
+  - Examination then Thorough Examination then Diagnosis
+  - Examination then Diagnosis (skip Thorough Examination)
+  - Diagnosis may be followed by one or multiple cycles of (Treatment -> Treatment unsuccessful -> Diagnosis) before a final Treatment successful.
+  - Treatment successful may be observed immediately after Treatment, or Treatment may be followed directly by Discharge in some cases.
+- Frequencies/performance impact: Repeated Treatment unsuccessful cycles correlate with very large case durations (some rare variants show extremely long performance values), making these loops the dominant source of long throughput times.
+
+Section 6: Rework loops, exceptions, escalations (observed)
+- Rework loops: The primary rework loop involving doctors is (Diagnosis -> Treatment) repeated when Treatment unsuccessful occurs. Treatment unsuccessful entries in the log (performed by nurses) are followed by Diagnosis again (performed by doctors). The loop can repeat multiple times (observed up to 5+ cycles).
+- Exceptions/rare behavior:
+  - Registration directly to Diagnosis (bypassing Examination/Expert Examination) is a low-frequency variant.
+  - Some traces show Treatment -> Discharge without an explicit Treatment successful marker (observed direct Treatment->Discharge transitions). Both patterns are present in the log.
+- Escalations: The log shows doctor-to-doctor handovers (consultations or transfers) rather than formal escalations; multiple doctor resources interact on cases.
+
+Section 7: Self-contained instructions for someone assuming the Doctor role (what they must do given the observed AS-IS behavior)
+- When a case arrives (a nurse registers the patient at ER or FD), expect to receive the case for either an Expert Examination or an Examination; in some rare cases you may receive a case already at Diagnosis.
+- Perform the clinical exam (Expert or Examination). Optionally perform a Thorough Examination if needed (this is common in many traces but not always required).
+- Create/record a Diagnosis.
+- Initiate Treatment. After Treatment, check/record treatment outcome by either marking Treatment successful (most common path to Discharge) or, if unsuccessful, expect the case to be logged as Treatment unsuccessful (often by a nurse) and returned to you for renewed Diagnosis and another Treatment.
+- Be prepared for multiple Diagnosis->Treatment cycles in complex cases. Each loop increases overall case duration.
+- Collaborate with other doctors as cases are frequently handed between doctors; also coordinate with nurses who will perform discharge activities.
+
+Section 8: Key Observations (pain points, inefficiencies observed in the data)
+- The Diagnosis->Treatment loop with repeated Treatment unsuccessful occurrences is the major driver of large case durations. Rare traces with many unsuccessful cycles produce very long total times.
+- Doctors frequently hand work to other doctors (peer handovers) and to nurses; these handovers are common and may add coordination overhead.
+- Optional steps (Thorough Examination) and alternative exam types (Expert Examination vs Examination) create multiple variants that fragment the process and may cause variability in throughput.
+- There are low-frequency but observed shortcuts (registration directly to Diagnosis) that indicate non-standard paths; these should be known to doctors taking over cases.
+- Workload concentration: two doctor roles (Doc. Low and Doc. Pro) together account for the majority of clinical events; someone in this role should expect a high volume of events and repeated loop handling.
+
+(End of AS-IS model for Doctor)

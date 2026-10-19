@@ -1,0 +1,89 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Objective: transform the observed leasing lifecycle into a streamlined, auditable, and rules-driven process ensuring consistent applicant screening, reduced lead-times, proactive rent collection, and clear escalation paths for delinquency. The IDEAL model keeps necessary tasks (viewing, paperwork, screening, contracting, move-in, rent collection) but removes redundant optional skips, enforces consistent checks, introduces automated reminders and clear escalation thresholds, and reduces manual rework via clear acceptance criteria and digital validations.
+
+Key stakeholders and roles involved
+- Prospective Tenant / Tenant: initiates applications, attends viewings, submits paperwork, moves in, pays rent or cancels.
+- Leasing Office / Property Management (Role: Leasing Officer / Underwriter): schedules viewings, checks paperwork, performs screening and extensive screening when required, signs contracts, manages move-in records, issues warnings, and executes evictions when escalation criteria met.
+- Collections Team: handles delinquency escalations beyond warnings and works with Property Management on eviction decisions.
+- Systems / Automation: scheduling system (for appointments and automated reminders), document management system (validates paperwork and flags missing items), screening service integration (automated credit/background checks), and payment gateway (automated recurring payments and pre-delinquency reminders).
+
+Detailed step-by-step IDEAL process flow
+Start conditions and triggers
+1. Start: Prospective Tenant submits an Apply for Viewing Appointment (online form or call). System validates mandatory fields immediately.
+
+1. Appointment scheduling (automated)
+- Apply for Viewing Appointment -> Set Appointment. The scheduling system offers available slots, confirms, and sends an automated calendar invite and two reminders (72 hours and 24 hours before viewing). These reminders are tracked as part of the process.
+
+2. Viewing and pre-check validation
+- View The Property: Tenant attends viewing. Immediately after viewing, the system prompts the applicant to start the digital application if interested.
+- If the tenant indicates no interest (explicit cancellation), the case is closed (Tenant Cancels Appartment) and recorded for metrics.
+
+3. Digital paperwork submission and automated checks
+- Hand In The Paperwork is performed via a digital portal. The document management system performs an automated completeness and basic validation check (e.g., ID, proof of income). If critical documents are missing, the system requests completion (single automated resubmission loop capped at 2 attempts, with SLA 48 hours per attempt). This replaces manual skip behavior by enforcing consistency and a bounded rework loop.
+- Check Paperwork becomes a primarily automated verification step with an explicit human review only if automated checks flag inconsistencies (exception queue).
+
+Decision point: screening
+- Screen Prospective Tenant is triggered once paperwork passes validation. Screening is implemented as a staged, rules-driven evaluation combining automated credit/background checks and business rules.
+- Decision outcomes (mutually exclusive, with well-defined criteria):
+  - Approve (meets all criteria) -> Sign Contract.
+  - Conditional Approval -> Extensive Screening (if flags are present, e.g., borderline credit score). Extensive Screening is time-boxed (SLA 3 business days) and follows a checklist.
+  - Reject (fails critical criteria) -> Reject Prospective Tenant. The system auto-generates rejection notification and records reasons for audit.
+
+4. Extensive Screening (controlled)
+- If Extensive Screening is required, the leasing officer receives a single consolidated task with the flagged items. Extensive Screening must conclude by either Approve -> Sign Contract or Reject. The process prevents repeated or indefinite rework loops: at most one human recheck step is allowed after the automated checks.
+
+5. Contracting and move-in
+- Sign Contract is performed digitally where possible; digital signatures are enforced to reduce administrative delay. After contract signing, Move In scheduling is coordinated (move-in checklist and automated rent setup).
+
+6. Rent collection and proactive delinquency prevention
+- Move In -> Payment Setup: on move-in, the tenant must configure a recurring payment method (direct debit or credit card). The system schedules recurring Pay Rent events (monthly) and sends pre-due reminders 7 and 2 days before due date.
+- Pay Rent is executed automatically where enabled. If payment fails or is missed (Miss Rent Payment), the system triggers an immediate automated late-notification and grace period handling:
+  - Miss Rent Payment -> Automatic Retry and Reminder: system retries payment once within 48 hours and sends a notice.
+  - If unpaid after 7 days: Issue Warning (automated notice to tenant + collections alert) and a short-term payment plan offer is presented.
+
+Escalation and enforcement
+- Issue Warning -> collections path: If the tenant responds and pays or enrolls in an agreed payment plan within 14 days, Accept Late Payment and the tenant returns to normal Pay Rent cycles.
+- If no resolution after 14 days, escalate to Collections Team.
+- Collections Team evaluates and, based on defined thresholds (e.g., >30 days overdue and unsuccessful contact attempts), proceeds to initiate Evict Tenant procedures with Property Management. Eviction remains a last resort and is documented for compliance.
+
+Tenant-initiated termination
+- Tenant Cancels Appartment: tenants can cancel pre-move-in or after move-in; the process requires formal notice and triggers final account reconciliation. For move-out post-signing, an exit checklist and final billing apply.
+
+Exception handling and rework constraints
+- All manual exception tasks (document clarifications, appeals of screening) are single-shot tasks with SLAs and recorded decisions; unlimited skip paths are eliminated.
+- Rework loops are bounded: document resubmissions capped, screening human rechecks capped to one escalation to extensive screening; payment retries capped with clear escalation thresholds.
+
+End conditions and outcomes
+- Normal end: Tenant signs contract, moves in, and remains in the Pay Rent loop; cases remain active for ongoing tenancy or until Tenant Cancels Appartment or Evict Tenant is executed.
+- Clean exits:
+  - Reject Prospective Tenant -> case closed with recorded reason.
+  - Tenant Cancels Appartment -> case closed after reconciliation.
+  - Evict Tenant -> case closed after legal process and asset handover.
+
+Process metrics and performance targets (IDEAL)
+- Appointment scheduling: target lead-time from Apply for Viewing Appointment to Set Appointment < 24 hours for online submissions.
+- Viewing-to-application conversion: increase capture of post-view applicants; target 70% of viewings captured into digital applications immediately.
+- Paperwork validation: automated completeness check immediate; human exception queue SLA < 48 hours; maximum one resubmission allowed.
+- Screening: standard automated screening completes within 4 hours; Extensive Screening SLA 3 business days.
+- Contract signing: target digital sign within 24 hours after approval.
+- Move In and payment setup: payment mandate setup completed prior to move-in in 90% of cases.
+- Delinquency handling: automatic reminders 7 and 2 days before due; first response to missed payment within 48 hours; Issue Warning triggered by 7 days overdue; collections escalation at 30 days overdue. Aim to reduce Miss Rent Payment -> Evict Tenant frequency by 50% through proactive reminders and flexible payment plans.
+- Rework reduction: eliminate skip paths; aim for 90% of applications to follow the full validated pipeline (no skips).
+- Trace lengths: reduce number of manual loop events recorded (e.g., reduced logged intermediate manual retries) and handle recurring payments as scheduled events with clearer aggregation for monitoring (avoid extremely long event sequences that hinder analysis).
+
+Key improvements over AS-IS
+- Consistency & compliance: remove ad-hoc skip branches; enforce automated checks and recorded reasons for any manual bypass.
+- Reduced lead-times: automation of scheduling, paperwork checks, and screening reduces average throughput times on those edges.
+- Proactive payment management: earlier reminders and automated retries reduce missed payments and limit escalation to eviction.
+- Bounded rework: resubmissions and human exceptions are limited and SLA-driven; this reduces cycles and unpredictability.
+- Clearer metrics & monitoring: aggregate recurring payments for lifecycle monitoring while retaining event-level data for financial reconciliation; define KPIs and thresholds for escalation.
+
+Risk considerations and governance
+- Ensure legal and privacy compliance when automating background checks and eviction decisions.
+- Provide an appeals channel for rejected applicants with recorded audit trails.
+- Ensure the collections policy and eviction thresholds comply with local landlord-tenant laws.
+
+Summary
+- The IDEAL process maintains the functional steps of leasing but eliminates unsupported skip behavior, introduces automation for validation and payment handling, standardizes screening decisions, and establishes clear, time-boxed escalation paths for delinquency. Expected outcomes: improved throughput, fewer missed payments, fewer evictions, and better compliance and auditability.

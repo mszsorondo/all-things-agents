@@ -1,0 +1,103 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL process defines a standardized, efficient patient diagnostic and treatment pathway beginning at registration (ER or FD) and ending in Discharge. The redesigned process aims to minimize rework, reduce time-to-discharge, ensure consistent use of clinical expertise, enforce proper recording of treatment outcomes, and establish escalation rules for treatment failures.
+- Purpose: provide timely, effective diagnosis and treatment, minimize repeat treatments, and ensure clear audit trails for outcomes.
+
+Key stakeholders and roles
+- Patient
+- Registration staff (ER, FD) — perform triage and register event with clear flags indicating acuity and likely route.
+- Triage clinician / Nurse — decides initial routing to Examination vs Expert Examination based on standardized triage criteria.
+- Clinician - Examination (Generalist) — performs initial clinical exam and must follow standardized assessment checklist.
+- Expert Examiner / Specialist — performs expert assessment when triage criteria indicate complexity or when escalation is required.
+- Thorough Examiner / Specialist Clinic — performs formal in-depth examinations where indicated by checklist or expert referral.
+- Diagnosing clinician (or multidisciplinary diagnostic team) — responsible for issuing Diagnosis using defined diagnostic protocols.
+- Treatment team — executes Treatment per protocol; records outcome explicitly as Treatment successful or Treatment unsuccessful.
+- Escalation Board / Multidisciplinary Team (MDT) — reviews cases after one unsuccessful treatment attempt (or earlier for high-risk cases).
+- Discharge coordinator / administration — ensures Discharge is recorded and that Treatment successful status is explicitly logged.
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and triggers
+1. Start: Patient registration at ER or FD. Registration must include triage data (acuity, likely specialty, urgency) that drives routing.
+
+Stepwise flow
+2. Triage decision (immediately after Register at ER/FD):
+   - If acuity or complexity meets specialist criteria OR patient flagged high-risk, route to Expert Examination.
+   - Else, route to Examination (general clinician).
+   - All triage decisions must be recorded (timestamp and triage reason).
+
+3. Examination (generalist) flow:
+   - The clinician performs a structured Examination guided by a checklist.
+   - If Examination identifies need for in-depth assessment or complex diagnostic uncertainty, refer to Thorough Examination or Expert Examination as per protocol.
+   - Otherwise, proceed to Diagnosis.
+
+4. Expert Examination flow:
+   - Expert performs focused assessment and decides whether Thorough Examination is required.
+   - If required, schedule Thorough Examination immediately or within defined SLA.
+   - Otherwise proceed to Diagnosis.
+
+5. Thorough Examination:
+   - Reserved for cases that require additional diagnostic detail; uses structured templates and may include diagnostic tests.
+   - After Thorough Examination, the Diagnosing clinician synthesizes findings and issues a Diagnosis.
+
+6. Diagnosis:
+   - Diagnosis must be recorded with diagnostic certainty level and suggested treatment protocol.
+   - The Diagnosis triggers Treatment planning.
+
+7. Treatment execution and outcome recording:
+   - Treatment is executed according to standardized protocols tied to Diagnosis.
+   - Treatment outcome must be explicitly recorded as either Treatment successful or Treatment unsuccessful.
+   - If Treatment successful: proceed to Discharge with required discharge checks and patient education.
+
+8. Treatment unsuccessful handling (rework and escalation):
+   - If a treatment is unsuccessful, case is immediately flagged for review by the MDT.
+   - The MDT meets within a defined SLA (e.g., 48 hours) to review diagnosis, adjust treatment plan, and order any missing diagnostics.
+   - The revised plan may include: change of therapy, escalation to specialist care, or referral to alternative interventions.
+   - After MDT-approved revised plan, re-treat; record outcomes. Limit of 1 formal re-treatment cycle before mandatory senior/specialist sign-off.
+
+9. Discharge:
+   - Discharge only when Treatment successful is recorded or when an agreed alternative disposition is documented (e.g., palliative pathway, transfer).
+   - Discharge must include summary of diagnosis, treatments given, outcome, follow-up instructions, and relevant data for audit.
+
+Decision points with criteria and outcomes (clarified)
+- Triage: objective criteria (acuity score, complexity flags) determine Expert vs Examination routing.
+- Examination -> Thorough Examination: use clinical checklist; if red flags or uncertain diagnosis -> Thorough.
+- Expert -> Thorough: expert discretion, but adhere to thresholds for ordering in-depth work.
+- Post-Treatment: success vs unsuccessful is clearly defined by clinical outcome measures; if unsuccessful, trigger MDT review and rework limits.
+
+Parallel activities and synchronization
+- Diagnostic tests (imaging, labs) can be ordered in parallel with Thorough Examination when safe; results must be available before final Diagnosis when possible.
+- MDT review synchronizes inputs (patient history, prior treatments, diagnostics) before issuing revised plan.
+
+Exception handling and escalation
+- Single unsuccessful treatment: immediate MDT review; documented action plan and defined SLA for response.
+- Recurrent unsuccessful treatments beyond limit: escalate to senior specialist, consider alternative care pathways, and review for systemic issues.
+- Missing recording: systems enforce mandatory fields — cannot discharge without Treatment successful flag or documented alternative disposition.
+
+End conditions and outcomes
+- Primary end state: Discharge after Treatment successful recorded.
+- Alternate end states: Transfer to another facility, palliative care designation, or administrative discharge with documented reasons (rare and controlled).
+
+Process metrics and performance targets (IDEAL)
+- Routing accuracy: percent of cases appropriately routed by triage (target > 95% accuracy against retrospective audit).
+- Time-to-Diagnosis: target median time reduced by 30% from baseline (set SLA e.g., median < X hours depending on baseline units).
+- First-time Treatment success rate: increase from observed (9005/(9005+1746) ≈ 83.8%) to ≥ 90% via protocolized care and MDT reviews.
+- Rework loops: limit occurrences of Treatment unsuccessful to < 5% of cases through improved diagnosis and MDT interventions.
+- MDT review SLA: 100% of unsuccessful treatments reviewed within 48 hours.
+- Discharge recording compliance: 100% compliance with explicit Treatment successful flag or documented alternative disposition.
+- End-to-end case duration: reduce mean case duration by targeting high-variance variants with rework; aim for 20–40% reduction depending on complexity.
+
+Improvements and expected benefits
+- Reduced variability and waste by standardizing triage and the use of Expert vs Examination routes; frees specialist capacity for true complex cases.
+- Reduced rework due to Treatment unsuccessful loop by enforcing MDT review and clinical checklists, increasing first-pass treatment success.
+- Cleaner data and auditability by requiring explicit outcome recordings and preventing direct Treatment->Discharge without outcome.
+- Faster case throughput and improved patient experience by enforcing SLAs for diagnostics and MDT reviews.
+- Clear escalation criteria and limits on rework to prevent excessive looping and long-duration outliers.
+
+Implementation considerations and residual risks
+- Requires triage training, checklists, and possibly EHR changes to mandate recording fields.
+- MDT capacity must be planned; rapid review capability may require dedicated slots.
+- Some complex cases will still require multiple treatment attempts; process must balance rigid limits with clinical judgment.
+
+Summary
+- The IDEAL model keeps the observable correct clinical sequence (Register -> Exam/Expert -> Thorough as needed -> Diagnosis -> Treatment -> Success -> Discharge) while adding explicit triage, enforced recording, MDT escalation on treatment failures, SLAs, and performance targets to reduce rework, improve success rates, and shorten case durations.

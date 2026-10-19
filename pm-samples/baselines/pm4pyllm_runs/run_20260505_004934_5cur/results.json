@@ -1,0 +1,262 @@
+{
+  "_meta": {
+    "start_time": "2026-05-05T00:49:34.107342",
+    "end_time": null,
+    "config": {
+      "validator_kind": "pm4py_llm_raw",
+      "config": "5cur",
+      "rep_set": [
+        "process_tree",
+        "dfg",
+        "abstract_variants",
+        "declare",
+        "log_attributes"
+      ],
+      "validator_model": "gpt-5-mini",
+      "k_valid": 100,
+      "k_invalid_per_type": 50,
+      "perturbation_types": [
+        "A1_random_swap",
+        "A3_dependency_aware_swap",
+        "B1_insert_out_of_alphabet",
+        "B2_insert_misplaced_existing",
+        "B3_insert_duplicate_unique",
+        "C1_delete_mandatory",
+        "C2_delete_start_or_end",
+        "D1_cross_role",
+        "E1_two_swaps",
+        "E2_swap_and_insert"
+      ],
+      "datasets": [
+        "hiring",
+        "hospital",
+        "lending",
+        "renting"
+      ],
+      "trace_source": "HARDER/run_20260504_221347",
+      "max_workers": 10
+    },
+    "run_folder": "baselines/pm4pyllm_runs/run_20260505_004934_5cur",
+    "status": "running"
+  },
+  "hiring_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "pm4pyllm_context_path": "baselines/pm4pyllm_runs/run_20260505_004934_5cur/hiring_pm4pyllm_context.txt",
+    "discover_time_seconds": 6.069137334823608,
+    "context_length_chars": 19940,
+    "valid_evaluation": {
+      "compute_time_seconds": 135.09331250190735,
+      "tokens": {
+        "prompt_tokens": 516851,
+        "completion_tokens": 106918,
+        "total_tokens": 623769
+      },
+      "TP": 58,
+      "FN": 42
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 42,
+        "FP": 8,
+        "precision": 0.8787878787878788,
+        "recall": 0.58,
+        "f1": 0.6987951807228915,
+        "compute_time_seconds": 112.44113302230835,
+        "tokens": {
+          "prompt_tokens": 258466,
+          "completion_tokens": 35252,
+          "total_tokens": 293718
+        }
+      },
+      "A3_dependency_aware_swap": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 44,
+        "FP": 6,
+        "precision": 0.90625,
+        "recall": 0.58,
+        "f1": 0.7073170731707317,
+        "compute_time_seconds": 60.28124785423279,
+        "tokens": {
+          "prompt_tokens": 257158,
+          "completion_tokens": 35444,
+          "total_tokens": 292602
+        }
+      },
+      "B1_insert_out_of_alphabet": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 45,
+        "FP": 5,
+        "precision": 0.9206349206349206,
+        "recall": 0.58,
+        "f1": 0.7116564417177913,
+        "compute_time_seconds": 90.01744651794434,
+        "tokens": {
+          "prompt_tokens": 261774,
+          "completion_tokens": 45047,
+          "total_tokens": 306821
+        }
+      },
+      "B2_insert_misplaced_existing": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 41,
+        "FP": 9,
+        "precision": 0.8656716417910447,
+        "recall": 0.58,
+        "f1": 0.6946107784431137,
+        "compute_time_seconds": 128.42682790756226,
+        "tokens": {
+          "prompt_tokens": 263546,
+          "completion_tokens": 57971,
+          "total_tokens": 321517
+        }
+      },
+      "B3_insert_duplicate_unique": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 37,
+        "FP": 13,
+        "precision": 0.8169014084507042,
+        "recall": 0.58,
+        "f1": 0.6783625730994152,
+        "compute_time_seconds": 110.31196284294128,
+        "tokens": {
+          "prompt_tokens": 263366,
+          "completion_tokens": 50483,
+          "total_tokens": 313849
+        }
+      },
+      "C1_delete_mandatory": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 0.58,
+        "f1": 0.7341772151898733,
+        "compute_time_seconds": 43.28778314590454,
+        "tokens": {
+          "prompt_tokens": 254323,
+          "completion_tokens": 13812,
+          "total_tokens": 268135
+        }
+      },
+      "C2_delete_start_or_end": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 49,
+        "FP": 1,
+        "precision": 0.9830508474576272,
+        "recall": 0.58,
+        "f1": 0.7295597484276729,
+        "compute_time_seconds": 48.303489208221436,
+        "tokens": {
+          "prompt_tokens": 253265,
+          "completion_tokens": 20724,
+          "total_tokens": 273989
+        }
+      },
+      "D1_cross_role": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 19,
+        "FP": 31,
+        "precision": 0.651685393258427,
+        "recall": 0.58,
+        "f1": 0.6137566137566138,
+        "compute_time_seconds": 121.77271389961243,
+        "tokens": {
+          "prompt_tokens": 259540,
+          "completion_tokens": 56884,
+          "total_tokens": 316424
+        }
+      },
+      "E1_two_swaps": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 45,
+        "FP": 5,
+        "precision": 0.9206349206349206,
+        "recall": 0.58,
+        "f1": 0.7116564417177913,
+        "compute_time_seconds": 74.29353547096252,
+        "tokens": {
+          "prompt_tokens": 263796,
+          "completion_tokens": 35315,
+          "total_tokens": 299111
+        }
+      },
+      "E2_swap_and_insert": {
+        "TP": 58,
+        "FN": 42,
+        "TN": 47,
+        "FP": 3,
+        "precision": 0.9508196721311475,
+        "recall": 0.58,
+        "f1": 0.7204968944099378,
+        "compute_time_seconds": 87.70641160011292,
+        "tokens": {
+          "prompt_tokens": 264150,
+          "completion_tokens": 32116,
+          "total_tokens": 296266
+        }
+      }
+    },
+    "aggregate": {
+      "TP": 58,
+      "FN": 42,
+      "TN": 419,
+      "FP": 81,
+      "precision": 0.4172661870503597,
+      "recall": 0.58,
+      "f1": 0.48535564853556484,
+      "compute_time_seconds": 1011.9358639717102,
+      "tokens": {
+        "prompt_tokens": 3116235,
+        "completion_tokens": 489966,
+        "total_tokens": 3606201
+      },
+      "n_valid": 100,
+      "n_invalid_total": 500
+    }
+  },
+  "hospital_log_high": {
+    "status": "in_progress",
+    "xes_path": "benchmark/hospital/hospital_log_high.xes",
+    "pm4pyllm_context_path": "baselines/pm4pyllm_runs/run_20260505_004934_5cur/hospital_pm4pyllm_context.txt",
+    "discover_time_seconds": 3.173454523086548,
+    "context_length_chars": 17742,
+    "valid_evaluation": {
+      "compute_time_seconds": 117.29911375045776,
+      "tokens": {
+        "prompt_tokens": 461119,
+        "completion_tokens": 61991,
+        "total_tokens": 523110
+      },
+      "TP": 75,
+      "FN": 25
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "TP": 75,
+        "FN": 25,
+        "TN": 45,
+        "FP": 5,
+        "precision": 0.9375,
+        "recall": 0.75,
+        "f1": 0.8333333333333334,
+        "compute_time_seconds": 74.59259557723999,
+        "tokens": {
+          "prompt_tokens": 230687,
+          "completion_tokens": 41012,
+          "total_tokens": 271699
+        }
+      }
+    }
+  }
+}

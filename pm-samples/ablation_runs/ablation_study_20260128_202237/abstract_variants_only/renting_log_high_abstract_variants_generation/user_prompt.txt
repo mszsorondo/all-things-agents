@@ -1,0 +1,68 @@
+
+============================================================
+REPRESENTATION 1: ABSTRACT_VARIANTS
+============================================================
+
+
+=== ABSTRACT VARIANTS INTERPRETATION GUIDE ===
+
+Process variants show the distinct execution paths observed in the event log.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 1391  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 1201  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 990  performance = 229938.161 )
+..."
+
+READING THE OUTPUT:
+- Each line: " Activity1 -> Activity2 -> ... -> ActivityN ( frequency = N  performance = T )"
+- The arrow (->) sequence shows the exact order of activities in that variant
+- frequency: Number of cases (process instances) that followed this exact path
+- performance: Average total duration of cases following this path (in seconds)
+- Variants are sorted by frequency (most common first)
+
+INTERPRETATION:
+1. HIGH FREQUENCY VARIANTS (>20% of cases): Main "happy path" - optimize for efficiency
+2. MEDIUM FREQUENCY (5-20%): Common alternative paths - monitor regularly
+3. LOW FREQUENCY (<5%): Exceptions or edge cases - investigate if problematic
+4. PERFORMANCE COMPARISON:
+   - Compare performance across variants to identify slow paths
+   - High performance value = longer duration (potential bottleneck)
+
+VARIANT ANALYSIS:
+- Count unique activities: More activities = longer/complex variant
+- Identify common prefixes: Shows where processes diverge
+- Look for unexpected paths: May indicate process deviations
+
+USE FOR:
+- Understanding main vs alternative process paths
+- Identifying which paths are most/least efficient
+- Detecting process deviations or exceptions
+- Simplifying complex processes by focusing on high-frequency variants
+
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Reject Prospective Tenant ( frequency = 28\%  performance = 406411.319 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Reject Prospective Tenant ( frequency = 18\%  performance = 506227.728 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Reject Prospective Tenant ( frequency = 17\%  performance = 258175.985 )
+ Apply for Viewing Appointment -> Reject Prospective Tenant ( frequency = 8\%  performance = 85701.584 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 2\%  performance = 723107.203 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Tenant Cancels Appartment ( frequency = 2\%  performance = 642883.410 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 6159769.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 5119918.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4800150.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4799648.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Evict Tenant ( frequency = 1\%  performance = 4770372.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4499679.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4479954.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4399843.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4240069.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4239963.000 )
+
+
+

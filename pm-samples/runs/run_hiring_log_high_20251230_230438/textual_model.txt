@@ -1,0 +1,125 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The AS-IS process represents the current recruitment/hiring workflow observed through process mining analysis. This process handles job applications from submission through various screening, interviewing, and background check stages, culminating in either job offers or rejections. The process exhibits significant complexity with multiple parallel paths, rework loops, and behavioral anomalies.
+
+## Key Stakeholders and Roles Involved
+* **Applicants/Candidates** - Submit job applications and participate in interviews
+* **Recruitment Team/HR** - Conduct initial screenings and coordinate the process
+* **Technical Interviewers** - Conduct specialized interviews (Coding, Frontend, Backend, ML)
+* **Background Check Specialists** - Perform standard and extensive background verifications
+* **Hiring Managers** - Conduct behavioral interviews and make final hiring decisions
+* **Compliance/Review Teams** - Handle application rejections and escalations
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+* **Trigger**: Candidate submits a job application ("Hand In Job Application")
+* **Initial State**: Process begins with application receipt
+
+### Process Activities/Tasks in Sequence
+
+#### Phase 1: Initial Screening
+1. **Hand In Job Application** - Candidate submits application materials
+2. **Telephonic Screening** - Initial phone screening by recruitment team
+   * Alternative path: Direct rejection without telephonic screening (observed in 1,201 cases)
+
+#### Phase 2: Background Verification & Initial Interview
+3. **Background Check** - Standard employment/education verification
+   * May occur before or after screening interview
+4. **Screening Interview** - Initial face-to-face or video interview
+   * May occur before or after background check
+5. **Extensive Background Check** - In-depth verification for selected candidates
+   * Triggered after either background check or screening interview
+
+#### Phase 3: Technical Assessment
+6. **Coding Interview** - Technical coding assessment
+7. **Specialized Technical Interviews** (executed in various sequences):
+   * **ML Interview** - Machine learning/technical assessment
+   * **Frontend Interview** - Frontend development skills assessment
+   * **Backend Interview** - Backend development skills assessment
+   * **Note**: These interviews can occur in different orders and may loop between each other
+
+#### Phase 4: Final Assessment
+8. **Behavioral Interview** - Final interview focusing on soft skills and cultural fit
+   * May loop back to itself (observed rework in 1,032 cases)
+   * May occur multiple times for the same candidate
+
+#### Phase 5: Decision Making
+9. **Make Job Offer** - Formal job offer extended to candidate
+   * May loop back to itself (861 cases of rework)
+10. **Application Rejected** - Candidate rejection at various stages
+    * May occur at almost any point in the process
+    * May loop back to itself (654 cases of rework)
+
+### Decision Points with Criteria and Possible Outcomes
+
+#### Decision Point 1: After Telephonic Screening
+* **Criteria**: Candidate performance in initial screening
+* **Outcomes**:
+  * Proceed to Background Check (3,961 cases)
+  * Proceed directly to Screening Interview (3,848 cases)
+  * Immediate Rejection (990 cases)
+
+#### Decision Point 2: After Background Check/Screening Interview
+* **Criteria**: Verification results and initial interview performance
+* **Outcomes**:
+  * Proceed to Extensive Background Check (1,055-1,044 cases)
+  * Proceed to Coding Interview (1,413-1,517 cases)
+  * Immediate Rejection (1,389-1,391 cases)
+
+#### Decision Point 3: After Technical Interviews
+* **Criteria**: Technical assessment results
+* **Outcomes**:
+  * Proceed to Behavioral Interview
+  * Immediate Rejection (386-653 cases depending on stage)
+  * Loop between different technical interviews
+
+#### Decision Point 4: After Behavioral Interview
+* **Criteria**: Final assessment and cultural fit
+* **Outcomes**:
+  * Make Job Offer (1,850 cases)
+  * Rejection (914 cases)
+  * Repeat Behavioral Interview (1,032 cases)
+
+### Parallel Activities and Synchronization Points
+* **Parallel Technical Interviews**: ML, Frontend, and Backend interviews can occur in parallel or in various sequences
+* **Background Checks**: Standard and extensive checks may occur in parallel with interviews
+* **Synchronization Point**: All paths converge before the final decision (Make Job Offer or Application Rejected)
+
+### Exception Handling and Error Paths
+* **Immediate Rejections**: Can occur at almost any stage without proceeding further
+* **Rework Loops**: Multiple instances of activities repeating (Behavioral Interview, Make Job Offer, Application Rejected)
+* **Path Inconsistencies**: Background Check and Screening Interview can occur in either order
+
+### Rework Loops and Escalation Procedures
+* **Behavioral Interview Loop**: Candidates may undergo multiple behavioral interviews (1,032 cases)
+* **Make Job Offer Loop**: Job offer process may repeat (861 cases)
+* **Application Rejected Loop**: Rejection process may repeat (654 cases)
+* **Technical Interview Loops**: Candidates may cycle between different technical interviews
+
+### End Conditions and Outcomes
+* **Successful Outcome**: Make Job Offer (with potential rework loops)
+* **Unsuccessful Outcome**: Application Rejected (at various stages)
+* **Process Completion**: All paths eventually reach either Make Job Offer or Application Rejected
+
+## Process Metrics and Performance Characteristics
+* **Total Process Variants**: Over 40 distinct paths observed
+* **Most Common Path**: Telephonic Screening → Screening Interview → Background Check → Application Rejected (1,391 cases)
+* **Second Most Common**: Telephonic Screening → Background Check → Screening Interview → Application Rejected (1,389 cases)
+* **Performance Range**: 0-530,732 seconds (approximately 0-147 hours)
+* **Average Successful Path Duration**: ~530,000 seconds (147 hours/6.1 days)
+* **Average Rejection Path Duration**: Varies from 146,345 to 427,833 seconds
+* **High-Frequency Activities**: Telephonic Screening (8,799 occurrences), Background Check (various paths)
+
+## Key Challenges and Pain Points
+1. **Excessive Process Variability**: Over 40 different process paths indicate lack of standardization
+2. **Rework and Loops**: Significant time wasted in repeated Behavioral Interviews (1,032 cases), repeated Job Offers (861 cases), and repeated Rejections (654 cases)
+3. **Inconsistent Sequencing**: Background Check and Screening Interview occur in different orders, suggesting unclear process guidelines
+4. **Early Rejection Inefficiencies**: 1,201 applications rejected immediately without any screening, potentially missing qualified candidates
+5. **Parallel Technical Interviews**: Unclear coordination between ML, Frontend, and Backend interview sequences
+6. **Performance Inconsistencies**: Some activities show 0 performance time, suggesting data recording issues or instant transitions
+7. **Decision Point Proliferation**: Rejections can occur at almost every stage, indicating either overly strict criteria or inconsistent evaluation
+8. **Process Complexity**: The DFG shows dense interconnections between activities, making the process difficult to manage and optimize
+9. **Resource Inefficiency**: Multiple interview types (ML, Frontend, Backend) with unclear specialization criteria
+10. **Compliance Risks**: Extensive background checks occurring at different stages may create regulatory compliance issues

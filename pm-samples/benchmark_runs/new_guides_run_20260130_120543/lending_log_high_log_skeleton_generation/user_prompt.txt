@@ -1,0 +1,83 @@
+
+============================================================
+REPRESENTATION 1: LOG_SKELETON
+============================================================
+
+
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model capturing behavioral constraints
+observed in an event log.
+
+OUTPUT FORMAT:
+--------------
+The output starts with an explanation, then lists constraints:
+"The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence: ('A', 'B') ('C', 'D') ...
+Always Before: ('A', 'B') ...
+Always After: ('A', 'B') ...
+Never Together: ('A', 'B') ...
+Directly-Follows: ('A', 'B') ..."
+
+CONSTRAINT TYPES:
+1. Equivalence: Activities A and B always occur the same number of times
+2. Always Before: If A occurs, B must have occurred before
+3. Always After: If A occurs, B must occur afterwards
+4. Never Together: A and B cannot both occur in the same case
+5. Activity Occurrences: Bounds on how many times an activity occurs
+6. Directly-Follows: B must immediately follow A
+
+READING THE CONSTRAINTS:
+- Tuples ('A', 'B'): Constraint relates activity A to activity B
+- Multiple tuples: Each represents one constraint instance
+- Order matters: First activity triggers the constraint
+
+USE FOR:
+- Compliance checking
+- Process auditing
+- Anomaly detection
+- Understanding mandatory relationships
+- Validating process instances
+
+COMPARISON:
+- vs Petri Net: Declarative vs procedural
+- vs DECLARE: Log skeleton is simpler subset
+- vs DFG: Captures more than direct follows
+
+
+--- DISCOVERED MODEL ---
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('Submit File to Underwriter', 'Set Appointment') ('Submit File to Underwriter', 'Hand In Credit Appliaction') ('Sign Loan Agreement', 'Request Appointment') ('Set Appointment', 'Hand In Credit Appliaction') ('Hand In Credit Appliaction', 'Request Appointment') ('Verify Borrowers Information', 'Set Appointment') ('Verify Borrowers Information', 'Hand In Credit Appliaction') ('Loan Denied', 'Verify Borrowers Information') ('Submit File to Underwriter', 'Request Appointment') ('Set Appointment', 'Request Appointment') ('Loan Denied', 'Submit File to Underwriter') ('Verify Borrowers Information', 'Request Appointment') ('Loan Denied', 'Set Appointment') ('Application Rejected', 'Verify Borrowers Information') ('skipped_examination', 'Verify Borrowers Information') ('Request Co-Signer On Loan', 'Verify Borrowers Information') ('Loan Denied', 'Hand In Credit Appliaction') ('Appointment Denied', 'Request Appointment') ('Request Co-Signer On Loan', 'Submit File to Underwriter') ('Request Co-Signer On Loan', 'Set Appointment') ('Sign Loan Agreement', 'Verify Borrowers Information') ('Application Rejected', 'Set Appointment') ('skipped_examination', 'Set Appointment') ('Loan Denied', 'Request Appointment') ('Application Rejected', 'Hand In Credit Appliaction') ('skipped_examination', 'Hand In Credit Appliaction') ('Request Co-Signer On Loan', 'Hand In Credit Appliaction') ('Hand In Credit Appliaction', 'Verify Borrowers Information') ('skipped_examination', 'Sign Loan Agreement') ('Submit File to Underwriter', 'Verify Borrowers Information') ('Application Rejected', 'Request Appointment') ('Set Appointment', 'Verify Borrowers Information') ('Sign Loan Agreement', 'Set Appointment') ('Hand In Credit Appliaction', 'Set Appointment') ('Request Co-Signer On Loan', 'Request Appointment') ('Sign Loan Agreement', 'Hand In Credit Appliaction') ('skipped_examination', 'Request Appointment')
+
+Always Before:  ('Submit File to Underwriter', 'Set Appointment') ('Submit File to Underwriter', 'Hand In Credit Appliaction') ('Sign Loan Agreement', 'Request Appointment') ('Hand In Credit Appliaction', 'Request Appointment') ('Verify Borrowers Information', 'Set Appointment') ('Verify Borrowers Information', 'Hand In Credit Appliaction') ('Loan Denied', 'Verify Borrowers Information') ('Submit File to Underwriter', 'Request Appointment') ('Set Appointment', 'Request Appointment') ('Loan Denied', 'Submit File to Underwriter') ('Verify Borrowers Information', 'Request Appointment') ('Loan Denied', 'Set Appointment') ('Application Rejected', 'Verify Borrowers Information') ('skipped_examination', 'Verify Borrowers Information') ('Request Co-Signer On Loan', 'Verify Borrowers Information') ('Loan Denied', 'Hand In Credit Appliaction') ('Appointment Denied', 'Request Appointment') ('Request Co-Signer On Loan', 'Set Appointment') ('Sign Loan Agreement', 'Verify Borrowers Information') ('Application Rejected', 'Set Appointment') ('skipped_examination', 'Set Appointment') ('Loan Denied', 'Request Appointment') ('Application Rejected', 'Hand In Credit Appliaction') ('skipped_examination', 'Hand In Credit Appliaction') ('Request Co-Signer On Loan', 'Hand In Credit Appliaction') ('Submit File to Underwriter', 'Verify Borrowers Information') ('Application Rejected', 'Request Appointment') ('Sign Loan Agreement', 'Set Appointment') ('skipped_examination', 'Request Appointment') ('Hand In Credit Appliaction', 'Set Appointment') ('Request Co-Signer On Loan', 'Request Appointment') ('Sign Loan Agreement', 'Hand In Credit Appliaction')
+
+Always After:  ('skipped_examination', 'Sign Loan Agreement') ('Request Co-Signer On Loan', 'Submit File to Underwriter') ('Set Appointment', 'Verify Borrowers Information') ('Set Appointment', 'Hand In Credit Appliaction') ('Hand In Credit Appliaction', 'Verify Borrowers Information')
+
+Never Together:  ('Sign Loan Agreement', 'Appointment Denied') ('Hand In Credit Appliaction', 'Appointment Denied') ('Make Visit to Assess Colatteral', 'Appointment Denied') ('Application Rejected', 'skipped_examination') ('Request Co-Signer On Loan', 'skipped_examination') ('Appointment Denied', 'Verify Borrowers Information') ('Appointment Denied', 'Make Visit to Assess Colatteral') ('Appointment Denied', 'Application Rejected') ('Appointment Denied', 'Request Co-Signer On Loan') ('Submit File to Underwriter', 'Appointment Denied') ('Loan Denied', 'Application Rejected') ('Appointment Denied', 'Submit File to Underwriter') ('Set Appointment', 'Appointment Denied') ('Appointment Denied', 'Loan Denied') ('Verify Borrowers Information', 'Appointment Denied') ('Appointment Denied', 'Set Appointment') ('Appointment Denied', 'Hand In Credit Appliaction') ('Make Visit to Assess Colatteral', 'skipped_examination') ('Request Co-Signer On Loan', 'Application Rejected') ('Application Rejected', 'Make Visit to Assess Colatteral') ('skipped_examination', 'Make Visit to Assess Colatteral') ('skipped_examination', 'Application Rejected') ('Application Rejected', 'Request Co-Signer On Loan') ('Appointment Denied', 'Sign Loan Agreement') ('Submit File to Underwriter', 'skipped_examination') ('skipped_examination', 'Request Co-Signer On Loan') ('Loan Denied', 'Sign Loan Agreement') ('Application Rejected', 'Submit File to Underwriter') ('skipped_examination', 'Submit File to Underwriter') ('Application Rejected', 'Loan Denied') ('skipped_examination', 'Loan Denied') ('Loan Denied', 'Appointment Denied') ('Sign Loan Agreement', 'Application Rejected') ('Application Rejected', 'Sign Loan Agreement') ('Make Visit to Assess Colatteral', 'Application Rejected') ('Appointment Denied', 'skipped_examination') ('Request Co-Signer On Loan', 'Appointment Denied') ('Sign Loan Agreement', 'Loan Denied') ('Application Rejected', 'Appointment Denied') ('skipped_examination', 'Appointment Denied') ('Submit File to Underwriter', 'Application Rejected') ('Loan Denied', 'skipped_examination')
+
+Activity Occurrences:  Request Appointment: 1; Set Appointment: 0, 1; Hand In Credit Appliaction: 0, 1; Verify Borrowers Information: 0, 1; Make Visit to Assess Colatteral: 0, 1, 2, 3, 4, 5, 6, 7, 8; Request Co-Signer On Loan: 0, 1; Submit File to Underwriter: 0, 1; Sign Loan Agreement: 0, 1; Loan Denied: 0, 1; Application Rejected: 0, 1; Appointment Denied: 0, 1; skipped_examination: 0, 1;
+
+Directly-Follows Constraints:  ('Hand In Credit Appliaction', 'Verify Borrowers Information') ('skipped_examination', 'Sign Loan Agreement') ('Set Appointment', 'Hand In Credit Appliaction')
+
+

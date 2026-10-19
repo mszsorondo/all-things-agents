@@ -1,0 +1,28 @@
+{
+  "run_timestamp": "2025-12-31T00:50:56.080018",
+  "dataset_name": "hiring_log_high",
+  "xes_path": "benchmark/hiring/hiring_log_high.xes",
+  "model": "deepseek:deepseek-chat",
+  "method": "run_agent",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (20a3925d-c167-4a67-b01b-67c2fde2850a, 'Extensive Background Check'), (220e11de-b0c1-4f33-b158-59a2a26b24f3, 'Background Check'), (32cca298-e9f3-4690-964c-828de469bb87, 'ML Interview'), (71c12c97-c0e8-4e64-970c-e70fb9e78361, 'Behav...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "deepseek:deepseek-chat",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

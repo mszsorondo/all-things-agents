@@ -1,0 +1,24 @@
+{
+  "run_timestamp": "2026-01-28T18:37:00.771482",
+  "dataset_name": "hiring_log_high",
+  "xes_path": "benchmark/hiring/hiring_log_high.xes",
+  "model": "openai:gpt-5-mini",
+  "method": "run_agent",
+  "representations": [
+    "dfg"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. DFG (Directly-Follows Graph) abstraction: If I have a process with flow:\n\nHand In Job Application -> Telephonic Screening ( frequency = 8799  performance = 82439.794 )\nTelephonic Screening -> Background Check ( frequency = 3961  performance = 81906.421 )\nBackground Check -> Screening Interview ( frequency = 3961  performance = 0.000 )\nTelephonic Screening -> Screening Interview ( frequency = 3848  performance = 81903.291 )\nScreening Interview -> Backgroun...",
+  "config": {
+    "representations": [
+      "dfg"
+    ],
+    "model_name": "openai:gpt-5-mini",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

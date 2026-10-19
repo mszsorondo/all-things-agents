@@ -1,0 +1,50 @@
+AS-IS Process Model — Behavioral Decision Makers (HR-pro and Senior Partner / HR-pro and Senior Partner)
+============================================================
+
+Title: AS-IS Process Model — Behavioral Decision Makers (HR-pro and Senior Partner / HR-pro and Senior Partner)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Conduct behavioral interviews and make final hiring decisions (Make Job Offer or confirm Application Rejected). They sometimes act jointly (HR-pro and Senior Partner) during interviews.
+- Observed responsibilities: Behavioral Interview, Make Job Offer, and occasional participation in Screening Interview and Application Rejected.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Behavioral Interview: Assess candidate’s behavioral fit; may be repeated multiple times in traces (self-loop observed).
+- Make Job Offer: Extend a job offer to candidate (observed multiple times and sometimes duplicated).
+- Application Rejected: Occasionally performed by senior decision-makers as well.
+- Screening Interview (occasionally): Senior Partner is observed to perform Screening Interview activity in the log.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Activated after technical interview sequences (Frontend/ML/Backend) or following HR screening and candidate progression. Behavioral interviews also sometimes follow from Application Rejected or multiple application outcomes (observed transitions Application Rejected -> Behavioral Interview).
+- Observed sequences (valid orderings):
+  - Coding/Frontend/ML/Backend Interview -> Behavioral Interview -> Make Job Offer
+  - Behavioral Interview -> Make Job Offer (Behavioral Interview can repeat multiple times before an offer)
+  - Application Rejected -> Behavioral Interview -> Make Job Offer (observed in variants; indicates re-evaluation or logging anomalies where rejection and later offer both appear)
+- Decision points and criteria handled:
+  - After Behavioral Interview(s): decide to Make Job Offer or confirm rejection. The presence of Make Job Offer -> Make Job Offer self-loop suggests repeated offer actions (possibly system retries or multiple offers).
+  - Behavioral Interview may be repeated (loop) before reaching a Make Job Offer or final rejection.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO Behavioral Decision Makers (observed):
+  - Technical Interviewers (Coding Interviewer role) hand candidates to Behavioral Interview
+  - HR Screener may also hand over for final behavioral checks
+  - Application Rejected sometimes hands back to Behavioral Interview (observed in DFG and variants)
+- Who Behavioral Decision Makers hand work TO:
+  - Make Job Offer (they execute the offer)
+  - Application Rejected (they may also record rejections)
+  - HR-pro and Senior Partner may hand back to HR-dummy for administrative updates
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency:
+  - Frontend/ML/Backend Interview -> Behavioral Interview -> Make Job Offer
+- Medium/low-frequency / anomalous variants:
+  - Application Rejected -> Behavioral Interview -> Make Job Offer (indicates rework or logging anomalies where rejection and later offer both recorded)
+  - Behavioral Interview repeated multiple times (Behavioral Interview self-loop observed: behavior can occur 0..3 times)
+  - Make Job Offer -> Make Job Offer self-loop indicating multiple offer actions
+- Optional activities: Behavioral Interview and Make Job Offer are not present in all cases (some candidates are rejected before reaching behavioral stage).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Behavioral Interview repeats and duplicated Make Job Offer events indicate possible logging duplicates, rework, or protracted decision cycles.
+- Presence of paths where Application Rejected and Make Job Offer both occur in the same trace suggests inconsistent recording of final outcomes or re-evaluation of previously rejected candidates.
+- Handovers between HR-pro, Senior Partner, HR-dummy, and technical interviewers are frequent; role boundaries for final decisions may be unclear, causing delays or redundant activities.
+
+Notes: The role groups HR-pro and Senior Partner (and the combined resource HR-pro and Senior Partner) under one logical role 'Behavioral Decision Makers' because they jointly perform behavioral interviewing and final decision activities in the observed data.

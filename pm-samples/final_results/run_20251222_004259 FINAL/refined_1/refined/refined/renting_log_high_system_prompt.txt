@@ -1,0 +1,139 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+# AS-IS Process Model
+
+Process overview and scope
+- Observed end-to-end process for residential leasing: from application through viewing and screening to either rejection or contract signing and moving in; then recurring rent handling ending by cancellation or eviction.
+- Unless explicitly stated otherwise, activities occur in the listed order. The model enumerates valid orders and bans unobserved permutations.
+
+Start and roles
+- Start event: Apply for Viewing Appointment (only start).
+- Main roles (inferred): Prospective Tenant, Leasing/Property Management.
+
+Core control-flow (activities and valid orderings)
+
+A. Pre-leasing funnel (strict, linear order; only listed early-reject exits are allowed)
+- Mandatory sequence:
+  1) Apply for Viewing Appointment
+  2) Set Appointment
+  3) View The Property
+  4) Hand In The Paperwork
+  5) Check Paperwork
+  6) Screen Prospective Tenant
+- Optional refinement immediately after screening:
+  • Screen Prospective Tenant → Extensive Screening (optional; at most once)
+  • After Extensive Screening, the only allowed outcomes are Reject Prospective Tenant or Sign Contract
+- Decisions and terminal outcomes (pre-leasing):
+  • Early rejection is allowed only after:
+    – Apply for Viewing Appointment (Apply → Reject Prospective Tenant)
+    – View The Property (View → Reject Prospective Tenant)
+    – Screen Prospective Tenant (Screen → Reject Prospective Tenant)
+    – Extensive Screening (Extensive Screening → Reject Prospective Tenant)
+  • Acceptance:
+    – Screen Prospective Tenant → Sign Contract
+    – Extensive Screening → Sign Contract
+- Invalid pre-leasing permutations (explicitly NOT allowed):
+  • Hand In The Paperwork before View The Property
+  • Check Paperwork before Hand In The Paperwork, or after Screen Prospective Tenant
+  • Screen Prospective Tenant before Check Paperwork or after Sign Contract
+  • Extensive Screening before Screen Prospective Tenant, after Sign Contract, or after Move In
+  • Re-screening after Extensive Screening (i.e., Extensive Screening → Screen Prospective Tenant is invalid)
+  • Sign Contract before Screen Prospective Tenant or before Extensive Screening (if it occurs)
+  • Any return to View/Hand In/Check/Screen/Extensive after Sign Contract (no pre-leasing steps after signing)
+
+B. Handover to occupancy
+- Sign Contract → Move In (immediate; no other tasks in between)
+- Invalid: Any pre-leasing task after Move In
+
+C. Post-move-in monthly cycle (loop until termination)
+- First post-move-in event must be either:
+  • Pay Rent, or
+  • Miss Rent Payment
+- Normal cycle
+  • Pay Rent → one of:
+    – Pay Rent (next cycle)
+    – Miss Rent Payment (delinquency next cycle)
+    – Tenant Cancels Appartment (termination; see constraints in D)
+- Delinquency sub-process
+  • Miss Rent Payment → Issue Warning (mandatory next step)
+  • Issue Warning → one of:
+    – Accept Late Payment (returns to the cycle), or
+    – Evict Tenant (termination)
+  • Accept Late Payment → one of:
+    – Pay Rent (resume normal cycle), or
+    – Miss Rent Payment (repeated delinquency)
+  • Invalid: Evict Tenant without immediately preceding Issue Warning
+
+D. Termination events and constraints
+- Reject Prospective Tenant (terminal) — allowed only at the explicit points listed in A.
+- Tenant Cancels Appartment (terminal)
+  • It occurs immediately after a Pay Rent (only allowed immediate predecessor).
+  • It may occur regardless of earlier delinquency events (Miss Rent Payment, Issue Warning, Accept Late Payment), provided the immediate predecessor is Pay Rent.
+  • Observed minimum streak: At least 15 consecutive Pay Rent events must directly precede the cancellation (i.e., the final uninterrupted block of Pay Rent events immediately before Tenant Cancels Appartment must have length ≥ 15).
+  • No upper cap on the number of preceding Pay Rent events has been observed for cancellation.
+  • Invalid:
+    – Cancellation with fewer than 15 consecutive Pay Rent events directly preceding
+    – Cancellation immediately after Move In, Miss Rent Payment, Issue Warning, or Accept Late Payment
+- Evict Tenant (terminal)
+  • It occurs immediately after Issue Warning.
+  • No constraint on the number of previous paid cycles: eviction may occur whenever a Miss Rent Payment is followed by Issue Warning and no Accept Late Payment occurs between Issue Warning and Evict Tenant.
+  • Invalid: eviction without prior Issue Warning, or with any Accept Late Payment between Issue Warning and Evict Tenant.
+
+Allowed/forbidden directly-follows constraints (selected, explicit)
+- Allowed pre-leasing edges:
+  • Apply → Set Appointment
+  • Set Appointment → View The Property
+  • View The Property → Hand In The Paperwork
+  • Hand In The Paperwork → Check Paperwork
+  • Check Paperwork → Screen Prospective Tenant
+  • Screen Prospective Tenant → Extensive Screening (optional)
+  • Screen Prospective Tenant → Reject Prospective Tenant | Sign Contract
+  • Extensive Screening → Reject Prospective Tenant | Sign Contract
+- Forbidden pre-leasing edges (non-exhaustive but binding):
+  • Set Appointment → Hand In The Paperwork
+  • Hand In The Paperwork → View The Property
+  • Screen Prospective Tenant → Check Paperwork
+  • Extensive Screening → Screen Prospective Tenant
+  • Sign Contract → View/Hand In/Check/Screen/Extensive
+  • View/Hand In/Check/Screen/Extensive → Move In (must Sign first)
+- Allowed occupancy edges:
+  • Sign Contract → Move In
+  • Move In → Pay Rent | Miss Rent Payment
+  • Pay Rent → Pay Rent | Miss Rent Payment | Tenant Cancels Appartment
+  • Miss Rent Payment → Issue Warning
+  • Issue Warning → Accept Late Payment | Evict Tenant
+  • Accept Late Payment → Pay Rent | Miss Rent Payment
+- Forbidden occupancy edges:
+  • Issue Warning → Tenant Cancels Appartment
+  • Accept Late Payment → Tenant Cancels Appartment
+  • Miss Rent Payment → Tenant Cancels Appartment
+  • Tenant Cancels Appartment following anything other than Pay Rent
+  • Miss Rent Payment → Evict Tenant (must go via Issue Warning)
+  • Evict Tenant following anything other than Issue Warning
+
+Cardinality and repetition policies
+- Pay Rent may repeat arbitrarily many times in the cycle.
+- Cancellation minimum: Tenant Cancels Appartment requires a final uninterrupted block of at least 15 consecutive Pay Rent events immediately before the cancellation.
+- Eviction timing: No limit on the number of paid cycles prior to a delinquency that leads to eviction, provided the immediate predecessor is Issue Warning and there is no intervening Accept Late Payment.
+
+Summary of optionality and dependencies
+- Optional: Extensive Screening (only immediately after Screen Prospective Tenant; at most once)
+- Conditional: Sign Contract only after Screen Prospective Tenant (with or without Extensive Screening)
+- Mandatory: Move In immediately after Sign Contract; Issue Warning immediately after a Miss Rent Payment
+- Terminals:
+  • Reject Prospective Tenant (only at specified pre-leasing points)
+  • Tenant Cancels Appartment (only after Pay Rent and only after ≥ 15 consecutive Pay Rent events immediately preceding)
+  • Evict Tenant (only right after Issue Warning; no Accept Late Payment in between)
+
+Notes on what is not permitted
+- Any structural bypass that skips or reorders View/Hand In/Check/Screen/Extensive/Sign is not allowed
+- No pre-leasing task may occur after Sign Contract
+- No eviction without an immediately preceding Issue Warning, nor with any Accept Late Payment between the warning and eviction
+- No cancellation directly after Move In, Miss Rent Payment, Issue Warning, or Accept Late Payment; and no cancellation with fewer than 15 consecutive Pay Rent events immediately preceding the cancellation
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

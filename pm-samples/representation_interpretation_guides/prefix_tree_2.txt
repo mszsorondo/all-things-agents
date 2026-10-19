@@ -1,0 +1,170 @@
+## 1. WHAT THIS REPRESENTATION DESCRIBES
+
+This representation is a **summary of a Prefix Tree (Trie)** built from the event log’s observed activity sequences.
+It describes the **set of unique activity prefixes** that appear in the log, organized as a tree rooted at a common start point, and reports:
+
+* how many nodes the tree contains,
+* how deep the longest observed prefix is,
+* and a small sample of complete root-to-leaf paths.
+
+It is **not the full tree itself**, but a **compact textual summary** of it.
+
+---
+
+## 2. TYPICAL OUTPUT FORM (conceptual)
+
+```
+Prefix Tree (Trie) Summary:
+- Total nodes: <integer>
+- Maximum depth: <integer>
+- Sample paths (first <k>):
+  START -> A -> B -> C
+  START -> A -> D
+  START -> B -> E
+  ...
+```
+
+Where:
+
+* `START` denotes the root (empty prefix),
+* each arrow-separated sequence is one path in the tree,
+* only a limited number of paths are shown.
+
+---
+
+## 3. HOW TO READ EACH LINE
+
+### Meaning of the sequence (paths)
+
+Each shown path represents **one complete prefix path from the root to a leaf** in the prefix tree.
+
+Interpretation:
+
+* `START -> A -> B -> C` means:
+
+  * there exists at least one trace in the log whose activity sequence begins with `A, B, C`,
+  * and this prefix corresponds to a leaf in the constructed prefix tree (i.e., no longer continuation was included for that prefix).
+
+The paths:
+
+* are derived from the set of distinct trace variants,
+* reflect the order of activities as they appear in each trace,
+* may be truncated if a maximum path length was configured.
+
+---
+
+### Meaning of each reported metric
+
+**Total nodes**
+= The number of nodes in the prefix tree, including:
+
+* the root node,
+* all intermediate prefix nodes,
+* and all leaf nodes.
+
+Semantically:
+
+> The number of distinct prefixes (including the empty prefix) that exist in the log under the given truncation setting.
+
+---
+
+**Maximum depth**
+= The length (in activities) of the longest root-to-leaf path.
+
+Semantically:
+
+> The maximum number of activities observed in any prefix represented in the tree (after optional truncation).
+
+Units:
+
+* Measured in **number of activities**, not time.
+
+---
+
+**Sample paths (first k)**
+= A limited subset of root-to-leaf paths extracted from the tree.
+
+Semantically:
+
+> Examples of complete prefixes present in the tree, shown only to illustrate structure.
+
+Important:
+
+* This is **not exhaustive**.
+* Only the first few paths found by traversal are shown.
+* Their order has no semantic meaning.
+
+---
+
+## 4. GLOBAL SEMANTIC MEANING
+
+The summary encodes:
+
+✔ which activity prefixes exist
+✔ how complex the prefix structure is (node count)
+✔ how long the longest observed prefix is
+✔ examples of concrete prefix paths
+
+It does **not** encode:
+
+✘ frequencies
+✘ probabilities
+✘ temporal information
+✘ ordering between different paths
+✘ full tree structure
+✘ branching counts
+✘ how many traces followed each path
+
+---
+
+## 5. HOW TO INTERPRET THE LIST AS A WHOLE
+
+Taken together, the summary describes the **shape and scale** of the observed prefix behavior:
+
+* A larger **Total nodes** ⇒ more distinct prefixes.
+* A larger **Maximum depth** ⇒ longer observed sequences.
+* The **sample paths** illustrate typical or possible prefix structures, but do not describe all of them.
+
+You should read it as:
+
+> “This log induces a prefix tree with this many unique prefixes, with prefixes as long as this, and here are a few example prefix paths.”
+
+---
+
+## 6. WHAT THIS REPRESENTATION IS FOR
+
+It is intended for:
+
+* Structural overview of trace-prefix complexity
+* Qualitative inspection of example prefixes
+* Prompting or describing prefix-based models
+* Human-readable summary of a trie structure
+* Understanding whether traces are short/long and simple/branching
+
+---
+
+## 7. WHAT THIS REPRESENTATION IS NOT
+
+This representation is **not**:
+
+* a frequency model
+* a probabilistic model
+* a process model (Petri net, BPMN, etc.)
+* a variant list
+* a Directly-Follows Graph
+* a conformance checker
+* a prediction model
+* a full serialization of the prefix tree
+
+It does **not** allow:
+
+* counting how often a path occurs,
+* determining which path is more common,
+* reconstructing the entire tree,
+* inferring transitions not explicitly present.
+
+---
+
+## 8. ONE-SENTENCE CORE SUMMARY
+
+**This representation summarizes the prefix tree of observed activity sequences by reporting how many distinct prefixes exist, how long the longest one is, and a few example prefix paths, without encoding frequencies, probabilities, or the full tree structure.**

@@ -1,0 +1,213 @@
+write_AS_IS_comprehensive_textual_description("""
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end patient care from initial registration through clinical assessment, diagnosis, treatment, and discharge.
+- Source: Heuristics Net discovered from event logs with strong causal dependencies; start activities are "Register at ER" and "Register at FD"; end activity is "Discharge".
+- Scope: Covers intake, examinations (initial and expert), optional thorough examinations, diagnosis, treatment, outcome recording (success/unsuccessful), and discharge, including rework loops.
+
+Key stakeholders and roles involved
+- Registration desks: ER registration, Front Desk (FD) registration.
+- Clinical staff: general examination staff, expert examiners/specialists, diagnosticians/physicians, treatment providers.
+- Note: Roles are described generically based on activity names (no specific titles were provided).
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: A patient arrives and registers at one of two entry points.
+- Start activities (exclusive alternatives):
+  1) Register at ER
+  2) Register at FD
+
+Post-registration routing (observed alternatives)
+- From either "Register at ER" or "Register at FD", the process may proceed to one of the following clinical entry points (exclusive choice per case):
+  - Examination (dominant path)
+  - Expert Examination (dominant path)
+  - Thorough Examination (rare bypass)
+  - Diagnosis (rare bypass)
+
+Observed volumes and proportions of first clinical step (summing ER and FD cases, total N=10,000):
+- To Expert Examination: 5,754 cases (57.5%)
+- To Examination: 3,609 cases (36.1%)
+- Directly to Diagnosis: 320 cases (3.2%)
+- Directly to Thorough Examination: 317 cases (3.2%)
+
+Clinical assessment paths
+- Path A: Examination
+  - Decision (exclusive):
+    - Examination -> Diagnosis (1,641 cases; 45.5% of those examined)
+    - Examination -> Thorough Examination (1,968 cases; 54.5%)
+- Path B: Expert Examination
+  - Decision (exclusive):
+    - Expert Examination -> Diagnosis (2,117 cases; 36.8% of those expert-examined)
+    - Expert Examination -> Thorough Examination (3,637 cases; 63.2%)
+- Path C: Thorough Examination (bypass from registration; rare)
+  - Thorough Examination -> Diagnosis (317 cases from bypass feed into this step; see consolidation below)
+- Consolidation to Diagnosis
+  - Thorough Examination -> Diagnosis (5,922 cases total; equals 1,968 from Examination + 3,637 from Expert Examination + 317 direct-from-registration bypass)
+  - Additional direct flows to Diagnosis:
+    - Examination -> Diagnosis (1,641)
+    - Expert Examination -> Diagnosis (2,117)
+    - Register at ER/FD -> Diagnosis (320)
+  - Total first-pass entries to Diagnosis: 10,000
+  - Re-diagnosis due to treatment failure adds 1,746 more, totaling 11,746 transitions from Diagnosis to Treatment (see loop below).
+
+Diagnosis to treatment
+- Diagnosis -> Treatment: always follows (11,746 occurrences across initial and re-diagnosis cycles). Dependency strength is maximal (1.000).
+
+Treatment outcomes and looping
+- Treatment splits into three exclusive outcomes (recorded behavior):
+  - Treatment -> Treatment successful (9,005 cases; 76.7% of all treatments)
+  - Treatment -> Treatment unsuccessful (1,746 cases; 14.9%)
+  - Treatment -> Discharge (995 cases; 8.5%) [direct discharge without explicit outcome capture]
+- Post-outcome routing:
+  - Treatment successful -> Discharge (9,005 cases)
+  - Treatment unsuccessful -> Diagnosis (1,746 cases), creating a rework loop:
+    - On loop: Diagnosis -> Treatment again (counted in the 11,746), followed by another outcome split as above.
+
+Parallel activities and synchronization
+- No explicit parallelism is observed in the discovered behavior; flows are sequential with exclusive decisions at each branch.
+
+Exception handling and error paths
+- Direct registration-to-diagnosis (3.2%) reflects a bypass of clinical examination steps; likely an exception path for urgent or obvious cases, but its frequency suggests a non-trivial shortcut.
+- Direct treatment-to-discharge (8.5%) represents either undocumented outcomes or a practice of skipping explicit outcome classification.
+- Rework loop: Treatment unsuccessful -> Diagnosis indicates iterative care cycles when initial treatment fails.
+
+Rework loops and escalation procedures
+- Primary rework loop: Treatment unsuccessful -> Diagnosis -> Treatment -> (outcome) ...
+- Escalation to deeper assessment: Both Examination and Expert Examination frequently lead to Thorough Examination before Diagnosis (54.5% and 63.2% of their respective cases), evidencing clinical escalation.
+
+End conditions and outcomes
+- End event: Discharge
+  - Following Treatment successful -> Discharge (majority)
+  - Following Treatment -> Discharge directly (8.5%, bypassing explicit outcome)
+  - After corrected loops (unsuccessful treatment may eventually lead to successful treatment and then discharge)
+
+Process metrics and performance characteristics
+- Entry distribution (N=10,000 cases):
+  - Expert Examination first: 57.5%
+  - Examination first: 36.1%
+  - Direct to Diagnosis: 3.2%
+  - Direct to Thorough Examination: 3.2%
+- Escalation to Thorough Examination:
+  - From Examination: 54.5%
+  - From Expert Examination: 63.2%
+- Diagnosis to Treatment: 11,746 transitions (includes 1,746 after unsuccessful treatment re-diagnosis)
+- Treatment outcomes (share of 11,746 treatments):
+  - Successful: 9,005 (76.7%)
+  - Unsuccessful: 1,746 (14.9%)
+  - Direct Discharge: 995 (8.5%)
+- Dependency strengths (selected):
+  - Diagnosis -> Treatment: 1.000 (very strong, always)
+  - Thorough Examination -> Diagnosis: 1.000 (deterministic)
+  - Expert Examination -> (Diagnosis or Thorough Examination): 1.000 (split across the two)
+  - Examination -> (Diagnosis or Thorough Examination): ~0.999 for each branch (strong)
+
+Key challenges and pain points
+- Inconsistent intake routing:
+  - A large portion (57.5%) goes directly to Expert Examination; criteria are unspecified, risking overuse of specialized resources.
+  - Non-trivial bypasses from registration directly to Diagnosis (3.2%) and to Thorough Examination (3.2%) may skip necessary preliminary checks.
+- High reliance on Thorough Examination:
+  - More than half of cases from both Examination and Expert Examination escalate to Thorough Examination, indicating potential front-end triage inefficiencies.
+- Documentation gaps:
+  - 8.5% direct Treatment -> Discharge suggests missing outcome recording or inconsistent use of "Treatment successful".
+- Rework burden:
+  - 14.9% of treatments result in failure and rework loops, increasing total diagnosis and treatment cycles and extending patient journeys.
+- Process variability:
+  - Multiple alternative paths and bypasses increase variability and complicate scheduling, staffing, and quality control.
+- Potential risk:
+  - Direct-to-diagnosis and direct-to-discharge paths may reduce clinical assurance and auditability.
+""")
+
+write_IDEAL_comprehensive_textual_description("""
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Streamlined and governed patient care pathway ensuring appropriate assessment before diagnosis, consistent outcome documentation, and effective handling of treatment failures.
+- Goals:
+  - Standardize intake and assessment sequence.
+  - Ensure explicit outcome capture for every treatment.
+  - Reduce unnecessary escalations to Thorough Examination.
+  - Lower rework by enforcing deeper assessment after failed treatments.
+- Endpoints preserved: Start at registration (ER or FD); end at Discharge.
+
+Key stakeholders and roles involved
+- Registration desks: ER and FD registration.
+- Clinical staff: initial examiners, expert examiners/specialists, diagnosticians, treatment providers.
+- Note: Stakeholders reflect activity labels; no additional roles introduced.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Patient registers at ER or FD (two alternative start events).
+
+Standardized post-registration routing
+- Merge from start into a governed intake gateway (exclusive decision with clear criteria):
+  - Route to Examination for standard cases.
+  - Route to Expert Examination for complex or specialized cases.
+- Eliminated behaviors (from AS-IS):
+  - Registration -> Diagnosis (bypass) removed.
+  - Registration -> Thorough Examination (bypass) removed.
+
+Assessment and escalation
+- Examination path (exclusive decision):
+  - If adequate: Examination -> Diagnosis.
+  - If additional data needed: Examination -> Thorough Examination -> Diagnosis.
+- Expert Examination path (exclusive decision):
+  - If adequate: Expert Examination -> Diagnosis.
+  - If additional data needed: Expert Examination -> Thorough Examination -> Diagnosis.
+- Note: Thorough Examination remains available but only as an escalation following an initial or expert exam (no direct access from registration).
+
+Diagnosis to treatment
+- Diagnosis -> Treatment (mandatory, unchanged).
+
+Treatment outcomes and controlled looping
+- Outcome capture is mandatory (no direct discharge after Treatment):
+  - Treatment -> Treatment successful -> Discharge.
+  - Treatment -> Treatment unsuccessful -> Thorough Examination -> Diagnosis.
+    - Rationale: After an unsuccessful treatment, require additional thorough assessment to reduce repeated failures and improve diagnostic accuracy before re-treatment.
+- Eliminated behavior:
+  - Treatment -> Discharge (direct) removed to enforce complete outcome documentation and clinical closure.
+
+Parallel activities and synchronization
+- The process remains sequential; no parallel branches are introduced. Synchronization occurs implicitly when Thorough Examination (if required) completes before proceeding to Diagnosis.
+
+Exception handling and error paths
+- Urgent or critical cases are routed via Expert Examination rather than bypassing assessment to Diagnosis.
+- If Thorough Examination resources are temporarily unavailable, the case waits at that step; no shortcut to Diagnosis is permitted in lieu of required escalation.
+
+Rework loops and escalation procedures
+- Controlled rework:
+  - Only one sanctioned loop: Treatment unsuccessful -> Thorough Examination -> Diagnosis -> Treatment.
+  - Multiple loops are allowed but each cycle enforces the thorough assessment step to prevent repetitive inadequate treatments.
+
+End conditions and outcomes
+- End event: Discharge
+  - Only possible after Treatment successful.
+  - All cases have explicit outcome recorded.
+
+Process metrics and performance characteristics
+- Data completeness:
+  - Target 100% explicit outcome capture (0% Treatment -> Discharge direct).
+- Rework reduction:
+  - Target reduction in unsuccessful treatment proportion (e.g., from ~14.9% to <10% within two quarters) through mandatory post-failure thorough assessment.
+- Throughput and resource use:
+  - Lower proportion of cases escalated to Thorough Examination by improving criteria at the initial/expert exam gateways.
+  - Expected shift in intake distribution:
+    - Majority to Examination; Expert Examination reserved for defined complex cases.
+- Quality and auditability:
+  - 100% of diagnoses preceded by at least one examination step (Examination or Expert Examination, optionally followed by Thorough Examination).
+  - Every discharge traceable to a recorded “Treatment successful” event.
+
+Improvements made (summary)
+- Removed intake bypasses:
+  - No direct Registration -> Diagnosis or Registration -> Thorough Examination.
+- Enforced clinical assessment before diagnosis:
+  - Mandatory Examination or Expert Examination precedes all diagnoses.
+- Standardized escalation:
+  - Thorough Examination only after an initial clinical assessment; use criteria to minimize unnecessary escalations.
+- Closed the documentation gap:
+  - Eliminated Treatment -> Discharge path; outcome must be captured as “Treatment successful” or “Treatment unsuccessful”.
+- Strengthened post-failure protocol:
+  - Required Thorough Examination before re-diagnosis after an unsuccessful treatment to improve first-pass yield of subsequent treatments.
+- Governance and clarity:
+  - Exclusive decision points with explicit criteria at each branch reduce variability and improve predictability, scheduling, and compliance.
+""")

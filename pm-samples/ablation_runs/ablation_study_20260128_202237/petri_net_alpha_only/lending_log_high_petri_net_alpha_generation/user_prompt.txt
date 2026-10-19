@@ -1,0 +1,66 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_ALPHA
+============================================================
+
+
+=== PETRI NET (ALPHA MINER) INTERPRETATION GUIDE ===
+
+The Alpha Miner discovers Petri nets based on ordering relations in the event log.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ place1, place2, ... ]
+transitions: [ (id, 'Label'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+KEY DIFFERENCES FROM INDUCTIVE MINER:
+- Places are often named as tuples like ({'A'}, {'B'}) representing the activities they connect
+- No silent/tau transitions (Alpha miner doesn't handle invisible transitions)
+- May produce disconnected or incomplete nets for complex logs
+
+ORDERING RELATIONS USED:
+1. Direct succession (>): A directly followed by B in some trace
+2. Causality (->): A > B and not B > A
+3. Parallelism (||): A > B and B > A (both orders observed)
+4. Choice (#): A and B never directly follow each other
+
+READING THE OUTPUT:
+- Places named as {A}, {B} tuples: Connect activity A to activity B
+- 'start' and 'end' places: Process entry/exit points
+- All transitions are visible (labeled activities)
+- Arcs show flow: Activity->place or place->Activity
+
+LIMITATIONS:
+- Cannot handle loops of length 1 or 2
+- Sensitive to noise
+- Assumes complete event logs
+- May miss implicit dependencies
+
+WHEN TO USE:
+- Simple, well-structured processes
+- Educational purposes
+- Quick initial discovery
+- Logs with clear sequential patterns
+
+
+--- DISCOVERED MODEL ---
+[Alpha Miner]
+
+
+If I have a Petri net:
+
+places: [ ({'Hand In Credit Appliaction'}, {'Verify Borrowers Information'}), ({'Request Appointment'}, {'Appointment Denied', 'Set Appointment'}), ({'Request Co-Signer On Loan'}, {'Submit File to Underwriter'}), ({'Set Appointment'}, {'Hand In Credit Appliaction'}), ({'Submit File to Underwriter', 'skipped_examination'}, {'Sign Loan Agreement'}), ({'Submit File to Underwriter'}, {'Sign Loan Agreement', 'Loan Denied'}), ({'Verify Borrowers Information'}, {'Application Rejected', 'Request Co-Signer On Loan', 'skipped_examination'}), ({'Verify Borrowers Information'}, {'Application Rejected', 'Submit File to Underwriter', 'skipped_examination'}), end, start ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Appointment Denied, 'Appointment Denied'), (Hand In Credit Appliaction, 'Hand In Credit Appliaction'), (Loan Denied, 'Loan Denied'), (Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral'), (Request Appointment, 'Request Appointment'), (Request Co-Signer On Loan, 'Request Co-Signer On Loan'), (Set Appointment, 'Set Appointment'), (Sign Loan Agreement, 'Sign Loan Agreement'), (Submit File to Underwriter, 'Submit File to Underwriter'), (Verify Borrowers Information, 'Verify Borrowers Information'), (skipped_examination, 'skipped_examination') ]
+arcs: [ (Application Rejected, 'Application Rejected')->end, (Appointment Denied, 'Appointment Denied')->end, (Hand In Credit Appliaction, 'Hand In Credit Appliaction')->({'Hand In Credit Appliaction'}, {'Verify Borrowers Information'}), (Loan Denied, 'Loan Denied')->end, (Request Appointment, 'Request Appointment')->({'Request Appointment'}, {'Appointment Denied', 'Set Appointment'}), (Request Co-Signer On Loan, 'Request Co-Signer On Loan')->({'Request Co-Signer On Loan'}, {'Submit File to Underwriter'}), (Set Appointment, 'Set Appointment')->({'Set Appointment'}, {'Hand In Credit Appliaction'}), (Sign Loan Agreement, 'Sign Loan Agreement')->end, (Submit File to Underwriter, 'Submit File to Underwriter')->({'Submit File to Underwriter', 'skipped_examination'}, {'Sign Loan Agreement'}), (Submit File to Underwriter, 'Submit File to Underwriter')->({'Submit File to Underwriter'}, {'Sign Loan Agreement', 'Loan Denied'}), (Verify Borrowers Information, 'Verify Borrowers Information')->({'Verify Borrowers Information'}, {'Application Rejected', 'Request Co-Signer On Loan', 'skipped_examination'}), (Verify Borrowers Information, 'Verify Borrowers Information')->({'Verify Borrowers Information'}, {'Application Rejected', 'Submit File to Underwriter', 'skipped_examination'}), (skipped_examination, 'skipped_examination')->({'Submit File to Underwriter', 'skipped_examination'}, {'Sign Loan Agreement'}), ({'Hand In Credit Appliaction'}, {'Verify Borrowers Information'})->(Verify Borrowers Information, 'Verify Borrowers Information'), ({'Request Appointment'}, {'Appointment Denied', 'Set Appointment'})->(Appointment Denied, 'Appointment Denied'), ({'Request Appointment'}, {'Appointment Denied', 'Set Appointment'})->(Set Appointment, 'Set Appointment'), ({'Request Co-Signer On Loan'}, {'Submit File to Underwriter'})->(Submit File to Underwriter, 'Submit File to Underwriter'), ({'Set Appointment'}, {'Hand In Credit Appliaction'})->(Hand In Credit Appliaction, 'Hand In Credit Appliaction'), ({'Submit File to Underwriter', 'skipped_examination'}, {'Sign Loan Agreement'})->(Sign Loan Agreement, 'Sign Loan Agreement'), ({'Submit File to Underwriter'}, {'Sign Loan Agreement', 'Loan Denied'})->(Loan Denied, 'Loan Denied'), ({'Submit File to Underwriter'}, {'Sign Loan Agreement', 'Loan Denied'})->(Sign Loan Agreement, 'Sign Loan Agreement'), ({'Verify Borrowers Information'}, {'Application Rejected', 'Request Co-Signer On Loan', 'skipped_examination'})->(Application Rejected, 'Application Rejected'), ({'Verify Borrowers Information'}, {'Application Rejected', 'Request Co-Signer On Loan', 'skipped_examination'})->(Request Co-Signer On Loan, 'Request Co-Signer On Loan'), ({'Verify Borrowers Information'}, {'Application Rejected', 'Request Co-Signer On Loan', 'skipped_examination'})->(skipped_examination, 'skipped_examination'), ({'Verify Borrowers Information'}, {'Application Rejected', 'Submit File to Underwriter', 'skipped_examination'})->(Application Rejected, 'Application Rejected'), ({'Verify Borrowers Information'}, {'Application Rejected', 'Submit File to Underwriter', 'skipped_examination'})->(Submit File to Underwriter, 'Submit File to Underwriter'), ({'Verify Borrowers Information'}, {'Application Rejected', 'Submit File to Underwriter', 'skipped_examination'})->(skipped_examination, 'skipped_examination'), start->(Request Appointment, 'Request Appointment') ]
+
+initial marking: ['start:1']
+final marking: ['end:1']
+
+

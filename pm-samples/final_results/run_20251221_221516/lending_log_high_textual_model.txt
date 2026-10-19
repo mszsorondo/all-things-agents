@@ -1,0 +1,110 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: This is the observed end-to-end loan application and approval process as reconstructed from the provided inductive-miner Petri net, directly-follows graph (DFG), and abstract variant traces. The process covers the customer request for an appointment, submission of a credit application, verification of borrower information, optional collateral assessment and co-signer requests, submission to the underwriter, and final outcomes (Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied).
+- Scope: From the moment a prospective borrower requests an appointment to the outcome (contract signed or case terminated). The model includes both normal and exceptional behaviors (skipped examinations, repeated field visits, multiple re-submissions, and denials).
+
+Key stakeholders and inferred roles
+- Applicant/Customer: initiates the process by requesting an appointment and handing in the credit application.
+- Appointment Scheduler / Front-desk clerk: records requests and sets appointments (inferred from Request Appointment -> Set Appointment).
+- Loan Processor / Intake clerk: receives the handed-in credit application and initiates verification of borrower information.
+- Verifier / Caseworker: performs Verify Borrowers Information and decides next steps (submit to underwriter, request co-signer, reject application, instruct collateral assessment, or mark skipped_examination).
+- Field Assessor / Collateral Inspector: performs Make Visit to Assess Collateral (one or more times).
+- Loan Officer / Escalation: may request a co-signer on loan when verification or assessment suggests it.
+- Underwriter: receives the submitted file (Submit File to Underwriter) and issues a final decision: Sign Loan Agreement or Loan Denied.
+Note: Roles are inferred from activity names in the source artifacts; they are not explicitly supplied in the source but are direct role implications of the activities.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+1. Start event: Request Appointment (source -> Request Appointment). Trigger: prospective borrower contacts the organization to request a loan appointment.
+
+Main happy-path and branches (sequence flows)
+1. Request Appointment
+   - Two possible immediate outcomes (DFG frequencies):
+     - Set Appointment (frequency = 9038)
+     - Appointment Denied (frequency = 962)
+   - Decision point criteria (observed behavior): appointment may be denied at intake (eligibility pre-check, missing documents, or capacity constraints). Denials terminate the case (Appointment Denied -> sink).
+
+2. Set Appointment -> Hand In Credit Application (9038)
+   - Applicant attends appointment and hands in the credit application.
+
+3. Hand In Credit Application -> Verify Borrowers Information (9038)
+   - Loan processor opens case and forwards to verifier for information checks.
+
+4. Verify Borrowers Information (branching) — divergent observed outcomes (sum frequencies = 9038):
+   - Submit File to Underwriter (4623) — case appears complete enough to escalate to underwriting.
+   - Application Rejected (1624) — verifier rejects the application (immediate termination to sink).
+   - Request Co-Signer On Loan (1233) — verifier requires co-signer; moves to co-signer flow.
+   - Make Visit to Assess Collatteral (1226) — verifier requires collateral inspection.
+   - skipped_examination (332) — verifier marks the examination skipped and flow goes directly toward Sign Loan Agreement in some traces (skipped_examination -> Sign Loan Agreement, frequency = 332). This is an observed bypass of on-site examination.
+
+5.a. Submit File to Underwriter (incoming from Verify (4623), from Make Visit (1420), from Request Co-Signer (1039); total Submit events = 7082)
+   - Underwriter outcomes (observed):
+     - Loan Denied (4787)
+     - Sign Loan Agreement (2295)
+   - This indicates a high denial ratio at underwriting (4787/7082 ≈ 67.6% of submitted files are denied).
+
+5.b. Request Co-Signer On Loan -> subsequent flows
+   - Request Co-Signer -> Submit File to Underwriter (1039) (applicant or loan officer obtained co-signer then submits)
+   - Request Co-Signer -> Make Visit to Assess Collatteral (733) (co-signer request may trigger collateral assessment as well)
+   - Complex variants show Request Co-Signer and Make Visit interleaving and looping (co-signer requests often co-occur with visits).
+
+5.c. Make Visit to Assess Collatteral (field assessments)
+   - Observed transitions:
+     - Make Visit -> Submit File to Underwriter (1420)
+     - Make Visit -> Request Co-Signer On Loan (539)
+     - Make Visit -> Make Visit (self-loop, 563) — multiple visits to the same collateral across a case are common.
+   - Variants show long chains with many repeated visits (some traces show up to many repeated Make Visit events before final submission and decision).
+
+6. skipped_examination -> Sign Loan Agreement (332)
+   - Observed bypass: when skipped_examination occurs, in recorded cases it leads straight to signing the loan agreement in the dataset. This is a compliance risk because examination was skipped but the case was approved.
+
+7. End conditions and terminations
+   - Sign Loan Agreement (successful completion)
+   - Loan Denied (underwriter denies after submission)
+   - Application Rejected (verifier rejects before submission)
+   - Appointment Denied (initial intake denies appointment)
+
+Invisible/silent transitions and structural notes from Petri net
+- The Petri net includes tauSplit and tauJoin constructs (tauSplit_1, tauSplit_5, tauJoin_2, tauJoin_6) and skip_* and init_loop nodes representing optional branches and skipped activities.
+- These correspond to parallel or optional branches: the model allows optional collateral examination, optional co-signer request, and optional skipping of some steps.
+- skip_* transitions move tokens to later places representing skipped activities; e.g., skip_13 leads to join before signing; skip_11/skip_12 indicate skipping certain visits or steps and proceeding.
+
+Exception paths and rework loops
+- Make Visit self-loop (563 occurrences) and variants with multiple Make Visit occurrences show heavy rework in field assessment. Some cases record large numbers of visits (variants include up to many repeated Make Visit events).
+- Request Co-Signer and Make Visit may alternate and repeat (variants with sequences like ...Request Co-Signer -> Make Visit -> Make Visit -> ... -> Submit ...).
+- After submission, high denial rates lead to case termination; repeated submission to underwriter is possible if the case is returned for more information (implicit in Submit frequencies from different sources), though explicit explicit resubmissions observed are represented by multiple Submit events from different upstream activities.
+- skipped_examination is an observed shortcut that leads to signing in some traces; this is an explicit noncompliant path.
+
+Process metrics and performance characteristics (as observed)
+- Volume (inferred from DFG):
+  - Total Request Appointment cases observed: Request -> Set (9038) + Request -> Denied (962) = 10,000 cases (rounded — the input implies 10,000 request events).
+  - From those, 9038 reached Hand In Credit Application and Verify Borrowers Information.
+- Key DFG edge frequencies and average performance (provided values are taken directly from the input; units are not specified in the source):
+  - Request Appointment -> Set Appointment: frequency 9038; performance 82658.194
+  - Set Appointment -> Hand In Credit Application: frequency 9038; performance 82658.872
+  - Hand In Credit Application -> Verify Borrowers Information: frequency 9038; performance 42027.519
+  - Verify Borrowers Information -> Submit File to Underwriter: frequency 4623; performance 48326.675
+  - Submit File to Underwriter -> Loan Denied: frequency 4787; performance 82666.413
+  - Submit File to Underwriter -> Sign Loan Agreement: frequency 2295; performance 80724.983
+  - Verify Borrowers Information -> Application Rejected: frequency 1624; performance 32266.345
+  - Verify Borrowers Information -> Request Co-Signer On Loan: frequency 1233; performance 35838.067
+  - Verify Borrowers Information -> Make Visit to Assess Collatteral: frequency 1226; performance 35269.232
+  - Make Visit -> Submit File to Underwriter: frequency 1420; performance 33926.961
+  - Make Visit -> Make Visit (self-loop): frequency 563; performance 22399.107
+  - skipped_examination -> Sign Loan Agreement: frequency 332; performance 0.000 (observed as direct fast path)
+- Variant-level insights (selected):
+  - Most frequent outcome variant: full chain ending in Loan Denied (frequency 2936) and Sign Loan Agreement (frequency 1687) in the variant listing — totals differ by variant partitioning but confirm high volumes for termination by denial.
+  - Long-running variants exist where Make Visit repeats many times; variant durations (performance values in the variant list) show cases that are orders of magnitude longer (e.g., 337,686 – 469,827 in the variant performance numbers provided).
+
+Key challenges and pain points (AS-IS)
+1. High rejection/denial rate at underwriting: Submit -> Loan Denied is the single largest post-submission outcome (4787 outs of 7082 submissions ≈ 67.6%). This suggests either strict underwriting, poor upstream quality, or both.
+2. Long lead times and high variability: performance numbers are large and variable; many variants have extremely long durations (hundreds of thousands in the provided units), indicating bottlenecks, waiting times, or resource constraints.
+3. Repetitive and costly field visits: Make Visit self-loops and long visit chains create operational costs, customer dissatisfaction, and long cycle times.
+4. Skipped examinations: The presence of skipped_examination that leads directly to Sign Loan Agreement in observed traces is a compliance and risk control breach.
+5. Fragmented handoffs and optional skipping: Multiple skip_* and tau constructs indicate inconsistent execution of mandatory checks and optional ad-hoc skips.
+6. Lack of gating and case quality control prior to underwriting: High denial rates at underwriting point to insufficient pre-underwriting validation and completeness checks.
+7. Complex branching increases error proneness: The number of branches (co-signer requests, visits, skips) produces many variants that are costly to manage and diagnose.
+
+Summary of AS-IS
+- The reconstructed process reveals a high-volume loan intake funnel that frequently leads to repeated collateral visits, co-signer requests and a majority of submitted cases being denied by the underwriter. Insufficient gating, ad-hoc skipping of examination activities, and long cycle times are the main observed problems. The Petri net’s tau splits/joins and skip transitions confirm optional and unsynchronized branches leading to large behavioral variability.

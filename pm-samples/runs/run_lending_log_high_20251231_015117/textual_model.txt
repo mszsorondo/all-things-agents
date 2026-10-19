@@ -1,0 +1,73 @@
+### AS-IS Process Model
+
+#### Process Overview and Purpose
+The AS-IS process model represents the current state of a loan application process discovered from event logs using inductive mining, directly-follows graphs (DFG), and variant analysis. This process handles customer requests for credit loans, involving appointment scheduling, application submission and verification, optional additional checks (such as requesting a co-signer and assessing collateral through site visits), submission to an underwriter, and final decision-making leading to loan approval or various forms of denial/rejection. The purpose is to evaluate borrower creditworthiness, but the process exhibits significant variability, loops, and inefficiencies, resulting in numerous variants (over 20 listed, with frequencies indicating common paths and rare long-looping ones). All paths start from a source (new loan request) and end at a sink (process completion, either approved or denied).
+
+#### Key Stakeholders and Roles Involved
+- Borrowers/Customers: Initiate requests, hand in applications.
+- Bank Staff/Loan Officers: Handle appointment setting, information verification, co-signer requests, collateral assessments, file submission, and underwriting decisions.
+No specific roles are assigned in the source data, so activities are performed by general bank personnel as implied by the sequence.
+
+#### Detailed Step-by-Step Process Flow
+1. **Start Conditions and Triggers**: Process starts when a customer submits a 'Request Appointment' (source place marks the initial token).
+   
+2. **Request Appointment** → Leads to place p3.
+   - **Decision Point (Exclusive Gateway - Appointment Approval)**:
+     - If denied: 'Appointment Denied' → sink (end: appointment rejected early). Frequency: 962 cases (~10% of total).
+     - If approved: 'Set Appointment' → p4. Frequency: 9038 cases.
+
+3. **Set Appointment** → 'Hand In Credit Application' → p5 (borrower submits application). Frequency: 9038.
+
+4. **Hand In Credit Application** → 'Verify Borrowers Information' → p6. Frequency: 9038, average performance: ~42k ms.
+
+5. **Verify Borrowers Information** → Branches (via tauSplit_1 to p7/p9, capturing optional paths):
+   - **Direct Rejection**: 'Application Rejected' → sink (end: application rejected due to verification failure). Frequency: 1624 (~18%).
+   - **Early Loan Denial Path** (rare, via p7): 'Loan Denied' → p8 → tauJoin_2 → sink or skip_3 → p8 → sink.
+   - **Main Continuation Paths** (via p9 and tauSplit_5, p6 → tauSplit_1 → p9):
+     | Branch | Description | Frequency |
+     |--------|-------------|-----------|
+     | Direct Submit Path | Leads to 'Submit File to Underwriter' via merges. | 4623 from Verify → Submit |
+     | Co-Signer Request | 'Request Co-Signer On Loan' (p13 → p14 → tauJoin_6). Can loop back via other paths. Freq: 1233. | |
+     | Collateral Assessment | 'Make Visit to Assess Collateral' (p17 → p18 → skips to p17/p16). Supports loops (self-loop freq: 563). Freq: 1226. | |
+     | Interleaved Loops | Co-signer and collateral can interleave with multiple repeats (up to 13+ visits in rare variants, e.g., freq 1). E.g., Verify → Co-Signer → Collateral → Co-Signer → ... → Submit. | Various low freq |
+     | Skipped Examination | 'skipped_examination' → p11 → 'Sign Loan Agreement' or skip_13 → p10 → tauJoin_2 → sink. Freq: 332 (rare shortcut). | |
+
+     These branches merge via tauJoin_6 (p14 & p16 → p12) and other tau joins/skips into p11/p12/p10.
+
+6. **Submit File to Underwriter** (after merges, p12 → ) → p11.
+   - Frequency from various predecessors: 4623 (direct), 1420 (Collateral), 1039 (Co-Signer), etc.
+   - **Decision Point (Exclusive Gateway - Underwriting Outcome)**:
+     - Denied: 'Loan Denied' → p8 → tauJoin_2 → sink. Frequency: 4787 (~53% of submits).
+     - Approved: 'Sign Loan Agreement' → p10 → tauJoin_2 → sink. Frequency: 2295.
+
+7. **Rework Loops and Escalation**:
+   - Loops primarily on 'Make Visit to Assess Collateral' (self-loop freq 563, multi-loops in variants up to 13 iterations).
+   - Interleaving between 'Request Co-Signer On Loan' and 'Make Visit to Assess Collateral' (e.g., Co-Signer → Collateral → Co-Signer, freq 539 for Collateral → Co-Signer).
+   - No explicit escalations; loops represent rework.
+
+8. **Parallel Activities and Synchronization**:
+   - Tau splits/joins suggest concurrent optional execution of co-signer request and collateral visits, synchronized before submit (tauJoin_6).
+   - Skips allow bypassing (e.g., skip_8 from p15 → p16, skip_11/12 from p18).
+
+9. **Exception Handling and Error Paths**:
+   - Early denials: Appointment Denied, Application Rejected, Loan Denied.
+   - No recovery paths; all lead to sink.
+
+10. **End Conditions and Outcomes**:
+    - Sink reached via multiple paths: Loan Approved ('Sign Loan Agreement'), Loan Denied, Application Rejected, Appointment Denied.
+    - Total cases inferred ~10k from frequencies.
+
+#### Process Metrics and Performance Characteristics
+- Total variants: 28+ listed, high variability.
+- Common paths: Denial after Submit (2936 cases, perf ~338k ms), Approval after Submit (1687, ~339k ms), Reject after Verify (1624, ~236k ms).
+- Average times: Request→Set ~83k ms, Set→Hand In ~83k ms, Hand In→Verify ~42k ms, Verify→Submit ~48k ms, Submit→Deny ~83k ms.
+- Bottlenecks: Loops add significant time (e.g., multi-collateral visits up to 470k ms).
+- Denial rate: High (~70-80% non-approval paths dominant).
+
+#### Key Challenges and Pain Points
+- **High Variability**: 28+ variants, with rare but extreme looping (13+ collateral visits), indicating lack of control.
+- **Rework Loops**: Excessive iterations on collateral assessments and co-signer requests, inflating cycle times (e.g., self-loop on Collateral: 22k ms avg).
+- **Bottlenecks**: Appointment setting and underwriting decisions take ~83k ms avg.
+- **Inefficient Branching**: Uncontrolled interleaving of co-signer and collateral, rare skips (skipped_examination only 332 cases), unnecessary early denials post-verify.
+- **Compliance Issues**: Potential non-standard shortcuts (skipped_exam), high denial rates suggest poor screening or external factors.
+- **Performance**: Overall case durations 200k-400k+ ms, with loops exacerbating delays.

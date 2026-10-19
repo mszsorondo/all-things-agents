@@ -1,0 +1,275 @@
+This process model is organized by ROLE. Each section describes the process from the perspective of one participant. Together, all sections describe the complete end-to-end process.
+
+============================================================
+ROLE 1: Behavioral Decision Makers (HR-pro and Senior Partner / HR-pro and Senior Partner)
+============================================================
+
+Title: AS-IS Process Model — Behavioral Decision Makers (HR-pro and Senior Partner / HR-pro and Senior Partner)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Conduct behavioral interviews and make final hiring decisions (Make Job Offer or confirm Application Rejected). They sometimes act jointly (HR-pro and Senior Partner) during interviews.
+- Observed responsibilities: Behavioral Interview, Make Job Offer, and occasional participation in Screening Interview and Application Rejected.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Behavioral Interview: Assess candidate’s behavioral fit; may be repeated multiple times in traces (self-loop observed).
+- Make Job Offer: Extend a job offer to candidate (observed multiple times and sometimes duplicated).
+- Application Rejected: Occasionally performed by senior decision-makers as well.
+- Screening Interview (occasionally): Senior Partner is observed to perform Screening Interview activity in the log.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Activated after technical interview sequences (Frontend/ML/Backend) or following HR screening and candidate progression. Behavioral interviews also sometimes follow from Application Rejected or multiple application outcomes (observed transitions Application Rejected -> Behavioral Interview).
+- Observed sequences (valid orderings):
+  - Coding/Frontend/ML/Backend Interview -> Behavioral Interview -> Make Job Offer
+  - Behavioral Interview -> Make Job Offer (Behavioral Interview can repeat multiple times before an offer)
+  - Application Rejected -> Behavioral Interview -> Make Job Offer (observed in variants; indicates re-evaluation or logging anomalies where rejection and later offer both appear)
+- Decision points and criteria handled:
+  - After Behavioral Interview(s): decide to Make Job Offer or confirm rejection. The presence of Make Job Offer -> Make Job Offer self-loop suggests repeated offer actions (possibly system retries or multiple offers).
+  - Behavioral Interview may be repeated (loop) before reaching a Make Job Offer or final rejection.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO Behavioral Decision Makers (observed):
+  - Technical Interviewers (Coding Interviewer role) hand candidates to Behavioral Interview
+  - HR Screener may also hand over for final behavioral checks
+  - Application Rejected sometimes hands back to Behavioral Interview (observed in DFG and variants)
+- Who Behavioral Decision Makers hand work TO:
+  - Make Job Offer (they execute the offer)
+  - Application Rejected (they may also record rejections)
+  - HR-pro and Senior Partner may hand back to HR-dummy for administrative updates
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency:
+  - Frontend/ML/Backend Interview -> Behavioral Interview -> Make Job Offer
+- Medium/low-frequency / anomalous variants:
+  - Application Rejected -> Behavioral Interview -> Make Job Offer (indicates rework or logging anomalies where rejection and later offer both recorded)
+  - Behavioral Interview repeated multiple times (Behavioral Interview self-loop observed: behavior can occur 0..3 times)
+  - Make Job Offer -> Make Job Offer self-loop indicating multiple offer actions
+- Optional activities: Behavioral Interview and Make Job Offer are not present in all cases (some candidates are rejected before reaching behavioral stage).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Behavioral Interview repeats and duplicated Make Job Offer events indicate possible logging duplicates, rework, or protracted decision cycles.
+- Presence of paths where Application Rejected and Make Job Offer both occur in the same trace suggests inconsistent recording of final outcomes or re-evaluation of previously rejected candidates.
+- Handovers between HR-pro, Senior Partner, HR-dummy, and technical interviewers are frequent; role boundaries for final decisions may be unclear, causing delays or redundant activities.
+
+Notes: The role groups HR-pro and Senior Partner (and the combined resource HR-pro and Senior Partner) under one logical role 'Behavioral Decision Makers' because they jointly perform behavioral interviewing and final decision activities in the observed data.
+
+============================================================
+ROLE 2: External Background Checker (deepResearch Inc.)
+============================================================
+
+Title: AS-IS Process Model — External Background Checker (deepResearch Inc.)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Perform extensive (in-depth) background checks when HR escalates cases beyond the standard Background Check.
+- Responsibilities observed: Execute 'Extensive Background Check' activity and return results to HR or hand over to technical interviewers or senior decision-makers depending on outcome.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Extensive Background Check: Conduct deep investigations into candidate background (employment history, references, deeper vetting). This is the only activity observed in the log carried out by deepResearch Inc.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Activated when HR Screener (HR-dummy or HR-pro or Senior Partner) escalates a case from Background Check or Screening Interview to Extensive Background Check. Common triggering sequences include:
+  - Telephonic Screening -> Background Check -> Extensive Background Check
+  - Screening Interview -> Background Check -> Extensive Background Check
+- Observed next steps after Extensive Background Check (all valid orderings):
+  - Extensive Background Check -> Coding Interview (observed frequently)
+  - Extensive Background Check -> Application Rejected (observed frequently)
+  - Extensive Background Check -> (handed back to Senior Partner or HR-dummy for further processing)
+- Decision points handled by External Background Checker: The entity supplies the outcome of the extensive check; the log shows two main outcomes: clear to progress (hand to Coding Interview) or fail (Application Rejected). The final decision to reject or progress is recorded in the system after receiving the external check result.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO deepResearch Inc. (observed handovers):
+  - HR-dummy -> deepResearch Inc. (observed; HR-dummy outsources escalation)
+  - HR-pro -> deepResearch Inc. (observed smaller weight)
+  - Senior Partner -> deepResearch Inc. (observed occasionally)
+- Who deepResearch Inc. hands work TO (observed handovers):
+  - Coding Interviewer (deepResearch Inc. -> Coding Interviewer observed handover weight)
+  - Senior Partner (deepResearch Inc. -> Senior Partner observed)
+  - HR-dummy (deepResearch Inc. -> HR-dummy observed)
+  - Application outcome activity (Application Rejected) is often recorded after their check; the log shows Extensive Background Check -> Application Rejected directly.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency observed variants involving Extensive Background Check:
+  - Background Check -> Extensive Background Check -> Coding Interview (Extensive Background Check frequently enables technical interviews; DFG frequency for Extensive Background Check -> Coding Interview is ~974)
+  - Background Check -> Extensive Background Check -> Application Rejected (Extensive Background Check -> Application Rejected frequency ~1125)
+- Medium/low-frequency variants:
+  - Background Check -> Extensive Background Check -> (series of technical interviews and behavioral interviews) — in long traces Extensive Background Check precedes long interview sequences and contributes to very long case durations.
+- Exceptions and optionality:
+  - Extensive Background Check is optional and only occurs in a minority of cases (~5% of traces). It is never the first activity; it always follows prior screening activities.
+  - No evidence of deepResearch Inc. performing interviews or offer/rejection activities beyond providing the check; rejections or offers are recorded by HR or decision-makers after receiving the check.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Extensive Background Check is associated with large increases in case duration (variants with this activity have high performance values), indicating a bottleneck or slow external turnaround.
+- Two clear outcomes (progress to technical interview or rejection) exist, but the transition probabilities are split — both outcomes are common.
+- Handovers to and from deepResearch Inc. are present but low-frequency in the handover network, indicating limited outsourcing volume but significant impact when it occurs.
+- Because deepResearch Inc. only performs the Extensive Background Check, coordination and SLA management between HR and this external provider are critical to avoid long delays.
+
+Notes: All behaviors described are strictly those observed in the event log (Extensive Background Check performed by deepResearch Inc. and its observed successors). No unobserved activities were assumed.
+
+============================================================
+ROLE 3: HR Screener (HR-dummy, HR-pro, Senior Partner)
+============================================================
+
+Title: AS-IS Process Model — HR Screener (HR-dummy, HR-pro, Senior Partner)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Perform initial screenings (telephonic and background), decide whether candidates progress to interviews or are rejected, and in some cases perform screening interviews.
+- Observed responsibilities: Telephonic Screening, Background Check, Screening Interview, Application Rejected (HR-dummy & Senior Partner & HR-pro), and occasionally coordinate or hand over cases to interviewers or deepResearch Inc. for extensive checks.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Telephonic Screening: Conduct an initial phone screen to evaluate candidate fit. Major gateway activity after intake.
+- Background Check: Conduct standard background checks triggered after telephonic screening or screening interview.
+- Screening Interview: Short in-person or detailed screening to further evaluate candidate; observed to alternate with Background Check.
+- Extensive Background Check: A deeper background screening performed by HR-pro or outsourced to deepResearch Inc.
+- Application Rejected: Decide and mark candidate as rejected; HR resources frequently perform this activity.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Most commonly activated after Hand In Job Application via intake. Telephonic Screening is the typical first HR activity.
+- Observed sequences (all valid orderings observed):
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> ...
+  - Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> ...
+  - Hand In Job Application -> Telephonic Screening -> Application Rejected
+  - Hand In Job Application -> Application Rejected (HR can reject immediately after intake, though intake does not perform the rejection)
+  - Telephonic Screening -> Background Check -> Extensive Background Check -> ...
+  - Screening Interview -> Coding Interview / Extensive Background Check / Application Rejected
+- Decision points and criteria handled by HR Screener:
+  - After Telephonic Screening: decide to either send candidate for Background Check, Screening Interview, or reject. The presence of both Telephonic Screening -> Background Check and Telephonic Screening -> Screening Interview edges indicates HR may choose either follow-up.
+  - After Background Check or Screening Interview: decide to escalate to Extensive Background Check, move candidate to Coding Interview (for technical roles), or reject.
+  - Extensive Background Check: typically precedes Coding Interview but can also lead to Application Rejected.
+  - Application Rejected can be triggered at several points (immediately after intake, after telephonic screening, after screening interview, or after background checks).
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO HR Screener (observed handovers):
+  - Intake: Front Desk and Online System (Hand In Job Application -> HR-dummy/HR-pro)
+  - HR-dummy sometimes hands to Senior Partner and to HR-pro and to Coding Interviewer (observed handover weights)
+  - Senior Partner and HR-pro and deepResearch Inc. interact with HR-dummy for coordination
+- Who HR Screener hands work TO (observed handovers):
+  - Coding Interviewer (for candidates progressing to technical interviews)
+  - Senior Partner (especially for screening interviews or decisions)
+  - deepResearch Inc. (outsourced Extensive Background Check)
+  - HR-pro and HR-dummy and occasionally HR-pro and Senior Partner acting jointly (Behavioral Interviews)
+  - Application outcome activities (Application Rejected or Make Job Offer) are also executed by HR roles or passed to HR-pro who performs Make Job Offer.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency patterns:
+  - Telephonic Screening -> Background Check -> Screening Interview -> (Coding Interview / Application Rejected / Extensive Background Check)
+  - Telephonic Screening -> Screening Interview -> Background Check -> ... (order of Background Check and Screening Interview can swap)
+- Medium-frequency:
+  - Telephonic Screening -> Application Rejected (immediate rejection after phone screen)
+  - Background Check -> Application Rejected (rejections after background failures)
+  - Background Check -> Extensive Background Check -> Coding Interview
+- Low-frequency / long variants:
+  - Paths involving repeated Application Rejected activities (Application Rejected -> Application Rejected self-loop observed in the net and DFG)
+  - Paths where Extensive Background Check triggers long sequences of interviews and back-and-forth (leading to very long durations)
+- Optional activities: Extensive Background Check occurs in only a subset (~5-10%) of traces; Screening Interview and Background Check are common but their relative ordering varies.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Parallel/alternative ordering between Background Check and Screening Interview indicates inconsistent process execution; this can create handovers and waiting times depending on which activity is done first.
+- Extensive Background Check significantly increases case duration when present (high performance values in variants), indicating a bottleneck.
+- HR-dummy performs a large number of Application Rejected activities (and hands off to Senior Partner and others), suggesting centralization of rejections but also repeated rejections (self-loop) indicating possible multiple rejection markings or process noise.
+- Handover network shows many loops and cross-handoffs between HR-dummy, HR-pro, Senior Partner — potential inefficiency or unclear role boundaries.
+
+Notes: This role clusters HR-dummy, HR-pro, and Senior Partner as HR Screener due to overlapping activities. Where specific activities are performed only by a single resource (e.g., Extensive Background Check also seen by deepResearch Inc.), those interactions are noted but the logical HR Screener role remains the primary actor for screening activities.
+
+============================================================
+ROLE 4: Intake (Front Desk & Online System)
+============================================================
+
+Title: AS-IS Process Model — Intake (Front Desk & Online System)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Receive and record job applications (case creation) and forward them into the hiring pipeline.
+- Responsibilities observed: perform the activity Hand In Job Application (via Front Desk or Online System), create the case context and hand the case to HR screening resources. This role does not perform interviews, make offers, or reject applications directly in the log; it primarily initiates work and hands it to HR resources.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Hand In Job Application: create/submit the candidate’s application record in the system (performed by Online System or Front Desk).
+  - Observed frequencies: Hand In Job Application is the unique start activity in the log (initialization constraint).
+  - No other activities are performed by this role in the event log.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation trigger: This role is activated when a candidate submits an application (applicant arrives in-person at Front Desk or uses the Online System). In the logs Hand In Job Application is the initialization (start) activity for traces.
+- Immediate next steps (observed): After Hand In Job Application, the case most commonly proceeds to Telephonic Screening (majority of cases). However, the data shows multiple observed orderings after Hand In Job Application:
+  - Hand In Job Application -> Telephonic Screening (dominant path)
+  - Hand In Job Application -> Application Rejected (observed in ~12% of traces)
+  - Hand In Job Application -> Telephonic Screening -> ... (further processing by HR/Interviewers)
+- Decision points handled by this role: None observed. Intake only submits the application and forwards; decisions (reject/advance) are made by HR or interviewers later.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO Intake: None observed in the log (Intake is the start of the trace). The event log shows Hand In Job Application as initialization.
+- Who Intake hands work TO (observed handover network):
+  - Primarily → HR-dummy (observed Online System -> HR-dummy and Front Desk -> HR-dummy handovers).
+  - Also → HR-pro (smaller fraction observed: Online System -> HR-pro and Front Desk -> HR-pro).
+  - In practice Intake hands the newly created case into the HR screening pool (HR-dummy and/or HR-pro).
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- Main (high-frequency) paths that include Intake:
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> ... (this is the prefix for the dominant, longer variants)
+- Medium and low-frequency observed alternatives starting from Intake:
+  - Hand In Job Application -> Application Rejected (a sizable minority -> immediate early rejection without Telephonic Screening)
+  - Hand In Job Application -> Telephonic Screening -> Application Rejected (telephonic screening leads directly to rejection)
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> ... (cases that require extra checks and then technical/behavioral interviews)
+- Optionality: Telephonic Screening is common but not mandatory (some traces skip it and go directly to Application Rejected).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Intake is strictly a case-creation role; no decision making observed despite some cases being rejected immediately after intake — this suggests rejections are executed by HR resources after intake rather than at intake.
+- There is a non-trivial share of traces where cases are rejected immediately after Hand In Job Application; this creates short-lived cases that still consume intake effort but do not proceed further.
+- Handover concentration: Intake forwards most work to HR-dummy; ensuring clear SLAs for that handover could reduce waiting at the screening queue.
+
+Notes: All statements above are strictly based on observed activities and handover frequencies in the event log; no unobserved behaviours were assumed.
+
+============================================================
+ROLE 5: Technical Interviewer (Coding Interviewer)
+============================================================
+
+Title: AS-IS Process Model — Technical Interviewer (Coding Interviewer)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Conduct technical assessments of candidates through coding, backend, frontend, and ML interviews; decide technical pass/fail or hand candidates to other technical interviewers or behavioral interviewers.
+- Observed responsibilities: Coding Interview, Backend Interview, Frontend Interview, ML Interview, and some handovers to HR and Senior Partner for subsequent decisions.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Coding Interview: Technical coding assessment; often followed by specialized technical interviews or Application Rejected.
+- Backend Interview: Backend-focused technical assessment.
+- Frontend Interview: Frontend-focused technical assessment; often leads to Behavioral Interview or technical peers.
+- ML Interview: Machine-learning/algorithmic technical assessment.
+- Application Rejected (occasionally): Technical interviewers sometimes record or trigger rejections after interviews (edge observed: Coding Interview -> Application Rejected).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Typically activated after HR Screener completes Background Check and/or Screening Interview and hands the candidate to technical assessment (Background Check -> Coding Interview, Screening Interview -> Coding Interview).
+- Observed orderings (all valid sequences):
+  - ... -> Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview -> Behavioral Interview -> ...
+  - ... -> Coding Interview -> ML Interview -> Frontend Interview -> Backend Interview -> ...
+  - Coding Interview -> Backend Interview -> Frontend Interview (mutual direct follows; some edges have 0.000 performance indicating immediate succession in certain variants)
+  - Coding Interview -> Application Rejected (technical rejection)
+  - Frontend Interview -> Behavioral Interview (frequently) or -> Application Rejected
+- Decision points handled by Technical Interviewer:
+  - After Coding Interview: decide whether candidate proceeds to specialized technical interviews (ML/Backend/Frontend), rejected, or to Behavioral Interview later.
+  - After specialized technical interviews: decide to recommend rejection or pass candidate to Behavioral Interview and HR for offer.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO Technical Interviewer (observed):
+  - HR Screener (HR-dummy / HR-pro / Senior Partner) — main sources via Background Check or Screening Interview
+  - deepResearch Inc. (for cases where extensive background checks are done before technical interviews)
+  - Senior Partner (some handovers observed)
+- Who Technical Interviewer hands work TO (observed):
+  - Other Technical Interviewers (peer handovers between Coding Interviewer, Backend, Frontend, ML)
+  - Behavioral Interviewers (HR-pro and Senior Partner act as behavioral interviewers) — Frontend/ML/Backend often hand to Behavioral Interview
+  - HR roles (HR-dummy / HR-pro / Senior Partner) for final decisions or offer processing
+  - Application Rejected activity may be executed by technical interviewers or handed back to HR-dummy to record rejection
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency technical sequences:
+  - Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview (and permutations)
+  - Coding Interview -> Backend Interview -> Frontend Interview
+- Medium/low-frequency:
+  - Coding Interview -> Application Rejected (some candidates fail immediately after coding)
+  - Frontend Interview -> Behavioral Interview -> Make Job Offer/application decisions
+  - ML Interview / Backend Interview have 0.000 direct-follows with peers in some cases (indicating near-instant or batched recordings)
+- Rework and self-loops:
+  - Make Job Offer -> Make Job Offer and Application Rejected -> Application Rejected appear in the system (not specific to technical interviewers but observed in the overall life-cycle)
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Technical interviews show many permutations and different orders; lack of a strict sequence creates variable candidate experience and potentially duplicated effort.
+- Several technical interview edges have 0.000 performance (e.g., ML <-> Frontend, Backend <-> Frontend), suggesting simultaneous or batched logging — this may be an artifact of scheduling or logging rather than real concurrent interviews.
+- Handovers among technical interviewers are frequent and include loops back to HR; unclear responsibilities may lead to unnecessary reassessments.
+- Some candidates are rejected after technical rounds, but Application Rejected often loops back into interview activities in other traces — suggests noisy logging or multiple rejection/offer updates recorded.
+
+Notes: 'Coding Interviewer' resource(s) were clustered into the Technical Interviewer role because they perform all coding/backend/frontend/ML interview activities in the log.

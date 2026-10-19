@@ -1,0 +1,71 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (0813c77c-26ed-4d73-9c52-cddf5a7e5cda, 'Verify Borrowers Information'), (1d771822-e703-49eb-8c6b-bab1c59c97c8, 'Request Appointment'), (31a538b1-0cc3-417c-b300-90dbe50ac54e, 'Application Rejected'), (43640e42-4574-4246-952f-e7d6a37cab97, 'Loan Denied'), (4770bbb0-e1bd-4c34-81d9-4d33caa34a93, 'Submit File to Underwriter'), (6f9f2bb4-e1b8-47c2-ba4d-5f5ccf80dc27, 'Hand In Credit Appliaction'), (85a5794c-577a-4e12-ae2a-5190a737a84d, 'Make Visit to Assess Colatteral'), (b1ebeb91-f751-4f30-8ce4-4ef1e6d0fd16, 'Set Appointment'), (b64321c2-4afb-408a-a2e3-cabde6f32121, 'Request Co-Signer On Loan'), (bdf4afa2-ae78-4170-85e8-cef8c4a91a88, 'skipped_examination'), (e3f39f0f-ae28-4333-9c42-64426bf888b9, 'Sign Loan Agreement'), (e87af5c6-9748-4701-97e2-0c30d5217ea9, 'Appointment Denied'), (init_loop_9, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_3, None), (skip_4, None), (skip_7, None), (skip_8, None), (tauJoin_2, None), (tauJoin_6, None), (tauSplit_1, None), (tauSplit_5, None) ]
+arcs: [ (0813c77c-26ed-4d73-9c52-cddf5a7e5cda, 'Verify Borrowers Information')->p_6, (1d771822-e703-49eb-8c6b-bab1c59c97c8, 'Request Appointment')->p_3, (31a538b1-0cc3-417c-b300-90dbe50ac54e, 'Application Rejected')->sink, (43640e42-4574-4246-952f-e7d6a37cab97, 'Loan Denied')->p_8, (4770bbb0-e1bd-4c34-81d9-4d33caa34a93, 'Submit File to Underwriter')->p_11, (6f9f2bb4-e1b8-47c2-ba4d-5f5ccf80dc27, 'Hand In Credit Appliaction')->p_5, (85a5794c-577a-4e12-ae2a-5190a737a84d, 'Make Visit to Assess Colatteral')->p_18, (b1ebeb91-f751-4f30-8ce4-4ef1e6d0fd16, 'Set Appointment')->p_4, (b64321c2-4afb-408a-a2e3-cabde6f32121, 'Request Co-Signer On Loan')->p_14, (bdf4afa2-ae78-4170-85e8-cef8c4a91a88, 'skipped_examination')->p_11, (e3f39f0f-ae28-4333-9c42-64426bf888b9, 'Sign Loan Agreement')->p_10, (e87af5c6-9748-4701-97e2-0c30d5217ea9, 'Appointment Denied')->sink, (init_loop_9, None)->p_17, (skip_11, None)->p_17, (skip_12, None)->p_16, (skip_13, None)->p_10, (skip_3, None)->p_8, (skip_4, None)->p_12, (skip_7, None)->p_14, (skip_8, None)->p_16, (tauJoin_2, None)->sink, (tauJoin_6, None)->p_12, (tauSplit_1, None)->p_7, (tauSplit_1, None)->p_9, (tauSplit_5, None)->p_13, (tauSplit_5, None)->p_15, p_10->(tauJoin_2, None), p_11->(e3f39f0f-ae28-4333-9c42-64426bf888b9, 'Sign Loan Agreement'), p_11->(skip_13, None), p_12->(4770bbb0-e1bd-4c34-81d9-4d33caa34a93, 'Submit File to Underwriter'), p_13->(b64321c2-4afb-408a-a2e3-cabde6f32121, 'Request Co-Signer On Loan'), p_13->(skip_7, None), p_14->(tauJoin_6, None), p_15->(init_loop_9, None), p_15->(skip_8, None), p_16->(tauJoin_6, None), p_17->(85a5794c-577a-4e12-ae2a-5190a737a84d, 'Make Visit to Assess Colatteral'), p_18->(skip_11, None), p_18->(skip_12, None), p_3->(b1ebeb91-f751-4f30-8ce4-4ef1e6d0fd16, 'Set Appointment'), p_3->(e87af5c6-9748-4701-97e2-0c30d5217ea9, 'Appointment Denied'), p_4->(6f9f2bb4-e1b8-47c2-ba4d-5f5ccf80dc27, 'Hand In Credit Appliaction'), p_5->(0813c77c-26ed-4d73-9c52-cddf5a7e5cda, 'Verify Borrowers Information'), p_6->(31a538b1-0cc3-417c-b300-90dbe50ac54e, 'Application Rejected'), p_6->(tauSplit_1, None), p_7->(43640e42-4574-4246-952f-e7d6a37cab97, 'Loan Denied'), p_7->(skip_3, None), p_8->(tauJoin_2, None), p_9->(bdf4afa2-ae78-4170-85e8-cef8c4a91a88, 'skipped_examination'), p_9->(skip_4, None), p_9->(tauSplit_5, None), source->(1d771822-e703-49eb-8c6b-bab1c59c97c8, 'Request Appointment') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

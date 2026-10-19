@@ -1,0 +1,29 @@
+{
+  "run_timestamp": "2025-12-21T23:12:21.410733",
+  "dataset_name": "hospital_log_high",
+  "xes_path": "benchmark/hospital/hospital_log_high.xes",
+  "model": "openai:gpt-4o-mini",
+  "method": "run_without_tools",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_as_is_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conformance check...",
+  "system_prompt_ideal_preview": "You are a Process Model Translator. You have just generated an AS-IS process model description based on process mining outputs.\n\nNow, based on that AS-IS model you created, generate the IDEAL process model description.\n\nThe IDEAL model description:\n\n* Represents the improved or \"to-be\" version of the process:\n  * Remove or streamline obviously faulty, wasteful, or noncompliant behavior\n  * Fix bottlenecks\n  * Collapse redundant approvals\n  * Enforce correct sequencing\n  * Eliminate unnecessary r...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_11, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (05459b73-e343-4c2b-90bd-c8b7b6cdd2b3, 'Treatment successful'), (2f52ae3b-8554-4049-b009-90892ad8c81a, 'Register at FD'), (3ec8d63a-8a69-4b1a-a0df-e3faadca3c30, 'Treatment'), (53fa6f2c-84e2-48ba-bfc8-93b2d9cf17b5, 'Discharge'), (5596ae9c-af67-4505-99ad-6e29280e76ca, 'Treatment unsuccessful'), (696318d4-328f-4383-8923-9c15126cf676, 'Register at ...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "openai:gpt-4o-mini",
+    "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

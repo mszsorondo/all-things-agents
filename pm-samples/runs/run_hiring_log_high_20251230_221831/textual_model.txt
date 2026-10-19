@@ -1,0 +1,181 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The AS-IS process represents the current technical hiring workflow for a software engineering/data science organization as discovered through process mining. This complex multi-stage recruitment process handles candidate applications from submission through to job offer or rejection, involving multiple screening, technical assessment, and evaluation steps. The process exhibits significant variability, rework loops, and unexpected behavioral patterns observed in actual execution.
+
+## Key Stakeholders and Roles Involved
+- **Candidates**: External job applicants submitting applications
+- **Recruiters/HR Coordinators**: Conduct telephonic screening and initial screening interviews
+- **Background Check Team/HR**: Perform standard and extensive background verification
+- **Technical Interviewers**: Specialized assessors for coding, ML, frontend, and backend skills
+- **Behavioral Interviewers**: HR managers or team leads assessing soft skills and cultural fit
+- **Hiring Managers**: Make final hiring decisions and extend job offers
+- **Recruitment System**: Automated workflow management and candidate tracking
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+- **Trigger**: Candidate submits job application through career portal or recruitment system
+- **Start Event**: "Hand In Job Application" activity initiated
+
+### Process Activities/Tasks in Sequence
+
+#### Phase 1: Initial Application Processing
+1. **Hand In Job Application**
+   - Candidate submits application materials (resume, cover letter, portfolio)
+   - Application enters recruitment pipeline
+   - **Parallel Path**: Immediate rejection possible (frequency: 1201)
+
+2. **Telephonic Screening**
+   - Recruiter conducts brief phone screening with candidate
+   - Assess basic qualifications, availability, salary expectations
+   - **Decision Point**: 
+     - Pass → Continue to next stage
+     - Fail → "Application Rejected" (frequency: 990)
+     - **Note**: Some flows skip background check and go directly to screening interview
+
+#### Phase 2: Background Verification and Initial Screening
+3. **Background Check** (Optional/Concurrent)
+   - Standard employment and education verification
+   - May occur before or after screening interview (observed both sequences)
+   - **Decision Point**:
+     - Clear → Continue in process
+     - Issues found → "Extensive Background Check" or "Application Rejected"
+
+4. **Screening Interview**
+   - More detailed interview with recruiter or hiring manager
+   - Assess fit for role, clarify experience, discuss position details
+   - **Decision Point**:
+     - Pass → Technical assessment phase
+     - Fail → "Application Rejected" (frequency: 1389)
+
+5. **Extensive Background Check** (Conditional)
+   - Detailed verification triggered by issues in standard background check
+   - May include reference checks, credential validation, additional documentation
+   - **Decision Point**:
+     - Clear → Continue to technical interviews
+     - Issues persist → "Application Rejected" (frequency: 1125)
+
+#### Phase 3: Technical Assessment (Complex Parallel/Iterative Structure)
+6. **Coding Interview**
+   - Assess programming skills, algorithm knowledge, problem-solving ability
+   - **Gateway**: Splits into multiple possible technical interview tracks
+
+7. **Parallel Technical Interview Tracks** (May occur in varying sequences):
+   - **ML Interview**: Machine learning/data science specialization assessment
+   - **Frontend Interview**: UI/UX, frontend framework skills evaluation
+   - **Backend Interview**: Server-side, database, API design assessment
+   
+   **Observed Behavioral Issues**:
+   - Interviews may occur in any order (ML→Frontend, Frontend→ML, etc.)
+   - Self-loops and repeated interviews observed
+   - Some candidates undergo all three types, others only subset
+
+8. **Behavioral Interview**
+   - Assessment of soft skills, teamwork, communication, cultural fit
+   - **Critical Issues Observed**:
+     - High frequency of self-loops (1032 instances of Behavioral Interview→Behavioral Interview)
+     - May occur multiple times for same candidate
+     - Can be triggered even after rejection in some paths
+
+#### Phase 4: Final Decision and Offer Management
+9. **Make Job Offer**
+   - Formal job offer extended to successful candidate
+   - **Observed Issues**:
+     - Self-loops (861 instances of Make Job Offer→Make Job Offer)
+     - Can occur even after "Application Rejected" in previous steps
+     - Some candidates receive offer after being previously rejected
+
+10. **Application Rejected**
+    - Candidate rejected from hiring process
+    - **Critical Process Anomalies**:
+      - Can occur at almost any stage
+      - Self-loops (654 instances of Application Rejected→Application Rejected)
+      - May lead back to Behavioral Interview (740 instances)
+      - May lead to Make Job Offer (690 instances) - serious process flaw
+
+### Decision Points with Criteria and Possible Outcomes
+
+1. **After Telephonic Screening**:
+   - Criteria: Basic qualifications, communication skills, salary alignment
+   - Outcomes: 
+     - Proceed to Background Check AND/OR Screening Interview
+     - Immediate rejection
+
+2. **After Background Check**:
+   - Criteria: Employment/education verification results
+   - Outcomes:
+     - Proceed to Screening Interview or Coding Interview
+     - Trigger Extensive Background Check
+     - Immediate rejection
+
+3. **After Screening Interview**:
+   - Criteria: Role fit, experience match, recruiter assessment
+   - Outcomes:
+     - Proceed to technical assessment phase
+     - Immediate rejection
+     - Trigger Extensive Background Check
+
+4. **After Technical Interviews**:
+   - Criteria: Technical competency scores, interviewer feedback
+   - Outcomes:
+     - Proceed to Behavioral Interview
+     - Additional technical interviews (loops observed)
+     - Rejection
+
+5. **After Behavioral Interview**:
+   - Criteria: Soft skills assessment, cultural fit
+   - Outcomes:
+     - Make Job Offer
+     - Additional behavioral interviews (self-loops)
+     - Rejection
+     - **Anomaly**: Can cycle back from rejection state
+
+### Parallel Activities and Synchronization Points
+- **Parallel Split 1**: After Telephonic Screening, Background Check and Screening Interview may occur in parallel or either order
+- **Parallel Split 2**: After Coding Interview, ML, Frontend, and Backend interviews may occur in varying sequences
+- **Synchronization Point**: All interview tracks must complete before final decision (though ordering varies)
+
+### Exception Handling and Error Paths
+- **Immediate Rejections**: Can occur at application submission, telephonic screening, or screening interview
+- **Background Check Issues**: Trigger extensive verification with potential rejection
+- **Technical Assessment Failures**: Lead to rejection at various interview stages
+- **Process Anomalies**: Rejected candidates sometimes re-enter process for behavioral interview or even receive offers
+
+### Rework Loops and Escalation Procedures
+1. **Behavioral Interview Loops**: Candidates may undergo multiple behavioral interviews
+2. **Make Job Offer Loops**: Offer process may repeat for same candidate
+3. **Application Rejected Loops**: Rejection status may be revisited multiple times
+4. **Interview Sequence Variability**: Technical interviews may occur in different orders with potential repeats
+
+### End Conditions and Outcomes
+- **Successful Outcome**: Candidate receives and accepts job offer
+- **Unsuccessful Outcome**: Candidate rejected from process
+- **Process Anomaly Outcomes**: 
+  - Candidate rejected then receives offer
+  - Candidate undergoes excessive interview rounds
+  - Candidate stuck in rejection loops
+
+## Process Metrics and Performance Characteristics
+- **Total Application Volume**: High frequency (8799 telephonic screenings observed)
+- **Early Rejection Rate**: Significant (1201 immediate rejections + 990 after telephonic screening)
+- **Process Cycle Time**: Highly variable (performance times range from 47 to 530,069 time units)
+- **Rework Incidence**: 
+  - Behavioral Interview self-loops: 1032 instances
+  - Make Job Offer self-loops: 861 instances
+  - Application Rejected self-loops: 654 instances
+- **Anomalous Flows**: 
+  - Application Rejected → Behavioral Interview: 740 instances
+  - Application Rejected → Make Job Offer: 690 instances
+
+## Key Challenges and Pain Points
+1. **Process Consistency**: Lack of standardized interview sequence leads to variability
+2. **Quality Control**: Rejected candidates sometimes re-enter process or receive offers
+3. **Efficiency**: Excessive rework loops waste interviewer and candidate time
+4. **Decision Integrity**: Self-loops in rejection and offer stages indicate process control issues
+5. **Transparency**: Candidates may experience inconsistent evaluation processes
+6. **Compliance Risk**: Background check sequencing inconsistent (before/after screening)
+7. **Candidate Experience**: Excessive interview rounds and process anomalies create poor experience
+8. **Data Integrity**: Process mining reveals serious control flow violations requiring investigation
+9. **Resource Utilization**: Interviewers engaged in unnecessary repeat assessments
+10. **Offer Management**: Self-loops in job offer stage suggest administrative or system issues

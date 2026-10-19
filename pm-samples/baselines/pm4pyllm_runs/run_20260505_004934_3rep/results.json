@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "start_time": "2026-05-05T00:49:34.108647",
+    "end_time": null,
+    "config": {
+      "validator_kind": "pm4py_llm_raw",
+      "config": "3rep",
+      "rep_set": [
+        "petri_net_inductive",
+        "dfg",
+        "abstract_variants"
+      ],
+      "validator_model": "gpt-5-mini",
+      "k_valid": 100,
+      "k_invalid_per_type": 50,
+      "perturbation_types": [
+        "A1_random_swap",
+        "A3_dependency_aware_swap",
+        "B1_insert_out_of_alphabet",
+        "B2_insert_misplaced_existing",
+        "B3_insert_duplicate_unique",
+        "C1_delete_mandatory",
+        "C2_delete_start_or_end",
+        "D1_cross_role",
+        "E1_two_swaps",
+        "E2_swap_and_insert"
+      ],
+      "datasets": [
+        "hiring",
+        "hospital",
+        "lending",
+        "renting"
+      ],
+      "trace_source": "HARDER/run_20260504_221347",
+      "max_workers": 10
+    },
+    "run_folder": "baselines/pm4pyllm_runs/run_20260505_004934_3rep",
+    "status": "running"
+  },
+  "hiring_log_high": {
+    "status": "in_progress",
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "pm4pyllm_context_path": "baselines/pm4pyllm_runs/run_20260505_004934_3rep/hiring_pm4pyllm_context.txt",
+    "discover_time_seconds": 0.7892320156097412,
+    "context_length_chars": 18083,
+    "valid_evaluation": {
+      "compute_time_seconds": 122.2264678478241,
+      "tokens": {
+        "prompt_tokens": 554851,
+        "completion_tokens": 89577,
+        "total_tokens": 644428
+      },
+      "TP": 100,
+      "FN": 0
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "TP": 100,
+        "FN": 0,
+        "TN": 44,
+        "FP": 6,
+        "precision": 0.9433962264150944,
+        "recall": 1.0,
+        "f1": 0.970873786407767,
+        "compute_time_seconds": 88.37733554840088,
+        "tokens": {
+          "prompt_tokens": 277466,
+          "completion_tokens": 68404,
+          "total_tokens": 345870
+        }
+      },
+      "A3_dependency_aware_swap": {
+        "TP": 100,
+        "FN": 0,
+        "TN": 49,
+        "FP": 1,
+        "precision": 0.9900990099009901,
+        "recall": 1.0,
+        "f1": 0.9950248756218906,
+        "compute_time_seconds": 90.41571164131165,
+        "tokens": {
+          "prompt_tokens": 276158,
+          "completion_tokens": 60916,
+          "total_tokens": 337074
+        }
+      }
+    }
+  }
+}

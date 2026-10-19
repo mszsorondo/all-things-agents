@@ -1,0 +1,40 @@
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+A DFG shows the frequency of direct succession between activities:
+
+1. NODES: Represent activities/events in the process
+   - Size often indicates frequency of occurrence
+   - Color may indicate performance metrics
+
+2. EDGES: Show direct succession relationships
+   - Edge labels: Frequency of A→B succession
+   - Thicker edges: More frequent paths
+   - Edge absence: Activities never directly follow each other
+
+3. START/END ACTIVITIES:
+   - Start activities: First activities in traces
+   - End activities: Last activities in traces
+   - Multiple starts/ends indicate process variants
+
+4. INTERPRETATION PATTERNS:
+   - High-frequency edges: Main process flow
+   - Low-frequency edges: Exceptions or rare variants
+   - Self-loops: Activity repetition
+   - Disconnected components: Independent sub-processes
+
+5. LLM ABSTRACTION (if applied):
+   - Simplifies complex DFGs to essential flows
+   - Removes noise and infrequent paths
+   - Groups similar activities
+   - Highlights main process variants
+
+6. LIMITATIONS:
+   - Cannot distinguish XOR from AND gateways
+   - May show impossible paths (not all A→B→C means A→C exists)
+   - Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high-frequency edges)
+- Finding process variants
+- Detecting loops and rework

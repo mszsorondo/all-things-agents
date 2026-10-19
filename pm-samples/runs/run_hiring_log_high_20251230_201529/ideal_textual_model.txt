@@ -1,0 +1,81 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A controlled, governance-compliant hiring workflow that eliminates contradictory outcomes, sequences assessments efficiently, caps rework, and ensures clear terminal states (offer or rejection). The model preserves the legitimate behavioral options observed but restructures them to avoid waste and errors.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. The IDEAL model references activities generically without assigning specific departments.
+
+Detailed step-by-step process flow
+1) Start conditions and trigger
+- Trigger: Candidate submits "Hand In Job Application".
+
+2) Initial screening
+- Task: Telephonic Screening (optional for edge cases; default path).
+  - Decision: Proceed vs. Reject.
+    - Criteria to reject: Minimum qualifications not met or blatant misfit.
+    - Outcomes:
+      - If reject: move to terminal end state "Application Rejected" (hard terminal).
+      - If proceed: continue.
+
+3) Pre-assessment sequencing (no parallel contradiction)
+- Deterministic order to reduce cost and time:
+  a) Screening Interview first.
+     - Decision: Proceed vs. Reject.
+       - If reject: terminal "Application Rejected" (no further activities).
+  b) Background Check (basic) second, only if candidate remains in consideration.
+     - Decision: Clear vs. Fail.
+       - If fail: terminal "Application Rejected".
+  c) Extensive Background Check only when justified (risk flags in basic check or role-critical clearance requirements). It is not allowed before technical fit is reasonably established.
+
+4) Technical evaluation structured and bounded
+- Task: Coding Interview (if role requires), then role-specific tracks.
+  - Decision after Coding: proceed vs. reject.
+    - If reject: terminal "Application Rejected".
+- Inclusive selection of role-specific interviews with explicit gating but no unrestricted repetition:
+  - Possible tasks: ML Interview, Frontend Interview, Backend Interview.
+  - Rule: Select only those relevant to the role; each interview can be executed at most once, with an optional single re-interview only if material new evidence exists (cap at 2 total per type).
+  - No circular back-and-forth between interview types; the order can vary, but all selected interviews must complete before moving on.
+  - Synchronization: After chosen technical interviews complete, proceed.
+
+5) Behavioral assessment
+- Task: Behavioral Interview (at most one, plus one optional re-interview for exceptional cases; no unlimited looping).
+  - Decision: Satisfactory vs. Unsatisfactory.
+    - If unsatisfactory: terminal "Application Rejected".
+
+6) Offer decision and issuance
+- Gateway: Offer decision (Exclusive)
+  - If approved: Make Job Offer.
+    - Constraint: At most one re-issue permitted for administrative correction or negotiation (no uncontrolled self-loop).
+    - End state: Offer issued (terminal positive outcome).
+  - If not approved: terminal "Application Rejected".
+
+7) Exception handling and governance rules
+- Rejection is terminal: Once "Application Rejected" occurs, the case ends. No subsequent interviews or offers permitted in the same case ID.
+- Skips constrained: Skipping core assessments (Screening Interview, Coding Interview if required) is not allowed. Role-specific interviews may be skipped only if not relevant to the role.
+- Background sequence guardrails: Basic check precedes extensive; extensive check is triggered conditionally after preliminary technical fit to avoid wasted cost.
+- Rework caps: Each interview type and offer issuance allow at most one repeat under documented justification.
+
+8) End conditions and outcomes
+- Two mutually exclusive terminal states:
+  - Application Rejected (with reason code).
+  - Offer Issued (Make Job Offer completed and accepted by internal approval; acceptance by candidate is outside the scope of this process model).
+
+Process metrics and performance characteristics
+- Target cycle times:
+  - Telephonic Screening to Screening Interview scheduling SLA: ≤ X time units (replace X with organizational standard).
+  - Screening Interview to Coding/technical tracks: ≤ Y; overall technical evaluation to decision: ≤ Z.
+- Cost control:
+  - Extensive Background Check utilization rate below threshold T% of total cases; only triggered by defined risk criteria.
+- Rework caps:
+  - Max 1 re-interview per type and 1 offer re-issue; monitor exceptions reported with justification.
+- Quality and compliance:
+  - Zero cases where rejection is followed by further steps (hard terminal conformance = 100%).
+  - 100% completion of all selected technical interviews before Behavioral Interview.
+
+Improvements made over AS-IS
+- Eliminates contradictory parallelism that allowed rejection and offer activities to co-occur on the same case.
+- Sequences assessments to minimize cost: technical fit established before extensive checks.
+- Caps rework loops for Behavioral Interview and offers to prevent long-tail cycle times.
+- Removes arbitrary back-and-forth among technical interview types; allows inclusive selection without circular churn.
+- Establishes terminal states and conformance rules to maintain data integrity and reporting accuracy.

@@ -1,0 +1,70 @@
+AS-IS Process Model
+
+Process overview and purpose
+- High-level purpose: This Petri-net-derived model represents the observed hiring/candidate assessment process as discovered by an inductive miner from event data. The process begins when a candidate hands in a job application and ends either with a Make Job Offer or with Application Rejected. The discovered model shows many optional branches, invisible (tau) routing nodes, and repeat/loop behaviors; it exposes variability in which interviews and background checks are performed and in what order.
+- Primary visible activities: Hand In Job Application; Telephonic Screening; Screening Interview; Coding Interview; ML Interview; Backend Interview; Frontend Interview; Behavioral Interview; Background Check; Extensive Background Check; Make Job Offer; Application Rejected.
+
+Key stakeholders and roles involved (inferred from activities)
+- Candidate (the person applying).
+- Recruiter / HR (manages application intake, scheduling and some screening steps).
+- Technical interviewers / interview panel (conduct coding, ML, backend, frontend interviews).
+- Hiring manager (decision authority on offers and rejections).
+Note: the source model does not attach explicit swimlane labels to activities; these stakeholder labels are inferred from activity names and are not prescriptive.
+
+Detailed step-by-step process flow (observed behavior)
+Start conditions and trigger
+1. Start event: candidate submits an application (Hand In Job Application). This is the initial visible transition in the model (source -> Hand In Job Application).
+
+Primary flow structure
+2. After Hand In Job Application the model contains an immediate branching: the token(s) may either go to Telephonic Screening or bypass it via an invisible skip. That means in practice some candidates receive a telephonic screen while others proceed without it.
+
+3. Telephonic Screening: when executed, Telephonic Screening produces a token that then leads into a sub-structure that may either (a) proceed to Screening Interview, (b) trigger a parallel split that initiates Background Check and/or Screening Interview, or (c) be skipped by invisible transitions. The net shows both a tauSplit (parallel/optional branches) and skip arcs rooted after Telephonic Screening.
+
+4. Screening Interview: Screening Interview is observed as a gateway into a path that, via invisible joins and splits, can lead to further technical interviews or to background checks. The Screening Interview connects into a tauJoin and then proceeds to a place where it is possible to invoke Extensive Background Check or skip it.
+
+5. Technical assessments—Coding Interview and its children: the model shows a Coding Interview node which can tauSplit into multiple technical sub-interviews: ML Interview, Backend Interview, and Frontend Interview. These branches are optional in the sense that each has an associated skip transition; they may execute in parallel (tauSplit) and converge again (tauJoin) before the flow returns to the main path. Observed behaviors include:
+   - Candidates that take only one of the technical interviews (e.g., only Backend Interview) (skip transitions on other technical interviews).
+   - Candidates that take two or more technical interviews in parallel (split to ML/Backend/Frontend) followed by synchronization.
+   - Some candidates bypass Coding Interview entirely via skip transitions.
+
+6. Background checks: there are two background-check activities observed: Background Check (lighter) and Extensive Background Check (more thorough). These appear at multiple points in the net:
+   - Background Check is reachable directly from a branch after Telephonic Screening (p8->Background Check), and also appears as an optional branch after technical interviews.
+   - Extensive Background Check appears downstream of a join that follows the Screening Interview path (p7 -> Extensive Background Check) but can also be skipped via a skip transition. Both checks can occur in different combinations.
+
+7. Behavioral Interview: Behavioral Interview is present on a path that is entered from a place after the tauSplit_14 / init_loop_22 area; behavioral interviews are optional (there are skip transitions around them) and may occur in isolation or in combination with technical interviews.
+
+8. Decision to Offer or Reject:
+   - Make Job Offer occurs on a path (p31->Make Job Offer) that is reachable after the behavioral/technical/background-check sub-net and after a number of skip/loop transitions. The Make Job Offer then leads to final arcs that are invisible (skip) and eventually to a tauJoin that marks completion (sink).
+   - Application Rejected is an explicit visible transition reachable from an init_loop place (init_loop_17 -> p22 -> Application Rejected). The model contains multiple init_loop and skip constructs that create repeated chances for rejection or rework before reaching finalization.
+
+Parallel activities and synchronization points
+- The model uses explicit tauSplit nodes to create parallel or optional execution of branches (notably from Coding Interview into ML/Backend/Frontend and for other subnets). These branches converge via tauJoin nodes before the flow proceeds.
+- The presence of multiple tauSplit/tauJoin pairs indicates the process permits concurrent interviewing or simultaneous background checks, and dates where different assessments are decoupled.
+
+Exception handling, rework loops and invisible transitions
+- Many skip_* transitions are present; these correspond to invisible choices in the net where a candidate may bypass a step. The effect is high variability: steps are optional and may be skipped without a visible recorded activity.
+- Several init_loop_* invisible transitions indicate loops where the candidate may re-enter portions of the process (re-interview, re-check or otherwise repeat stages). For example init_loop_17 leads into the Application Rejected transition in the discovered model, suggesting repeated evaluation cycles before ultimate rejection.
+- Invisible tau transitions cluster around joins/splits and are used to model asynchronous branching and merging. Practically they reflect decision gateways or automated routing in the observed system.
+
+End conditions and outcomes
+- Two clear visible end outcomes are present:
+   a) Make Job Offer — accepted as a terminal visible activity that leads to the final sink.
+   b) Application Rejected — visible and can be reached from one of the looped paths.
+- The model's final marking is a dedicated sink place reached through tau joins; the discovered net indicates both offer and rejection paths terminate the process.
+
+Process metrics and performance characteristics (observed/inferred)
+- High variability in path length: due to many optional skips and parallel branches, trace lengths vary widely (some candidates take only Hand In + Offer; others traverse many interviews and checks or loops).
+- Multiple points of rework: init_loop nodes imply candidates may re-enter prior stages; this increases cycle time and rework overhead.
+- Inconsistent application of background checks: both Background Check and Extensive Background Check appear and may be applied at different stages or skipped, causing compliance risk and unpredictability.
+- Concurrency without coordination: technical interviews may run in parallel but the model lacks explicit synchronization rules that restrict redundant interviewer effort.
+
+Key challenges and pain points (AS-IS)
+- Uncontrolled skipping: invisible skip transitions show that many activities (telephonic, technical, behavioral, background checks) are optional and inconsistently applied. This creates structural variability and reduces fairness and predictability.
+- Duplication and redundancy: both Background Check and Extensive Background Check exist in multiple locations and can be repeated or applied inconsistently.
+- Looping and rework: init_loop constructs indicate repeated interviews or reconsiderations; these loops increase time-to-hire and cost per candidate.
+- Poor orchestration of technical interviews: the Coding Interview can split into multiple parallel technical interviews (ML/Backend/Frontend) but without explicit coordination or gating; this risks wasted interviewer time and scheduling complexity.
+- Compliance and auditability concerns: invisible transitions model silent bypasses—this makes it hard to prove that required steps occurred for regulatory or internal policy requirements.
+- Candidate experience risk: long, variable sequences with repeats and unclear requirements increase drop-out risk and degrade employer brand.
+
+Summary of AS-IS
+- The discovered Petri net shows a flexible but highly variable hiring process with optional telephonic and screening interviews, a branching/parallel technical assessment phase, multiple types of background checks performed in inconsistent places, and explicit reject/offer end states. The main problems are variability (many skip paths), loops (rework), redundant checks, and lack of enforced sequencing that together create inefficiency and governance risk.

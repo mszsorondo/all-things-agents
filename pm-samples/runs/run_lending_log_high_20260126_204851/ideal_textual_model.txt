@@ -1,0 +1,76 @@
+IDEAL Process Model
+
+Process overview and purpose
+- This IDEAL model defines the target 'to-be' process for a loan application lifecycle redesigned to remove unnecessary rework, tighten verification and control, reduce field visits, and eliminate bypasses that cause compliance risk. The purpose is to process loan applications efficiently, improve first-time completeness, reduce time to decision, minimize repeated collateral assessments, and ensure robust control for approvals (Sign Loan Agreement) and rejections.
+
+Key stakeholders and roles involved
+- Applicant / Borrower: submits application and attends scheduled appointments.
+- Appointment Scheduler / Front Office: validates initial eligibility and manages appointment setting; is authorized to deny appointments at intake for clearly ineligible cases.
+- Intake Officer / Case Manager: performs initial completeness checks and routes applications to Verification Team.
+- Verification Team: completes document, credit, and initial collateral assessment; decides whether co-signer is required or a field visit is necessary.
+- Field Assessor / Collateral Officer: performs at most one scheduled field visit when strictly required; uses standardized checklist to avoid repeat visits.
+- Loan Officer: coordinates co-signer requests and documents and ensures requirements are met before submission.
+- Underwriter: final decision authority; receives only complete, verified files; cannot bypass checks (no skipped_examination path).
+- Escalation Manager / Supervisor: handles long-running or repeatedly failing cases (> predefined SLAs).
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and triggers
+1. Start: Applicant initiates Request Appointment. The Appointment Scheduler performs an initial eligibility and completeness screening within 24 hours.
+2. Decision: If applicant is clearly ineligible (based on defined criteria), Appointment Denied is issued and the case ends. This is permitted but must be logged with denial reason.
+3. If eligible, Scheduler sets an appointment (Set Appointment) and provides the applicant with a checklist of required documents.
+
+Intake and verification (one-pass approach)
+4. Applicant attends appointment and Hand In Credit Application with required documents. Front Office performs a completeness check immediately; missing mandatory items result in a single request for missing items with a defined short re-submission window (e.g., 3 business days). Rework is limited — only one allowed resubmission before escalation.
+5. Complete applications are forwarded to Verification Team (Verify Borrowers Information). Verification team performs document verification, credit checks, and preliminary collateral risk assessment.
+6. Decision gateway at verification:
+   - If application meets all criteria and no collateral/third-party issues exist, proceed to Submit File to Underwriter.
+   - If verification identifies need for a co-signer, Loan Officer issues Request Co-Signer On Loan and the co-signer documentation is collected; this step is designed to be concurrent with any limited collateral checks to avoid serial delays.
+   - If collateral cannot be assessed remotely and a field visit is necessary, the process triggers Make Visit to Assess Collateral — but limited to a maximum of one scheduled visit per case. The Field Assessor uses a strict checklist and captures photo evidence to avoid repeated visits.
+   - If verification detects fatal issues (fraud, clear ineligibility), Application Rejected is issued and the case ends with documentation of reasons.
+   - Under no circumstances should an application bypass verification (skipped_examination is removed).
+
+Co-signer and collateral handling (minimized rework)
+7. Request Co-Signer On Loan is an explicit sub-process: co-signer is identified, documents collected, and an eligibility check for the co-signer performed within a defined SLA (e.g., 5 business days). Co-signer sub-process runs in parallel with any necessary collateral activity when possible.
+8. Make Visit to Assess Collateral is only performed if remote checks are insufficient. The Field Assessor performs a single visit with enhanced data capture. If the visit yields insufficient evidence, the case is escalated to Escalation Manager rather than scheduling repeated visits.
+
+Submission and underwriting (clean handover)
+9. Only complete and verified files are submitted to Underwriter (Submit File to Underwriter). The submitter must attach a verification checklist indicating all checks completed and any open but non-blocking issues.
+10. Underwriter reviews and decides within a defined SLA (e.g., 10 business days): either Sign Loan Agreement (approve) or Loan Denied (decline). Each decision must be supported by documented rationale.
+11. For long-running cases or repeated failures (e.g., more than one resubmission or one field visit without resolution), the Escalation Manager performs a case review and determines next steps (override, additional evidence request, or formal rejection).
+
+Exception handling and escalation
+12. Explicit escalation path replaces implicit loops: any case exceeding defined SLAs or requiring repeat visits/resubmissions is flagged for Escalation Manager within the case management system.
+13. Skipped examination behavior is prohibited: all approvals must have corresponding verification entries. Automated approvals may be allowed only based on rule-based checks with audit logging.
+
+End conditions and outcomes
+14. Successful end: Sign Loan Agreement — borrower signs and loan proceeds to disbursement.
+15. Unsuccessful ends: Loan Denied or Application Rejected or Appointment Denied — each closed with recorded reason codes and customer communication.
+
+Process metrics and performance targets
+- Target lead times (examples):
+  - Appointment scheduling/initial eligibility check: within 24 hours
+  - Complete intake to verification handover: within 3 business days
+  - Verification completion: within 5 business days
+  - Field visit scheduling and completion (if required): within 7 business days of request; maximum one visit
+  - Underwriter decision: within 10 business days of submission
+- Target quality metrics:
+  - Reduce repeated Make Visit occurrences to <5% of cases (from current high rework rates)
+  - Reduce Submit File -> Loan Denied ratio by improving first-time completeness and pre-underwriting checks (target denial drop of 20–30%)
+  - Eliminate skipped_examination paths (0 tolerance)
+  - Reduce average end-to-end processing time by 30–50% over AS-IS across prioritized cases
+
+Improvements made vs AS-IS (key changes)
+- Eliminated skipped_examination bypass to strengthen compliance and risk controls.
+- Limited field visits to at most one per case with improved data capture to reduce repeat visits and travel costs.
+- Introduced strict SLAs and a single resubmission window for missing documentation to control rework loops.
+- Made co-signer collection a formal parallel subprocess to avoid serial delays.
+- Introduced explicit Escalation Manager role and defined triggers to handle long-running or repeatedly failing cases.
+- Required verification checklist on handover to Underwriter to ensure only complete files are submitted, reducing denial rates and rework.
+
+Potential implementation considerations
+- Systems: case management system must support flags, SLA monitoring, and mandatory fields (verification checklist) to enforce the IDEAL flow.
+- Training: staff must be trained on the new single-visit policy, checklist usage, and resubmission limits.
+- Controls: audit logging for denials and approvals and strict prohibition/alerts for any skipped verification.
+
+Conclusion (IDEAL)
+The IDEAL model streamlines intake and verification, removes compliance-risk bypasses, constrains field visits, formalizes co-signer handling, and introduces escalation controls and SLAs to reduce rework, shorten lead-times, and improve decision quality.

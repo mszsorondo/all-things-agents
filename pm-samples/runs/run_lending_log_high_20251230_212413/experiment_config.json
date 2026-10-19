@@ -1,0 +1,28 @@
+{
+  "run_timestamp": "2025-12-30T21:24:13.720445",
+  "dataset_name": "lending_log_high",
+  "xes_path": "benchmark/lending/lending_log_high.xes",
+  "model": "gpt-5",
+  "method": "run_agent",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (1aa9b85c-e351-4d23-8977-a26145a43b4e, 'Loan Denied'), (238787ba-39da-4e53-8c44-e3ac8ee22d7a, 'Request Co-Signer On Loan'), (4b40cc14-b0b6-46eb-ad0d-c99fac178801, 'Appointment Denied'), (50b68567-1466-4823-965f-479bfc31b096, 'Sign Loan Agreement'), (67edf53b-9dfe-41a3-958c-ed707d1b7f3d, 'skipped_e...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "gpt-5",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

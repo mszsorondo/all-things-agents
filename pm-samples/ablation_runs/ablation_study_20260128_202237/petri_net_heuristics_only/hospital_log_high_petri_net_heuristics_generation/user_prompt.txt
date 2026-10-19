@@ -1,0 +1,69 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_HEURISTICS
+============================================================
+
+
+=== PETRI NET (HEURISTICS MINER) INTERPRETATION GUIDE ===
+
+The Heuristics Miner produces Petri nets using frequency-based dependency measures,
+making it more robust to noise than Alpha Miner.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ intplace_Activity, pre_Activity, splace_in_A_B_0, ... ]
+transitions: [ (Activity, 'Activity'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']"
+
+PLACE NAMING CONVENTIONS:
+- intplace_X: Internal place for activity X
+- pre_X: Pre-condition place for activity X
+- splace_in_A_B_N: Split place connecting A to B (N is index)
+- source0, sink0: Start and end places
+
+DEPENDENCY MEASURE:
+- Calculated as: (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1
+- Values close to 1: Strong causal dependency A->B
+- Values close to 0: No clear dependency
+- Used with thresholds to filter noise
+
+ADVANTAGES:
+- Handles noisy event logs
+- Detects loops of length 1 and 2
+- Identifies long-distance dependencies
+- Produces cleaner models than Alpha miner
+
+READING THE OUTPUT:
+- More places than Alpha miner (intermediary routing places)
+- All visible activities become transitions
+- Complex routing structures for varied behavior
+- Split places (splace) indicate choice or parallel patterns
+
+WHEN TO USE:
+- Real-world event logs with noise
+- When Alpha miner produces poor results
+- Complex processes with loops
+- When you need to filter infrequent behavior
+
+
+--- DISCOVERED MODEL ---
+[Heuristics Miner]
+
+
+If I have a Petri net:
+
+places: [ intplace_Register at ER, intplace_Register at FD, intplace_Treatment, pre_Diagnosis, pre_Examination, pre_Expert Examination, pre_Thorough Examination, pre_Treatment, pre_Treatment successful, sink0, source0, splace_in_Diagnosis_Examination_0, splace_in_Diagnosis_Expert Examination_1, splace_in_Diagnosis_Register at ER_0, splace_in_Diagnosis_Register at FD_0, splace_in_Discharge_Treatment successful_0, splace_in_Discharge_Treatment_0, splace_in_Thorough Examination_Examination_0, splace_in_Thorough Examination_Expert Examination_1, splace_in_Thorough Examination_Register at ER_0, splace_in_Thorough Examination_Register at FD_0 ]
+transitions: [ (Diagnosis, 'Diagnosis'), (Discharge, 'Discharge'), (Examination, 'Examination'), (Expert Examination, 'Expert Examination'), (Register at ER, 'Register at ER'), (Register at FD, 'Register at FD'), (Thorough Examination, 'Thorough Examination'), (Treatment successful, 'Treatment successful'), (Treatment unsuccessful, 'Treatment unsuccessful'), (Treatment, 'Treatment'), (hid_1, None), (hid_10, None), (hid_11, None), (hid_12, None), (hid_13, None), (hid_16, None), (hid_2, None), (hid_23, None), (hid_24, None), (hid_26, None), (hid_27, None), (hid_3, None), (hid_4, None) ]
+arcs: [ (Diagnosis, 'Diagnosis')->pre_Treatment, (Discharge, 'Discharge')->sink0, (Examination, 'Examination')->splace_in_Diagnosis_Examination_0, (Examination, 'Examination')->splace_in_Thorough Examination_Examination_0, (Expert Examination, 'Expert Examination')->splace_in_Diagnosis_Expert Examination_1, (Expert Examination, 'Expert Examination')->splace_in_Thorough Examination_Expert Examination_1, (Register at ER, 'Register at ER')->intplace_Register at ER, (Register at FD, 'Register at FD')->intplace_Register at FD, (Thorough Examination, 'Thorough Examination')->pre_Diagnosis, (Treatment successful, 'Treatment successful')->splace_in_Discharge_Treatment successful_0, (Treatment unsuccessful, 'Treatment unsuccessful')->pre_Diagnosis, (Treatment, 'Treatment')->intplace_Treatment, (hid_1, None)->pre_Diagnosis, (hid_10, None)->pre_Thorough Examination, (hid_11, None)->pre_Thorough Examination, (hid_12, None)->pre_Thorough Examination, (hid_13, None)->pre_Thorough Examination, (hid_16, None)->pre_Treatment successful, (hid_16, None)->splace_in_Discharge_Treatment_0, (hid_2, None)->pre_Diagnosis, (hid_23, None)->pre_Examination, (hid_23, None)->splace_in_Diagnosis_Register at ER_0, (hid_23, None)->splace_in_Thorough Examination_Register at ER_0, (hid_24, None)->pre_Expert Examination, (hid_24, None)->splace_in_Diagnosis_Register at ER_0, (hid_24, None)->splace_in_Thorough Examination_Register at ER_0, (hid_26, None)->pre_Examination, (hid_26, None)->splace_in_Diagnosis_Register at FD_0, (hid_26, None)->splace_in_Thorough Examination_Register at FD_0, (hid_27, None)->pre_Expert Examination, (hid_27, None)->splace_in_Diagnosis_Register at FD_0, (hid_27, None)->splace_in_Thorough Examination_Register at FD_0, (hid_3, None)->pre_Diagnosis, (hid_4, None)->pre_Diagnosis, intplace_Register at ER->(hid_23, None), intplace_Register at ER->(hid_24, None), intplace_Register at FD->(hid_26, None), intplace_Register at FD->(hid_27, None), intplace_Treatment->(Treatment unsuccessful, 'Treatment unsuccessful'), intplace_Treatment->(hid_16, None), pre_Diagnosis->(Diagnosis, 'Diagnosis'), pre_Examination->(Examination, 'Examination'), pre_Expert Examination->(Expert Examination, 'Expert Examination'), pre_Thorough Examination->(Thorough Examination, 'Thorough Examination'), pre_Treatment successful->(Treatment successful, 'Treatment successful'), pre_Treatment->(Treatment, 'Treatment'), source0->(Register at ER, 'Register at ER'), source0->(Register at FD, 'Register at FD'), splace_in_Diagnosis_Examination_0->(hid_1, None), splace_in_Diagnosis_Examination_0->(hid_2, None), splace_in_Diagnosis_Expert Examination_1->(hid_3, None), splace_in_Diagnosis_Expert Examination_1->(hid_4, None), splace_in_Diagnosis_Register at ER_0->(hid_2, None), splace_in_Diagnosis_Register at ER_0->(hid_4, None), splace_in_Diagnosis_Register at FD_0->(hid_1, None), splace_in_Diagnosis_Register at FD_0->(hid_3, None), splace_in_Discharge_Treatment successful_0->(Discharge, 'Discharge'), splace_in_Discharge_Treatment_0->(Discharge, 'Discharge'), splace_in_Thorough Examination_Examination_0->(hid_10, None), splace_in_Thorough Examination_Examination_0->(hid_11, None), splace_in_Thorough Examination_Expert Examination_1->(hid_12, None), splace_in_Thorough Examination_Expert Examination_1->(hid_13, None), splace_in_Thorough Examination_Register at ER_0->(hid_11, None), splace_in_Thorough Examination_Register at ER_0->(hid_13, None), splace_in_Thorough Examination_Register at FD_0->(hid_10, None), splace_in_Thorough Examination_Register at FD_0->(hid_12, None) ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']
+
+

@@ -1,0 +1,210 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- This process describes the end-to-end residential tenancy lifecycle discovered from an inductive-miner Petri net: from initial interest in a property through leasing decision, move-in, and recurring rent cycles, including delinquency handling and termination (rejection, tenant cancellation, or eviction).
+- The model captures optional and skipped steps prior to contract signature, as well as recurring loops for rent payment, late payment handling, and termination outcomes.
+
+Key stakeholders and roles involved
+- Prospective/Tenant: Applies for viewing, attends viewing, submits paperwork, pays rent, may cancel the apartment.
+- Property Manager/Leasing Office: Sets appointments, checks paperwork, screens prospective tenants, performs extensive screening, decides to reject or sign contract, issues warnings, accepts late payments, and may evict tenants.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: A prospective tenant applies for a viewing appointment (\"Apply for Viewing Appointment\").
+
+2) Pre-lease engagement and evaluation
+- Activity: Apply for Viewing Appointment → leads to one of two paths:
+  - Path A (standard viewing): Set Appointment → View The Property.
+  - Path B (skip-to-evaluation): The appointment and viewing may be skipped (silent transition), merging directly into the evaluation stage.
+- After viewing (if it occurred):
+  - Activity: Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant → (optionally) Extensive Screening.
+  - At multiple points, the model allows silent skips directly into the evaluation stage, meaning paperwork checking/screening can be bypassed.
+- Merge point (implicit): All pre-lease paths (including skipped ones and those with/without extensive screening) converge at an evaluation point.
+
+3) Leasing decision
+- Exclusive decision:
+  - Reject Prospective Tenant → process ends (rejected outcome).
+  - Sign Contract → proceed to move-in prep.
+- Activity: Move In.
+
+4) Post–move-in recurring rent cycle (loop)
+- Immediately after move-in, the process can enter either:
+  - Normal payment sub-cycle: Pay Rent, or in some instances a silent bypass of the explicit \"Pay Rent\" recording occurs while still proceeding.
+  - Delinquency sub-cycle: Miss Rent Payment.
+- Delinquency handling:
+  - Miss Rent Payment → Issue Warning → decision/consequence:
+    - Accept Late Payment (may occur), or
+    - Alternative implicit path (no explicit acceptance recorded).
+  - Both outcomes merge and lead to a routing choice:
+    - Return to delinquency (another cycle of missing payment), or
+    - Return to normal payment track (Pay Rent or proceed without explicit payment recording).
+- Cycle closure:
+  - After the payment period, an exclusive decision occurs:
+    - Continue tenancy: loop back to the start of the next rent period (return to the post–move-in state).
+    - Terminate tenancy: go to termination stage.
+
+5) Termination outcomes
+- From the termination stage, two end outcomes:
+  - Tenant Cancels Apartment → end.
+  - Evict Tenant → end.
+
+Decision points with criteria and outcomes
+- Appointment/Viewing optionality (implicit): Either schedule and conduct a viewing or skip directly to evaluation.
+- Paperwork/Screening optionality: After viewing, either complete documentation and screening (with optional extensive screening) or skip screening steps and merge into decision.
+- Leasing decision (exclusive):
+  - Reject Prospective Tenant → end.
+  - Sign Contract → Move In.
+- Post–move-in rent cycle (exclusive at cycle start):
+  - Normal payment path (Pay Rent or pass-through).
+  - Delinquency path (Miss Rent Payment).
+- Delinquency handling (exclusive):
+  - Accept Late Payment vs. implicit non-acceptance; both re-merge and route either back to delinquency or to payment track.
+- Cycle closure (exclusive):
+  - Continue tenancy (start next cycle) or terminate tenancy.
+- Termination choice (exclusive):
+  - Tenant Cancels Apartment or Evict Tenant.
+
+Parallel activities and synchronization points
+- No explicit parallelism is modeled. Several silent transitions function as merges/synchronizations:
+  - Merge of all pre-lease branches (with or without appointment/viewing/paperwork/screening) before the leasing decision.
+  - Merge of delinquency outcomes (accepted/not accepted late payment) before routing to either repeat delinquency or return to payment.
+
+Exception handling and error paths
+- Skipped pre-lease controls: The model permits skipping appointment, viewing, paperwork checking, and screening—leading directly to the leasing decision. This represents an exception that weakens due diligence.
+- Delinquency tolerance loop: After issuing a warning, both acceptance and non-acceptance of late payment still feed into a loop that may repeatedly return to delinquency without a defined, enforced escalation threshold.
+- Recording gaps: Explicit recording of Pay Rent may be bypassed while the process still progresses to cycle closure.
+
+Rework loops and escalation procedures
+- Rent cycle loop: After each cycle, the process returns to the post–move-in state for the next period.
+- Delinquency loop: Repeated Miss Rent Payment → Issue Warning → (late payment handling) → choice to return to delinquency or to normal payment; this can repeat indefinitely in the model.
+- Termination escalation: At cycle closure, the flow can move to a termination stage, which can result in Evict Tenant or Tenant Cancels Apartment.
+
+End conditions and outcomes
+- End states:
+  - Rejection before lease (Reject Prospective Tenant).
+  - Post–move-in termination via Tenant Cancels Apartment.
+  - Post–move-in termination via Evict Tenant.
+
+Process metrics and performance characteristics (as implied by the model)
+- Lead time variability: Significant variability due to optional/skipped steps (viewing, paperwork, screening).
+- Effectiveness of screening: Potentially low because extensive screening is optional and may be skipped entirely.
+- Payment reliability: Repeated delinquency cycles are allowed, indicating potential high recurrence of late/missed payments in observed data.
+- Throughput to rejection vs. approval: Both outcomes are present; the model allows direct rejection as well as approval with minimal prerequisite steps.
+- Loop frequency: The rent cycle can iterate many times; delinquency can also iterate repeatedly before termination.
+
+Key challenges and pain points
+- Control weakness before signing:
+  - Viewing, paperwork checking, and screening can be skipped, enabling approvals without documentation or due diligence.
+- Ambiguous delinquency resolution:
+  - Accept Late Payment vs. not accepting both re-merge, with no explicit, enforced criteria to escalate or terminate; encourages repeated late behavior.
+- Data integrity gaps:
+  - Payment may proceed without an explicit Pay Rent event, leading to reporting inconsistencies.
+- Governance and compliance risk:
+  - The ability to sign contracts without documented checks and screenings increases risk (fraud, non-qualified tenants).
+- Unclear termination criteria:
+  - Eviction and tenant cancellation are possible but not clearly conditioned (e.g., number of missed payments or notice requirements), making enforcement inconsistent.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- The improved process enforces mandatory pre-lease due diligence, clarifies and sequences all decision points, and standardizes post–move-in rent handling with clear delinquency resolution and termination rules. It retains all valid observed behaviors but removes risky skips and ambiguous loops.
+
+Key stakeholders and roles involved
+- Prospective/Tenant: Initiates interest, attends (or formally waives) viewing, submits paperwork, pays rent, may cancel.
+- Property Manager/Leasing Office: Manages appointments, checks paperwork, screens tenants (including extensive screening when required), decides reject/sign contract, issues warnings, accepts late payments within policy, and executes eviction when criteria are met.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Apply for Viewing Appointment.
+
+2) Pre-lease due diligence (mandatory sequencing with controlled optionality)
+- Set Appointment (if a viewing is required). If a viewing is not required (e.g., already conducted externally), a formal justification is recorded before proceeding. Regardless, a viewing decision must be captured explicitly:
+  - If viewing is conducted: View The Property.
+  - If viewing is waived: proceed directly but document the waiver (merge).
+- Documentation and screening (cannot be skipped):
+  - Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant.
+  - Decision: Extensive Screening is performed when screening results or policy thresholds require it; otherwise, proceed without it. In both cases, documentation of the decision is mandatory.
+- Synchronization gate (pre-decision): Only after paperwork is checked and screening completed (with any required extensive screening) does the process advance.
+
+3) Leasing decision (exclusive, policy-controlled)
+- Reject Prospective Tenant → end (with recorded rationale).
+- Sign Contract → proceed to Move In.
+
+4) Post–move-in recurring rent cycle (structured, policy-based loop)
+- Each billing period starts in the normal track:
+  - Pay Rent is explicitly recorded for all successful payments.
+- If payment is not received by due date:
+  - Miss Rent Payment → Issue Warning (time-bound, per policy) → decision:
+    - Accept Late Payment (within a defined grace period and terms) → return to the normal payment track.
+    - If late payment is not accepted or grace expires without payment → proceed to the next delinquency evaluation.
+- Delinquency escalation and loop control:
+  - The delinquency loop may occur across periods, but explicit policy thresholds govern progression:
+    - After each delinquency handling, the process routes either to the normal payment track (upon receipt/acceptance) or continues delinquency handling.
+    - Upon reaching termination criteria (e.g., repeated missed payments or policy breach), the process exits the loop to termination.
+
+5) Cycle closure (exclusive)
+- Continue tenancy: proceed to the next billing period (loop).
+- Terminate tenancy: proceed to termination stage.
+
+6) Termination outcomes (exclusive and criteria-based)
+- Tenant Cancels Apartment: permitted per notice terms and period closure rules; process ends.
+- Evict Tenant: executed only when delinquency/violation criteria are met and documented; process ends.
+
+Decision points with criteria and outcomes
+- Viewing required? If yes → Set Appointment → View The Property; if waived, justification must be captured (no silent skips).
+- Screening depth: Extensive Screening required if primary screening flags risk per policy; otherwise proceed.
+- Leasing decision:
+  - Reject Prospective Tenant (must have completed checks) or
+  - Sign Contract (only after checks complete).
+- Post–move-in payment handling:
+  - Pay on time (recorded) vs. Miss Rent Payment → Issue Warning → Accept Late Payment (within policy) vs. continue delinquency handling.
+- Cycle closure:
+  - Continue tenancy or Terminate tenancy based on lease terms and performance.
+- Termination choice:
+  - Tenant Cancels Apartment (per notice) or Evict Tenant (per escalation criteria).
+
+Parallel activities and synchronization points
+- No parallel steps required. Key synchronization:
+  - Pre-decision gate: both Check Paperwork and Screen Prospective Tenant (and Extensive Screening if required) must be complete before the leasing decision.
+
+Exception handling and error paths
+- Viewing waiver is controlled and recorded; cannot bypass subsequent due diligence.
+- Late payment handling has a defined grace period; if payment is accepted late, return to good standing; if not, proceed along a governed delinquency path.
+- Data completeness enforced: Pay Rent and all major actions are explicitly recorded—no silent bypass of critical events.
+
+Rework loops and escalation procedures
+- Rent cycle loop: repeats per billing period.
+- Delinquency loop: repeats only within defined policy limits; after the limit is reached, route to termination (eviction) rather than indefinite cycling.
+- Escalation: Issuing warnings and assessing acceptance of late payment occur within defined time windows; repeat delinquencies trigger termination criteria.
+
+End conditions and outcomes
+- End states:
+  - Reject Prospective Tenant (with documented screening).
+  - Tenant Cancels Apartment (per notice).
+  - Evict Tenant (per escalation policy).
+
+Process metrics and performance characteristics
+- Lead time and conversion:
+  - Time from Apply for Viewing Appointment to Sign Contract.
+  - Screening turnaround time (basic and extensive).
+  - Approval rate vs. rejection rate.
+- Tenancy health and collections:
+  - On-time payment rate, late payment rate, and grace-period recovery rate.
+  - Delinquency recurrence rate per tenant; average number of delinquency cycles before resolution.
+  - Eviction rate and average time-to-eviction post-first delinquency.
+- Data quality:
+  - % of cases with complete paperwork and screening records.
+  - % of events with explicit Pay Rent recording.
+
+Improvements made vs. AS-IS
+- Enforced due diligence: No signing without Check Paperwork and Screen Prospective Tenant; Extensive Screening is criteria-driven, not ad hoc.
+- Removal of risky skips: Appointment/viewing may be waived only with justification; screening steps cannot be bypassed.
+- Clear delinquency governance: Defined grace period and escalation thresholds prevent indefinite looping and ensure timely resolution.
+- Explicit event recording: Pay Rent and other critical actions must be recorded, improving auditability and reporting.
+- Clear termination rules: Separation of voluntary cancellation from eviction with policy-driven criteria and documentation requirements.
+")

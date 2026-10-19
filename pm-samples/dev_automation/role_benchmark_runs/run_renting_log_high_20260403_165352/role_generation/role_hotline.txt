@@ -1,0 +1,49 @@
+AS-IS Process Model — Hotline
+============================================================
+
+AS-IS Process Model — Hotline
+
+Section 1: Role Overview (purpose, responsibilities)
+The Hotline role is an intake/contact-center role that records incoming applications and sets appointments. Hotline is the main front-line channel for receiving Apply for Viewing Appointment and creating Set Appointment events when tenants (or prospects) call or inquire. The hotline forwards work to Real Estate Agents and occasionally to other internal actors.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Apply for Viewing Appointment: record the prospect’s application request into the system (intake).
+- Set Appointment: schedule viewing appointments; creates the chain that leads to View The Property.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation triggers
+- Incoming prospect contact: Hotline is activated when a potential tenant contacts the organization (phone/email), or when other roles route inbound inquiries to the hotline.
+
+Typical sequences and decision points (all observed variants)
+- Intake path: Apply for Viewing Appointment -> Set Appointment -> View The Property (forwarded to Real Estate Agent). This is the common observed sequence for Hotline-initiated cases.
+- Direct forwarding vs reassign: After setting an appointment, the Hotline passes the case to a Real Estate Agent (often REA2 or REA1). It can also send to REA5 and other agents depending on availability.
+
+Ordering and optional steps
+- Apply for Viewing Appointment is typically followed by Set Appointment (chain constraint). There are traces where application is recorded and the case stops (if the applicant is rejected before appointment), but the primary behavior is to set an appointment and then hand over to an agent.
+
+Decision criteria handled by Hotline
+- Decide which agent to route the appointment to (based on availability, territory, or internal policies as reflected by handover frequencies), though the exact selection rules are not visible in the log—only the observed handover patterns.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Hotline
+- Real Estate Agents occasionally hand cases back to the Hotline for scheduling or clarification (small but observed weights: REA1 -> Hotline, REA2 -> Hotline, REA5 -> Hotline).
+
+Who Hotline hands work TO
+- Real Estate Agents (primary receivers): Hotline -> REA2, -> REA1, -> REA5 (weights show REA2 and REA1 as the most common recipients).
+- Hotline also has self-handovers (small) indicating repeated Hotline actions for the same case.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- Normal intake: Apply for Viewing Appointment -> Set Appointment -> View The Property (handed to Real Estate Agent).
+- Rare exception traces: Apply for Viewing Appointment -> Reject Prospective Tenant (some applications are rejected early and do not proceed to appointment/viewing).
+- Hotlines sometimes reassign appointment-setting tasks to different agents (handover network shows repeated small routing flows between Hotline and agents).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Hotline is a consistent intake point but passes almost all substantive processing to agents; it rarely appears in post-contract lifecycle events.
+- The routing behavior is dispersed across multiple agents; there is no single dominant recipient but REA1/REA2 appear most frequently—this may reflect load-balancing or geographic assignment.
+- A small portion of applications are rejected immediately after application, meaning some screening is done at intake or leads are low quality.
+
+Practical notes for someone assuming the Hotline role
+- Your primary responsibilities are rapid intake and correct routing to the right agent.
+- Because downstream processing (screening, paperwork) is handled by agents and lawyers, ensure that handover notes and appointment details are complete to reduce rework.
+
+(End of Hotline role description)

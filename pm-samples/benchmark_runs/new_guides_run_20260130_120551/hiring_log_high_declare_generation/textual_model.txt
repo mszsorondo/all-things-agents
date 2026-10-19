@@ -1,0 +1,146 @@
+write_AS_IS_comprehensive_textual_description(content: 
+"AS-IS Process Model
+
+Process overview and purpose
+- This declarative model represents a highly constrained application-screening process that always results in rejection. It mandates a strict immediate handoff from application submission to telephonic screening, followed by exactly one screening interview and exactly one background check (order not constrained), and exactly one recording of the outcome \"Application Rejected.\" The activity \"Backend Interview\" is explicitly forbidden.
+
+Key stakeholders and roles involved
+- Applicant: implied by the activity \"Hand In Job Application.\"
+- Internal staff (generic): conduct the telephonic screening, screening interview, and background check. Specific role names are not provided by the source model.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start event (Initialization): The process always starts with \"Hand In Job Application\" (exactly once per case).
+
+Main activities and strict sequencing
+1) Hand In Job Application (exactly once)
+   - Trigger: Applicant submits a job application.
+   - Constraint: Must be the first event and must occur exactly one time.
+   - Immediate next step: Telephonic Screening must follow immediately without any intervening events (chain succession/chain response/chain precedence).
+
+2) Telephonic Screening (exactly once)
+   - Must occur directly after the application, with no other activity in between.
+   - Occurs exactly once in every case.
+
+Post-screening required activities (unordered, can occur in any order and may overlap in time)
+3) Screening Interview (exactly once)
+   - Required to occur after Telephonic Screening (succession/alternate succession).
+   - Occurs exactly once; repetitions are disallowed by the alternate constraints.
+
+4) Background Check (exactly once)
+   - Required to occur after Telephonic Screening (succession/alternate succession).
+   - Occurs exactly once; repetitions are disallowed by the alternate constraints.
+
+Outcome recording
+5) Application Rejected (exactly once)
+   - Required outcome: must occur after Telephonic Screening (succession); \"Hand In Job Application\" must precede it (precedence).
+   - Occurs exactly once per case.
+   - Important: There is no acceptance/offer outcome in this model; every case includes exactly one \"Application Rejected.\"
+
+Decision points and control logic
+- There is no modeled decision branching between acceptance and rejection; rejection is mandatory and unique.
+- The relative order among Screening Interview, Background Check, and Application Rejected is unconstrained beyond \"after Telephonic Screening.\" Consequently, any of the following sequences are compliant:
+  - Application Rejected immediately after Telephonic Screening, then Screening Interview, then Background Check.
+  - Telephonic Screening → Screening Interview → Application Rejected → Background Check.
+  - Telephonic Screening → Background Check → Screening Interview → Application Rejected.
+  - And other permutations, provided all three occur after Telephonic Screening and exactly once.
+
+Parallel activities and synchronization points
+- No explicit gateways are defined; however, because Screening Interview and Background Check have no ordering constraints between them, they can be performed in any order and could overlap in time. There is no required synchronization prior to recording \"Application Rejected\" in this AS-IS model.
+
+Exception handling and error paths
+- Forbidden activity: \"Backend Interview\" must never occur (Absence constraint).
+- No explicit exception, escalation, or cancellation paths are modeled. Any activity outside the listed set violates the constraints.
+
+Rework loops and escalation procedures
+- None allowed: all required activities occur exactly once; no repetitions are permitted by the alternate constraints.
+- No escalations are modeled.
+
+End conditions and outcomes
+- The process instance completes only after the following have all occurred exactly once: Hand In Job Application (start), Telephonic Screening, Screening Interview, Background Check, and Application Rejected.
+- Although \"Application Rejected\" may occur before or between the other post-screening activities, those activities must still occur before the case can end, which leads to potentially wasteful post-rejection work.
+
+Process metrics and performance characteristics
+- Throughput structure: Exactly five visible activities per case (Application, Telephonic Screening, Screening Interview, Background Check, Application Rejected).
+- Lead time is driven by time from application to the last of {Screening Interview, Background Check, Application Rejected}, recognizing that rejection can occur before checks/interview.
+- Work-in-process: Screening Interview and Background Check are independent and unconstrained relative to each other.
+- Compliance: 100% of cases include exactly one rejection; acceptance never occurs in this model.
+- Conformance risks: Any appearance of \"Backend Interview\" is a hard violation. Any deviation from the immediate adjacency between Application and Telephonic Screening is a violation.
+
+Key challenges and pain points
+- Mandatory immediate handoff: Telephonic Screening must follow the application immediately, leaving no room for scheduling/triage buffers; this is operationally rigid.
+- Rejection before due diligence: The model permits \"Application Rejected\" before the Screening Interview and/or Background Check, causing post-rejection activities and wasted effort.
+- No acceptance path: The process is rejection-centric. If an acceptance path exists organizationally, it is not captured here, making the model incomplete for end-to-end hiring.
+- No exception management: Missing pathways for deferrals, information requests, or escalation.
+- No rework capability: Errors discovered in checks/interviews cannot be rectified via repeats, because alternate constraints effectively disallow repetitions.
+- Prohibited activity exposure: \"Backend Interview\" is forbidden; any accidental execution leads to nonconformance and potential audit issues."
+)
+
+write_IDEAL_comprehensive_textual_description(content: 
+"IDEAL Process Model
+
+Process overview and purpose
+- This to-be model keeps the same activities and constraints universe but corrects sequencing to eliminate waste and enforce a logical order of work. It preserves exactly-once execution of all activities while requiring that both the Screening Interview and Background Check are completed before recording the outcome \"Application Rejected.\" The prohibited activity (\"Backend Interview\") remains disallowed.
+
+Key stakeholders and roles involved
+- Applicant: submits the application.
+- Internal screening staff (generic): perform telephonic screening.
+- Interviewers/internal assessors (generic): conduct the screening interview.
+- Background-check function/provider (generic): conducts the background check.
+(Note: Specific role titles are not defined by the source; generic labels are used.)
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start event: \"Hand In Job Application\" (exactly once) triggers the screening process.
+
+Main activities and improved sequencing
+1) Hand In Job Application (exactly once)
+   - Must be the first event.
+
+2) Telephonic Screening (exactly once)
+   - Occurs after the application. The to-be model allows operational flexibility (e.g., scheduling), rather than requiring immediate adjacency. No intervening activities are added; the constraint is relaxed conceptually to allow realistic timing.
+
+3) Screening Interview and Background Check (each exactly once)
+   - Both are required to occur after Telephonic Screening.
+   - Execution mode: may proceed in any order or in parallel, depending on availability.
+   - Synchronization point: the process must not proceed to outcome recording until both are completed.
+
+Decision point and outcome
+4) Outcome decision and recording (exactly once): \"Application Rejected\"
+   - Criteria: only after both Screening Interview and Background Check have been completed.
+   - Timing rule: rejection cannot occur before either of those two activities; it must follow their completion. This removes the wasteful pattern of conducting checks/interviews after rejection.
+
+Parallel activities and synchronization points
+- Parallel split: implicitly allowed for \"Screening Interview\" and \"Background Check.\"
+- Join/synchronization: explicit checkpoint requiring both to be complete prior to outcome recording (\"Application Rejected\").
+
+Exception handling and error paths
+- Forbidden activity remains: \"Backend Interview\" must not occur.
+- If either Screening Interview or Background Check cannot be completed (e.g., candidate non-response or data unavailability), the case should remain pending until resolution; if organizational policy requires closure, the only permissible closure activity in-scope is \"Application Rejected\" after due attempts. No new activities are introduced; this states policy on when to proceed to the existing outcome.
+
+Rework loops and escalation procedures
+- Rework remains minimized: each required activity occurs exactly once by design.
+- If quality issues are discovered within the same activity instance (e.g., incomplete interview notes), corrections must occur within that instance; new activity names are not introduced.
+
+End conditions and outcomes
+- The process instance completes after all of the following have occurred exactly once and in this order logic:
+  1) Hand In Job Application (start),
+  2) Telephonic Screening,
+  3) Screening Interview and Background Check (any order/parallel, both completed),
+  4) Application Rejected (outcome).
+- Acceptance or hiring outcomes are out of scope of the provided model; this to-be model remains faithful to the set of discovered activities.
+
+Process metrics and performance characteristics
+- Lead time: from application submission to recording \"Application Rejected\" after both checks are complete.
+- Waiting time: between application and telephonic screening (should be monitored to meet service levels).
+- Overlap efficiency: percentage of cases where Screening Interview and Background Check are executed in parallel to reduce cycle time.
+- First-time-right: adherence to exactly-once execution without rework.
+- Compliance: zero instances of outcome recorded before completion of both checks; zero instances of forbidden \"Backend Interview\"; zero violations of exactly-once semantics.
+
+Improvements made
+- Enforced proper sequencing: \"Application Rejected\" can only be recorded after both Screening Interview and Background Check are completed, eliminating post-rejection work.
+- Introduced an explicit synchronization point: ensures both due-diligence activities are finished before outcome recording.
+- Preserved minimal activity set and exactly-once discipline: no new activities introduced, staying faithful to the original model while making it operationally sane.
+- Operational flexibility: relaxed the unrealistic immediate adjacency between application and telephonic screening conceptually (timing can be managed operationally) while maintaining the required order.
+- Strengthened compliance: clarified that any occurrence of the forbidden activity remains a hard violation and that ordering rules are subject to conformance monitoring."
+)

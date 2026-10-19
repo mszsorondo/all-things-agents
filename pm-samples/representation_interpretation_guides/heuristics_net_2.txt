@@ -1,0 +1,171 @@
+## 1. WHAT THIS REPRESENTATION DESCRIBES
+
+This text is a **summary view of a PM4Py Heuristics Net** discovered from an event log. It contains:
+
+* The **set of activities** observed (after PM4Py’s discovery filters).
+* The **start activities** and **end activities** (as a set; **counts are not shown**).
+* A **truncated list of “strong” directed dependency relations** between activities, each annotated with:
+
+  * a **dependency value** (PM4Py Heuristics Miner dependency measure), and
+  * a **frequency** (how often the direct succession was observed in the log).
+
+It is *not* the full Heuristics Net object—only selected fields are printed.
+
+---
+
+## 2. TYPICAL OUTPUT FORM (conceptual)
+
+```
+Heuristics Net:
+
+Activities (N): A, B, C, ...
+
+Start activities: S1, S2, ...
+End activities: E1, E2, ...
+
+Dependency relations (activity -> activity: dependency_value):
+  X -> Y: dependency=0.732, frequency=145
+  ...
+  ... (truncated)
+```
+
+(Exact ordering and which lines appear depend on the discovered net and printing filters.)
+
+---
+
+## 3. HOW TO READ EACH LINE
+
+### Header
+
+* **“Heuristics Net:”**
+  Just a label indicating the representation type.
+
+### Activities line
+
+* **“Activities (N): …”**
+
+  * `N` = number of activities in the discovered net’s activity list.
+  * The list is the **activity names** included in the discovered model (not necessarily all distinct names in the raw dataset if PM4Py filtering excluded some).
+
+**Important:** the list order is not guaranteed to be semantic (it’s whatever order PM4Py returns for the underlying structure).
+
+### Start activities line
+
+* **“Start activities: …”**
+  A **set/list of activity names** that appear as the **first event of cases** (according to PM4Py’s start-activity computation).
+  **Counts/proportions are not shown**, only the names.
+
+### End activities line
+
+* **“End activities: …”**
+  A **set/list of activity names** that appear as the **last event of cases**.
+  **Counts/proportions are not shown**, only the names.
+
+### Dependency relations block
+
+The block header:
+
+* **“Dependency relations (activity -> activity: dependency_value):”**
+  Introduces a list of directed relations.
+
+Each relation line:
+
+* **`A -> B: dependency=0.xxx, frequency=f`**
+
+Interpretation:
+
+1. **`A -> B` (the sequence)**
+   Means: **B directly follows A** in the log (as an immediate next event within cases) *and* the discovered net contains a computed dependency value for that ordered pair.
+
+2. **`frequency=f` (the reported metric)**
+   `f` is the **count of direct successions** “A followed immediately by B” in the event log (i.e., DFG frequency for the pair).
+
+3. **`dependency=0.xxx` (the reported metric)**
+   This is the **Heuristics Miner dependency measure** for the ordered pair (A,B), computed from direct-follow counts of both directions:
+
+   * If both directions exist (A→B and B→A), the measure is:
+     [
+     \text{dep}(A,B)=\frac{c(A,B)-c(B,A)}{c(A,B)+c(B,A)+1}
+     ]
+   * If only A→B exists (no observed B→A), then:
+     [
+     \text{dep}(A,B)=\frac{c(A,B)}{c(A,B)+1}
+     ]
+   * For a self-loop A→A:
+     [
+     \text{dep}(A,A)=\frac{c(A,A)}{c(A,A)+1}
+     ]
+     where (c(X,Y)) is the direct-follow frequency. ([pm4py-source.readthedocs.io][1])
+
+   **What the number means:** it quantifies how *directional* the relation is toward A→B versus the reverse, with smoothing via “+1”. Values can be negative when the reverse direction dominates (but such negatives will not appear here due to the printing filter described next). ([pm4py-source.readthedocs.io][1])
+
+4. **Printing filter (what appears vs. what exists)**
+   The text representation shows only relations with **dependency value strictly greater than 0.5** (“strong dependencies” in *this printout*). So absence from the list does **not** mean the pair never occurs; it may simply have dependency ≤ 0.5 (or be beyond truncation).
+
+5. **Truncation / summarization**
+
+   * The list is **capped**: after **more than 50** printed dependency lines, the output adds `... (truncated)` and stops printing further relations.
+   * Therefore, the dependency section is a **partial view** whenever the model has many relations (and you cannot infer that omitted relations don’t exist).
+
+6. **Ordering**
+
+   * The dependency lines are **not sorted** by dependency or frequency.
+   * The printed order follows the underlying dictionary iteration order from PM4Py / Python insertion order, so it is **not guaranteed to reflect importance**.
+
+---
+
+## 4. GLOBAL SEMANTIC MEANING
+
+Overall, the representation conveys:
+
+* **Which activities exist** in the discovered model.
+* **Which activities can start or end cases** (as names only).
+* A **sampled/filtered edge list** of directed relations, where each edge is annotated with:
+
+  * **How often** the direct succession occurs (`frequency`), and
+  * **How strongly directional** it is (`dependency`), based on relative dominance over the reverse direction. ([pm4py-source.readthedocs.io][1])
+
+---
+
+## 5. HOW TO INTERPRET THE LIST AS A WHOLE
+
+Treat the dependency block as:
+
+* A **thresholded “topology sketch”** of the Heuristics Net’s most directional direct-follow relations (**dependency > 0.5** in this printout).
+* A way to quickly identify:
+
+  * likely **forward-driving** edges (high dependency),
+  * edges with **strong evidence** in raw counts (high frequency),
+  * potential **bidirectional/loop-ish behavior** (dependency closer to threshold, or self-loops when they appear).
+
+But always remember:
+
+* It is **not exhaustive** (threshold + truncation).
+* It does **not** show parallelism (AND measures), long-distance relations, or full routing semantics.
+
+---
+
+## 6. WHAT THIS REPRESENTATION IS FOR
+
+* Quick **human/LLM-readable** snapshot of a discovered Heuristics Net.
+* Spotting **main directional flows** (dependency-filtered edges).
+* Seeing both **strength (dependency)** and **support (frequency)** for shown relations.
+* Prompt-friendly process “skeleton” before moving to richer models (e.g., visualization, Petri net conversion).
+
+---
+
+## 7. WHAT THIS REPRESENTATION IS NOT
+
+* **Not a full model specification** (it does not encode gateways, XOR/AND splits, joins, token semantics, etc.).
+* **Not a complete edge list** (filters out dependency ≤ 0.5 and truncates after ~50 lines).
+* **Not a conformance or performance report** (no fitness, precision, bottlenecks, durations; even when PM4Py supports “performance” decoration, this particular string output prints only `frequency` plus `dependency`).
+* **Not a probabilistic transition model** (no normalized probabilities; frequencies are raw counts).
+* **Not guaranteed to be ordered by importance**.
+
+---
+
+## 8. ONE-SENTENCE CORE SUMMARY
+
+A thresholded and possibly truncated text snapshot of a PM4Py Heuristics Net: it lists activities, start/end activities, and up to ~50 directed direct-follow relations whose **dependency measure > 0.5**, each annotated with its **dependency value** and **direct-follow frequency**.
+
+[1]: https://pm4py-source.readthedocs.io/en/latest/_modules/pm4py/algo/discovery/heuristics/variants/classic.html "pm4py.algo.discovery.heuristics.variants.classic — PM4Py 2.2.32 documentation"

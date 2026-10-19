@@ -1,0 +1,151 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, governed hiring pipeline that reliably evaluates candidates from application submission through screening, checks, technical and behavioral assessments, to a single definitive outcome: Make Job Offer or Application Rejected. The IDEAL model removes redundant loops and inconsistent decision reversals observed in the AS-IS model, enforces clear sequencing and termination semantics, minimizes waiting time by parallelizing safe activities, and confines extensive checks and rework to well-defined escalation conditions.
+- Scope: Uses only activities observed in the AS-IS model (Hand In Job Application; Telephonic Screening; Screening Interview; Background Check; Extensive Background Check; Coding Interview; Frontend Interview; Backend Interview; ML Interview; Behavioral Interview; Make Job Offer; Application Rejected). No new business activities are introduced.
+
+Key stakeholders and roles (recommended for implementation)
+- The source data did not record explicit role labels. For operational deployment, the organization should map responsibilities to existing functions (e.g., Recruiter/Coordinator, Screening Team, Background-Check Team, Technical Interviewers, Hiring Committee). These role assignments are recommendations only; they do not add new activities.
+
+Start conditions and triggers
+- Start event: Candidate submits an application ("Hand In Job Application").
+- Trigger actions (automated): the application enters the hiring workflow and is queued for initial assessment (telephonic screening scheduling and automated background check initiation as outlined below).
+
+Detailed optimized process flow
+
+1. Initial screening phase (deterministic, enforced ordering)
+   - Activity: Telephonic Screening (must occur for all applications except explicit auto-reject criteria).
+     - Purpose: Quick check of basic eligibility, motivation, fit, and role-specific minimum requirements.
+     - SLA: complete or schedule within 3 business days of application.
+   - Decision after Telephonic Screening:
+     - If obvious disqualifier present (documented, objective criteria: missing mandatory qualifications, failed required authorization), go to Application Rejected (terminal).
+     - Else proceed to Screening Interview stage and concurrently initiate Background Check (basic background check).
+   - Rationale: The AS-IS allowed direct rejection from application or telephonic screening; IDEAL enforces telephonic screening as the standard gate to ensure consistent candidate experience and fewer erroneous direct rejects. Direct application rejections are permitted only when automated policy rules flag the application (e.g., automatic ineligible status).
+
+2. Parallel background-check and screening-interview orchestration (safe parallelism)
+   - Activities executed in a controlled parallel manner:
+     - Screening Interview (detailed recruiter / hiring manager interview).
+     - Background Check (basic checks: identity, eligibility, criminal/education verification as per policy).
+   - Behavior:
+     - Both tasks are initiated as soon as Telephonic Screening indicates the candidate is viable.
+     - They run in parallel where possible to reduce lead time BUT decision gating rules apply:
+       - If Background Check returns a critical fail (policy-defined), the case is rejected immediately (Application Rejected, terminal).
+       - If Background Check returns non-critical issues or flags, escalate to Extensive Background Check (see next).
+       - If Screening Interview yields strong negative fit (documented), candidate may be rejected; if pass or conditional pass, proceed.
+   - Synchronization: the process waits for both Screening Interview and Background Check results before moving to the technical assessment scheduling decision (unless a terminal reject occurs).
+
+3. Escalation to Extensive Background Check (targeted, conditional)
+   - Activity: Extensive Background Check is used only if:
+     - Basic Background Check flags concerns that require further review, or
+     - Screening Interview raises issues that require deeper verification.
+   - Decision:
+     - If Extensive Background Check confirms disqualifying issues → Application Rejected (terminal).
+     - If issues are cleared → candidate resumes the process at the technical assessment scheduling point.
+   - SLA: Extensive Background Check has a strict SLA (e.g., complete within 5 working days) and must be invoked only with documented justification to avoid unnecessary delay.
+   - Rationale: The AS-IS used Extensive Background Check frequently and with long delays. IDEAL restricts its use to necessary cases only.
+
+4. Technical assessment phase (ordered, partially parallel, role-determined)
+   - Required entry condition: candidate cleared by Screening Interview and basic Background Check (or Extensive Background Check cleared).
+   - Activities available: Coding Interview, and then role-determined technical interviews from the set {ML Interview, Frontend Interview, Backend Interview}.
+   - Sequencing rules:
+     - Coding Interview is mandatory when the role requires technical coding skills (as per job profile). For roles that do not require coding, this step is skipped by rule, not by ad hoc omission.
+     - After Coding Interview, the role-specific set of deeper technical interviews (ML, Frontend, Backend) is executed.
+   - Parallelism and synchronization:
+     - The set of deeper technical interviews may be scheduled in parallel to reduce elapsed time but only when:
+       - Interviewer availability and candidate time slot permit.
+       - The job profile requires multiple specialist interviews (documented list).
+     - Parallel execution is controlled: all required technical interviews must complete and produce documented outcomes before proceeding to Behavioral Interview. The process includes synchronization (join) after technical interviews to aggregate outcomes for final decision.
+   - Rework policy:
+     - Repeating the same technical interview is allowed only when a formal remediation plan is enacted (e.g., candidate failed but is allowed re-assessment after specific remediation). Such re-assessment must be documented and approved by the hiring committee; arbitrary repetition is disallowed.
+   - Rationale: AS-IS allowed many ad hoc permutations and repeated technical rounds. IDEAL enforces deterministic selection of required technical interviews by role and permits parallel scheduling to improve cycle time while preventing uncontrolled rework.
+
+5. Behavioral Interview (single final competency check)
+   - Activity: Behavioral Interview is performed once as the final human-assessment step, after technical interviews complete and background checks are cleared.
+   - Purpose: Evaluate cultural fit, communication, and soft skills necessary for the role.
+   - Repetition policy: Behavioral Interview should not loop/repeat. A single behavioral interview is the standard; any repeat requires explicit approval and documented reason (e.g., scheduling conflict that prevented evaluation).
+   - Decision outcomes:
+     - If Behavioral Interview passes and aggregated technical/background outcomes are positive → proceed to Make Job Offer.
+     - If Behavioral Interview fails → Application Rejected (terminal). If Behavioral Interview raises concerns that may be remediable, candidate may be routed to a documented remediation/re-evaluation policy (rare, exceptional, documented).
+
+6. Offer and rejection handling (definitive outcomes, no redundancy)
+   - Make Job Offer:
+     - Single definitive "Make Job Offer" action per case. Offer issuance may include subsequent administrative updates but must not be logged as repeated "Make Job Offer" events for the same decision (i.e., no repeated offer loop).
+     - Offer modifications (if required) must follow a formal offer amendment process (not represented as repeated 'Make Job Offer' events in the hiring workflow).
+   - Application Rejected:
+     - Terminal outcome; once a case is marked Application Rejected, the process instance is closed and cannot be re-opened in the same instance. Any reconsideration requires a new application instance or documented exception workflow outside the normal pipeline.
+   - Rationale: The AS-IS model permitted repeated offers and post-rejection activity; IDEAL enforces single final outcomes to avoid confusion and rework.
+
+Decision points with clear criteria (summary)
+- Gate 1 (post-application): Telephonic Screening vs. direct reject
+  - Criteria to reject directly: automated policy rules (e.g., ineligible by law, missing mandatory qualification) — otherwise Telephonic Screening is mandatory.
+- Gate 2 (post-telephonic): proceed-to-Screening+Background vs. Application Rejected
+  - Criteria: Telephonic Screening assessment (pass/conditional/pass-with-criteria) and automated eligibility checks.
+- Gate 3 (Background Check result):
+  - If clear → proceed.
+  - If non-critical flags → escalate to Extensive Background Check.
+  - If critical fail → Application Rejected (terminal).
+- Gate 4 (technical assessment scheduling):
+  - Determined by job profile: which technical interviews are required after Coding Interview (if applicable). All required technical interviews must complete.
+- Gate 5 (post-technical & behavioral):
+  - Aggregated decision by hiring committee: Offer if majority of required evaluations pass and background checks clear; otherwise reject.
+
+Parallel activities and synchronization points
+- Parallelism enabled:
+  - Background Check and Screening Interview run in parallel after Telephonic Screening.
+  - Required technical interviews (ML/Frontend/Backend) may be scheduled in parallel after Coding Interview if the role requires multiple assessments, subject to synchronization.
+- Synchronizations:
+  - Before moving to final Behavioral Interview, all required technical interviews must be complete and results aggregated.
+  - Before final decision, Background Check (including any Extensive Background Check) and all interview outcomes are synchronized.
+
+Streamlined exception handling
+- Rejection is terminal: no further interviews or offers for that process instance.
+- Extensive Background Check invoked only with documented cause and within SLA; results determine terminal rejection or continuation.
+- Any candidate re-evaluation after rejection must be a new instance or go through a formal exception process outside the standard pipeline (not part of regular flow).
+- Reassessments (technical or behavioral) allowed only via documented remediation/appeal with approval and explicit re-evaluation plan.
+
+End conditions and outcomes
+- Make Job Offer (terminal, single definitive event).
+- Application Rejected (terminal).
+- Process instance completion: occurs immediately after terminal event (offer or rejection). Administrative closure tasks are performed but do not alter the outcome.
+
+Expected process metrics and performance improvements
+- Target improvements compared to AS-IS:
+  - Median time from Hand In Job Application to final outcome: reduce by 40–60% via enforced parallel background checks and technical interview scheduling and by eliminating rework loops.
+  - Telephonic Screening completion SLA: <= 3 business days (was highly variable in AS-IS).
+  - Background Check median completion: reduce via parallel initiation; expected reduction of 30–50% in wait time for cases not requiring Extensive Background Check.
+  - Extensive Background Check frequency: reduce significantly (target < 10% of cases) by strict escalation criteria; for those that require it, impose SLA (e.g., <= 5 business days).
+  - Number of repeated Behavioral Interview events: targeted reduction from observed multi-occurrence down to near-zero (allowed only by exception).
+  - Offer issuance duplication: eliminated; single consolidated Make Job Offer per case.
+  - Reduction in inconsistent reversals: Application Rejected re-openings reduced to near-zero by enforcing terminal marking and formal exception procedures.
+- Outcome quality:
+  - Improved candidate experience due to predictable sequencing and SLAs.
+  - Fewer long-tail traces and fewer very long-duration cases due to constrained extensive checks and stricter rework governance.
+
+Key improvements made compared to the AS-IS model
+- Enforced deterministic sequencing:
+  - Telephonic Screening becomes the standardized gate, avoiding ad hoc direct rejections and ensuring consistent initial assessment.
+- Targeted parallelism:
+  - Background Check and Screening Interview run in parallel to reduce cycle time while preserving decision safety via critical-fail rules and synchronization.
+- Controlled technical assessment orchestration:
+  - Role-determined required technical interviews (Coding → role-specific set) eliminate uncontrolled permutations and repeated ad hoc rounds; parallel scheduling used judiciously to shorten lead time.
+- Eliminated redundant and uncontrolled loops:
+  - No repeated Behavioral Interview or Make Job Offer loops in normal flow; re-assessments permitted only via documented exception.
+- Strict terminal semantics:
+  - Application Rejected is terminal; prevents the observed AS-IS pattern of rejection followed by additional interviews or offers.
+- Reduced and disciplined use of Extensive Background Check:
+  - Escalation only on documented justification and with SLA, reducing the number of cases subjected to long-duration checks.
+- Formalized SLAs and decision criteria:
+  - Clear timelines and pass/fail criteria reduce ambiguity and waiting times observed in AS-IS.
+- Aggregated decision synchronization:
+  - All technical and background inputs are combined before the Behavioral Interview and final decision, reducing conflicting, out-of-order decisions and rework.
+
+Implementation/conformance notes
+- Do not introduce new activities; map existing activities to the improved flow.
+- For trace validation:
+  - Permissible deviations in IDEAL are controlled exceptions (documented remediation or formal appeals). Otherwise, traces that show repeated offers, mid-trace rejects followed by interviews, or uncontrolled repeated technical rounds should be considered non-conforming and remediated.
+- Data and tooling:
+  - Implement automated gating and status locking in the applicant tracking system to enforce terminal outcomes, SLAs, and parallel task orchestration.
+  - Add logging flags to record whether Extensive Background Check was invoked and why (for auditability).
+
+Summary
+- The IDEAL Process Model retains all AS-IS activities but reorganizes them to be deterministic, efficient, and auditable: mandatory Telephonic Screening, parallelized Background Check with clear critical-fail rules, role-driven technical interview requirements with controlled parallelism, a single Behavioral Interview, and terminal outcomes (no ad hoc re-openings or repeated offers). These changes eliminate wasteful rework loops, reduce long waits, remove ambiguous decision behavior, and deliver predictable SLAs and improved candidate experience while preserving the hiring function’s core assessment steps.

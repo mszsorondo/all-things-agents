@@ -1,0 +1,79 @@
+### AS-IS Process Model
+
+#### Process Overview and Purpose
+The AS-IS process model represents the observed behavior of a patient admission, examination, diagnosis, treatment, and discharge workflow in a hospital setting, likely an Emergency Room (ER) or Fire Department (FD) integrated system. Derived from a Petri net discovered by the inductive miner, directly-follows graph (DFG), and abstract process variants from event logs. The process handles patient registration at ER or FD, optional and variable examination steps, diagnosis, iterative treatment with potential rework loops due to unsuccessful outcomes, and eventual discharge. It captures real-world deviations such as skipping examinations, direct discharges without formal success confirmation, and multiple treatment failure loops, leading to variable cycle times and inefficiencies. Total observed variants suggest around 20,000+ cases, with average performance times between 240,000 to 800,000+ ms per trace, dominated by ~60,000 ms between diagnosis/treatment steps.
+
+#### Key Stakeholders and Roles Involved
+Roles are not explicitly specified in the input models. Activities are performed by undifferentiated medical staff (e.g., receptionists for registration, nurses/doctors for examinations, treatments).
+
+#### Detailed Step-by-Step Process Flow
+- **Start Conditions and Triggers**: Process triggered by patient arrival at ER or FD (initial marking at 'source' place with 1 token).
+  
+- **Registration (XOR Gateway)**:
+  1. 'Register at ER' (freq ~50% of starts, e.g., 2866+1826+... direct follows) → leads to post-registration place (p_3).
+  2. OR 'Register at FD' (similar freq) → p_3.
+  
+- **Initial Examination Phase (Inclusive Gateway at p_3, allowing skips)**:
+  - From p_3 (post-registration):
+    | Option | Activity | Next Place | Frequency Insight |
+    |--------|----------|------------|------------------|
+    | 1      | 'Examination' | p_4       | High (e.g., 1968→Thorough, 1641→Diagnosis) |
+    | 2      | 'Expert Examination' | p_4 | High (3637→Thorough, 2117→Diagnosis) |
+    | 3      | Silent skip_1 | p_4       | Abstracts direct paths to Thorough/Diagnosis |
+
+- **Thorough Examination Phase (Inclusive Gateway at p_4)**:
+  - From p_4:
+    | Option | Activity | Next Place |
+    |--------|----------|------------|
+    | 1      | 'Thorough Examination' | p_5 |
+    | 2      | Silent skip_2 | p_5 |
+
+- **Entry to Diagnosis/Treatment Loop (from p_5)**:
+  - Silent init_loop_3 → p_7 (abstracts transition to first Diagnosis).
+
+- **Diagnosis** (from p_7 → p_9, perf ~60s):
+  - 'Diagnosis' → p_9 (universal predecessor to Treatment, freq 11746→Treatment).
+
+- **Treatment** (from p_9 → p_8, perf ~60s):
+  - 'Treatment' → p_8.
+
+- **Treatment Outcome and Rework Loop (Inclusive Gateway at p_8)**:
+  - **Loop Back (Rework)**: 'Treatment unsuccessful' (freq 1746→Diagnosis, perf ~60s, perf to next ~40s) → p_7 → back to Diagnosis. Multiple loops observed (up to 3+ in rare variants, e.g., freq 42 with triple loop).
+  - **Progress to Success/End (Skips)**:
+    | Option | Activity/Skip | Next |
+    |--------|---------------|------|
+    | 1      | skip_5       | p_6 |
+    | From p_6: | 'Treatment successful' (freq 9005→Discharge, perf ~60s) → p_11 <br> OR skip_6 → p_11 |
+
+- **Discharge** (Synchronization at p_11 → sink):
+  - 'Discharge' → final marking 'sink' (perf ~40s from success).
+  - Note: Variants show direct 'Treatment → Discharge' (freq 995), modeled via skip_5 + skip_6 bypassing outcome checks.
+
+- **Decision Points**:
+  | Gateway | Type | Criteria/Outcomes |
+  |---------|------|-------------------|
+  | Registration | XOR | ER vs FD based on arrival location. |
+  | Initial Exam | Inclusive | Normal Exam, Expert (severe?), or skip (minor cases). |
+  | Thorough Exam | Inclusive | Perform or skip. |
+  | Treatment Outcome | Inclusive | Unsuccessful → rework loop to Diagnosis; Successful/skip → Discharge path. |
+
+- **Parallel Activities and Synchronization**: No explicit parallels; all sequential with choices/skips.
+- **Exception Handling and Error Paths**: Unsuccessful treatment loops back (no escalation observed). Rare deep loops (e.g., 3x failure) indicate poor exception handling.
+- **Rework Loops**: Unlimited Diagnosis-Treatment-unsuccessful loops (avg 1-2, max 3+), causing long traces (up to 800k ms).
+- **End Conditions and Outcomes**:
+  - Positive: Discharge after success (most common, ~80% first-try success).
+  - Anomalous: Discharge post-Treatment without success (1-5% variants).
+
+#### Process Metrics and Performance Characteristics
+- Total variants: 30+ abstracted, covering ~20k cases (sum frequencies).
+- Avg throughput time: 260k-320k ms for straight paths; 480k+ ms with 1 loop; 640k+ with 2 loops.
+- Bottlenecks: Treatment-Diagnosis loop (60k ms/step), exam sequences (40-80k ms).
+- Compliance: ~77% straight success (top 8 variants); 15% 1-loop; 5% direct discharge; 3% multi-loop.
+
+#### Key Challenges and Pain Points
+- Variability in examination paths (3+ options post-registration) leads to inconsistency.
+- Unlimited rework loops on unsuccessful treatment cause delays (e.g., 640k+ ms traces).
+- Skips allow bypassing outcome checks (Treatment → Discharge), risking premature discharge.
+- Dual registration (ER/FD) without clear routing.
+- Low-freq anomalies (e.g., Register → Diagnosis direct) indicate data noise or shortcuts.
+- No escalation for repeated failures; potential patient safety risks.

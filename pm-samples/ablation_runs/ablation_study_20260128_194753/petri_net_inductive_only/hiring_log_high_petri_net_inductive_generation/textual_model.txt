@@ -1,0 +1,260 @@
+write_AS_IS_comprehensive_textual_description("""AS-IS Process Model
+
+Process overview and purpose
+- Purpose: This process model represents the observed recruitment/hiring workflow discovered from the Petri-net (Inductive Miner) model. It captures how job applications move from submission through multiple screening and interview stages, background checks and final disposition (hire or rejection) in the observed data.
+- Scope: From candidate submission (“Hand In Job Application”) to final decision (“Make Job Offer” or “Application Rejected”). The discovered model shows multiple optional stages, parallel interview branches, duplicated/optional background checks, and several silent-control constructs (skips, splits, joins, and loop-like constructs) that produce variability and rework.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source Petri net. The net contains only activity labels. Because no actors or departments were provided, role assignments are omitted (do not invent roles). Activities should be interpreted as logical steps that would be performed by recruiting/hiring stakeholders (recruiter, hiring manager, technical interviewers, background-screening provider) in an implementation, but this AS-IS description will not assign specific responsibilities.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start trigger: A candidate submits an application (transition: "Hand In Job Application"). This is the explicit initial visible transition in the discovered model (initial marking at source → Hand In Job Application).
+
+Primary sequence of activities (visible transitions observed)
+1. Hand In Job Application
+   - After submission, the flow moves to a place that enables either:
+     - Telephonic Screening (visible); or
+     - Skipping the telephonic screen (silent skip path). The process allows the telephonic screening to be optional.
+
+2. Telephonic Screening (optional)
+   - If taken, Telephonic Screening leads to a branching point where:
+     - it can trigger a parallel split into Screening Interview and Background Check; or
+     - it can be skipped and the flow moves forward via silent transitions to later stages.
+
+3. Screening Interview and Background Check (parallel / optional)
+   - Observed behavior: The model shows a parallel split where Screening Interview and Background Check can be executed concurrently (tauSplit_4 produces two tokens: one enabling Screening Interview, the other enabling Background Check).
+   - Background Check and Screening Interview each complete and feed into a join (tauJoin_5) before subsequent steps.
+   - There are also skip transitions that allow bypassing these activities entirely in some traces.
+
+4. Extensive Background Check (optional)
+   - After the join following Screening Interview / Background Check there is a (possibly optional) Extensive Background Check. This is modeled as a distinct transition following the join place.
+   - The Extensive Background Check may be skipped via silent transitions in some traces.
+
+5. Coding Interview (visible)
+   - After the previous checks, the flow proceeds to a Coding Interview. The Coding Interview itself may be optionally skipped in observed traces.
+
+6. Specialized Technical Interviews (ML, Backend, Frontend) — conditional parallelism
+   - Observed structure: From post-Coding Interview place the model allows either:
+     - a direct skip forward (bypass the specialized interviews); or
+     - a parallel split into multiple specialized interviews (ML Interview, Backend Interview, Frontend Interview) that can run concurrently (tauSplit_9).
+   - Each specialized interview produces a token that is later synchronized at a join (tauJoin_10). That join collects the outcomes before moving forward.
+
+7. Post-technical decision split (multiple paths, loop constructs)
+   - After synchronization (tauJoin_10) the process reaches another silent split (tauSplit_14) that branches into two logical strands that control final evaluation and potential looping:
+     - One branch may activate constructs that lead to Application Rejected (through an init_loop-like structure that ends at Application Rejected).
+     - The other branch goes towards behavioral evaluation and eventual offer. Many of these branches contain silent "init_loop" nodes indicating allowed re-evaluation loops or repeated checks in the observed runs.
+
+8. Behavioral Interview (optional / downstream of post-technical checks)
+   - The Behavioral Interview occurs on the branch that continues toward offer; the model shows p_28 -> Behavioral Interview -> p_29. After Behavioral Interview there are silent transitions that route to next stages (p_27 -> init_loop_27 -> p_31 etc.), indicating optional re-runs or handoffs.
+
+9. Make Job Offer or Reject
+   - Make Job Offer is observed as a final visible transition. Following the Make Job Offer transition, the model goes through silent transitions to the final join (tauJoin_15) and then reaches the final sink (process completion).
+   - Application Rejected is another visible final transition that may be reached from earlier branches (the net explicitly contains "Application Rejected"). Rejection is reachable from loop/init constructs earlier in the flow.
+
+Decision points with criteria and possible outcomes (inferred from model structure)
+- Telephonic Screening decision
+  - Criteria (inferred): screening outcome or recruiter decision; possible outcomes:
+    - Proceed to Screening Interview + Background Check (both may be executed).
+    - Skip telephonic screening and proceed downstream.
+
+- Post-Screening decision / background checks
+  - Criteria: results of Screening Interview and Background Check.
+  - Outcomes:
+    - Proceed to Extensive Background Check (if triggered).
+    - Skip Extensive Background Check and proceed to Coding Interview.
+
+- Coding Interview decision
+  - Criteria: candidate performance on coding task.
+  - Outcomes:
+    - Proceed to specialized interviews (one or multiple Technical tracks: ML, Backend, Frontend). These may occur in parallel.
+    - Skip specialized interviews (some traces show bypass).
+
+- Specialized Interview synchronization
+  - Criteria: completion of required specialized interviews (could be all three or a subset).
+  - Outcomes:
+    - Proceed to post-technical evaluation branch that either leads to rejection or to further behavioral assessment and offer.
+
+- Final decision (Offer vs Reject)
+  - Criteria: aggregate outcomes of technical, behavioral and background checks (inferred).
+  - Outcomes:
+    - Make Job Offer (final visible transition).
+    - Application Rejected (final visible transition).
+
+Parallel activities and synchronization points
+- Parallel split: Telephonic Screening → Screening Interview + Background Check (tauSplit_4).
+- Synchronization: Screening Interview and Background Check join at tauJoin_5 before Extensive Background Check.
+- Parallel split: Post-Coding → ML, Backend, Frontend (tauSplit_9).
+- Synchronization: ML, Backend, Frontend join at tauJoin_10 before subsequent decision split.
+- Final synchronization: branches rejoin before final sink via tauJoin_15 (collects tokens from paths that either produce offer or lead through alternative skips).
+
+Exception handling, error paths, and rework loops
+- Application Rejected is an explicit visible transition reachable via an "init_loop" style path (init_loop_17 → p_22 → Application Rejected). This indicates early rejection may occur after some checks.
+- The presence of multiple "init_loop" silent transitions (init_loop_17, init_loop_22, init_loop_27) suggests observed re-evaluation loops or iterations (e.g., re-interviews, re-checks, or repeated screens) in the AS-IS behavior.
+- Many skip_* silent transitions indicate allowed bypassing of activities; these create high variability and potentially inconsistently enforced steps (e.g., bypassing telephonic screening, skipping specialized interviews, skipping background checks).
+- Silent transitions are also used to route tokens across branches; they obscure the precise decision logic and create opportunities for inconsistent handling.
+
+End conditions and outcomes
+- Successful end state: A candidate receives a job offer (Make Job Offer) and then the flow completes through silent transitions into the final sink (completed hire).
+- Terminal rejection: Application Rejected transition leads to termination for that token (candidate).
+- The Petri net guarantees completion (final marking sink:1) for observed traces, but there are multiple ways to arrive at the sink (via offer or via paths that lead to the final join after silent transitions).
+
+Process metrics and performance characteristics (inferred)
+- High branching factor: Many optional steps and parallel branches produce high variability in execution paths (high path cardinality).
+- Parallelism: Multiple interviews can be run concurrently which can reduce elapsed interview time but introduces coordination/synchronization overhead at joins (tauJoin_5, tauJoin_10).
+- Variability and rework: The presence of several init_loop and skip constructs indicates frequent rework or repeated evaluations; this likely increases cycle time and unpredictability.
+- Bottlenecks (likely):
+  - Synchronization points (tauJoin_10 and tauJoin_15) where multiple parallel outcomes must be aggregated before moving forward.
+  - Background/Extensive Background Check stages which appear in multiple places (duplicate or repeated checks).
+- Compliance/Reliability issues:
+  - Optional skipping of important checks (telephonic, background, coding) points to inconsistent policy enforcement.
+  - Silent control structures conceal decision criteria which could cause auditability gaps.
+
+Key challenges and pain points (AS-IS)
+- High variability: Many skip paths allow bypassing critical evaluations; inconsistent candidate experience and unpredictable quality of selection.
+- Complex control flow: Multiple parallel splits and joins with silent transitions make the process hard to understand, monitor and govern.
+- Repeated/duplicated checks: Background checks appear in parallel and as "Extensive Background Check" later — potential duplication of effort and cost.
+- Rework loops: init_loop constructs imply repeated iterations that prolong cycle time and distort throughput metrics.
+- Lack of explicit decision criteria: The model shows where decisions occur but does not capture explicit pass/fail criteria, making process compliance and transparency weak.
+- Coordination overhead: Parallel specialized interviews require synchronization; coordination failures may cause waiting or unnecessary repetition.
+- Auditability: Silent transitions and skip nodes hide business rules and routing, making auditing and process conformance difficult.
+
+Summary (AS-IS)
+- The observed hiring process supports a wide set of variations: optional telephonic screening, parallel screening and background checks, optional extensive background checks, an initial coding interview that can spawn parallel specialized interviews (ML, Backend, Frontend), and multiple silent loops and skips that enable rework and bypasses. Outcomes are either Make Job Offer or Application Rejected. The net is sound (completes), but operationally the process exhibits high variability, duplicated checks, potential bottlenecks at synchronization points, and limited governance/clarity around decision criteria.
+""")
+
+write_IDEAL_comprehensive_textual_description("""IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A cleaned, governed and efficient target (to-be) recruitment process derived from the observed AS-IS Petri-net. The IDEAL model preserves the same visible activities (no inventing new activities) but standardizes ordering, removes redundant/duplicative steps, collapses unnecessary variability, and enforces clear decision gates and SLAs to improve cycle time, predictability and auditability.
+- Scope: From candidate submission ("Hand In Job Application") through required screening, interviews, background checks, to a single clear final decision (Make Job Offer or Application Rejected).
+
+Key stakeholders and roles involved
+- Roles are not specified in the source model and are therefore not assigned in this IDEAL description. When implementing, typical role responsibilities (recruiter, hiring manager, technical interviewer, background-check vendor) should be explicitly assigned, but they are not invented here.
+
+Detailed step-by-step process flow (IDEALized)
+
+Start conditions and triggers
+- Start trigger: Candidate submits application ("Hand In Job Application"). This must always create a process instance that follows the prescribed sequence (no silent bypass of the first mandatory steps).
+
+Step-by-step process activities and order (enforced)
+1. Initial Triage: Telephonic Screening (MANDATORY)
+   - Immediately after application, the candidate undergoes a telephonic screening to verify minimum fit and availability.
+   - Decision after telephonic screening:
+     - If candidate fails minimum triage → Application Rejected (explicit gate).
+     - If candidate passes → proceed to parallel Screening Interview + Background Check.
+   - Rationale: Making telephonic screening mandatory reduces variability observed in AS-IS where telephonic screening was often skipped.
+
+2. Parallel Stage 1 (execute concurrently but with enforced rules)
+   - Activities executed in parallel (to shorten elapsed time), but both are mandatory for progression:
+     a. Screening Interview (technical/recruitment screening)
+     b. Background Check (base-level check)
+   - Synchronization: Both branches must report an outcome. A standard data artifact (recorded pass/fail/status) must be produced for each branch for auditability.
+
+3. Gate: Post-Stage-1 Decision (explicit)
+   - Criteria:
+     - If Screening Interview pass AND Background Check pass → proceed to Coding Interview.
+     - If fail in either → Application Rejected (explicit, logged).
+   - No silent skips are allowed here. This removes AS-IS silent bypasses and ensures consistent quality before investing in technical interviews.
+
+4. Coding Interview (MANDATORY)
+   - Candidate must complete the Coding Interview.
+   - Decision:
+     - If candidate fails coding → Application Rejected or candidate may be recommended for a different role (recorded decision).
+     - If passes → proceed to conditional specialized technical interviews.
+
+5. Specialized Technical Interviews (ML / Backend / Frontend) — conditional and selection-based (not blind parallelism)
+   - Rule: Instead of running all three by default or allowing silent skips, the hiring team selects only the relevant specialized interview(s) based on the role applied for and the Coding Interview outcome.
+   - Execution mode:
+     - If multiple specializations are required by the role, those interviews can run in parallel to reduce calendar time; otherwise, only the selected interview(s) are executed.
+   - Synchronization: A clear join point collects results; the joint decision is based on documented pass/fail criteria for each required specialization.
+
+6. Gate: Technical Evaluation Decision (explicit)
+   - Aggregate results from the Coding Interview and required specialized interviews.
+   - Outcomes:
+     - If pass → proceed to Behavioral Interview.
+     - If fail → Application Rejected (with feedback logged).
+
+7. Behavioral Interview (MANDATORY for candidates who pass technical evaluation)
+   - Purpose: Evaluate team fit, communication, and soft skills.
+   - Decision:
+     - If pass → proceed to final background/offer preparation.
+     - If fail → Application Rejected (document reason).
+
+8. Final Background Check (Extensive Background Check — CONDITIONAL)
+   - Rule: Extensive Background Check is required only for candidates who have cleared prior gates and are moving to offer (not executed earlier in all cases).
+   - If an earlier Background Check indicated issues that require escalation, the Extensive Background Check is triggered; otherwise, it can be a single consolidated background verification step to avoid duplication.
+   - Decision:
+     - If background check clears → proceed to Make Job Offer.
+     - If not → Application Rejected or case escalated and reviewed by hiring leadership.
+
+9. Make Job Offer (final visible transition)
+   - After the final background clearance and hiring approvals, the offer is made.
+   - Post-offer: process completes at the sink (final marking). All decisions and supporting evidence (interview notes, background results, approvals) are recorded for audit.
+
+Decision points with criteria and possible outcomes (explicit in IDEAL)
+- Telephonic Screening Gate: pass/fail criteria (availability, minimum skills).
+- Post-Stage-1 Gate: screening + base background clearance required.
+- Coding/Technical Gate: documented passing thresholds (score/rubric).
+- Behavioral Gate: pass/fail based on interview rubric.
+- Extensive Background Gate: pass/fail or escalation to HR/legal if issues arise.
+- Final decision: Offer or Rejection, with explicit recorded rationale for traceability.
+
+Parallel activities and synchronization (controlled)
+- Parallelism is preserved only where it reduces overall cycle time without introducing uncontrolled variability:
+  - Screening Interview and Background Check may run concurrently but both must complete before the coding interview.
+  - Specialized technical interviews may run in parallel only when required by the role; selection rules prevent unnecessary parallelism and overtesting.
+- Synchronization points are explicit and produce documented outcomes (no silent joins).
+
+Exception handling, error paths, rework and escalation (cleaned)
+- Rework minimized and controlled:
+  - Re-interviews are allowed only if the hiring manager documents justification and the reason is tracked (no silent loops).
+  - Explicit escalation path to hiring leadership and HR when background checks raise issues (no implicit or silent loopbacks).
+- Rejection pathways are explicit and recorded with reason codes at each gate.
+- If technical issues (e.g., failed background checks due to data) occur, a defined remediation/appeal window is provided and logged; repeated silent re-evaluation loops are removed.
+
+End conditions and outcomes
+- Two explicit end states:
+  - Offer extended (Make Job Offer) → process completes with audit trail.
+  - Application Rejected → process completes with rejection reason recorded.
+- All process instances end at these defined states; silent transitions that hid end logic are eliminated.
+
+Process metrics and performance characteristics (target)
+- Predictability:
+  - Define a small set of canonical paths (e.g., standard path: Telephonic → Screening + Background → Coding → Specialized (as needed) → Behavioral → Extensive Background → Offer).
+  - Reduce number of observable variants dramatically relative to AS-IS.
+- Target SLAs:
+  - Telephonic Screening: within 3 business days of application.
+  - Screening + Background: complete within 5 business days.
+  - Coding Interview: scheduled within 7 business days post-telephonic screen.
+  - Final decision (offer/reject): within 3 business days after Behavioral interview and background clearance.
+- Throughput and cycle time:
+  - By removing duplicated checks and controlling rework, expected end-to-end median cycle time should decrease.
+- Bottleneck mitigation:
+  - Explicit ownership of synchronization points; use an orchestration mechanism (e.g., an applicant-tracking-system enforcement) to ensure timely merges and avoid waiting caused by missing inputs.
+
+Key improvements made (IDEAL vs AS-IS)
+- Removal of uncontrolled skips: Telephonic screening and early gates are mandatory to ensure consistent quality control.
+- Consolidation of background checks: Replace ad-hoc duplicated checks with a single base background check early and an Extensive Background Check only for offer-stage candidates or escalations.
+- Controlled parallelism: Limit parallel interviews to required ones and make synchronization explicit and auditable to reduce coordination overhead and rework.
+- Elimination of silent rework loops: Replace init_loop-style silent repetition with documented re-evaluation procedures and escalation rules.
+- Explicit decision criteria and logging: Each gate has documented pass/fail rules and reason codes to enable audit and reduce ad-hoc bypasses.
+- SLA-driven orchestration: Enforce timeboxes and owners for each stage to reduce waiting times and variance.
+
+Implementation guidance (non-invasive, preserves visible activities)
+- Do not invent new visible activities; reorder and make mandatory/conditional the existing ones:
+  - Keep all visible transitions from the source (Telephonic Screening, Screening Interview, Background Check, Extensive Background Check, Coding Interview, ML Interview, Backend Interview, Frontend Interview, Behavioral Interview, Make Job Offer, Application Rejected).
+  - Ensure silent transitions used in AS-IS for skipping or looping are replaced by explicit decision gateways with conditions and documentation.
+- Use an orchestration tool or applicant tracking configuration to enforce gate rules, capture outcomes and produce a single audit trail.
+- Define templates for interview rubrics and background check criteria so joins and decisions are deterministic and auditable.
+
+Summary (IDEAL)
+- The IDEAL model enforces a predictable, auditable hiring process that retains all visible activities from the discovered model but:
+  - removes uncontrolled skipping and silent loops,
+  - consolidates and sequences background checks sensibly,
+  - controls parallelism to reduce coordination overhead,
+  - enforces explicit gates with pass/fail criteria and SLAs,
+  - and ensures every process instance terminates at a clearly documented offer or rejection state.
+- Expected benefits: lower cycle time, higher quality/hiring consistency, improved auditability and reduced hidden rework and duplication relative to the AS-IS model.
+""")

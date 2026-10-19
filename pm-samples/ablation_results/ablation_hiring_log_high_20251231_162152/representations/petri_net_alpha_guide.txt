@@ -1,0 +1,47 @@
+=== PETRI NET (ALPHA MINER) INTERPRETATION GUIDE ===
+
+The Alpha Miner is the foundational process discovery algorithm that constructs Petri nets based on ordering relations in the event log.
+
+1. ORDERING RELATIONS USED:
+   - Direct succession (>): Activity A directly followed by B in some trace
+   - Causality (->): A causes B (A > B and not B > A)
+   - Parallelism (||): A and B can occur in any order (A > B and B > A)
+   - Choice (#): A and B never directly follow each other
+
+2. CONSTRUCTION ALGORITHM:
+   - Identifies start activities (first in traces)
+   - Identifies end activities (last in traces)
+   - Discovers causal relationships between activities
+   - Creates places for each maximal set of causally related activities
+   - Connects places and transitions via arcs
+
+3. STRENGTHS:
+   - Simple and interpretable algorithm
+   - Produces sound workflow nets when log is complete
+   - Good for discovering well-structured processes
+   - Fast execution time
+
+4. LIMITATIONS:
+   - Cannot handle loops of length 1 (self-loops)
+   - Cannot handle loops of length 2 (A->B->A)
+   - Sensitive to noise in event logs
+   - May produce disconnected or incorrect nets for complex logs
+   - Assumes complete event logs
+
+5. INTERPRETING ALPHA MINER OUTPUT:
+   - Each visible transition corresponds to an activity
+   - Places represent the "state" between activities
+   - XOR-splits: One place with multiple output transitions
+   - AND-splits: One transition with multiple output places
+   - Implicit places may be missing (not all dependencies captured)
+
+6. WHEN TO USE:
+   - Educational purposes to understand process mining basics
+   - Simple, well-structured processes without noise
+   - When you need fast initial discovery
+   - Logs with clear sequential and parallel patterns
+
+7. COMPARISON WITH INDUCTIVE MINER:
+   - Alpha: Directly from ordering relations, may produce unsound nets
+   - Inductive: Block-structured decomposition, always sound
+   - Alpha is simpler but less robust to real-world logs

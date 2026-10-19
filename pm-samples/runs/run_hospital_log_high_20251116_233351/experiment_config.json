@@ -1,0 +1,27 @@
+{
+  "run_timestamp": "2025-11-16T23:33:51.170327",
+  "dataset_name": "hospital_log_high",
+  "xes_path": "benchmark/hospital/hospital_log_high.xes",
+  "model": "anthropic:claude-sonnet-4-5",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_11, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (2a6be279-cadd-4b00-8a3b-cef7df33aa5c, 'Register at FD'), (3780e5a8-e6b1-453b-b0cc-545fd8cc853e, 'Diagnosis'), (38e944d0-a272-4115-99d9-76a5048e78fb, 'Expert Examination'), (49e62df2-a783-426f-9196-9cd4eef6b1e5, 'Discharge'), (8f3f4560-c1c2-485c-94f9-4c2e4142ee07, 'Thorough Examination'), (97f10e3b-8656-4bf4-8def-49c395eb5edf, 'Register at ER')...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "anthropic:claude-sonnet-4-5",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

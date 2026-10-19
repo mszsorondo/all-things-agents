@@ -1,0 +1,247 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end handling of a credit/loan request from initial appointment request through underwriting and final outcome (approval with agreement signing, or denial/rejection).
+- Source model: Interpreted from a Petri net discovered by an ILP miner with perfect fitness to the observed event log. Activity labels preserved as in the source (including typos), e.g., "Hand In Credit Appliaction", "Make Visit to Assess Colatteral", "skipped_examination".
+
+Key stakeholders and roles involved
+- Borrower/Applicant (explicitly referenced in "Verify Borrowers Information" and implied in "Sign Loan Agreement").
+- Co-Signer (explicitly referenced in "Request Co-Signer On Loan").
+- Underwriter (explicitly referenced in "Submit File to Underwriter").
+- Note: Other activities are present but their responsible roles are not explicitly named in the source; therefore, no additional roles are assigned.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Trigger: A prospective borrower initiates the process by performing "Request Appointment".
+
+1) Request Appointment
+- Activity: "Request Appointment".
+- Outcome: Leads to an appointment decision.
+
+2) Exclusive decision: Appointment outcome
+- Criteria: Based on scheduling/eligibility at the appointment stage (criteria not specified in the source).
+- Paths:
+  a) "Appointment Denied" (early termination)
+     - Activity: "Appointment Denied".
+     - End handling: Routes to process completion; no further processing.
+  b) "Set Appointment" (proceed)
+     - Activity: "Set Appointment".
+     - Next step: Borrower provides application.
+
+3) Hand In Credit Appliaction (sic)
+- Activity: "Hand In Credit Appliaction".
+- Outcome: Application is now on file; moves to verification.
+
+4) Verify Borrowers Information
+- Activity: "Verify Borrowers Information".
+- Control effect (parallel enablement): Upon completion, three preconditions are marked available simultaneously (modeled as tokens placed in three internal conditions). This makes the following immediately possible:
+  - Optional, repeatable activities:
+    • "Make Visit to Assess Colatteral" (can occur any number of times, in any order relative to the co-signer request).
+    • "Request Co-Signer On Loan" (can occur any number of times, potentially zero).
+  - And one of three mutually exclusive next-stage outcomes (described below).
+
+5) Optional rework loops available after verification (can execute zero or more times, in any order)
+- "Make Visit to Assess Colatteral" (sic)
+  - Semantics: A visit to assess collateral may be performed and can be repeated; the model allows it to loop without limiting the number of iterations. Each execution returns the process to the same readiness state (i.e., does not force progression).
+- "Request Co-Signer On Loan"
+  - Semantics: A co-signer may be requested; this may also repeat any number of times before moving on. Each execution returns the process to the same readiness state.
+
+6) Exclusive decision with synchronization: choose exactly one path to progress
+- The model requires the synchronization of previously enabled conditions (internally joined) and then one of the following mutually exclusive transitions fires:
+  a) "Application Rejected" (post-verification early rejection)
+     - Activity: "Application Rejected".
+     - Outcome: Routes to process completion; no underwriting outcome is produced.
+  b) "Submit File to Underwriter"
+     - Activity: "Submit File to Underwriter".
+     - Outcome: Moves the case to the underwriting decision stage.
+  c) "skipped_examination"
+     - Activity: "skipped_examination".
+     - Outcome: Directly enters the same decision stage as if the file had been submitted; effectively bypasses the explicit "Submit File to Underwriter" activity.
+
+7) Underwriting decision stage (common sink for both "Submit File to Underwriter" and "skipped_examination")
+- Exclusive decision:
+  a) "Loan Denied"
+     - Activity: "Loan Denied".
+     - Outcome: Case closed as denied.
+  b) "Sign Loan Agreement"
+     - Activity: "Sign Loan Agreement".
+     - Outcome: Case closed with agreement signed (approved/accepted outcome).
+
+8) End conditions and outcomes
+- All terminal activities ("Appointment Denied", "Application Rejected", "Loan Denied", "Sign Loan Agreement") lead to a technical completion (silent end transition).
+- Business-meaning end states:
+  - Appointment denied (pre-process termination).
+  - Application rejected post-verification (pre-underwriting termination).
+  - Loan denied after decision stage.
+  - Loan agreement signed (successful completion).
+
+Decision points with criteria and possible outcomes
+- Appointment decision (exclusive):
+  - Criteria: Not specified; observed outcomes are either denial or appointment set.
+- Post-verification progression (exclusive with synchronization of prerequisites):
+  - Choices: Application Rejected vs Submit File to Underwriter vs skipped_examination.
+  - Criteria: Not specified; model shows all are possible after verification, independent of whether optional loops were executed.
+- Underwriting decision (exclusive):
+  - Choices: Loan Denied vs Sign Loan Agreement.
+
+Parallel activities and synchronization points
+- After "Verify Borrowers Information", the process enables two optional activities ("Make Visit to Assess Colatteral", "Request Co-Signer On Loan") that can occur in any order and can repeat. Progression to the next stage requires taking exactly one of the mutually exclusive outcomes listed in step 6; the Petri net encodes this by synchronizing three internal conditions before firing one outcome transition.
+
+Exception handling and error paths
+- Early termination at appointment: "Appointment Denied".
+- Early termination after verification: "Application Rejected".
+- Bypass path: "skipped_examination" moves the case forward to the final decision stage without an explicit "Submit File to Underwriter" step; this is an observed shortcut path in the log and may represent a compliance gap or exceptional handling.
+
+Rework loops and escalation procedures
+- Rework loops exist for:
+  - "Make Visit to Assess Colatteral" (unbounded loop).
+  - "Request Co-Signer On Loan" (unbounded loop).
+- The model does not impose limits, waiting, or escalation triggers; loops do not prevent immediate progression to the next stage.
+
+Process metrics and performance characteristics (as observed/derivable from the model structure; no values provided)
+- Lead time distribution by path:
+  - Appointment Denied (shortest path).
+  - Application Rejected after verification (short path).
+  - Full path via Underwriting Decision (longer path).
+- Path/variant frequencies to monitor:
+  - Fraction ending at each terminal outcome.
+  - Incidence of the "skipped_examination" path relative to explicit "Submit File to Underwriter".
+- Rework intensity:
+  - Average/median number of iterations of "Make Visit to Assess Colatteral".
+  - Average/median number of iterations of "Request Co-Signer On Loan".
+- First-pass yield:
+  - Share of cases that proceed to underwriting without any rework loops.
+- Compliance indicators:
+  - Cases that reached decision stage via "skipped_examination".
+  - Cases rejected pre-underwriting after verification.
+
+Key challenges and pain points
+- Optional critical steps not enforced:
+  - The model allows proceeding to decision without completing collateral assessment or co-signer activities, since the synchronization is satisfied immediately after verification. This can degrade risk control.
+- Bypass/shortcut behavior:
+  - "skipped_examination" advances the case to the decision stage without the explicit "Submit File to Underwriter" step, introducing traceability and compliance concerns.
+- Unbounded rework:
+  - "Make Visit to Assess Colatteral" and "Request Co-Signer On Loan" can repeat indefinitely; there is no modeled cap, timeout, or escalation, causing potential delays and inconsistency.
+- Fragmented rejection logic:
+  - Rejection may occur at three distinct points (appointment, post-verification pre-underwriter, underwriting denial), complicating root-cause analysis and customer communication.
+- Data quality concerns:
+  - Inconsistent labeling (typos) can hinder analytics and governance (e.g., "Appliaction", "Colatteral").
+"")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, controlled credit application process that enforces necessary risk checks, eliminates ambiguous shortcuts, limits unproductive rework, and provides clear decision points leading to either denial or agreement signing.
+- Design principle: Preserve all legitimate business-capable paths while removing wasteful/noncompliant behavior observed in the AS-IS (notably the "skipped_examination" shortcut and unbounded loops).
+
+Key stakeholders and roles involved
+- Borrower/Applicant (retained).
+- Co-Signer (retained, when required).
+- Underwriter (retained).
+- Note: No new roles are added; responsibilities are clarified via decision criteria and ordering.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Trigger: Borrower performs "Request Appointment".
+
+1) Request Appointment
+- Activity: "Request Appointment".
+- Outcome: Appointment decision.
+
+2) Exclusive decision: Appointment outcome
+- Paths:
+  a) "Appointment Denied" (early termination).
+  b) "Set Appointment" (proceed).
+
+3) Hand In Credit Appliaction (sic)
+- Activity: "Hand In Credit Appliaction".
+- Outcome: Application captured for assessment.
+
+4) Verify Borrowers Information
+- Activity: "Verify Borrowers Information".
+- Outcome: Verified information provides basis for two determinations:
+  - Whether collateral assessment is required.
+  - Whether a co-signer is required.
+
+5) Conditional pre-underwriter activities (governed, finite, and sequenced)
+- If collateral assessment is required:
+  - Perform "Make Visit to Assess Colatteral" exactly as needed to complete the assessment before submission. Avoid unnecessary repetitions; re-visits only if the prior attempt failed to gather required information.
+- If a co-signer is required:
+  - Perform "Request Co-Signer On Loan" to obtain/confirm the co-signer. Limit retries to practical bounds; if a co-signer cannot be obtained within policy, proceed to rejection (see step 6a).
+- Note: These activities are no longer allowed to loop indefinitely; they are executed based on explicit need determined in step 4.
+
+6) Exclusive decision: Proceed, reject, or submit
+- Criteria:
+  a) If verification reveals disqualifying issues or required preconditions cannot be met (e.g., no co-signer available when required), perform "Application Rejected" (post-verification rejection).
+  b) Otherwise, proceed to "Submit File to Underwriter".
+- The "skipped_examination" shortcut is removed; moving to the decision stage without an explicit underwriter submission is not allowed in the IDEAL flow.
+
+7) Submit File to Underwriter
+- Activity: "Submit File to Underwriter".
+- Outcome: Case enters underwriting decision stage with necessary documentation.
+
+8) Underwriting decision (exclusive)
+- "Loan Denied" or "Sign Loan Agreement".
+- Outcome: Termination in denial or successful completion with signed agreement.
+
+9) End conditions and outcomes
+- Business-meaning end states:
+  - Appointment denied.
+  - Application rejected post-verification (only when criteria met).
+  - Loan denied after underwriting.
+  - Loan agreement signed.
+
+Decision points with criteria and possible outcomes
+- Appointment decision (exclusive): as-is, but criteria clarified operationally.
+- Post-verification conditionality:
+  - Collateral required? If yes, complete "Make Visit to Assess Colatteral" before submission; else skip this activity.
+  - Co-signer required? If yes, execute "Request Co-Signer On Loan"; else skip this activity.
+- Post-verification outcome (exclusive):
+  - Application Rejected if disqualifying issues are confirmed or mandatory preconditions cannot be satisfied.
+  - Submit File to Underwriter otherwise; "skipped_examination" is disallowed.
+- Underwriting decision (exclusive): "Loan Denied" vs "Sign Loan Agreement".
+
+Parallel activities and synchronization points
+- Controlled sequencing replaces unconstrained parallelism:
+  - Optional activities are executed only when needed and before submission, avoiding the ambiguous immediate progression that existed in AS-IS.
+  - Synchronization point: Submission occurs only after all required optional activities (if any) are completed or formally deemed not required based on verification results.
+
+Exception handling and error paths
+- If co-signer cannot be obtained when required, or collateral assessment cannot be completed to minimum standards, the case follows "Application Rejected".
+- Appointment-level denial remains as an early termination path.
+- No bypass of underwriting submission exists; "skipped_examination" is removed to enforce traceability and compliance.
+
+Rework loops and escalation procedures
+- Rework loops are bounded by policy:
+  - Collateral visit may be repeated only if prior attempt failed; otherwise proceed or reject based on sufficiency.
+  - Co-signer request attempts are limited; upon exceeding limits, reject.
+- Escalation (governance policy rather than new tasks): When required steps fail repeatedly within limits, the flow follows "Application Rejected" to close the case with clear reasons.
+
+Process metrics and performance characteristics (targeted)
+- Cycle time reduction:
+  - From verification to submission (by eliminating indefinite loops and the ambiguous shortcut).
+- First-pass completeness:
+  - Percentage of cases submitted to underwriter with all required preconditions satisfied on first attempt.
+- Rework control:
+  - Average number of collateral visits per case (target near 1 when required).
+  - Average number of co-signer request attempts (target within policy bounds).
+- Compliance and traceability:
+  - 0% of cases advancing without "Submit File to Underwriter".
+  - Documented criteria leading to "Application Rejected" post-verification.
+- Outcome quality:
+  - Approval rate at underwriting and proportion of rejections attributable to unmet preconditions (to guide upstream improvements).
+
+Improvements made (relative to AS-IS)
+- Removed noncompliant shortcut:
+  - Eliminates "skipped_examination" so every progressed case is traceably submitted to underwriting.
+- Enforced prerequisite completion:
+  - "Make Visit to Assess Colatteral" and "Request Co-Signer On Loan" occur only when needed and before submission; no unconstrained looping.
+- Clarified rejection logic:
+  - Consolidated and criteria-based rejection post-verification, improving transparency and consistency.
+- Reduced variability and waste:
+  - Bounded rework loops shrink lead time variance and focus effort on value-adding steps.
+- Strengthened governance and auditability:
+  - Clear sequencing and decision criteria ensure each case has a justified path to either denial or agreement signing without ambiguous bypasses.
+"" )

@@ -1,0 +1,132 @@
+You are an expert business process analyst. You will be given a business process description (raw discovered process abstractions) and a trace (sequence of activities).
+
+Business Process Description (raw pm4py.llm abstractions, no human synthesis):
+## process_tree
+->( X( 'Register at FD', 'Register at ER' ), X( tau, 'Expert Examination', 'Examination' ), X( tau, 'Thorough Examination' ), *( ->( 'Diagnosis', 'Treatment' ), 'Treatment unsuccessful' ), X( tau, 'Treatment successful' ), 'Discharge' )
+
+## dfg
+If I have a process with flow:
+
+Diagnosis -> Treatment ( frequency = 11746  performance = 60000.515 )
+Treatment successful -> Discharge ( frequency = 9005  performance = 40000.809 )
+Treatment -> Treatment successful ( frequency = 9005  performance = 60000.920 )
+Thorough Examination -> Diagnosis ( frequency = 5922  performance = 60000.484 )
+Expert Examination -> Thorough Examination ( frequency = 3637  performance = 60000.837 )
+Register at FD -> Expert Examination ( frequency = 2888  performance = 40000.311 )
+Register at ER -> Expert Examination ( frequency = 2866  performance = 39999.839 )
+Expert Examination -> Diagnosis ( frequency = 2117  performance = 60001.158 )
+Examination -> Thorough Examination ( frequency = 1968  performance = 60001.727 )
+Register at ER -> Examination ( frequency = 1826  performance = 39999.967 )
+Register at FD -> Examination ( frequency = 1783  performance = 40000.349 )
+Treatment unsuccessful -> Diagnosis ( frequency = 1746  performance = 40000.741 )
+Treatment -> Treatment unsuccessful ( frequency = 1746  performance = 60001.635 )
+Examination -> Diagnosis ( frequency = 1641  performance = 60001.797 )
+Treatment -> Discharge ( frequency = 995  performance = 100002.807 )
+Register at FD -> Diagnosis ( frequency = 163  performance = 80001.325 )
+Register at ER -> Thorough Examination ( frequency = 159  performance = 79999.434 )
+Register at FD -> Thorough Examination ( frequency = 158  performance = 80001.253 )
+Register at ER -> Diagnosis ( frequency = 157  performance = 80003.134 )
+
+
+
+
+## abstract_variants
+If I have a process with the following process variants:
+
+ Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 15\%  performance = 320005.308 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 14\%  performance = 320000.149 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 8\%  performance = 260003.388 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 7\%  performance = 320005.279 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 7\%  performance = 320002.117 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 7\%  performance = 260006.129 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 5\%  performance = 260006.629 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 5\%  performance = 260003.204 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 2\%  performance = 480006.979 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 1120042.000 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 960004.000 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 959995.000 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 900005.500 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 800026.000 )
+ Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 800022.500 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 799988.400 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 799977.833 )
+ Register at FD -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 780172.000 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 740164.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 740142.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740134.500 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740051.667 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740045.500 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740011.500 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 739836.000 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 640023.562 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 640020.308 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 639989.000 )
+ Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 639971.474 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 639936.500 )
+ Register at ER -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 619981.000 )
+ Register at FD -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 619973.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 580077.200 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 580022.650 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 580016.000 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 580006.500 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 579996.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 579980.778 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 579943.500 )
+
+
+
+
+## declare
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Response: ('Treatment', 'Treatment successful'), ('Diagnosis', 'Treatment successful'), ('Treatment successful', 'Discharge'), ('Treatment', 'Discharge'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment')
+Responded Existence: ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment'), ('Treatment successful', 'Treatment'), ('Discharge', 'Treatment successful'), ('Discharge', 'Diagnosis'), ('Diagnosis', 'Treatment successful'), ('Discharge', 'Treatment'), ('Treatment successful', 'Diagnosis'), ('Treatment', 'Treatment successful'), ('Treatment', 'Discharge'), ('Treatment', 'Diagnosis'), ('Diagnosis', 'Discharge')
+Chain precedence: ('Treatment', 'Treatment successful'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment')
+Existence: Diagnosis, Discharge, Treatment, Treatment successful
+Precedence: ('Diagnosis', 'Treatment successful'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment'), ('Treatment', 'Treatment successful'), ('Treatment', 'Discharge')
+Alternate response: ('Treatment', 'Discharge'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment')
+Alternate precedence: ('Treatment', 'Treatment successful'), ('Treatment successful', 'Discharge'), ('Treatment', 'Discharge'), ('Diagnosis', 'Treatment successful'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment')
+Chain response: ('Diagnosis', 'Treatment'), ('Treatment successful', 'Discharge')
+Exactly 1: Treatment successful, Diagnosis, Discharge, Treatment
+Absence: Treatment unsuccessful
+Succession: ('Treatment successful', 'Discharge'), ('Treatment', 'Discharge'), ('Treatment', 'Treatment successful'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment successful'), ('Diagnosis', 'Treatment')
+Alternate succession: ('Treatment successful', 'Discharge'), ('Treatment', 'Discharge'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment')
+Chain succession: ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment')
+Co-Existence: ('Discharge', 'Treatment successful'), ('Discharge', 'Treatment'), ('Discharge', 'Diagnosis'), ('Treatment successful', 'Discharge'), ('Treatment successful', 'Treatment'), ('Treatment successful', 'Diagnosis'), ('Treatment', 'Discharge'), ('Treatment', 'Treatment successful'), ('Treatment', 'Diagnosis'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment successful'), ('Diagnosis', 'Treatment')
+
+
+## log_attributes
+activity  empty: 0 values: (Treatment; freq. 11746) (Diagnosis; freq. 11746) (Discharge; freq. 10000) (Treatment successful; freq. 9005) (Thorough Examination; freq. 5922) (Expert Examination; freq. 5754) (Register at ER; freq. 5008) (Register at FD; freq. 4992) (Examination; freq. 3609) (Treatment unsuccessful; freq. 1746)
+case:citizen  empty: 0 values: (True; freq. 40477) (False; freq. 29051)
+case:gender  empty: 0 values: (True; freq. 40738) (False; freq. 28790)
+case:german speaking  empty: 0 values: (False; freq. 35062) (True; freq. 34466)
+case:private_insurance  empty: 0 values: (False; freq. 35036) (True; freq. 34492)
+case:underlying_condition  empty: 0 values: (True; freq. 35270) (False; freq. 34258)
+concept:name  empty: 0 values: (Treatment; freq. 11746) (Diagnosis; freq. 11746) (Discharge; freq. 10000) (Treatment successful; freq. 9005) (Thorough Examination; freq. 5922) (Expert Examination; freq. 5754) (Register at ER; freq. 5008) (Register at FD; freq. 4992) (Examination; freq. 3609) (Treatment unsuccessful; freq. 1746)
+protected  empty: 0 values: (False; freq. 52458) (True; freq. 17070)
+resource  empty: 0 values: (Doc. Low; freq. 27075) (Doc. Pro; freq. 20707) (Nurse 3; freq. 7310) (Nurse 2; freq. 4957) (Nurse 1; freq. 4797) (Nurse 4; freq. 2356) (Nurse 5; freq. 2326)
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}
+
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

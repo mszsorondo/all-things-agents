@@ -1,0 +1,96 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This process models the current observed credit/loan application intake, verification and decision process as discovered by process mining (Petri net + DFG + variants). The purpose of the process is to: receive borrower loan requests, schedule appointments, collect and verify borrower information and collateral, optionally perform field visits and co-signer requests, submit a completed file to underwriting, and reach a final disposition (Sign Loan Agreement or Loan/Application Rejected/Denied).
+- The mined model reflects observed behavior (including optional/skipped steps, repeated field visits, multiple rework loops and several denial/escape paths) rather than an ideal controlled flow.
+
+Key stakeholders and roles involved (implicit in model)
+- Applicant / Borrower: initiates the process by requesting an appointment and handing in the credit application.
+- Appointment Scheduler / Front Office (implicitly): handles Request Appointment -> Set Appointment / Appointment Denied.
+- Applicant / Branch Staff: Hand In Credit Application.
+- Verification Team / Intake Officer: Verify Borrowers Information (document checks, credit checks, preliminary decisions).
+- Field Assessor / Collateral Officer: Make Visit to Assess Collateral (on-site visits to inspect collateral property).
+- Loan Officer / Case Manager: Request Co-Signer on Loan (when borrower needs additional guarantor) and coordinate rework.
+- Underwriter: receives the submitted file (Submit File to Underwriter) and makes the final underwriting decision: Sign Loan Agreement (approve) or Loan Denied.
+- System/Process Mining Artifacts: invisible/silent transitions (skip_* and tauSplit/tauJoin) correspond to optional/synchronization behavior discovered in the Petri net.
+
+Detailed step-by-step process flow (observed behavior)
+Start conditions and triggers
+1. Start: The case begins when an applicant issues a Request Appointment (initial marking 'source:1' in the Petri net). This is the observed start event in the data.
+2. From Request Appointment there are two immediate observed outcomes:
+   - Appointment Denied (962 cases in the DFG variants), which ends the case at sink; or
+   - Set Appointment, which proceeds to the intake activities.
+
+Core sequence (most frequent path)
+3. Set Appointment -> Hand In Credit Application. This is the common intake; DFG shows frequency 9038 for Set Appointment -> Hand In Credit Application.
+4. Hand In Credit Application -> Verify Borrowers Information (frequency 9038). The intake is passed to verification.
+
+Verification outcomes (branching)
+5. From Verify Borrowers Information the observed outcomes include:
+   - Submit File to Underwriter (directly) (frequency in DFG edge Verify->Submit = 4623). This leads on to underwriting.
+   - Request Co-Signer On Loan (frequency 1233): verification determines a co-signer is needed; this can be followed by further steps.
+   - Make Visit to Assess Collateral (frequency 1226): verification triggers a field visit to inspect collateral.
+   - skipped_examination (frequency 332): verification sometimes produces a skipped_examination marker (an observed path where detailed examination is skipped) which often immediately leads to Sign Loan Agreement (332 cases), i.e., a rapid approval path bypassing normal checks.
+   - Application Rejected (frequency 1624): verification leads to the application being rejected and the case terminates at sink.
+
+Paths involving Co-signer and Field Visits (rework and nested sequences)
+6. Request Co-Signer On Loan -> Submit File to Underwriter (frequency 1039) or -> Make Visit to Assess Collateral (frequency 733). The co-signer request may be followed by collateral visits.
+7. Make Visit to Assess Collateral shows complex behavior:
+   - It can directly lead to Submit File to Underwriter (frequency 1420).
+   - It can call back to Request Co-Signer On Loan (frequency 539).
+   - Self-loop behavior exists (Make Visit -> Make Visit) with frequency 563: multiple repeat visits to assess collateral are common.
+   - Some variants show many repeated Make Visit steps (up to 6+ visits in the variants list), indicating iterative rework.
+
+Submission and underwriting
+8. Submit File to Underwriter is the synchronization point before underwriting. Observed outgoing edges:
+   - Submit File to Underwriter -> Loan Denied (frequency 4787). This is a common final outcome.
+   - Submit File to Underwriter -> Sign Loan Agreement (frequency 2295). This produces the signed/approved loan.
+   - There is also an alternative path where skipped_examination -> Sign Loan Agreement (frequency 332), representing cases approved quickly after a skipped examination.
+
+Optional and skip behavior (Petri net artifacts)
+9. The Petri net contains invisible/silent transitions (skip_* nodes and tauSplit/tauJoin). These correspond to optional skipping of activities (for instance skip_13 leads to bypassing Sign Loan Agreement path in the model) and to concurrency/control flow splitting and joining. Practically this maps to:
+   - Optional skipping of steps such as detailed examination (skipped_examination) or certain verification sub-steps.
+   - Parallel branches: tauSplit nodes indicate the process can split into concurrent paths (for example verification might spawn parallel checks); tauJoin indicates later synchronization.
+
+Exception handling and error paths
+10. Appointment Denied (early terminal) and Application Rejected are explicit denial end-states. Loan Denied is a common terminal outcome after Underwriter review.
+11. Many cases involve rework: repeated field visits, re-requesting co-signers, or resubmitting files. When required items are missing or adverse findings occur, the case loops back into Make Visit or Request Co-Signer; the Petri net shows skip transitions that allow bypassing some of these steps (e.g., skip_7 skips co-signer or skip_8 skips follow-up).
+12. Escalation behavior exists implicitly in the data as long sequences and multiple rework occurrences, but no explicit 'manager escalation' activity is present in the discovered model. Repeated cycles implicitly escalate case attention but not via an explicit activity.
+
+Rework loops and observed frequencies
+- The process exhibits significant rework related to collateral assessment: Make Visit loops and nested combinations of Make Visit and Request Co-Signer appear frequently in variants (many sequences with multiple Make Visit occurrences).
+- Request Co-Signer can trigger additional Make Visit activities and vice versa, creating long traces: examples in variants show sequences with 2–8 Make Visit occurrences.
+
+End conditions and outcomes
+- Final markings in the Petri net terminate at 'sink'. Observed terminal outcomes are:
+   - Sign Loan Agreement (successful approval) — frequency sum across variants: many hundreds to thousands (DFG shows 2295 edges Submit->Sign; variants detail many sign sequences summing to approximately thousands),
+   - Loan Denied (DFG edge Submit->Loan Denied frequency 4787; many variants end in Loan Denied),
+   - Application Rejected (Verify -> Application Rejected, frequency 1624),
+   - Appointment Denied (early termination, frequency 962).
+
+Process metrics and performance characteristics (from DFG and variants)
+- Edge-level frequencies (selected):
+  - Request Appointment -> Set Appointment: 9038 (avg performance 82658.194)
+  - Set Appointment -> Hand In Credit Application: 9038 (performance 82658.872)
+  - Hand In Credit Application -> Verify Borrowers Information: 9038 (performance 42027.519)
+  - Verify Borrowers Information -> Submit File to Underwriter: 4623 (performance 48326.675)
+  - Submit File to Underwriter -> Loan Denied: 4787 (performance 82666.413)
+  - Submit File to Underwriter -> Sign Loan Agreement: 2295 (performance 80724.983)
+  - Verify Borrowers Information -> Application Rejected: 1624 (performance 32266.345)
+  - Make Visit to Assess Collateral -> Submit File to Underwriter: 1420 (performance 33926.961)
+  - Request Co-Signer On Loan -> Submit File to Underwriter: 1039 (performance 37792.042)
+  - Many paths show very large average performance numbers (e.g., 80k+), meaning long lead-times from event to next event in the logged units.
+- Variant-level frequencies: the most frequent full trace observed is the path that ends with Loan Denied: Request Appointment -> Set Appointment -> Hand In -> Verify -> Submit -> Loan Denied (frequency 2936). The approve (Sign Loan Agreement) path is also common (frequency 1687) and many complex variants with visits/co-signer exist with lower frequency.
+- Notable timing anomalies: several edges report performance = 0 (for example Request Co-Signer -> Make Visit performance = 0, skipped_examination -> Sign Loan Agreement performance = 0). Zero-duration values usually indicate either concurrent events with identical timestamps, rounding/truncation in the data extraction, or logging artifacts.
+
+Key challenges and pain points (AS-IS)
+- High rework and repetitive visits: Make Visit self-loop and sequences of multiple visits increase time and cost. Variants show numerous cases with repeated visits (up to 6+ visits) indicating inefficient field inspection scheduling and poor first-time quality.
+- Long lead-times: many edges and variants show very large average durations (tens of thousands in the provided performance metric). Both approvals and denials have long latency.
+- High denial rate: Submit File -> Loan Denied is the most frequent outcome in the submission stage (4,787 direct instances), suggesting many applications reach underwriting in poor condition or without meeting underwriting criteria.
+- Skipped examinations and bypasses: skipped_examination -> Sign Loan Agreement (332 cases) indicates certain approvals bypass standard checks — a compliance and risk concern.
+- Fragmented control and optional skipping: skip_* and tauSplit/tauJoin indicate fragmented sub-processes and optional skipping, which complicate predictability and governance.
+- Lack of explicit escalation: repeated rework is visible, but no explicit escalation or exception-handling activities were discovered, making long-running cases hard to manage.
+- Data quality and timestamp issues: zero-duration edges and large performance variation point to logging or event-timestamp granularity problems that make accurate performance measurement difficult.
+
+Conclusion (AS-IS)
+The discovered AS-IS process efficiently captures the real, messy behavior: a majority of applicants follow the standard intake and verification route, but a large fraction require additional actions (co-signers, field visits), many cases loop through repeated visits, and the dominant final outcome after submission is denial. There are procedural bypasses (skipped_examination) and optional skips in the Petri net that create compliance and governance risks. High lead times, rework, and denials are the main operational pain points.

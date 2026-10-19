@@ -1,0 +1,102 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL model defines a standardized, efficient, and safe clinical pathway from patient registration through examination(s), diagnosis, treatment and discharge. It retains the same visible activities from the observed logs but prescribes rules and constraints to eliminate wasteful behavior (redundant examinations), reduce rework loops, close logging gaps, and ensure timely escalation and quality control. The aim is to improve throughput, reduce repeat treatments, and shorten case cycle times while preserving patient safety.
+
+Key stakeholders and roles (aligned with AS-IS but with clarified responsibilities)
+- Registration clerk (Register at FD / Register at ER): triage input, assign urgency and initial route based on a simple triage checklist.
+- Triage Nurse / Initial Examiner (Examination): perform standardized initial exam and mandatory checklist; apply triage rule to decide if expert assessment is needed.
+- Expert Specialist (Expert Examination): senior clinician consulted only when triage criteria or examination checklist indicate specialized input.
+- Thorough Examiner (Thorough Examination): senior or specialist-directed full assessment for complex cases; only used when clinically indicated.
+- Diagnostician (Diagnosis): produces structured diagnosis and treatment plan; mandated to include explicit success criteria and monitoring plan.
+- Treatment team (Treatment): delivers treatment per documented plan and records outcome as either Treatment successful or Treatment unsuccessful (explicit required logging).
+- Discharge clerk / clinician (Discharge): discharges only after Treatment successful or formally approved exception.
+
+Start and end events
+- Start: Patient registration with mandatory triage data: either Register at FD or Register at ER. Registration must include triage classification that determines next activity (Examination vs Expert Examination). This explicit requirement removes the observed ambiguity of pre-conditions.
+- End: Discharge only allowed after an explicit Treatment successful event or an approved exception documented by a senior clinician. Direct Treatment -> Discharge without Treatment successful must be logged and approved (audit trail).
+
+Detailed step-by-step recommended flow (IDEAL) with controls
+1) Registration + Triage (exclusive choice enforced)
+   - Trigger: patient arrival.
+   - Action: Registration clerk captures mandatory triage fields (symptom severity, vital signs, reason for visit).
+   - Decision rule: based on triage score:
+     - If triage indicates high complexity/urgent case -> route to Expert Examination.
+     - Otherwise -> route to Examination.
+   - Rationale: eliminates undocumented ad-hoc routing and reduces unnecessary expert use.
+
+2) Examination (initial clinical exam) (mandatory)
+   - Examiner executes a standardized exam checklist.
+   - Decision outcomes:
+     - If checklist indicates need for specialist input or uncertainty -> escalate to Expert Examination.
+     - If checklist indicates non-complex presentation -> proceed.
+     - If immediate detailed work-up needed -> proceed to Thorough Examination (only when defined clinical triggers are met).
+   - Note: Direct Register -> Diagnosis bypass is disallowed in the IDEAL model. All direct diagnostic decisions must be preceded by at least one clinical examination or documented justification.
+
+3) Expert Examination (conditional, controlled)
+   - Used only when triage or Examination checklist requires it.
+   - Expert either completes diagnosis directly or refers to Thorough Examination if more in-depth assessment is required.
+   - Expert Examination should be limited to cases that meet triage/exam criteria to reduce redundant specialist workloads.
+
+4) Thorough Examination (conditional)
+   - Executed when specific clinical triggers are met (complex symptoms, ambiguous findings, failed prior treatment, comorbidities).
+   - After thorough exam the case must proceed to Diagnosis.
+
+5) Diagnosis (mandatory standardized decision)
+   - The Diagnostician records the diagnosis and prescribes a treatment plan with clear acceptance criteria (what constitutes Treatment successful) and monitoring checkpoints.
+   - If diagnosis is uncertain, the plan must indicate additional tests or second-opinion requirements before treatment.
+
+6) Treatment (controlled with escalation rules)
+   - Treatment is performed by the treatment team per the documented plan.
+   - Outcomes must be recorded explicitly as either Treatment successful or Treatment unsuccessful.
+   - If Treatment unsuccessful occurs:
+     - Immediate requirement: trigger a Diagnostic review session that is time-bounded (SLA) — senior diagnostician or expert is involved within defined time (e.g., 24 hours or one clinic cycle).
+     - Change management: revise treatment plan with documented rationale, include additional diagnostic tests and/or specialist referral before re-treatment.
+     - Limit rework: allow a maximum of one internal rework cycle without escalation; after the first unsuccessful re-treatment escalation to a multidisciplinary review is required.
+   - If treatment is successful -> record Treatment successful and move to Discharge.
+   - Direct Treatment -> Discharge is allowed only with explicit manager approval and recorded justification (audit).
+
+7) Discharge (controlled)
+   - Discharge is executed after Treatment successful or after an approved documented exception. A discharge checklist must be completed.
+
+Decision points and criteria (explicit enforcement)
+- Triage criteria at registration (deterministic rules) decide initial routing.
+- Examination checklist determines escalation to expert or thorough exam (binary decision rules).
+- Diagnosis must include acceptance criteria for treatment outcome to avoid ambiguous "successful" definitions.
+- Escalation policy: after one failed Treatment unsuccessful -> mandatory senior review.
+
+Parallel activities and synchronization
+- IDEAL preserves sequential flow (no concurrency required). If parallel diagnostics (e.g., lab tests, imaging) are needed, they are treated as parallel supporting activities but do not change the main control-flow; they synchronize into Diagnosis when results are available.
+
+Exception handling, rework loops and escalation
+- Explicitly limit uncontrolled loops: define a single, time-boxed rework loop and then force escalation to multidisciplinary review.
+- Ensure treatment outcome events are explicitly logged; disallow silent direct discharge without a completed Treatment successful event unless exception protocol is followed.
+- Introduce an audit trail for skipped steps and for rapid discharges.
+
+End conditions and outcomes
+- Normal end: Treatment successful -> Discharge.
+- Exception end: Discharge after documented and approved exception (rare, with audit).
+
+Process metrics and expected performance characteristics (targeted improvements)
+- Reduce rework: aim to reduce Treatment unsuccessful occurrences by 50% in first 6–12 months by clearer diagnosis criteria and enforced senior review after first failure.
+- Reduce average case duration: streamline unnecessary Expert -> Thorough duplication; target 20–40% reduction in mean case lead time for the top variants by removing redundant steps and improving triage.
+- Compliance metric: 100% of cases must have a recorded path through at least one exam or justified exception before Diagnosis; 100% treatment outcomes logged as 'successful' or 'unsuccessful'.
+- Escalation adherence: 95% of cases with an unsuccessful treatment must enter a documented senior review step within the SLA.
+- Logging and audit: reduce occurrences of Treatment->Discharge without Treatment successful to near-zero by requiring approval and recording exceptions.
+
+Improvements made (compared to AS-IS)
+- Enforced triage and routing rules reduce arbitrary use of Expert Examination and examination duplication.
+- Standardized checklists for Examination and Diagnosis reduce variability and clarify when Thorough Examination is required.
+- Formal escalation policy after first unsuccessful treatment to reduce repeated ineffective rework loops.
+- Mandatory logging of treatment outcomes and required approvals for exceptional discharges reduces unlogged/compliance-deviant behavior.
+- Expected benefits: improved throughput, fewer repeat treatments, shorter case durations, better resource utilization, and stronger auditability.
+
+Implementation notes (to realize the IDEAL model)
+- Introduce standardized triage and examination checklists into the registration and exam workflows (paper/electronic).
+- Add mandatory structured fields in the IT record for: triage outcome, exam checklist result, diagnosis acceptance criteria, treatment outcome, and escalation approvals.
+- Define SLAs and monitoring dashboards showing: rework rates, average lead time per variant, frequency of Expert Examination usage, and compliance with escalation rules.
+
+IDEAL process summary (visualized sequentially)
+- Register at FD / Register at ER (with triage) -> Examination (with checklist) [conditional -> Expert Examination] -> [conditional -> Thorough Examination] -> Diagnosis (with documented treatment acceptance criteria) -> Treatment -> (if success) Treatment successful -> Discharge; (if unsuccessful) immediate senior review -> revised Diagnosis/Treatment -> limited-repeat Treatment -> (if still unsuccessful) multidisciplinary escalation.
+
+This IDEAL model uses only activities present in the original observed model but prescribes constraints, explicit decision criteria and escalation points to reduce waste, control loops and improve overall performance and compliance.

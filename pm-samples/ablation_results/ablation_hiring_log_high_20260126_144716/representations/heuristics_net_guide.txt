@@ -1,0 +1,55 @@
+
+=== HEURISTICS NET INTERPRETATION GUIDE ===
+
+A Heuristics Net improves on DFG by using dependency measures to identify
+true causal relationships between activities.
+
+OUTPUT FORMAT:
+--------------
+"Heuristics Net:
+
+Activities (N): Activity1, Activity2, ...
+
+Start activities: StartActivity1, StartActivity2, ...
+End activities: EndActivity1, EndActivity2, ...
+
+Dependency relations (activity -> activity: dependency_value):
+  ActivityA -> ActivityB: dependency=0.999, frequency=1234
+  ActivityC -> ActivityD: dependency=0.850, frequency=567
+  ..."
+
+READING THE OUTPUT:
+
+1. ACTIVITIES: List of all activities in the process
+
+2. START/END ACTIVITIES: Entry and exit points of the process
+
+3. DEPENDENCY RELATIONS:
+   - Source -> Target: Causal relationship from source to target
+   - dependency: Measure from 0 to 1 (higher = stronger causality)
+   - frequency: How many times this succession was observed
+
+DEPENDENCY MEASURE FORMULA:
+- dependency(A,B) = (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1 (we show only positive, strong dependencies)
+- Near 1.0: Very strong causal relationship
+- Near 0.5: Moderate relationship
+- Below 0.5: Usually filtered out as noise
+
+INTERPRETING DEPENDENCY VALUES:
+- 0.9-1.0: Almost always A causes B (main flow)
+- 0.7-0.9: Strong relationship (common path)
+- 0.5-0.7: Moderate relationship (alternative path)
+- <0.5: Weak/coincidental (typically noise)
+
+ADVANTAGES OVER DFG:
+- Filters noise using dependency thresholds
+- Identifies true causal vs coincidental relationships
+- Handles loops of length 1 and 2
+- Shows strength of each dependency
+
+USE FOR:
+- Understanding main process flow
+- Identifying strong vs weak paths
+- Filtering out noise in event logs
+- Process analysis before formal modeling

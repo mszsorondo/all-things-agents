@@ -1,0 +1,1622 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+A Petri net is a mathematical model for distributed systems consisting of:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (14c7a4a8-eb5c-4f5c-9c57-e373a3e75c8a, 'Make Job Offer'), (3aa83184-c1b5-4b46-b43c-73314e3ea230, 'Frontend Interview'), (517a238f-eb9d-4fb8-a7ac-c78f014eaf3e, 'ML Interview'), (6a25f2db-5631-460f-a049-89ae58349e63, 'Backend Interview'), (895942dc-0b7c-4d7b-b10c-5bae30daf495, 'Screening Interview'), (9a9f8680-8078-4b3d-8cbb-754ab90be149, 'Extensive Background Check'), (a00ddbf2-2a40-4e72-9309-6ce6e105dbad, 'Background Check'), (be564a6f-da0a-4538-8373-7b86c9589ce2, 'Application Rejected'), (c6bff0e3-04b4-4b1f-8743-1fdd0e8cb2f6, 'Hand In Job Application'), (c8dda293-2daf-4501-8cc3-dd026532323c, 'Behavioral Interview'), (e7a90928-61c3-4d6d-81e2-74b1713b126c, 'Coding Interview'), (f46ea81f-ab5f-4c59-8fd9-19b780ab3fd3, 'Telephonic Screening'), (init_loop_17, None), (init_loop_22, None), (init_loop_27, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_16, None), (skip_19, None), (skip_2, None), (skip_20, None), (skip_21, None), (skip_24, None), (skip_25, None), (skip_26, None), (skip_29, None), (skip_3, None), (skip_30, None), (skip_6, None), (skip_7, None), (skip_8, None), (tauJoin_10, None), (tauJoin_15, None), (tauJoin_5, None), (tauSplit_14, None), (tauSplit_4, None), (tauSplit_9, None) ]
+arcs: [ (14c7a4a8-eb5c-4f5c-9c57-e373a3e75c8a, 'Make Job Offer')->p_32, (3aa83184-c1b5-4b46-b43c-73314e3ea230, 'Frontend Interview')->p_19, (517a238f-eb9d-4fb8-a7ac-c78f014eaf3e, 'ML Interview')->p_15, (6a25f2db-5631-460f-a049-89ae58349e63, 'Backend Interview')->p_17, (895942dc-0b7c-4d7b-b10c-5bae30daf495, 'Screening Interview')->p_11, (9a9f8680-8078-4b3d-8cbb-754ab90be149, 'Extensive Background Check')->p_12, (a00ddbf2-2a40-4e72-9309-6ce6e105dbad, 'Background Check')->p_9, (be564a6f-da0a-4538-8373-7b86c9589ce2, 'Application Rejected')->p_23, (c6bff0e3-04b4-4b1f-8743-1fdd0e8cb2f6, 'Hand In Job Application')->p_4, (c8dda293-2daf-4501-8cc3-dd026532323c, 'Behavioral Interview')->p_29, (e7a90928-61c3-4d6d-81e2-74b1713b126c, 'Coding Interview')->p_13, (f46ea81f-ab5f-4c59-8fd9-19b780ab3fd3, 'Telephonic Screening')->p_6, (init_loop_17, None)->p_22, (init_loop_22, None)->p_28, (init_loop_27, None)->p_31, (skip_11, None)->p_15, (skip_12, None)->p_17, (skip_13, None)->p_19, (skip_16, None)->p_21, (skip_19, None)->p_22, (skip_2, None)->p_5, (skip_20, None)->p_21, (skip_21, None)->p_26, (skip_24, None)->p_28, (skip_25, None)->p_27, (skip_26, None)->p_26, (skip_29, None)->p_31, (skip_3, None)->p_5, (skip_30, None)->p_26, (skip_6, None)->p_12, (skip_7, None)->p_5, (skip_8, None)->p_5, (tauJoin_10, None)->p_5, (tauJoin_15, None)->sink, (tauJoin_5, None)->p_7, (tauSplit_14, None)->p_20, (tauSplit_14, None)->p_25, (tauSplit_4, None)->p_10, (tauSplit_4, None)->p_8, (tauSplit_9, None)->p_14, (tauSplit_9, None)->p_16, (tauSplit_9, None)->p_18, p_10->(895942dc-0b7c-4d7b-b10c-5bae30daf495, 'Screening Interview'), p_11->(tauJoin_5, None), p_12->(e7a90928-61c3-4d6d-81e2-74b1713b126c, 'Coding Interview'), p_12->(skip_7, None), p_13->(skip_8, None), p_13->(tauSplit_9, None), p_14->(517a238f-eb9d-4fb8-a7ac-c78f014eaf3e, 'ML Interview'), p_14->(skip_11, None), p_15->(tauJoin_10, None), p_16->(6a25f2db-5631-460f-a049-89ae58349e63, 'Backend Interview'), p_16->(skip_12, None), p_17->(tauJoin_10, None), p_18->(3aa83184-c1b5-4b46-b43c-73314e3ea230, 'Frontend Interview'), p_18->(skip_13, None), p_19->(tauJoin_10, None), p_20->(init_loop_17, None), p_20->(skip_16, None), p_21->(tauJoin_15, None), p_22->(be564a6f-da0a-4538-8373-7b86c9589ce2, 'Application Rejected'), p_23->(skip_19, None), p_23->(skip_20, None), p_25->(init_loop_22, None), p_25->(skip_21, None), p_26->(tauJoin_15, None), p_27->(init_loop_27, None), p_27->(skip_26, None), p_28->(c8dda293-2daf-4501-8cc3-dd026532323c, 'Behavioral Interview'), p_29->(skip_24, None), p_29->(skip_25, None), p_31->(14c7a4a8-eb5c-4f5c-9c57-e373a3e75c8a, 'Make Job Offer'), p_32->(skip_29, None), p_32->(skip_30, None), p_4->(f46ea81f-ab5f-4c59-8fd9-19b780ab3fd3, 'Telephonic Screening'), p_4->(skip_2, None), p_5->(tauSplit_14, None), p_6->(skip_3, None), p_6->(tauSplit_4, None), p_7->(9a9f8680-8078-4b3d-8cbb-754ab90be149, 'Extensive Background Check'), p_7->(skip_6, None), p_8->(a00ddbf2-2a40-4e72-9309-6ce6e105dbad, 'Background Check'), p_9->(tauJoin_5, None), source->(c6bff0e3-04b4-4b1f-8743-1fdd0e8cb2f6, 'Hand In Job Application') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+
+
+
+============================================================
+REPRESENTATION 2: BPMN
+============================================================
+
+
+=== BPMN INTERPRETATION GUIDE ===
+Business Process Model and Notation (BPMN) is a graphical notation for business processes:
+
+1. EVENTS:
+   - Start Event (thin circle): Process initiation point
+   - End Event (thick circle): Process termination point
+   - Intermediate Events (double circle): Events during execution
+
+2. ACTIVITIES:
+   - Task (rounded rectangle): Atomic unit of work
+   - Sub-process (rounded rectangle with +): Compound activity
+   - Call Activity (thick border): Reference to another process
+
+3. GATEWAYS (diamonds):
+   - Exclusive (X or empty): XOR logic - one path only
+   - Parallel (+): AND logic - all paths simultaneously
+   - Inclusive (O): OR logic - one or more paths
+   - Event-based (pentagon inside): Wait for events
+
+4. FLOWS:
+   - Sequence Flow (solid arrow): Order of execution
+   - Default Flow (slash mark): Taken when no other condition is true
+   - Conditional Flow (mini diamond): Has a condition expression
+
+5. INDUCTIVE MINER BPMN SPECIFICS:
+   - May contain process trees encoded as nested sub-processes
+   - Silent transitions become empty gateways
+   - Guarantees proper block structure
+   - Loop structures are explicit with backward flows
+
+6. SWIMLANES (if present):
+   - Pools: Different organizations/systems
+   - Lanes: Different roles within organization
+
+READING THE XML:
+- <bpmn:task id="..." name="...">: Activities to perform
+- <bpmn:sequenceFlow sourceRef="..." targetRef="...">: Connections
+- <bpmn:exclusiveGateway>: Decision points
+- <bpmn:parallelGateway>: Concurrent execution points
+
+
+--- DISCOVERED MODEL ---
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.signavio.com/bpmn20" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath">
+	<bpmn:process id="id1cafcd82-9428-42c1-88e1-c7f201cbb6e2" isClosed="false" isExecutable="false" processType="None">
+		<bpmn:task id="id38113f9b-9b49-454d-b660-bf540088409e" name="ML Interview">
+			<bpmn:incoming>id27e04a93-df9f-410c-a537-798ed2a87ca5</bpmn:incoming>
+			<bpmn:outgoing>id9f1c9702-adcb-4400-81fc-2b9578d7c51f</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="id5461a932-8a38-46bf-967a-78b86ddc6e22" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id10a4e2b6-9c29-4a59-b509-4aff040e317a</bpmn:incoming>
+			<bpmn:outgoing>id57dcccd8-37d6-469d-8727-2fadb8df10bc</bpmn:outgoing>
+			<bpmn:outgoing>id1ed7e7d9-a667-4788-bd01-fa3eadb47402</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id14de9041-48e1-4191-b973-0f6f80718329" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id5861bdd3-cad0-46ff-9ebe-42936d33ff93</bpmn:incoming>
+			<bpmn:outgoing>id6b8ebc52-1782-446b-9635-b3a456ec1ab9</bpmn:outgoing>
+			<bpmn:outgoing>iddb35020f-6288-4906-b8bd-d62c0602f4e0</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id5e0f7540-678f-419d-9b78-8226a6c5e752" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>idf1f8ddef-97df-4289-be6f-8f4c320d6f60</bpmn:incoming>
+			<bpmn:outgoing>ida04e2baf-d379-4431-9eb0-4d9829784f4c</bpmn:outgoing>
+			<bpmn:outgoing>id79d7002a-81b5-475f-8e49-76134fb75d6a</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id8afc5143-12ba-402c-87c9-b4b3dfd67758" name="Hand In Job Application">
+			<bpmn:incoming>id16135fc3-8b39-45a5-ac0e-b8d249011094</bpmn:incoming>
+			<bpmn:outgoing>id5861bdd3-cad0-46ff-9ebe-42936d33ff93</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="id088de1af-5f3c-409c-9101-3b1801420b9e" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id593513a6-f642-4ee2-8886-30d28003b260</bpmn:incoming>
+			<bpmn:outgoing>idc5ea7df4-e1f8-4fec-a02b-d5b68f6489d1</bpmn:outgoing>
+			<bpmn:outgoing>id7ff9bf18-2285-4f8b-ae60-872b40e44efd</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="idf671f4bc-d45b-418f-a5b9-d3ae08c79102" name="Background Check">
+			<bpmn:incoming>id51d490a4-d4dd-4c33-aa2b-0e85efa24eda</bpmn:incoming>
+			<bpmn:outgoing>idcb8b005a-ba7d-4604-a306-ce7006d8a37d</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="idd2865fdb-71d1-40f0-8a9b-8cab7b0a2ccd" name="Backend Interview">
+			<bpmn:incoming>id248c294d-4a4d-4be2-919e-cb829936a6a3</bpmn:incoming>
+			<bpmn:outgoing>id2f659434-403b-4d91-ad43-6b15090dde5d</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="id1bd09f95-f6c9-4960-9cde-f1e8e5fa77cf" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id9f1c9702-adcb-4400-81fc-2b9578d7c51f</bpmn:incoming>
+			<bpmn:incoming>idd10e33a7-4042-4b88-b384-5959026dab2a</bpmn:incoming>
+			<bpmn:outgoing>id0fba4a47-2b23-4c3c-bb04-3fe37a432e36</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id6979d761-a581-4d21-8aed-9b79613d6b68" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id57dcccd8-37d6-469d-8727-2fadb8df10bc</bpmn:incoming>
+			<bpmn:incoming>ided697447-c711-4ea9-a27b-8f2390231457</bpmn:incoming>
+			<bpmn:outgoing>idc14b2025-2be1-48a8-a393-7efb2bfb86d0</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id381080fd-f418-4e00-a29b-d928d89cecd6" name="Frontend Interview">
+			<bpmn:incoming>ide70aec87-9551-4b2a-8cd2-7bf836e9e70e</bpmn:incoming>
+			<bpmn:outgoing>idd5f18961-700f-4c7b-ad9c-45e5e50a7d53</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="id2a214701-b4fe-463e-8bd8-8891161d23a5" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id7781536c-72f5-47bf-8313-093f25cfdb10</bpmn:incoming>
+			<bpmn:incoming>idd7fae3f2-4191-48c4-a383-2094c8d6a79f</bpmn:incoming>
+			<bpmn:outgoing>id362dfc9e-4839-4b12-9bed-8a23cff2088b</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id980183e0-eed9-477c-85d6-457439668397" name="Make Job Offer">
+			<bpmn:incoming>idc02f6bd5-f900-40e8-a723-413eb724ffd9</bpmn:incoming>
+			<bpmn:outgoing>idc6c5904b-2729-4eb3-8136-d33e76a7edd6</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="id64ab0852-7a49-42e5-b2ec-94dee970a161" name="Telephonic Screening">
+			<bpmn:incoming>id6b8ebc52-1782-446b-9635-b3a456ec1ab9</bpmn:incoming>
+			<bpmn:outgoing>idf1f8ddef-97df-4289-be6f-8f4c320d6f60</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="idf9737237-09e4-4c8e-acc2-d280922eee22" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>ide619650f-397b-47b2-9831-b2600d4328bd</bpmn:incoming>
+			<bpmn:outgoing>idc407fd33-a8db-44d7-b7a4-7a3b2c1c4bbe</bpmn:outgoing>
+			<bpmn:outgoing>idd968622a-759c-4f43-8c28-e673e2f6e812</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="ideaed63e3-a45e-4396-a2bd-4b6e5008f611" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>idc5ea7df4-e1f8-4fec-a02b-d5b68f6489d1</bpmn:incoming>
+			<bpmn:outgoing>idea35cea2-1359-405e-90eb-cadb6eba288c</bpmn:outgoing>
+			<bpmn:outgoing>idfa0feed8-4498-4876-8bc9-8b1b0cddc995</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id0d94e696-58c6-4315-af0d-15df0eac3985" name="Extensive Background Check">
+			<bpmn:incoming>id726b1003-4342-4752-8a23-6a393c3bca2c</bpmn:incoming>
+			<bpmn:outgoing>id4fcce805-c0e0-467b-b69d-54af7294edc8</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:parallelGateway id="id1cda0958-7b2c-4640-b269-60139f436e35" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id278f77ad-2617-44a6-ac41-f99ee46bcd1f</bpmn:incoming>
+			<bpmn:outgoing>idccfcc707-b33a-42f3-81c1-e35a48c4ff55</bpmn:outgoing>
+			<bpmn:outgoing>id5dede92d-050a-44f4-8a10-95fa68da9a26</bpmn:outgoing>
+			<bpmn:outgoing>ida9f29a87-5967-48b0-ba41-4d87914adc41</bpmn:outgoing>
+		</bpmn:parallelGateway>
+		<bpmn:task id="id2701574f-09a2-476b-b41e-da1f1c7fb5a5" name="Screening Interview">
+			<bpmn:incoming>id1f3ec9b9-0256-4b91-bef5-1b87aee7117e</bpmn:incoming>
+			<bpmn:outgoing>id074dd4ea-cd63-454c-ba42-0fa5e84e08b9</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="id2d0620f8-9658-448b-ad08-3b704a8cb6fd" gatewayDirection="Converging" name="">
+			<bpmn:incoming>idea35cea2-1359-405e-90eb-cadb6eba288c</bpmn:incoming>
+			<bpmn:incoming>id15ef562f-e87d-49fc-a9ec-7823a4dacedb</bpmn:incoming>
+			<bpmn:outgoing>idc02f6bd5-f900-40e8-a723-413eb724ffd9</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="idbf0b1a5d-4000-4d17-93cf-c8ab41f4bf1f" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>idbfddddb9-1bdd-4350-90da-1d6f958f4155</bpmn:incoming>
+			<bpmn:outgoing>idd534d736-70bd-470f-9aec-38473f68b551</bpmn:outgoing>
+			<bpmn:outgoing>id3121ae4c-7c3a-468f-8329-175682b4b277</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id0cf49111-6cab-4ec0-941c-9dafe8830d2f" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id4fcce805-c0e0-467b-b69d-54af7294edc8</bpmn:incoming>
+			<bpmn:incoming>id4278bc64-fe66-4269-9a84-2bf3886d5ae4</bpmn:incoming>
+			<bpmn:outgoing>idbfddddb9-1bdd-4350-90da-1d6f958f4155</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id1b392e23-0e97-4926-a46d-359343247306" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id3964468e-2e7e-46d4-a188-b3a746806004</bpmn:incoming>
+			<bpmn:outgoing>id278f77ad-2617-44a6-ac41-f99ee46bcd1f</bpmn:outgoing>
+			<bpmn:outgoing>idd7fae3f2-4191-48c4-a383-2094c8d6a79f</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id13865b50-b366-45ae-964c-0e7babba3b45" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id5dede92d-050a-44f4-8a10-95fa68da9a26</bpmn:incoming>
+			<bpmn:outgoing>id248c294d-4a4d-4be2-919e-cb829936a6a3</bpmn:outgoing>
+			<bpmn:outgoing>id2f747de8-1d5b-4a0b-86e8-d1ce59657380</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="idaa22ab80-11e9-4d48-b8e3-2efafdf267d7" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>ida9f29a87-5967-48b0-ba41-4d87914adc41</bpmn:incoming>
+			<bpmn:outgoing>ide70aec87-9551-4b2a-8cd2-7bf836e9e70e</bpmn:outgoing>
+			<bpmn:outgoing>id8d2709a5-5f66-4258-86b7-121afd354c45</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:parallelGateway id="ide63bf650-8c9a-4cde-a000-e6f376231811" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>ida04e2baf-d379-4431-9eb0-4d9829784f4c</bpmn:incoming>
+			<bpmn:outgoing>id51d490a4-d4dd-4c33-aa2b-0e85efa24eda</bpmn:outgoing>
+			<bpmn:outgoing>id1f3ec9b9-0256-4b91-bef5-1b87aee7117e</bpmn:outgoing>
+		</bpmn:parallelGateway>
+		<bpmn:exclusiveGateway id="id360b21cf-a449-4052-a75e-d60689e88ed8" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>idc6c5904b-2729-4eb3-8136-d33e76a7edd6</bpmn:incoming>
+			<bpmn:outgoing>id24d0f9f1-a792-49cd-bed8-4aa3ebacbafc</bpmn:outgoing>
+			<bpmn:outgoing>id15ef562f-e87d-49fc-a9ec-7823a4dacedb</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:parallelGateway id="id13482c2a-6934-4b14-90ca-2f3d3422c4a9" gatewayDirection="Converging" name="">
+			<bpmn:incoming>idcb8b005a-ba7d-4604-a306-ce7006d8a37d</bpmn:incoming>
+			<bpmn:incoming>id074dd4ea-cd63-454c-ba42-0fa5e84e08b9</bpmn:incoming>
+			<bpmn:outgoing>id121b39f4-e88e-48ea-bb80-0efa1464873a</bpmn:outgoing>
+		</bpmn:parallelGateway>
+		<bpmn:exclusiveGateway id="idfbc885ce-82f0-44c5-93ff-1d0dc70da5cd" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id72ec2548-abcc-403d-92a3-55f630c21646</bpmn:incoming>
+			<bpmn:incoming>id79d7002a-81b5-475f-8e49-76134fb75d6a</bpmn:incoming>
+			<bpmn:outgoing>idf0acf192-817b-4e29-8642-0bf69a9e4ed4</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id777c0bb7-8e58-4c9b-9e47-743f8a22bd85" name="Coding Interview">
+			<bpmn:incoming>idd534d736-70bd-470f-9aec-38473f68b551</bpmn:incoming>
+			<bpmn:outgoing>id3964468e-2e7e-46d4-a188-b3a746806004</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:startEvent id="idd521862c-dac2-4528-87bb-3d7812cfe216" isInterrupting="true" name="start" parallelMultiple="false">
+			<bpmn:outgoing>id16135fc3-8b39-45a5-ac0e-b8d249011094</bpmn:outgoing>
+		</bpmn:startEvent>
+		<bpmn:exclusiveGateway id="id1a55ca4d-33a8-4fe1-a59f-121b8392a0eb" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>idccfcc707-b33a-42f3-81c1-e35a48c4ff55</bpmn:incoming>
+			<bpmn:outgoing>id27e04a93-df9f-410c-a537-798ed2a87ca5</bpmn:outgoing>
+			<bpmn:outgoing>idd10e33a7-4042-4b88-b384-5959026dab2a</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:endEvent id="id362b3514-8721-4cb0-9e6e-c832ae46e9b7" name="end">
+			<bpmn:incoming>id3c56ab9b-46f2-4134-bce4-bafa724662a8</bpmn:incoming>
+		</bpmn:endEvent>
+		<bpmn:parallelGateway id="idd2c97480-96cd-407e-bef8-b1f7a2d48089" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id6b9d464e-c1d8-456a-bf5d-7efbb146eaff</bpmn:incoming>
+			<bpmn:incoming>idf6500ebb-b6de-4e9a-892a-255d9b458721</bpmn:incoming>
+			<bpmn:outgoing>id3c56ab9b-46f2-4134-bce4-bafa724662a8</bpmn:outgoing>
+		</bpmn:parallelGateway>
+		<bpmn:exclusiveGateway id="id732de064-1aff-4c42-8f80-deb02a8c9dc1" gatewayDirection="Converging" name="">
+			<bpmn:incoming>idc407fd33-a8db-44d7-b7a4-7a3b2c1c4bbe</bpmn:incoming>
+			<bpmn:incoming>id7ff9bf18-2285-4f8b-ae60-872b40e44efd</bpmn:incoming>
+			<bpmn:outgoing>ide7044062-cbba-4412-8f8f-521ecda026e7</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id4a4baa54-eb57-41b5-a907-907cdda45aa0" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id24d0f9f1-a792-49cd-bed8-4aa3ebacbafc</bpmn:incoming>
+			<bpmn:incoming>idfa0feed8-4498-4876-8bc9-8b1b0cddc995</bpmn:incoming>
+			<bpmn:outgoing>ide0c2520b-4fe0-44ff-820b-b2479a7f0dbb</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id88486f0f-6d1e-46f3-9817-37ff6f2d788f" name="Behavioral Interview">
+			<bpmn:incoming>ide7044062-cbba-4412-8f8f-521ecda026e7</bpmn:incoming>
+			<bpmn:outgoing>id593513a6-f642-4ee2-8886-30d28003b260</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="idaf96956b-8939-44ec-8f2b-823ca345c0c2" gatewayDirection="Converging" name="">
+			<bpmn:incoming>idf0acf192-817b-4e29-8642-0bf69a9e4ed4</bpmn:incoming>
+			<bpmn:incoming>iddb35020f-6288-4906-b8bd-d62c0602f4e0</bpmn:incoming>
+			<bpmn:outgoing>idf796df18-5e16-4d0b-9ed2-27b5c7c8cdd0</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:parallelGateway id="idaa1231ac-0266-4de6-88a2-013d0851feb5" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>idf796df18-5e16-4d0b-9ed2-27b5c7c8cdd0</bpmn:incoming>
+			<bpmn:outgoing>id10a4e2b6-9c29-4a59-b509-4aff040e317a</bpmn:outgoing>
+			<bpmn:outgoing>ide619650f-397b-47b2-9831-b2600d4328bd</bpmn:outgoing>
+		</bpmn:parallelGateway>
+		<bpmn:exclusiveGateway id="id26ab4432-a5eb-4921-8ec8-fda1b7bde68b" gatewayDirection="Converging" name="">
+			<bpmn:incoming>idb7d35c68-bf91-4ee5-870b-b79bba079629</bpmn:incoming>
+			<bpmn:incoming>id1ed7e7d9-a667-4788-bd01-fa3eadb47402</bpmn:incoming>
+			<bpmn:outgoing>id6b9d464e-c1d8-456a-bf5d-7efbb146eaff</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:parallelGateway id="id2da7922d-745d-48fd-8762-00dcc92889e7" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id0fba4a47-2b23-4c3c-bb04-3fe37a432e36</bpmn:incoming>
+			<bpmn:incoming>id3b5067bc-50b4-4a79-b333-b4b04b5371a4</bpmn:incoming>
+			<bpmn:incoming>ide8678f0e-8dec-4196-bcc6-89d328872e67</bpmn:incoming>
+			<bpmn:outgoing>id7781536c-72f5-47bf-8313-093f25cfdb10</bpmn:outgoing>
+		</bpmn:parallelGateway>
+		<bpmn:exclusiveGateway id="idb83c3591-8181-449c-80a7-c09386589ed5" gatewayDirection="Converging" name="">
+			<bpmn:incoming>idd5f18961-700f-4c7b-ad9c-45e5e50a7d53</bpmn:incoming>
+			<bpmn:incoming>id8d2709a5-5f66-4258-86b7-121afd354c45</bpmn:incoming>
+			<bpmn:outgoing>ide8678f0e-8dec-4196-bcc6-89d328872e67</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="id8d809c87-cd42-4dd1-aa73-da76a2518a35" name="Application Rejected">
+			<bpmn:incoming>idc14b2025-2be1-48a8-a393-7efb2bfb86d0</bpmn:incoming>
+			<bpmn:outgoing>id41a79092-c056-4248-9ed2-a277fde1a920</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="id1868a5f8-d8b0-4bc1-af0c-235878d2f8d9" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id41a79092-c056-4248-9ed2-a277fde1a920</bpmn:incoming>
+			<bpmn:outgoing>idb7d35c68-bf91-4ee5-870b-b79bba079629</bpmn:outgoing>
+			<bpmn:outgoing>ided697447-c711-4ea9-a27b-8f2390231457</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id693f0fe8-4ff3-4335-93bb-f421ba79fc1d" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id362dfc9e-4839-4b12-9bed-8a23cff2088b</bpmn:incoming>
+			<bpmn:incoming>id3121ae4c-7c3a-468f-8329-175682b4b277</bpmn:incoming>
+			<bpmn:outgoing>id72ec2548-abcc-403d-92a3-55f630c21646</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="id5c4bf5cc-4d5c-4eb7-8ce0-dd4c782dde63" gatewayDirection="Converging" name="">
+			<bpmn:incoming>ide0c2520b-4fe0-44ff-820b-b2479a7f0dbb</bpmn:incoming>
+			<bpmn:incoming>idd968622a-759c-4f43-8c28-e673e2f6e812</bpmn:incoming>
+			<bpmn:outgoing>idf6500ebb-b6de-4e9a-892a-255d9b458721</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="ida85550b9-da4c-4ceb-9bd3-d1bde8bec736" gatewayDirection="Diverging" name="">
+			<bpmn:incoming>id121b39f4-e88e-48ea-bb80-0efa1464873a</bpmn:incoming>
+			<bpmn:outgoing>id726b1003-4342-4752-8a23-6a393c3bca2c</bpmn:outgoing>
+			<bpmn:outgoing>id4278bc64-fe66-4269-9a84-2bf3886d5ae4</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:exclusiveGateway id="ide38d5eb5-3af7-477d-87cb-57237bda4be6" gatewayDirection="Converging" name="">
+			<bpmn:incoming>id2f659434-403b-4d91-ad43-6b15090dde5d</bpmn:incoming>
+			<bpmn:incoming>id2f747de8-1d5b-4a0b-86e8-d1ce59657380</bpmn:incoming>
+			<bpmn:outgoing>id3b5067bc-50b4-4a79-b333-b4b04b5371a4</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:sequenceFlow id="id248c294d-4a4d-4be2-919e-cb829936a6a3" name="" sourceRef="id13865b50-b366-45ae-964c-0e7babba3b45" targetRef="idd2865fdb-71d1-40f0-8a9b-8cab7b0a2ccd"/>
+		<bpmn:sequenceFlow id="id6b9d464e-c1d8-456a-bf5d-7efbb146eaff" name="" sourceRef="id26ab4432-a5eb-4921-8ec8-fda1b7bde68b" targetRef="idd2c97480-96cd-407e-bef8-b1f7a2d48089"/>
+		<bpmn:sequenceFlow id="id2f659434-403b-4d91-ad43-6b15090dde5d" name="" sourceRef="idd2865fdb-71d1-40f0-8a9b-8cab7b0a2ccd" targetRef="ide38d5eb5-3af7-477d-87cb-57237bda4be6"/>
+		<bpmn:sequenceFlow id="id5dede92d-050a-44f4-8a10-95fa68da9a26" name="" sourceRef="id1cda0958-7b2c-4640-b269-60139f436e35" targetRef="id13865b50-b366-45ae-964c-0e7babba3b45"/>
+		<bpmn:sequenceFlow id="id3b5067bc-50b4-4a79-b333-b4b04b5371a4" name="" sourceRef="ide38d5eb5-3af7-477d-87cb-57237bda4be6" targetRef="id2da7922d-745d-48fd-8762-00dcc92889e7"/>
+		<bpmn:sequenceFlow id="id16135fc3-8b39-45a5-ac0e-b8d249011094" name="" sourceRef="idd521862c-dac2-4528-87bb-3d7812cfe216" targetRef="id8afc5143-12ba-402c-87c9-b4b3dfd67758"/>
+		<bpmn:sequenceFlow id="id6b8ebc52-1782-446b-9635-b3a456ec1ab9" name="" sourceRef="id14de9041-48e1-4191-b973-0f6f80718329" targetRef="id64ab0852-7a49-42e5-b2ec-94dee970a161"/>
+		<bpmn:sequenceFlow id="ida04e2baf-d379-4431-9eb0-4d9829784f4c" name="" sourceRef="id5e0f7540-678f-419d-9b78-8226a6c5e752" targetRef="ide63bf650-8c9a-4cde-a000-e6f376231811"/>
+		<bpmn:sequenceFlow id="id121b39f4-e88e-48ea-bb80-0efa1464873a" name="" sourceRef="id13482c2a-6934-4b14-90ca-2f3d3422c4a9" targetRef="ida85550b9-da4c-4ceb-9bd3-d1bde8bec736"/>
+		<bpmn:sequenceFlow id="ide7044062-cbba-4412-8f8f-521ecda026e7" name="" sourceRef="id732de064-1aff-4c42-8f80-deb02a8c9dc1" targetRef="id88486f0f-6d1e-46f3-9817-37ff6f2d788f"/>
+		<bpmn:sequenceFlow id="ide70aec87-9551-4b2a-8cd2-7bf836e9e70e" name="" sourceRef="idaa22ab80-11e9-4d48-b8e3-2efafdf267d7" targetRef="id381080fd-f418-4e00-a29b-d928d89cecd6"/>
+		<bpmn:sequenceFlow id="id593513a6-f642-4ee2-8886-30d28003b260" name="" sourceRef="id88486f0f-6d1e-46f3-9817-37ff6f2d788f" targetRef="id088de1af-5f3c-409c-9101-3b1801420b9e"/>
+		<bpmn:sequenceFlow id="id7ff9bf18-2285-4f8b-ae60-872b40e44efd" name="" sourceRef="id088de1af-5f3c-409c-9101-3b1801420b9e" targetRef="id732de064-1aff-4c42-8f80-deb02a8c9dc1"/>
+		<bpmn:sequenceFlow id="idd5f18961-700f-4c7b-ad9c-45e5e50a7d53" name="" sourceRef="id381080fd-f418-4e00-a29b-d928d89cecd6" targetRef="idb83c3591-8181-449c-80a7-c09386589ed5"/>
+		<bpmn:sequenceFlow id="iddb35020f-6288-4906-b8bd-d62c0602f4e0" name="" sourceRef="id14de9041-48e1-4191-b973-0f6f80718329" targetRef="idaf96956b-8939-44ec-8f2b-823ca345c0c2"/>
+		<bpmn:sequenceFlow id="id1f3ec9b9-0256-4b91-bef5-1b87aee7117e" name="" sourceRef="ide63bf650-8c9a-4cde-a000-e6f376231811" targetRef="id2701574f-09a2-476b-b41e-da1f1c7fb5a5"/>
+		<bpmn:sequenceFlow id="ida9f29a87-5967-48b0-ba41-4d87914adc41" name="" sourceRef="id1cda0958-7b2c-4640-b269-60139f436e35" targetRef="idaa22ab80-11e9-4d48-b8e3-2efafdf267d7"/>
+		<bpmn:sequenceFlow id="id4278bc64-fe66-4269-9a84-2bf3886d5ae4" name="" sourceRef="ida85550b9-da4c-4ceb-9bd3-d1bde8bec736" targetRef="id0cf49111-6cab-4ec0-941c-9dafe8830d2f"/>
+		<bpmn:sequenceFlow id="ide8678f0e-8dec-4196-bcc6-89d328872e67" name="" sourceRef="idb83c3591-8181-449c-80a7-c09386589ed5" targetRef="id2da7922d-745d-48fd-8762-00dcc92889e7"/>
+		<bpmn:sequenceFlow id="idc407fd33-a8db-44d7-b7a4-7a3b2c1c4bbe" name="" sourceRef="idf9737237-09e4-4c8e-acc2-d280922eee22" targetRef="id732de064-1aff-4c42-8f80-deb02a8c9dc1"/>
+		<bpmn:sequenceFlow id="id278f77ad-2617-44a6-ac41-f99ee46bcd1f" name="" sourceRef="id1b392e23-0e97-4926-a46d-359343247306" targetRef="id1cda0958-7b2c-4640-b269-60139f436e35"/>
+		<bpmn:sequenceFlow id="id51d490a4-d4dd-4c33-aa2b-0e85efa24eda" name="" sourceRef="ide63bf650-8c9a-4cde-a000-e6f376231811" targetRef="idf671f4bc-d45b-418f-a5b9-d3ae08c79102"/>
+		<bpmn:sequenceFlow id="id726b1003-4342-4752-8a23-6a393c3bca2c" name="" sourceRef="ida85550b9-da4c-4ceb-9bd3-d1bde8bec736" targetRef="id0d94e696-58c6-4315-af0d-15df0eac3985"/>
+		<bpmn:sequenceFlow id="id7781536c-72f5-47bf-8313-093f25cfdb10" name="" sourceRef="id2da7922d-745d-48fd-8762-00dcc92889e7" targetRef="id2a214701-b4fe-463e-8bd8-8891161d23a5"/>
+		<bpmn:sequenceFlow id="id3964468e-2e7e-46d4-a188-b3a746806004" name="" sourceRef="id777c0bb7-8e58-4c9b-9e47-743f8a22bd85" targetRef="id1b392e23-0e97-4926-a46d-359343247306"/>
+		<bpmn:sequenceFlow id="id362dfc9e-4839-4b12-9bed-8a23cff2088b" name="" sourceRef="id2a214701-b4fe-463e-8bd8-8891161d23a5" targetRef="id693f0fe8-4ff3-4335-93bb-f421ba79fc1d"/>
+		<bpmn:sequenceFlow id="id5861bdd3-cad0-46ff-9ebe-42936d33ff93" name="" sourceRef="id8afc5143-12ba-402c-87c9-b4b3dfd67758" targetRef="id14de9041-48e1-4191-b973-0f6f80718329"/>
+		<bpmn:sequenceFlow id="id3121ae4c-7c3a-468f-8329-175682b4b277" name="" sourceRef="idbf0b1a5d-4000-4d17-93cf-c8ab41f4bf1f" targetRef="id693f0fe8-4ff3-4335-93bb-f421ba79fc1d"/>
+		<bpmn:sequenceFlow id="idcb8b005a-ba7d-4604-a306-ce7006d8a37d" name="" sourceRef="idf671f4bc-d45b-418f-a5b9-d3ae08c79102" targetRef="id13482c2a-6934-4b14-90ca-2f3d3422c4a9"/>
+		<bpmn:sequenceFlow id="idd534d736-70bd-470f-9aec-38473f68b551" name="" sourceRef="idbf0b1a5d-4000-4d17-93cf-c8ab41f4bf1f" targetRef="id777c0bb7-8e58-4c9b-9e47-743f8a22bd85"/>
+		<bpmn:sequenceFlow id="idbfddddb9-1bdd-4350-90da-1d6f958f4155" name="" sourceRef="id0cf49111-6cab-4ec0-941c-9dafe8830d2f" targetRef="idbf0b1a5d-4000-4d17-93cf-c8ab41f4bf1f"/>
+		<bpmn:sequenceFlow id="id72ec2548-abcc-403d-92a3-55f630c21646" name="" sourceRef="id693f0fe8-4ff3-4335-93bb-f421ba79fc1d" targetRef="idfbc885ce-82f0-44c5-93ff-1d0dc70da5cd"/>
+		<bpmn:sequenceFlow id="idc02f6bd5-f900-40e8-a723-413eb724ffd9" name="" sourceRef="id2d0620f8-9658-448b-ad08-3b704a8cb6fd" targetRef="id980183e0-eed9-477c-85d6-457439668397"/>
+		<bpmn:sequenceFlow id="idd968622a-759c-4f43-8c28-e673e2f6e812" name="" sourceRef="idf9737237-09e4-4c8e-acc2-d280922eee22" targetRef="id5c4bf5cc-4d5c-4eb7-8ce0-dd4c782dde63"/>
+		<bpmn:sequenceFlow id="idf1f8ddef-97df-4289-be6f-8f4c320d6f60" name="" sourceRef="id64ab0852-7a49-42e5-b2ec-94dee970a161" targetRef="id5e0f7540-678f-419d-9b78-8226a6c5e752"/>
+		<bpmn:sequenceFlow id="idc6c5904b-2729-4eb3-8136-d33e76a7edd6" name="" sourceRef="id980183e0-eed9-477c-85d6-457439668397" targetRef="id360b21cf-a449-4052-a75e-d60689e88ed8"/>
+		<bpmn:sequenceFlow id="idd7fae3f2-4191-48c4-a383-2094c8d6a79f" name="" sourceRef="id1b392e23-0e97-4926-a46d-359343247306" targetRef="id2a214701-b4fe-463e-8bd8-8891161d23a5"/>
+		<bpmn:sequenceFlow id="id4fcce805-c0e0-467b-b69d-54af7294edc8" name="" sourceRef="id0d94e696-58c6-4315-af0d-15df0eac3985" targetRef="id0cf49111-6cab-4ec0-941c-9dafe8830d2f"/>
+		<bpmn:sequenceFlow id="idf0acf192-817b-4e29-8642-0bf69a9e4ed4" name="" sourceRef="idfbc885ce-82f0-44c5-93ff-1d0dc70da5cd" targetRef="idaf96956b-8939-44ec-8f2b-823ca345c0c2"/>
+		<bpmn:sequenceFlow id="id15ef562f-e87d-49fc-a9ec-7823a4dacedb" name="" sourceRef="id360b21cf-a449-4052-a75e-d60689e88ed8" targetRef="id2d0620f8-9658-448b-ad08-3b704a8cb6fd"/>
+		<bpmn:sequenceFlow id="idea35cea2-1359-405e-90eb-cadb6eba288c" name="" sourceRef="ideaed63e3-a45e-4396-a2bd-4b6e5008f611" targetRef="id2d0620f8-9658-448b-ad08-3b704a8cb6fd"/>
+		<bpmn:sequenceFlow id="ided697447-c711-4ea9-a27b-8f2390231457" name="" sourceRef="id1868a5f8-d8b0-4bc1-af0c-235878d2f8d9" targetRef="id6979d761-a581-4d21-8aed-9b79613d6b68"/>
+		<bpmn:sequenceFlow id="id24d0f9f1-a792-49cd-bed8-4aa3ebacbafc" name="" sourceRef="id360b21cf-a449-4052-a75e-d60689e88ed8" targetRef="id4a4baa54-eb57-41b5-a907-907cdda45aa0"/>
+		<bpmn:sequenceFlow id="id074dd4ea-cd63-454c-ba42-0fa5e84e08b9" name="" sourceRef="id2701574f-09a2-476b-b41e-da1f1c7fb5a5" targetRef="id13482c2a-6934-4b14-90ca-2f3d3422c4a9"/>
+		<bpmn:sequenceFlow id="id79d7002a-81b5-475f-8e49-76134fb75d6a" name="" sourceRef="id5e0f7540-678f-419d-9b78-8226a6c5e752" targetRef="idfbc885ce-82f0-44c5-93ff-1d0dc70da5cd"/>
+		<bpmn:sequenceFlow id="idc5ea7df4-e1f8-4fec-a02b-d5b68f6489d1" name="" sourceRef="id088de1af-5f3c-409c-9101-3b1801420b9e" targetRef="ideaed63e3-a45e-4396-a2bd-4b6e5008f611"/>
+		<bpmn:sequenceFlow id="idd10e33a7-4042-4b88-b384-5959026dab2a" name="" sourceRef="id1a55ca4d-33a8-4fe1-a59f-121b8392a0eb" targetRef="id1bd09f95-f6c9-4960-9cde-f1e8e5fa77cf"/>
+		<bpmn:sequenceFlow id="id1ed7e7d9-a667-4788-bd01-fa3eadb47402" name="" sourceRef="id5461a932-8a38-46bf-967a-78b86ddc6e22" targetRef="id26ab4432-a5eb-4921-8ec8-fda1b7bde68b"/>
+		<bpmn:sequenceFlow id="idc14b2025-2be1-48a8-a393-7efb2bfb86d0" name="" sourceRef="id6979d761-a581-4d21-8aed-9b79613d6b68" targetRef="id8d809c87-cd42-4dd1-aa73-da76a2518a35"/>
+		<bpmn:sequenceFlow id="ide0c2520b-4fe0-44ff-820b-b2479a7f0dbb" name="" sourceRef="id4a4baa54-eb57-41b5-a907-907cdda45aa0" targetRef="id5c4bf5cc-4d5c-4eb7-8ce0-dd4c782dde63"/>
+		<bpmn:sequenceFlow id="id27e04a93-df9f-410c-a537-798ed2a87ca5" name="" sourceRef="id1a55ca4d-33a8-4fe1-a59f-121b8392a0eb" targetRef="id38113f9b-9b49-454d-b660-bf540088409e"/>
+		<bpmn:sequenceFlow id="id41a79092-c056-4248-9ed2-a277fde1a920" name="" sourceRef="id8d809c87-cd42-4dd1-aa73-da76a2518a35" targetRef="id1868a5f8-d8b0-4bc1-af0c-235878d2f8d9"/>
+		<bpmn:sequenceFlow id="ide619650f-397b-47b2-9831-b2600d4328bd" name="" sourceRef="idaa1231ac-0266-4de6-88a2-013d0851feb5" targetRef="idf9737237-09e4-4c8e-acc2-d280922eee22"/>
+		<bpmn:sequenceFlow id="id9f1c9702-adcb-4400-81fc-2b9578d7c51f" name="" sourceRef="id38113f9b-9b49-454d-b660-bf540088409e" targetRef="id1bd09f95-f6c9-4960-9cde-f1e8e5fa77cf"/>
+		<bpmn:sequenceFlow id="idf6500ebb-b6de-4e9a-892a-255d9b458721" name="" sourceRef="id5c4bf5cc-4d5c-4eb7-8ce0-dd4c782dde63" targetRef="idd2c97480-96cd-407e-bef8-b1f7a2d48089"/>
+		<bpmn:sequenceFlow id="idccfcc707-b33a-42f3-81c1-e35a48c4ff55" name="" sourceRef="id1cda0958-7b2c-4640-b269-60139f436e35" targetRef="id1a55ca4d-33a8-4fe1-a59f-121b8392a0eb"/>
+		<bpmn:sequenceFlow id="idf796df18-5e16-4d0b-9ed2-27b5c7c8cdd0" name="" sourceRef="idaf96956b-8939-44ec-8f2b-823ca345c0c2" targetRef="idaa1231ac-0266-4de6-88a2-013d0851feb5"/>
+		<bpmn:sequenceFlow id="id0fba4a47-2b23-4c3c-bb04-3fe37a432e36" name="" sourceRef="id1bd09f95-f6c9-4960-9cde-f1e8e5fa77cf" targetRef="id2da7922d-745d-48fd-8762-00dcc92889e7"/>
+		<bpmn:sequenceFlow id="id57dcccd8-37d6-469d-8727-2fadb8df10bc" name="" sourceRef="id5461a932-8a38-46bf-967a-78b86ddc6e22" targetRef="id6979d761-a581-4d21-8aed-9b79613d6b68"/>
+		<bpmn:sequenceFlow id="id3c56ab9b-46f2-4134-bce4-bafa724662a8" name="" sourceRef="idd2c97480-96cd-407e-bef8-b1f7a2d48089" targetRef="id362b3514-8721-4cb0-9e6e-c832ae46e9b7"/>
+		<bpmn:sequenceFlow id="idfa0feed8-4498-4876-8bc9-8b1b0cddc995" name="" sourceRef="ideaed63e3-a45e-4396-a2bd-4b6e5008f611" targetRef="id4a4baa54-eb57-41b5-a907-907cdda45aa0"/>
+		<bpmn:sequenceFlow id="id8d2709a5-5f66-4258-86b7-121afd354c45" name="" sourceRef="idaa22ab80-11e9-4d48-b8e3-2efafdf267d7" targetRef="idb83c3591-8181-449c-80a7-c09386589ed5"/>
+		<bpmn:sequenceFlow id="idb7d35c68-bf91-4ee5-870b-b79bba079629" name="" sourceRef="id1868a5f8-d8b0-4bc1-af0c-235878d2f8d9" targetRef="id26ab4432-a5eb-4921-8ec8-fda1b7bde68b"/>
+		<bpmn:sequenceFlow id="id2f747de8-1d5b-4a0b-86e8-d1ce59657380" name="" sourceRef="id13865b50-b366-45ae-964c-0e7babba3b45" targetRef="ide38d5eb5-3af7-477d-87cb-57237bda4be6"/>
+		<bpmn:sequenceFlow id="id10a4e2b6-9c29-4a59-b509-4aff040e317a" name="" sourceRef="idaa1231ac-0266-4de6-88a2-013d0851feb5" targetRef="id5461a932-8a38-46bf-967a-78b86ddc6e22"/>
+	</bpmn:process>
+	<bpmndi:BPMNDiagram id="id3ca4d67d-74c3-4230-b07f-3748d22b548a" name="diagram">
+		<bpmndi:BPMNPlane bpmnElement="id1cafcd82-9428-42c1-88e1-c7f201cbb6e2" id="id6d9fc140-73b8-48d0-8836-be6d35841fb7">
+			<bpmndi:BPMNShape bpmnElement="id38113f9b-9b49-454d-b660-bf540088409e" id="id38113f9b-9b49-454d-b660-bf540088409e_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id5461a932-8a38-46bf-967a-78b86ddc6e22" id="id5461a932-8a38-46bf-967a-78b86ddc6e22_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id14de9041-48e1-4191-b973-0f6f80718329" id="id14de9041-48e1-4191-b973-0f6f80718329_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id5e0f7540-678f-419d-9b78-8226a6c5e752" id="id5e0f7540-678f-419d-9b78-8226a6c5e752_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id8afc5143-12ba-402c-87c9-b4b3dfd67758" id="id8afc5143-12ba-402c-87c9-b4b3dfd67758_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id088de1af-5f3c-409c-9101-3b1801420b9e" id="id088de1af-5f3c-409c-9101-3b1801420b9e_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idf671f4bc-d45b-418f-a5b9-d3ae08c79102" id="idf671f4bc-d45b-418f-a5b9-d3ae08c79102_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idd2865fdb-71d1-40f0-8a9b-8cab7b0a2ccd" id="idd2865fdb-71d1-40f0-8a9b-8cab7b0a2ccd_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id1bd09f95-f6c9-4960-9cde-f1e8e5fa77cf" id="id1bd09f95-f6c9-4960-9cde-f1e8e5fa77cf_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id6979d761-a581-4d21-8aed-9b79613d6b68" id="id6979d761-a581-4d21-8aed-9b79613d6b68_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id381080fd-f418-4e00-a29b-d928d89cecd6" id="id381080fd-f418-4e00-a29b-d928d89cecd6_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id2a214701-b4fe-463e-8bd8-8891161d23a5" id="id2a214701-b4fe-463e-8bd8-8891161d23a5_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id980183e0-eed9-477c-85d6-457439668397" id="id980183e0-eed9-477c-85d6-457439668397_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id64ab0852-7a49-42e5-b2ec-94dee970a161" id="id64ab0852-7a49-42e5-b2ec-94dee970a161_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idf9737237-09e4-4c8e-acc2-d280922eee22" id="idf9737237-09e4-4c8e-acc2-d280922eee22_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="ideaed63e3-a45e-4396-a2bd-4b6e5008f611" id="ideaed63e3-a45e-4396-a2bd-4b6e5008f611_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id0d94e696-58c6-4315-af0d-15df0eac3985" id="id0d94e696-58c6-4315-af0d-15df0eac3985_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id1cda0958-7b2c-4640-b269-60139f436e35" id="id1cda0958-7b2c-4640-b269-60139f436e35_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id2701574f-09a2-476b-b41e-da1f1c7fb5a5" id="id2701574f-09a2-476b-b41e-da1f1c7fb5a5_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id2d0620f8-9658-448b-ad08-3b704a8cb6fd" id="id2d0620f8-9658-448b-ad08-3b704a8cb6fd_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idbf0b1a5d-4000-4d17-93cf-c8ab41f4bf1f" id="idbf0b1a5d-4000-4d17-93cf-c8ab41f4bf1f_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id0cf49111-6cab-4ec0-941c-9dafe8830d2f" id="id0cf49111-6cab-4ec0-941c-9dafe8830d2f_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id1b392e23-0e97-4926-a46d-359343247306" id="id1b392e23-0e97-4926-a46d-359343247306_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id13865b50-b366-45ae-964c-0e7babba3b45" id="id13865b50-b366-45ae-964c-0e7babba3b45_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idaa22ab80-11e9-4d48-b8e3-2efafdf267d7" id="idaa22ab80-11e9-4d48-b8e3-2efafdf267d7_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="ide63bf650-8c9a-4cde-a000-e6f376231811" id="ide63bf650-8c9a-4cde-a000-e6f376231811_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id360b21cf-a449-4052-a75e-d60689e88ed8" id="id360b21cf-a449-4052-a75e-d60689e88ed8_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id13482c2a-6934-4b14-90ca-2f3d3422c4a9" id="id13482c2a-6934-4b14-90ca-2f3d3422c4a9_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idfbc885ce-82f0-44c5-93ff-1d0dc70da5cd" id="idfbc885ce-82f0-44c5-93ff-1d0dc70da5cd_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id777c0bb7-8e58-4c9b-9e47-743f8a22bd85" id="id777c0bb7-8e58-4c9b-9e47-743f8a22bd85_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idd521862c-dac2-4528-87bb-3d7812cfe216" id="idd521862c-dac2-4528-87bb-3d7812cfe216_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id1a55ca4d-33a8-4fe1-a59f-121b8392a0eb" id="id1a55ca4d-33a8-4fe1-a59f-121b8392a0eb_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id362b3514-8721-4cb0-9e6e-c832ae46e9b7" id="id362b3514-8721-4cb0-9e6e-c832ae46e9b7_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idd2c97480-96cd-407e-bef8-b1f7a2d48089" id="idd2c97480-96cd-407e-bef8-b1f7a2d48089_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id732de064-1aff-4c42-8f80-deb02a8c9dc1" id="id732de064-1aff-4c42-8f80-deb02a8c9dc1_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id4a4baa54-eb57-41b5-a907-907cdda45aa0" id="id4a4baa54-eb57-41b5-a907-907cdda45aa0_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id88486f0f-6d1e-46f3-9817-37ff6f2d788f" id="id88486f0f-6d1e-46f3-9817-37ff6f2d788f_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idaf96956b-8939-44ec-8f2b-823ca345c0c2" id="idaf96956b-8939-44ec-8f2b-823ca345c0c2_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idaa1231ac-0266-4de6-88a2-013d0851feb5" id="idaa1231ac-0266-4de6-88a2-013d0851feb5_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id26ab4432-a5eb-4921-8ec8-fda1b7bde68b" id="id26ab4432-a5eb-4921-8ec8-fda1b7bde68b_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id2da7922d-745d-48fd-8762-00dcc92889e7" id="id2da7922d-745d-48fd-8762-00dcc92889e7_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="idb83c3591-8181-449c-80a7-c09386589ed5" id="idb83c3591-8181-449c-80a7-c09386589ed5_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id8d809c87-cd42-4dd1-aa73-da76a2518a35" id="id8d809c87-cd42-4dd1-aa73-da76a2518a35_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id1868a5f8-d8b0-4bc1-af0c-235878d2f8d9" id="id1868a5f8-d8b0-4bc1-af0c-235878d2f8d9_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id693f0fe8-4ff3-4335-93bb-f421ba79fc1d" id="id693f0fe8-4ff3-4335-93bb-f421ba79fc1d_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="id5c4bf5cc-4d5c-4eb7-8ce0-dd4c782dde63" id="id5c4bf5cc-4d5c-4eb7-8ce0-dd4c782dde63_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="ida85550b9-da4c-4ceb-9bd3-d1bde8bec736" id="ida85550b9-da4c-4ceb-9bd3-d1bde8bec736_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="ide38d5eb5-3af7-477d-87cb-57237bda4be6" id="ide38d5eb5-3af7-477d-87cb-57237bda4be6_gui">
+				<omgdc:Bounds height="100" width="100" x="0" y="0"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNEdge bpmnElement="id248c294d-4a4d-4be2-919e-cb829936a6a3" id="id248c294d-4a4d-4be2-919e-cb829936a6a3_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id6b9d464e-c1d8-456a-bf5d-7efbb146eaff" id="id6b9d464e-c1d8-456a-bf5d-7efbb146eaff_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id2f659434-403b-4d91-ad43-6b15090dde5d" id="id2f659434-403b-4d91-ad43-6b15090dde5d_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id5dede92d-050a-44f4-8a10-95fa68da9a26" id="id5dede92d-050a-44f4-8a10-95fa68da9a26_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id3b5067bc-50b4-4a79-b333-b4b04b5371a4" id="id3b5067bc-50b4-4a79-b333-b4b04b5371a4_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id16135fc3-8b39-45a5-ac0e-b8d249011094" id="id16135fc3-8b39-45a5-ac0e-b8d249011094_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id6b8ebc52-1782-446b-9635-b3a456ec1ab9" id="id6b8ebc52-1782-446b-9635-b3a456ec1ab9_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ida04e2baf-d379-4431-9eb0-4d9829784f4c" id="ida04e2baf-d379-4431-9eb0-4d9829784f4c_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id121b39f4-e88e-48ea-bb80-0efa1464873a" id="id121b39f4-e88e-48ea-bb80-0efa1464873a_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ide7044062-cbba-4412-8f8f-521ecda026e7" id="ide7044062-cbba-4412-8f8f-521ecda026e7_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ide70aec87-9551-4b2a-8cd2-7bf836e9e70e" id="ide70aec87-9551-4b2a-8cd2-7bf836e9e70e_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id593513a6-f642-4ee2-8886-30d28003b260" id="id593513a6-f642-4ee2-8886-30d28003b260_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id7ff9bf18-2285-4f8b-ae60-872b40e44efd" id="id7ff9bf18-2285-4f8b-ae60-872b40e44efd_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idd5f18961-700f-4c7b-ad9c-45e5e50a7d53" id="idd5f18961-700f-4c7b-ad9c-45e5e50a7d53_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="iddb35020f-6288-4906-b8bd-d62c0602f4e0" id="iddb35020f-6288-4906-b8bd-d62c0602f4e0_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id1f3ec9b9-0256-4b91-bef5-1b87aee7117e" id="id1f3ec9b9-0256-4b91-bef5-1b87aee7117e_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ida9f29a87-5967-48b0-ba41-4d87914adc41" id="ida9f29a87-5967-48b0-ba41-4d87914adc41_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id4278bc64-fe66-4269-9a84-2bf3886d5ae4" id="id4278bc64-fe66-4269-9a84-2bf3886d5ae4_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ide8678f0e-8dec-4196-bcc6-89d328872e67" id="ide8678f0e-8dec-4196-bcc6-89d328872e67_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idc407fd33-a8db-44d7-b7a4-7a3b2c1c4bbe" id="idc407fd33-a8db-44d7-b7a4-7a3b2c1c4bbe_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id278f77ad-2617-44a6-ac41-f99ee46bcd1f" id="id278f77ad-2617-44a6-ac41-f99ee46bcd1f_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id51d490a4-d4dd-4c33-aa2b-0e85efa24eda" id="id51d490a4-d4dd-4c33-aa2b-0e85efa24eda_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id726b1003-4342-4752-8a23-6a393c3bca2c" id="id726b1003-4342-4752-8a23-6a393c3bca2c_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id7781536c-72f5-47bf-8313-093f25cfdb10" id="id7781536c-72f5-47bf-8313-093f25cfdb10_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id3964468e-2e7e-46d4-a188-b3a746806004" id="id3964468e-2e7e-46d4-a188-b3a746806004_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id362dfc9e-4839-4b12-9bed-8a23cff2088b" id="id362dfc9e-4839-4b12-9bed-8a23cff2088b_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id5861bdd3-cad0-46ff-9ebe-42936d33ff93" id="id5861bdd3-cad0-46ff-9ebe-42936d33ff93_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id3121ae4c-7c3a-468f-8329-175682b4b277" id="id3121ae4c-7c3a-468f-8329-175682b4b277_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idcb8b005a-ba7d-4604-a306-ce7006d8a37d" id="idcb8b005a-ba7d-4604-a306-ce7006d8a37d_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idd534d736-70bd-470f-9aec-38473f68b551" id="idd534d736-70bd-470f-9aec-38473f68b551_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idbfddddb9-1bdd-4350-90da-1d6f958f4155" id="idbfddddb9-1bdd-4350-90da-1d6f958f4155_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id72ec2548-abcc-403d-92a3-55f630c21646" id="id72ec2548-abcc-403d-92a3-55f630c21646_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idc02f6bd5-f900-40e8-a723-413eb724ffd9" id="idc02f6bd5-f900-40e8-a723-413eb724ffd9_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idd968622a-759c-4f43-8c28-e673e2f6e812" id="idd968622a-759c-4f43-8c28-e673e2f6e812_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idf1f8ddef-97df-4289-be6f-8f4c320d6f60" id="idf1f8ddef-97df-4289-be6f-8f4c320d6f60_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idc6c5904b-2729-4eb3-8136-d33e76a7edd6" id="idc6c5904b-2729-4eb3-8136-d33e76a7edd6_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idd7fae3f2-4191-48c4-a383-2094c8d6a79f" id="idd7fae3f2-4191-48c4-a383-2094c8d6a79f_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id4fcce805-c0e0-467b-b69d-54af7294edc8" id="id4fcce805-c0e0-467b-b69d-54af7294edc8_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idf0acf192-817b-4e29-8642-0bf69a9e4ed4" id="idf0acf192-817b-4e29-8642-0bf69a9e4ed4_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id15ef562f-e87d-49fc-a9ec-7823a4dacedb" id="id15ef562f-e87d-49fc-a9ec-7823a4dacedb_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idea35cea2-1359-405e-90eb-cadb6eba288c" id="idea35cea2-1359-405e-90eb-cadb6eba288c_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ided697447-c711-4ea9-a27b-8f2390231457" id="ided697447-c711-4ea9-a27b-8f2390231457_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id24d0f9f1-a792-49cd-bed8-4aa3ebacbafc" id="id24d0f9f1-a792-49cd-bed8-4aa3ebacbafc_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id074dd4ea-cd63-454c-ba42-0fa5e84e08b9" id="id074dd4ea-cd63-454c-ba42-0fa5e84e08b9_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id79d7002a-81b5-475f-8e49-76134fb75d6a" id="id79d7002a-81b5-475f-8e49-76134fb75d6a_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idc5ea7df4-e1f8-4fec-a02b-d5b68f6489d1" id="idc5ea7df4-e1f8-4fec-a02b-d5b68f6489d1_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idd10e33a7-4042-4b88-b384-5959026dab2a" id="idd10e33a7-4042-4b88-b384-5959026dab2a_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id1ed7e7d9-a667-4788-bd01-fa3eadb47402" id="id1ed7e7d9-a667-4788-bd01-fa3eadb47402_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idc14b2025-2be1-48a8-a393-7efb2bfb86d0" id="idc14b2025-2be1-48a8-a393-7efb2bfb86d0_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ide0c2520b-4fe0-44ff-820b-b2479a7f0dbb" id="ide0c2520b-4fe0-44ff-820b-b2479a7f0dbb_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id27e04a93-df9f-410c-a537-798ed2a87ca5" id="id27e04a93-df9f-410c-a537-798ed2a87ca5_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id41a79092-c056-4248-9ed2-a277fde1a920" id="id41a79092-c056-4248-9ed2-a277fde1a920_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="ide619650f-397b-47b2-9831-b2600d4328bd" id="ide619650f-397b-47b2-9831-b2600d4328bd_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id9f1c9702-adcb-4400-81fc-2b9578d7c51f" id="id9f1c9702-adcb-4400-81fc-2b9578d7c51f_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idf6500ebb-b6de-4e9a-892a-255d9b458721" id="idf6500ebb-b6de-4e9a-892a-255d9b458721_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idccfcc707-b33a-42f3-81c1-e35a48c4ff55" id="idccfcc707-b33a-42f3-81c1-e35a48c4ff55_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idf796df18-5e16-4d0b-9ed2-27b5c7c8cdd0" id="idf796df18-5e16-4d0b-9ed2-27b5c7c8cdd0_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id0fba4a47-2b23-4c3c-bb04-3fe37a432e36" id="id0fba4a47-2b23-4c3c-bb04-3fe37a432e36_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id57dcccd8-37d6-469d-8727-2fadb8df10bc" id="id57dcccd8-37d6-469d-8727-2fadb8df10bc_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id3c56ab9b-46f2-4134-bce4-bafa724662a8" id="id3c56ab9b-46f2-4134-bce4-bafa724662a8_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idfa0feed8-4498-4876-8bc9-8b1b0cddc995" id="idfa0feed8-4498-4876-8bc9-8b1b0cddc995_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id8d2709a5-5f66-4258-86b7-121afd354c45" id="id8d2709a5-5f66-4258-86b7-121afd354c45_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="idb7d35c68-bf91-4ee5-870b-b79bba079629" id="idb7d35c68-bf91-4ee5-870b-b79bba079629_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id2f747de8-1d5b-4a0b-86e8-d1ce59657380" id="id2f747de8-1d5b-4a0b-86e8-d1ce59657380_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="id10a4e2b6-9c29-4a59-b509-4aff040e317a" id="id10a4e2b6-9c29-4a59-b509-4aff040e317a_gui">
+				<omgdi:waypoint x="0" y="0"/>
+				<omgdi:waypoint x="0" y="0"/>
+			</bpmndi:BPMNEdge>
+		</bpmndi:BPMNPlane>
+	</bpmndi:BPMNDiagram>
+</bpmn:definitions>
+
+
+
+============================================================
+REPRESENTATION 3: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+A DFG shows the frequency of direct succession between activities:
+
+1. NODES: Represent activities/events in the process
+   - Size often indicates frequency of occurrence
+   - Color may indicate performance metrics
+
+2. EDGES: Show direct succession relationships
+   - Edge labels: Frequency of A→B succession
+   - Thicker edges: More frequent paths
+   - Edge absence: Activities never directly follow each other
+
+3. START/END ACTIVITIES:
+   - Start activities: First activities in traces
+   - End activities: Last activities in traces
+   - Multiple starts/ends indicate process variants
+
+4. INTERPRETATION PATTERNS:
+   - High-frequency edges: Main process flow
+   - Low-frequency edges: Exceptions or rare variants
+   - Self-loops: Activity repetition
+   - Disconnected components: Independent sub-processes
+
+5. LLM ABSTRACTION (if applied):
+   - Simplifies complex DFGs to essential flows
+   - Removes noise and infrequent paths
+   - Groups similar activities
+   - Highlights main process variants
+
+6. LIMITATIONS:
+   - Cannot distinguish XOR from AND gateways
+   - May show impossible paths (not all A→B→C means A→C exists)
+   - Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high-frequency edges)
+- Finding process variants
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Hand In Job Application -> Telephonic Screening ( frequency = 8799  performance = 82439.794 )
+Telephonic Screening -> Background Check ( frequency = 3961  performance = 81906.421 )
+Background Check -> Screening Interview ( frequency = 3961  performance = 0.000 )
+Telephonic Screening -> Screening Interview ( frequency = 3848  performance = 81903.291 )
+Screening Interview -> Background Check ( frequency = 3848  performance = 0.000 )
+Behavioral Interview -> Make Job Offer ( frequency = 1850  performance = 80430.348 )
+Screening Interview -> Coding Interview ( frequency = 1517  performance = 129892.231 )
+Coding Interview -> Frontend Interview ( frequency = 1513  performance = 80785.480 )
+Background Check -> Coding Interview ( frequency = 1413  performance = 129884.902 )
+Background Check -> Application Rejected ( frequency = 1391  performance = 155319.566 )
+Screening Interview -> Application Rejected ( frequency = 1389  performance = 155969.168 )
+Coding Interview -> ML Interview ( frequency = 1304  performance = 80808.637 )
+Hand In Job Application -> Application Rejected ( frequency = 1201  performance = 146345.624 )
+Extensive Background Check -> Application Rejected ( frequency = 1125  performance = 171097.167 )
+Screening Interview -> Extensive Background Check ( frequency = 1055  performance = 84418.059 )
+Background Check -> Extensive Background Check ( frequency = 1044  performance = 84234.989 )
+Behavioral Interview -> Behavioral Interview ( frequency = 1032  performance = 47.047 )
+Telephonic Screening -> Application Rejected ( frequency = 990  performance = 143281.671 )
+Extensive Background Check -> Coding Interview ( frequency = 974  performance = 124295.087 )
+Behavioral Interview -> Application Rejected ( frequency = 914  performance = 17085.635 )
+ML Interview -> Frontend Interview ( frequency = 913  performance = 0.000 )
+Frontend Interview -> ML Interview ( frequency = 878  performance = 0.000 )
+Make Job Offer -> Make Job Offer ( frequency = 861  performance = 70.746 )
+Frontend Interview -> Behavioral Interview ( frequency = 853  performance = 80294.558 )
+ML Interview -> Behavioral Interview ( frequency = 754  performance = 80355.227 )
+Application Rejected -> Behavioral Interview ( frequency = 740  performance = 46.485 )
+Coding Interview -> Backend Interview ( frequency = 701  performance = 80655.317 )
+Application Rejected -> Make Job Offer ( frequency = 690  performance = 68184.068 )
+Application Rejected -> Application Rejected ( frequency = 654  performance = 9901.235 )
+Frontend Interview -> Application Rejected ( frequency = 653  performance = 81262.502 )
+ML Interview -> Application Rejected ( frequency = 546  performance = 81266.427 )
+Frontend Interview -> Backend Interview ( frequency = 529  performance = 0.000 )
+Backend Interview -> Frontend Interview ( frequency = 487  performance = 0.000 )
+Backend Interview -> Behavioral Interview ( frequency = 417  performance = 80439.149 )
+Coding Interview -> Application Rejected ( frequency = 386  performance = 80727.324 )
+Backend Interview -> Application Rejected ( frequency = 295  performance = 81404.454 )
+Backend Interview -> ML Interview ( frequency = 152  performance = 0.000 )
+ML Interview -> Backend Interview ( frequency = 121  performance = 0.000 )
+Make Job Offer -> Application Rejected ( frequency = 110  performance = 67.309 )
+
+
+
+
+
+============================================================
+REPRESENTATION 4: PROCESS_TREE
+============================================================
+
+
+=== PROCESS TREE INTERPRETATION GUIDE ===
+A Process Tree is a hierarchical representation of process behavior:
+
+1. OPERATORS (internal nodes):
+   - → (sequence): Execute children in order
+   - X (exclusive choice): Execute one child
+   - + (parallel): Execute all children concurrently
+   - ↺ (loop): Repeat body, execute exit condition
+   - τ (silent): Hidden/internal activity
+
+2. LEAVES:
+   - Activity names: Actual process activities
+   - τ: Silent/skip activity
+
+3. SEMANTICS:
+   - Read tree top-down, left-to-right
+   - Each operator defines control flow for children
+   - Guarantees soundness (proper completion)
+   - Block-structured (properly nested)
+
+4. EXAMPLE INTERPRETATIONS:
+   - →(A, X(B, C), D): Do A, then either B or C, then D
+   - +(A, B, C): Do A, B, C in parallel
+   - ↺(A, B): Do A repeatedly, exit with B
+   - X(→(A, B), →(C, D)): Either do A then B, or C then D
+
+5. INDUCTIVE MINER PROPERTIES:
+   - Always produces sound models
+   - Handles incomplete logs
+   - May introduce τ transitions for fitness
+   - Rediscovers original tree if log is complete
+
+
+--- DISCOVERED MODEL ---
+->( 'Hand In Job Application', X( tau, ->( 'Telephonic Screening', X( tau, ->( +( 'Background Check', 'Screening Interview' ), X( tau, 'Extensive Background Check' ), X( tau, ->( 'Coding Interview', X( tau, +( X( tau, 'ML Interview' ), X( tau, 'Backend Interview' ), X( tau, 'Frontend Interview' ) ) ) ) ) ) ) ) ), +( X( tau, *( 'Application Rejected', tau ) ), X( tau, ->( *( 'Behavioral Interview', tau ), X( tau, *( 'Make Job Offer', tau ) ) ) ) ) )
+
+
+============================================================
+REPRESENTATION 5: ABSTRACT_VARIANTS
+============================================================
+
+
+        ============================================================================
+        ABSTRACT VARIANTS INTERPRETATION GUIDE
+        ============================================================================
+        
+        The abstract variants representation shows simplified process execution patterns
+        with their frequency and performance metrics.
+        
+        FORMAT STRUCTURE:
+        -----------------
+        Each line represents one variant pattern in the format:
+        
+        [Header] Activity1 -> Activity2 -> ... -> ActivityN: [Metrics]
+        
+        COMPONENTS:
+        -----------
+        1. HEADER (if response_header=True):
+        - Shows variant rank or identifier
+        - Example: "Variant 1:" or "1."
+        
+        2. ACTIVITY SEQUENCE:
+        - Activities separated by " -> " arrows
+        - Represents the order of execution
+        - Example: "Register -> Analyze -> Decide -> Reject"
+        
+        3. METRICS (after the colon):
+        
+        a) FREQUENCY METRICS:
+            - Absolute: Number in parentheses, e.g., "(42)"
+                Meaning: This variant occurred 42 times
+            
+            - Relative: Percentage value, e.g., "15.3%"
+                Meaning: This variant represents 15.3% of all cases
+        
+        b) PERFORMANCE METRICS (if include_performance=True):
+            - Format: [aggregation_method: value unit]
+            - Common aggregations:
+                • mean: Average duration
+                • median: Middle value (50th percentile)
+                • min: Fastest execution
+                • max: Slowest execution
+                • stdev: Standard deviation (variability)
+            
+            - Time units vary by scale:
+                • seconds, minutes, hours, days
+            
+            - Example: "mean: 3.5 days, stdev: 1.2 days"
+        
+        READING EXAMPLES:
+        -----------------
+        Example 1 (Simple):
+        "A -> B -> C: (150) 25.5%"
+        → Pattern A→B→C occurred 150 times, representing 25.5% of all cases
+        
+        Example 2 (With Performance):
+        "Register -> Check -> Approve: (89) 18.2%, mean: 2.3 hours, max: 8.1 hours"
+        → This pattern occurred 89 times (18.2% of cases)
+        → On average takes 2.3 hours, longest instance took 8.1 hours
+        
+        Example 3 (With Secondary Aggregation):
+        "Start -> Process -> End: (200) 40%, mean: 1.5 days (median: 1.2 days)"
+        → Main metric is mean (1.5 days), secondary metric is median (1.2 days)
+        → If median < mean, indicates positive skew (some very long cases)
+        
+        INTERPRETATION TIPS:
+        --------------------
+        • HIGH FREQUENCY (>20%): Main process flow, optimize for efficiency
+        • MEDIUM FREQUENCY (5-20%): Common variations, monitor regularly  
+        • LOW FREQUENCY (<5%): Exceptions or edge cases, check if needed
+        • HIGH VARIABILITY (stdev > 50% of mean): Unstable process, investigate
+        • OUTLIERS (max >> mean): Bottlenecks or problems in specific cases
+        
+        ACTIVITY/CASE IDENTIFIERS:
+        --------------------------
+        • activity_key: Specifies which column represents activities
+        • case_id_key: Specifies which column identifies cases
+        • timestamp_key: Specifies which column contains timestamps
+        
+        These determine how activities and cases are extracted from your data.
+        
+        ============================================================================
+        
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected ( frequency = 1391  performance = 319390.265 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected ( frequency = 1389  performance = 320030.472 )
+ Hand In Job Application -> Application Rejected ( frequency = 1201  performance = 146345.624 )
+ Hand In Job Application -> Telephonic Screening -> Application Rejected ( frequency = 990  performance = 229938.161 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Application Rejected ( frequency = 572  performance = 427833.163 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Application Rejected ( frequency = 553  performance = 427705.756 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Application Rejected ( frequency = 156  performance = 370088.269 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Application Rejected ( frequency = 129  performance = 370179.543 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 93  performance = 530053.312 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 92  performance = 530069.663 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Behavioral Interview -> Make Job Offer ( frequency = 88  performance = 530037.295 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Behavioral Interview -> Make Job Offer ( frequency = 87  performance = 530035.678 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 86  performance = 530051.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 81  performance = 530063.259 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 69  performance = 530056.145 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 64  performance = 530003.406 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Application Rejected ( frequency = 62  performance = 450708.339 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 61  performance = 530064.328 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Application Rejected ( frequency = 61  performance = 450373.492 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 59  performance = 530559.864 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Application Rejected ( frequency = 59  performance = 450374.271 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Application Rejected ( frequency = 55  performance = 453682.327 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Application Rejected ( frequency = 55  performance = 450064.927 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 54  performance = 530019.426 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 54  performance = 529999.352 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 51  performance = 530060.118 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 50  performance = 530078.900 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Application Rejected ( frequency = 48  performance = 450455.792 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 46  performance = 530732.370 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Backend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 46  performance = 530048.543 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 46  performance = 530023.891 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Application Rejected ( frequency = 46  performance = 456532.957 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 45  performance = 530058.378 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 39  performance = 530039.462 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 38  performance = 530074.947 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 38  performance = 529994.553 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 37  performance = 530081.135 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Backend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 36  performance = 530042.194 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Application Rejected ( frequency = 36  performance = 450620.722 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Application Rejected ( frequency = 35  performance = 450030.714 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 32  performance = 530026.188 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 31  performance = 530040.548 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 31  performance = 530015.452 )
+
+
+
+
+
+============================================================
+REPRESENTATION 6: PETRI_NET_ALPHA
+============================================================
+
+=== PETRI NET (ALPHA MINER) INTERPRETATION GUIDE ===
+
+The Alpha Miner is the foundational process discovery algorithm that constructs Petri nets based on ordering relations in the event log.
+
+1. ORDERING RELATIONS USED:
+   - Direct succession (>): Activity A directly followed by B in some trace
+   - Causality (->): A causes B (A > B and not B > A)
+   - Parallelism (||): A and B can occur in any order (A > B and B > A)
+   - Choice (#): A and B never directly follow each other
+
+2. CONSTRUCTION ALGORITHM:
+   - Identifies start activities (first in traces)
+   - Identifies end activities (last in traces)
+   - Discovers causal relationships between activities
+   - Creates places for each maximal set of causally related activities
+   - Connects places and transitions via arcs
+
+3. STRENGTHS:
+   - Simple and interpretable algorithm
+   - Produces sound workflow nets when log is complete
+   - Good for discovering well-structured processes
+   - Fast execution time
+
+4. LIMITATIONS:
+   - Cannot handle loops of length 1 (self-loops)
+   - Cannot handle loops of length 2 (A->B->A)
+   - Sensitive to noise in event logs
+   - May produce disconnected or incorrect nets for complex logs
+   - Assumes complete event logs
+
+5. INTERPRETING ALPHA MINER OUTPUT:
+   - Each visible transition corresponds to an activity
+   - Places represent the "state" between activities
+   - XOR-splits: One place with multiple output transitions
+   - AND-splits: One transition with multiple output places
+   - Implicit places may be missing (not all dependencies captured)
+
+6. WHEN TO USE:
+   - Educational purposes to understand process mining basics
+   - Simple, well-structured processes without noise
+   - When you need fast initial discovery
+   - Logs with clear sequential and parallel patterns
+
+7. COMPARISON WITH INDUCTIVE MINER:
+   - Alpha: Directly from ordering relations, may produce unsound nets
+   - Inductive: Block-structured decomposition, always sound
+   - Alpha is simpler but less robust to real-world logs
+
+
+--- DISCOVERED MODEL ---
+[Alpha Miner]
+
+
+If I have a Petri net:
+
+places: [ ({'Background Check'}, {'Coding Interview'}), ({'Background Check'}, {'Extensive Background Check'}), ({'Coding Interview'}, {'Backend Interview'}), ({'Coding Interview'}, {'Frontend Interview'}), ({'Coding Interview'}, {'ML Interview'}), ({'Extensive Background Check'}, {'Coding Interview'}), ({'Hand In Job Application'}, {'Telephonic Screening'}), ({'Screening Interview'}, {'Coding Interview'}), ({'Screening Interview'}, {'Extensive Background Check'}), ({'Telephonic Screening'}, {'Background Check'}), ({'Telephonic Screening'}, {'Screening Interview'}), end, start ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Backend Interview, 'Backend Interview'), (Background Check, 'Background Check'), (Behavioral Interview, 'Behavioral Interview'), (Coding Interview, 'Coding Interview'), (Extensive Background Check, 'Extensive Background Check'), (Frontend Interview, 'Frontend Interview'), (Hand In Job Application, 'Hand In Job Application'), (ML Interview, 'ML Interview'), (Make Job Offer, 'Make Job Offer'), (Screening Interview, 'Screening Interview'), (Telephonic Screening, 'Telephonic Screening') ]
+arcs: [ (Application Rejected, 'Application Rejected')->end, (Background Check, 'Background Check')->({'Background Check'}, {'Coding Interview'}), (Background Check, 'Background Check')->({'Background Check'}, {'Extensive Background Check'}), (Coding Interview, 'Coding Interview')->({'Coding Interview'}, {'Backend Interview'}), (Coding Interview, 'Coding Interview')->({'Coding Interview'}, {'Frontend Interview'}), (Coding Interview, 'Coding Interview')->({'Coding Interview'}, {'ML Interview'}), (Extensive Background Check, 'Extensive Background Check')->({'Extensive Background Check'}, {'Coding Interview'}), (Hand In Job Application, 'Hand In Job Application')->({'Hand In Job Application'}, {'Telephonic Screening'}), (Make Job Offer, 'Make Job Offer')->end, (Screening Interview, 'Screening Interview')->({'Screening Interview'}, {'Coding Interview'}), (Screening Interview, 'Screening Interview')->({'Screening Interview'}, {'Extensive Background Check'}), (Telephonic Screening, 'Telephonic Screening')->({'Telephonic Screening'}, {'Background Check'}), (Telephonic Screening, 'Telephonic Screening')->({'Telephonic Screening'}, {'Screening Interview'}), ({'Background Check'}, {'Coding Interview'})->(Coding Interview, 'Coding Interview'), ({'Background Check'}, {'Extensive Background Check'})->(Extensive Background Check, 'Extensive Background Check'), ({'Coding Interview'}, {'Backend Interview'})->(Backend Interview, 'Backend Interview'), ({'Coding Interview'}, {'Frontend Interview'})->(Frontend Interview, 'Frontend Interview'), ({'Coding Interview'}, {'ML Interview'})->(ML Interview, 'ML Interview'), ({'Extensive Background Check'}, {'Coding Interview'})->(Coding Interview, 'Coding Interview'), ({'Hand In Job Application'}, {'Telephonic Screening'})->(Telephonic Screening, 'Telephonic Screening'), ({'Screening Interview'}, {'Coding Interview'})->(Coding Interview, 'Coding Interview'), ({'Screening Interview'}, {'Extensive Background Check'})->(Extensive Background Check, 'Extensive Background Check'), ({'Telephonic Screening'}, {'Background Check'})->(Background Check, 'Background Check'), ({'Telephonic Screening'}, {'Screening Interview'})->(Screening Interview, 'Screening Interview'), start->(Hand In Job Application, 'Hand In Job Application') ]
+
+initial marking: ['start:1']
+final marking: ['end:1']
+
+
+
+
+============================================================
+REPRESENTATION 7: PETRI_NET_HEURISTICS
+============================================================
+
+=== PETRI NET (HEURISTICS MINER) INTERPRETATION GUIDE ===
+
+The Heuristics Miner produces Petri nets by using frequency-based dependency measures, making it more robust to noise than the Alpha Miner.
+
+1. DEPENDENCY MEASURE CALCULATION:
+   - For activities A and B: dependency(A,B) = (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+   - Range: -1 to +1
+   - Positive values: A likely causes B
+   - Negative values: B likely causes A
+   - Near zero: No clear dependency
+
+2. THRESHOLDS AND PARAMETERS:
+   - Dependency threshold: Minimum dependency value to include an edge
+   - Positive observations: Minimum times A->B must occur
+   - Relative-to-best threshold: For detecting AND/XOR patterns
+   - Long-distance dependencies: Detect non-adjacent causal relationships
+
+3. ADVANTAGES OVER ALPHA MINER:
+   - Handles noise by using thresholds
+   - Can detect loops of length 1 and 2
+   - Identifies long-distance dependencies
+   - Produces cleaner models for noisy logs
+   - Distinguishes between AND and XOR splits/joins
+
+4. PETRI NET CONSTRUCTION:
+   - Activities become transitions
+   - Dependency edges become arcs through intermediate places
+   - AND/XOR semantics determined by frequency patterns
+   - Silent transitions may be added for routing
+
+5. INTERPRETING THE OUTPUT:
+   - Strong edges (high dependency): Main process flow
+   - Weak edges (low dependency): Exceptional paths
+   - Self-loops: Activity repetition
+   - Long-distance arcs: Skip patterns or escalations
+
+6. SPLIT/JOIN DETECTION:
+   - AND-split: All outputs typically activated together
+   - XOR-split: Exactly one output typically activated
+   - Based on co-occurrence frequencies in the log
+
+7. WHEN TO USE:
+   - Real-world event logs with noise
+   - When you need to filter out infrequent behavior
+   - Complex processes with loops
+   - When Alpha Miner produces poor results
+
+8. LIMITATIONS:
+   - May over-simplify if thresholds are too high
+   - May include noise if thresholds are too low
+   - Parameter tuning can be challenging
+   - Does not guarantee soundness like Inductive Miner
+
+
+--- DISCOVERED MODEL ---
+[Heuristics Miner]
+
+
+If I have a Petri net:
+
+places: [ intplace_Application Rejected, intplace_Background Check, intplace_Behavioral Interview, intplace_Coding Interview, intplace_Extensive Background Check, intplace_Hand In Job Application, intplace_Make Job Offer, intplace_Screening Interview, intplace_Telephonic Screening, pre_Application Rejected, pre_Background Check, pre_Behavioral Interview, pre_Coding Interview, pre_Make Job Offer, pre_Screening Interview, sink0, source0, splace_in_Application Rejected_Backend Interview_1, splace_in_Application Rejected_Background Check_0, splace_in_Application Rejected_Coding Interview_1, splace_in_Application Rejected_Frontend Interview_1, splace_in_Application Rejected_ML Interview_4, splace_in_Application Rejected_Screening Interview_0, splace_in_Application Rejected_Telephonic Screening_2, splace_in_Behavioral Interview_Backend Interview_1, splace_in_Behavioral Interview_Frontend Interview_1, splace_in_Behavioral Interview_ML Interview_3, splace_in_Make Job Offer_Behavioral Interview_0 ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Backend Interview, 'Backend Interview'), (Background Check, 'Background Check'), (Behavioral Interview, 'Behavioral Interview'), (Coding Interview, 'Coding Interview'), (Extensive Background Check, 'Extensive Background Check'), (Frontend Interview, 'Frontend Interview'), (Hand In Job Application, 'Hand In Job Application'), (ML Interview, 'ML Interview'), (Make Job Offer, 'Make Job Offer'), (Screening Interview, 'Screening Interview'), (Telephonic Screening, 'Telephonic Screening'), (hid_1, None), (hid_10, None), (hid_12, None), (hid_14, None), (hid_15, None), (hid_19, None), (hid_2, None), (hid_21, None), (hid_23, None), (hid_24, None), (hid_25, None), (hid_26, None), (hid_29, None), (hid_3, None), (hid_32, None), (hid_36, None), (hid_37, None), (hid_4, None), (hid_44, None), (hid_45, None), (hid_47, None), (hid_6, None), (hid_8, None), (hid_9, None) ]
+arcs: [ (Application Rejected, 'Application Rejected')->intplace_Application Rejected, (Backend Interview, 'Backend Interview')->splace_in_Application Rejected_Backend Interview_1, (Backend Interview, 'Backend Interview')->splace_in_Behavioral Interview_Backend Interview_1, (Background Check, 'Background Check')->intplace_Background Check, (Behavioral Interview, 'Behavioral Interview')->intplace_Behavioral Interview, (Coding Interview, 'Coding Interview')->intplace_Coding Interview, (Extensive Background Check, 'Extensive Background Check')->intplace_Extensive Background Check, (Frontend Interview, 'Frontend Interview')->splace_in_Application Rejected_Frontend Interview_1, (Frontend Interview, 'Frontend Interview')->splace_in_Behavioral Interview_Frontend Interview_1, (Hand In Job Application, 'Hand In Job Application')->intplace_Hand In Job Application, (ML Interview, 'ML Interview')->splace_in_Application Rejected_ML Interview_4, (ML Interview, 'ML Interview')->splace_in_Behavioral Interview_ML Interview_3, (Make Job Offer, 'Make Job Offer')->intplace_Make Job Offer, (Screening Interview, 'Screening Interview')->intplace_Screening Interview, (Telephonic Screening, 'Telephonic Screening')->intplace_Telephonic Screening, (hid_1, None)->pre_Application Rejected, (hid_10, None)->pre_Make Job Offer, (hid_12, None)->pre_Behavioral Interview, (hid_14, None)->pre_Behavioral Interview, (hid_15, None)->pre_Coding Interview, (hid_19, None)->pre_Behavioral Interview, (hid_2, None)->pre_Application Rejected, (hid_21, None)->sink0, (hid_23, None)->sink0, (hid_24, None)->pre_Application Rejected, (hid_25, None)->pre_Behavioral Interview, (hid_26, None)->splace_in_Make Job Offer_Behavioral Interview_0, (hid_29, None)->splace_in_Application Rejected_Background Check_0, (hid_3, None)->pre_Application Rejected, (hid_32, None)->splace_in_Application Rejected_Coding Interview_1, (hid_36, None)->pre_Application Rejected, (hid_37, None)->pre_Coding Interview, (hid_4, None)->pre_Application Rejected, (hid_44, None)->splace_in_Application Rejected_Telephonic Screening_2, (hid_45, None)->pre_Background Check, (hid_45, None)->pre_Screening Interview, (hid_47, None)->splace_in_Application Rejected_Screening Interview_0, (hid_6, None)->pre_Application Rejected, (hid_8, None)->pre_Application Rejected, (hid_9, None)->pre_Make Job Offer, intplace_Application Rejected->(hid_1, None), intplace_Application Rejected->(hid_19, None), intplace_Application Rejected->(hid_21, None), intplace_Application Rejected->(hid_9, None), intplace_Background Check->(Extensive Background Check, 'Extensive Background Check'), intplace_Background Check->(hid_15, None), intplace_Background Check->(hid_29, None), intplace_Behavioral Interview->(hid_24, None), intplace_Behavioral Interview->(hid_25, None), intplace_Behavioral Interview->(hid_26, None), intplace_Coding Interview->(Backend Interview, 'Backend Interview'), intplace_Coding Interview->(Frontend Interview, 'Frontend Interview'), intplace_Coding Interview->(ML Interview, 'ML Interview'), intplace_Coding Interview->(hid_32, None), intplace_Extensive Background Check->(hid_36, None), intplace_Extensive Background Check->(hid_37, None), intplace_Hand In Job Application->(Telephonic Screening, 'Telephonic Screening'), intplace_Hand In Job Application->(hid_8, None), intplace_Make Job Offer->(hid_10, None), intplace_Make Job Offer->(hid_23, None), intplace_Screening Interview->(Extensive Background Check, 'Extensive Background Check'), intplace_Screening Interview->(hid_15, None), intplace_Screening Interview->(hid_47, None), intplace_Telephonic Screening->(hid_44, None), intplace_Telephonic Screening->(hid_45, None), pre_Application Rejected->(Application Rejected, 'Application Rejected'), pre_Background Check->(Background Check, 'Background Check'), pre_Behavioral Interview->(Behavioral Interview, 'Behavioral Interview'), pre_Coding Interview->(Coding Interview, 'Coding Interview'), pre_Make Job Offer->(Make Job Offer, 'Make Job Offer'), pre_Screening Interview->(Screening Interview, 'Screening Interview'), source0->(Hand In Job Application, 'Hand In Job Application'), splace_in_Application Rejected_Backend Interview_1->(hid_2, None), splace_in_Application Rejected_Background Check_0->(hid_1, None), splace_in_Application Rejected_Background Check_0->(hid_3, None), splace_in_Application Rejected_Background Check_0->(hid_4, None), splace_in_Application Rejected_Coding Interview_1->(hid_2, None), splace_in_Application Rejected_Coding Interview_1->(hid_4, None), splace_in_Application Rejected_Coding Interview_1->(hid_6, None), splace_in_Application Rejected_Frontend Interview_1->(hid_2, None), splace_in_Application Rejected_Frontend Interview_1->(hid_6, None), splace_in_Application Rejected_ML Interview_4->(hid_6, None), splace_in_Application Rejected_Screening Interview_0->(hid_1, None), splace_in_Application Rejected_Screening Interview_0->(hid_3, None), splace_in_Application Rejected_Screening Interview_0->(hid_4, None), splace_in_Application Rejected_Telephonic Screening_2->(hid_3, None), splace_in_Application Rejected_Telephonic Screening_2->(hid_8, None), splace_in_Behavioral Interview_Backend Interview_1->(hid_12, None), splace_in_Behavioral Interview_Frontend Interview_1->(hid_12, None), splace_in_Behavioral Interview_Frontend Interview_1->(hid_14, None), splace_in_Behavioral Interview_ML Interview_3->(hid_14, None), splace_in_Make Job Offer_Behavioral Interview_0->(hid_10, None), splace_in_Make Job Offer_Behavioral Interview_0->(hid_9, None) ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']
+
+
+
+
+============================================================
+REPRESENTATION 8: PETRI_NET_ILP
+============================================================
+
+=== PETRI NET (ILP MINER) INTERPRETATION GUIDE ===
+
+The ILP (Integer Linear Programming) Miner constructs Petri nets that perfectly fit the observed behavior by solving an optimization problem.
+
+1. CORE CONCEPT:
+   - Formulates process discovery as a mathematical optimization problem
+   - Uses Integer Linear Programming to find a Petri net
+   - Guarantees the net can replay ALL observed traces perfectly
+   - Produces the simplest net that fits the log (minimal places/arcs)
+
+2. OPTIMIZATION OBJECTIVE:
+   - Minimize structural complexity (number of places and arcs)
+   - Subject to: All traces in the log must be replayable
+   - Each transition firing must respect token flow constraints
+
+3. CONSTRAINTS:
+   - Token flow conservation at each step
+   - Initial marking enables first activities
+   - Final marking reached after last activities
+   - Non-negative token counts throughout execution
+
+4. ADVANTAGES:
+   - Perfect fitness by construction (all traces replay)
+   - Finds minimal structure that explains behavior
+   - Mathematically rigorous approach
+   - No heuristic parameters to tune
+
+5. LIMITATIONS:
+   - Computationally expensive for large logs
+   - May overfit to observed behavior (poor generalization)
+   - Does not handle noise well
+   - May produce complex nets for simple processes
+   - Scalability issues with many activities/traces
+
+6. INTERPRETING ILP OUTPUT:
+   - Every place and arc has a purpose for some trace
+   - No redundant structure (minimal representation)
+   - May have many places connecting same activities
+   - Complex routing structures for varied behavior
+
+7. COMPARISON WITH OTHER MINERS:
+   - vs Alpha: ILP handles more patterns but slower
+   - vs Heuristics: ILP is exact, Heuristics approximates
+   - vs Inductive: ILP optimizes fit, Inductive guarantees soundness
+
+8. WHEN TO USE:
+   - Small to medium-sized event logs
+   - When perfect fitness is required
+   - Clean logs without noise
+   - Understanding exact behavioral boundaries
+   - Academic/research contexts
+
+9. READING THE NET:
+   - Dense connectivity: Many behavioral variants
+   - Simple structure: Regular process behavior
+   - Many silent transitions: Complex control flow patterns
+
+
+--- DISCOVERED MODEL ---
+[ILP Miner]
+
+
+If I have a Petri net:
+
+places: [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 3, 4, 5, 6, 7, 8, 9, sink, source ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Backend Interview, 'Backend Interview'), (Background Check, 'Background Check'), (Behavioral Interview, 'Behavioral Interview'), (Coding Interview, 'Coding Interview'), (Extensive Background Check, 'Extensive Background Check'), (Frontend Interview, 'Frontend Interview'), (Hand In Job Application, 'Hand In Job Application'), (ML Interview, 'ML Interview'), (Make Job Offer, 'Make Job Offer'), (Screening Interview, 'Screening Interview'), (Telephonic Screening, 'Telephonic Screening'), (■, None) ]
+arcs: [ (Application Rejected, 'Application Rejected')->14, (Application Rejected, 'Application Rejected')->15, (Application Rejected, 'Application Rejected')->17, (Application Rejected, 'Application Rejected')->18, (Application Rejected, 'Application Rejected')->19, (Application Rejected, 'Application Rejected')->20, (Application Rejected, 'Application Rejected')->21, (Application Rejected, 'Application Rejected')->25, (Backend Interview, 'Backend Interview')->22, (Backend Interview, 'Backend Interview')->24, (Backend Interview, 'Backend Interview')->25, (Background Check, 'Background Check')->11, (Background Check, 'Background Check')->18, (Background Check, 'Background Check')->5, (Behavioral Interview, 'Behavioral Interview')->13, (Behavioral Interview, 'Behavioral Interview')->24, (Behavioral Interview, 'Behavioral Interview')->8, (Behavioral Interview, 'Behavioral Interview')->9, (Coding Interview, 'Coding Interview')->11, (Coding Interview, 'Coding Interview')->12, (Coding Interview, 'Coding Interview')->16, (Coding Interview, 'Coding Interview')->19, (Coding Interview, 'Coding Interview')->22, (Coding Interview, 'Coding Interview')->6, (Coding Interview, 'Coding Interview')->7, (Extensive Background Check, 'Extensive Background Check')->20, (Extensive Background Check, 'Extensive Background Check')->23, (Extensive Background Check, 'Extensive Background Check')->5, (Extensive Background Check, 'Extensive Background Check')->6, (Frontend Interview, 'Frontend Interview')->12, (Frontend Interview, 'Frontend Interview')->17, (Frontend Interview, 'Frontend Interview')->8, (Hand In Job Application, 'Hand In Job Application')->10, (Hand In Job Application, 'Hand In Job Application')->11, (Hand In Job Application, 'Hand In Job Application')->12, (Hand In Job Application, 'Hand In Job Application')->13, (Hand In Job Application, 'Hand In Job Application')->14, (Hand In Job Application, 'Hand In Job Application')->15, (Hand In Job Application, 'Hand In Job Application')->16, (Hand In Job Application, 'Hand In Job Application')->17, (Hand In Job Application, 'Hand In Job Application')->18, (Hand In Job Application, 'Hand In Job Application')->19, (Hand In Job Application, 'Hand In Job Application')->20, (Hand In Job Application, 'Hand In Job Application')->21, (Hand In Job Application, 'Hand In Job Application')->22, (Hand In Job Application, 'Hand In Job Application')->23, (Hand In Job Application, 'Hand In Job Application')->24, (Hand In Job Application, 'Hand In Job Application')->25, (Hand In Job Application, 'Hand In Job Application')->3, (Hand In Job Application, 'Hand In Job Application')->4, (Hand In Job Application, 'Hand In Job Application')->5, (Hand In Job Application, 'Hand In Job Application')->6, (Hand In Job Application, 'Hand In Job Application')->7, (Hand In Job Application, 'Hand In Job Application')->8, (Hand In Job Application, 'Hand In Job Application')->9, (ML Interview, 'ML Interview')->13, (ML Interview, 'ML Interview')->21, (ML Interview, 'ML Interview')->7, (Make Job Offer, 'Make Job Offer')->10, (Make Job Offer, 'Make Job Offer')->9, (Screening Interview, 'Screening Interview')->10, (Screening Interview, 'Screening Interview')->11, (Screening Interview, 'Screening Interview')->12, (Screening Interview, 'Screening Interview')->13, (Screening Interview, 'Screening Interview')->14, (Screening Interview, 'Screening Interview')->15, (Screening Interview, 'Screening Interview')->16, (Screening Interview, 'Screening Interview')->17, (Screening Interview, 'Screening Interview')->18, (Screening Interview, 'Screening Interview')->19, (Screening Interview, 'Screening Interview')->20, (Screening Interview, 'Screening Interview')->21, (Screening Interview, 'Screening Interview')->22, (Screening Interview, 'Screening Interview')->23, (Screening Interview, 'Screening Interview')->24, (Screening Interview, 'Screening Interview')->25, (Screening Interview, 'Screening Interview')->3, (Screening Interview, 'Screening Interview')->4, (Screening Interview, 'Screening Interview')->5, (Screening Interview, 'Screening Interview')->6, (Screening Interview, 'Screening Interview')->7, (Screening Interview, 'Screening Interview')->8, (Screening Interview, 'Screening Interview')->9, (Telephonic Screening, 'Telephonic Screening')->14, (Telephonic Screening, 'Telephonic Screening')->3, (Telephonic Screening, 'Telephonic Screening')->4, (■, None)->sink, 10->(Background Check, 'Background Check'), 10->(Make Job Offer, 'Make Job Offer'), 10->(■, None), 11->(Background Check, 'Background Check'), 11->(Coding Interview, 'Coding Interview'), 11->(Screening Interview, 'Screening Interview'), 11->(■, None), 12->(Background Check, 'Background Check'), 12->(Coding Interview, 'Coding Interview'), 12->(Frontend Interview, 'Frontend Interview'), 12->(■, None), 13->(Background Check, 'Background Check'), 13->(Behavioral Interview, 'Behavioral Interview'), 13->(ML Interview, 'ML Interview'), 13->(■, None), 14->(Application Rejected, 'Application Rejected'), 14->(Background Check, 'Background Check'), 14->(Telephonic Screening, 'Telephonic Screening'), 14->(■, None), 15->(Application Rejected, 'Application Rejected'), 15->(Background Check, 'Background Check'), 15->(■, None), 16->(Background Check, 'Background Check'), 16->(Coding Interview, 'Coding Interview'), 16->(■, None), 17->(Application Rejected, 'Application Rejected'), 17->(Background Check, 'Background Check'), 17->(Frontend Interview, 'Frontend Interview'), 17->(■, None), 18->(Application Rejected, 'Application Rejected'), 18->(Background Check, 'Background Check'), 18->(Screening Interview, 'Screening Interview'), 18->(■, None), 19->(Application Rejected, 'Application Rejected'), 19->(Background Check, 'Background Check'), 19->(Coding Interview, 'Coding Interview'), 19->(■, None), 20->(Application Rejected, 'Application Rejected'), 20->(Background Check, 'Background Check'), 20->(Extensive Background Check, 'Extensive Background Check'), 20->(■, None), 21->(Application Rejected, 'Application Rejected'), 21->(Background Check, 'Background Check'), 21->(ML Interview, 'ML Interview'), 21->(■, None), 22->(Backend Interview, 'Backend Interview'), 22->(Background Check, 'Background Check'), 22->(Coding Interview, 'Coding Interview'), 22->(■, None), 23->(Background Check, 'Background Check'), 23->(Extensive Background Check, 'Extensive Background Check'), 23->(■, None), 24->(Backend Interview, 'Backend Interview'), 24->(Background Check, 'Background Check'), 24->(Behavioral Interview, 'Behavioral Interview'), 24->(■, None), 25->(Application Rejected, 'Application Rejected'), 25->(Backend Interview, 'Backend Interview'), 25->(Background Check, 'Background Check'), 25->(■, None), 3->(Background Check, 'Background Check'), 3->(Telephonic Screening, 'Telephonic Screening'), 3->(■, None), 4->(Screening Interview, 'Screening Interview'), 4->(Telephonic Screening, 'Telephonic Screening'), 4->(■, None), 5->(Background Check, 'Background Check'), 5->(Extensive Background Check, 'Extensive Background Check'), 5->(Screening Interview, 'Screening Interview'), 5->(■, None), 6->(Background Check, 'Background Check'), 6->(Coding Interview, 'Coding Interview'), 6->(Extensive Background Check, 'Extensive Background Check'), 6->(■, None), 7->(Background Check, 'Background Check'), 7->(Coding Interview, 'Coding Interview'), 7->(ML Interview, 'ML Interview'), 7->(■, None), 8->(Background Check, 'Background Check'), 8->(Behavioral Interview, 'Behavioral Interview'), 8->(Frontend Interview, 'Frontend Interview'), 8->(■, None), 9->(Background Check, 'Background Check'), 9->(Behavioral Interview, 'Behavioral Interview'), 9->(Make Job Offer, 'Make Job Offer'), 9->(■, None), source->(Hand In Job Application, 'Hand In Job Application') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+
+
+
+============================================================
+REPRESENTATION 9: LOG_SKELETON
+============================================================
+
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model that captures behavioral constraints observed in an event log.
+
+1. CORE CONCEPT:
+   - Describes WHAT constraints must hold, not HOW to execute
+   - Based on activity occurrence and ordering relationships
+   - Captures necessary conditions for valid traces
+
+2. CONSTRAINT TYPES:
+
+   a) EQUIVALENCE:
+      - Activities that always occur together (same number of times)
+      - If A occurs n times, B also occurs n times
+      - Example: "Create Order" EQUIV "Send Invoice"
+
+   b) ALWAYS BEFORE:
+      - Activity A must occur before B (if B occurs)
+      - A is a prerequisite for B
+      - Example: "Receive Application" ALWAYS_BEFORE "Process Application"
+
+   c) ALWAYS AFTER:
+      - Activity B must occur after A (if A occurs)
+      - B is a consequence of A
+      - Example: "Submit" ALWAYS_AFTER "Fill Form"
+
+   d) NEVER TOGETHER:
+      - Activities A and B never co-occur in same trace
+      - Mutually exclusive activities
+      - Example: "Approve" NEVER_TOGETHER "Reject"
+
+   e) DIRECTLY FOLLOWS:
+      - B immediately follows A (no activities between)
+      - Strict sequential constraint
+      - Example: "Enter PIN" DIRECTLY_FOLLOWS "Insert Card"
+
+   f) ACTIVITY OCCURRENCES:
+      - Bounds on how many times an activity can occur
+      - Format: activity: {min, max} or {exact_count}
+      - Example: "Validate": {1, 3} means 1 to 3 times
+
+3. READING LOG SKELETON OUTPUT:
+   - Each constraint type listed separately
+   - Activities mentioned by name
+   - Confidence/support values may be included
+
+4. CONFORMANCE CHECKING:
+   - A trace is valid if ALL constraints are satisfied
+   - Violations indicate deviations from expected behavior
+   - Can be used for anomaly detection
+
+5. ADVANTAGES:
+   - Declarative: Focus on constraints, not sequences
+   - Compact: Captures essence without full model
+   - Flexible: Allows any sequence satisfying constraints
+   - Interpretable: Easy to understand individual rules
+
+6. LIMITATIONS:
+   - May not capture all behavioral patterns
+   - Requires complete log for accurate constraints
+   - Some constraints may be coincidental
+
+7. USE FOR:
+   - Compliance checking
+   - Process auditing
+   - Anomaly detection
+   - Understanding mandatory relationships
+   - Validating process instances
+
+8. COMPARISON:
+   - vs Petri Net: Declarative vs procedural
+   - vs DECLARE: Log skeleton is simpler subset
+   - vs DFG: Log skeleton captures more than direct follows
+
+
+--- DISCOVERED MODEL ---
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('ML Interview', 'Hand In Job Application') ('ML Interview', 'Telephonic Screening') ('Coding Interview', 'Screening Interview') ('Frontend Interview', 'Screening Interview') ('Background Check', 'Screening Interview') ('Frontend Interview', 'Background Check') ('Coding Interview', 'Background Check') ('Frontend Interview', 'Coding Interview') ('Backend Interview', 'Screening Interview') ('Telephonic Screening', 'Hand In Job Application') ('Backend Interview', 'Background Check') ('Backend Interview', 'Coding Interview') ('Frontend Interview', 'Hand In Job Application') ('Coding Interview', 'Hand In Job Application') ('Frontend Interview', 'Telephonic Screening') ('Background Check', 'Hand In Job Application') ('Extensive Background Check', 'Screening Interview') ('Coding Interview', 'Telephonic Screening') ('Screening Interview', 'Background Check') ('Background Check', 'Telephonic Screening') ('Extensive Background Check', 'Background Check') ('ML Interview', 'Screening Interview') ('Backend Interview', 'Hand In Job Application') ('Backend Interview', 'Telephonic Screening') ('ML Interview', 'Background Check') ('ML Interview', 'Coding Interview') ('Screening Interview', 'Hand In Job Application') ('Extensive Background Check', 'Hand In Job Application') ('Screening Interview', 'Telephonic Screening') ('Extensive Background Check', 'Telephonic Screening')
+
+Always Before:  ('ML Interview', 'Hand In Job Application') ('ML Interview', 'Telephonic Screening') ('Coding Interview', 'Screening Interview') ('Frontend Interview', 'Screening Interview') ('Frontend Interview', 'Background Check') ('Coding Interview', 'Background Check') ('Frontend Interview', 'Coding Interview') ('Backend Interview', 'Screening Interview') ('Telephonic Screening', 'Hand In Job Application') ('Backend Interview', 'Background Check') ('Backend Interview', 'Coding Interview') ('Frontend Interview', 'Hand In Job Application') ('Coding Interview', 'Hand In Job Application') ('Frontend Interview', 'Telephonic Screening') ('Background Check', 'Hand In Job Application') ('Extensive Background Check', 'Screening Interview') ('Coding Interview', 'Telephonic Screening') ('Background Check', 'Telephonic Screening') ('Extensive Background Check', 'Background Check') ('ML Interview', 'Screening Interview') ('Backend Interview', 'Hand In Job Application') ('Backend Interview', 'Telephonic Screening') ('ML Interview', 'Background Check') ('ML Interview', 'Coding Interview') ('Screening Interview', 'Hand In Job Application') ('Extensive Background Check', 'Hand In Job Application') ('Screening Interview', 'Telephonic Screening') ('Extensive Background Check', 'Telephonic Screening')
+
+Always After: 
+
+Never Together: 
+
+Activity Occurrences:  Hand In Job Application: 1; Telephonic Screening: 0, 1; Screening Interview: 0, 1; Background Check: 0, 1; Extensive Background Check: 0, 1; Coding Interview: 0, 1; ML Interview: 0, 1; Frontend Interview: 0, 1; Behavioral Interview: 0, 1, 2, 3; Make Job Offer: 0, 1, 2, 3; Application Rejected: 0, 1, 2, 3; Backend Interview: 0, 1;
+
+Directly-Follows Constraints: 
+
+
+
+
+============================================================
+REPRESENTATION 10: DECLARE
+============================================================
+
+=== DECLARE INTERPRETATION GUIDE ===
+
+DECLARE is a declarative process modeling language based on temporal logic constraints.
+
+1. CORE PHILOSOPHY:
+   - "Everything not forbidden is allowed"
+   - Specifies constraints that must be satisfied
+   - Any execution path respecting constraints is valid
+   - Opposite of procedural models (Petri nets, BPMN)
+
+2. CONSTRAINT TEMPLATES:
+
+   EXISTENCE CONSTRAINTS:
+   - Existence(A, n): A must occur at least n times
+   - Absence(A, n): A can occur at most n-1 times
+   - Exactly(A, n): A must occur exactly n times
+   - Init(A): A must be the first activity
+   - End(A): A must be the last activity
+
+   RELATION CONSTRAINTS:
+   - RespondedExistence(A, B): If A occurs, B must also occur (before or after)
+   - CoExistence(A, B): A and B always occur together or both absent
+   - Response(A, B): If A occurs, B must eventually follow
+   - Precedence(A, B): B can only occur if A has occurred before
+   - Succession(A, B): Response(A,B) AND Precedence(A,B)
+
+   NEGATIVE CONSTRAINTS:
+   - NotCoExistence(A, B): A and B cannot both occur in same trace
+   - NotSuccession(A, B): A cannot be followed by B
+   - NotChainSuccession(A, B): B cannot immediately follow A
+
+   CHAIN CONSTRAINTS (immediate succession):
+   - ChainResponse(A, B): B must immediately follow A
+   - ChainPrecedence(A, B): A must immediately precede B
+   - ChainSuccession(A, B): Both chain response and precedence
+
+   ALTERNATING CONSTRAINTS:
+   - AlternateResponse(A, B): Each A followed by B before next A
+   - AlternatePrecedence(A, B): Each B preceded by A after previous B
+   - AlternateSuccession(A, B): Both alternate response and precedence
+
+3. READING DECLARE OUTPUT:
+   - Template name with involved activities
+   - Support: Percentage of traces satisfying constraint
+   - Confidence: Strength of the constraint
+   - Example: "Response(Submit, Review): support=95%, confidence=0.98"
+
+4. SEMANTICS:
+   - Constraints as LTL (Linear Temporal Logic) formulas
+   - Trace valid iff all constraints satisfied
+   - Empty trace may be valid (if no mandatory constraints)
+
+5. DISCOVERY ALGORITHMS:
+   - Mine constraints from event logs
+   - Filter by support/confidence thresholds
+   - Remove redundant constraints
+
+6. ADVANTAGES:
+   - Flexible: Many valid executions
+   - Compact: Few rules describe complex behavior
+   - Natural for knowledge workers
+   - Easy to understand individual constraints
+
+7. LIMITATIONS:
+   - Can be hard to understand combined effect of many constraints
+   - May allow unintended behavior
+   - Checking all constraints can be complex
+
+8. USE FOR:
+   - Knowledge-intensive processes
+   - Compliance requirements
+   - Flexible workflow modeling
+   - Process monitoring and alerting
+   - Understanding what MUST happen vs what CAN happen
+
+
+--- DISCOVERED MODEL ---
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Response: ('Telephonic Screening', 'Screening Interview'), ('Telephonic Screening', 'Background Check'), ('Hand In Job Application', 'Application Rejected'), ('Telephonic Screening', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening')
+Existence: Telephonic Screening, Application Rejected, Hand In Job Application
+Chain precedence: ('Hand In Job Application', 'Telephonic Screening')
+Alternate response: ('Hand In Job Application', 'Application Rejected'), ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Background Check')
+Responded Existence: ('Telephonic Screening', 'Hand In Job Application'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Screening Interview'), ('Telephonic Screening', 'Background Check'), ('Application Rejected', 'Hand In Job Application'), ('Hand In Job Application', 'Application Rejected'), ('Application Rejected', 'Telephonic Screening'), ('Telephonic Screening', 'Application Rejected')
+Exactly 1: Application Rejected, Hand In Job Application, Telephonic Screening
+Alternate precedence: ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected')
+Chain response: ('Hand In Job Application', 'Telephonic Screening')
+Precedence: ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected')
+Initialization: Hand In Job Application
+Absence: Backend Interview
+Succession: ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview'), ('Telephonic Screening', 'Application Rejected')
+Alternate succession: ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview')
+Chain succession: ('Hand In Job Application', 'Telephonic Screening')
+Co-Existence: ('Background Check', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Screening Interview', 'Telephonic Screening'), ('Application Rejected', 'Hand In Job Application'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Hand In Job Application'), ('Telephonic Screening', 'Screening Interview')
+
+
+
+============================================================
+REPRESENTATION 11: LOG_ATTRIBUTES
+============================================================
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log, offering a high-level overview before detailed process mining.
+
+1. PURPOSE:
+   - Summarize the event log's characteristics
+   - Provide context for interpreting process models
+   - Identify data quality issues
+   - Understand the scope of the process
+
+2. COMMON ATTRIBUTES:
+
+   CASE-LEVEL STATISTICS:
+   - Number of cases: Total process instances
+   - Case duration: Min, max, mean, median time from start to end
+   - Activities per case: How many events in each trace
+   - Variant count: Number of unique execution paths
+
+   EVENT-LEVEL STATISTICS:
+   - Total events: Total number of recorded events
+   - Event classes: Unique activity types
+   - Resources: People/systems performing activities
+   - Timestamps: Time range of the log
+
+   ACTIVITY STATISTICS:
+   - Activity frequencies: How often each activity occurs
+   - Start activities: Which activities begin traces
+   - End activities: Which activities end traces
+   - Self-loops: Activities that repeat immediately
+
+3. READING THE OUTPUT:
+   - Numeric summaries with distributions
+   - Lists of unique values for categorical attributes
+   - Time-based statistics for temporal analysis
+   - Frequency tables for activity occurrence
+
+4. DATA QUALITY INDICATORS:
+   - Missing values: Incomplete event records
+   - Duplicate events: Potential logging issues
+   - Timestamp anomalies: Events out of order
+   - Unusual case durations: Outliers or errors
+
+5. EXAMPLE OUTPUT FORMAT:
+   ```
+   Cases: 1,000
+   Events: 15,423
+   Activities: 12 unique
+   Variants: 87
+   Timespan: 2024-01-01 to 2024-12-31
+   Mean case duration: 3.5 days
+   Most frequent activity: "Process Application" (2,341 occurrences)
+   Start activities: ["Submit Request", "Create Case"]
+   End activities: ["Close Case", "Archive"]
+   ```
+
+6. USE FOR:
+   - Initial log exploration
+   - Setting expectations for model complexity
+   - Identifying filtering needs
+   - Communicating process scope to stakeholders
+   - Validating log completeness
+
+7. IMPLICATIONS FOR MODELING:
+   - High variant count: Complex process, may need filtering
+   - Few activities: Simpler models expected
+   - Many resources: Consider organizational mining
+   - Long durations: Look for bottlenecks
+
+8. COMPARISON WITH OTHER REPRESENTATIONS:
+   - Attributes: WHAT is in the log (descriptive)
+   - DFG/Petri Net: HOW activities relate (structural)
+   - Variants: WHICH paths are taken (behavioral)
+
+9. PREPROCESSING GUIDANCE:
+   - Filter infrequent variants for cleaner models
+   - Handle missing timestamps appropriately
+   - Consider resource/organizational perspective
+   - Aggregate similar activities if too granular
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Hand In Job Application; freq. 10000) (Application Rejected; freq. 9654) (Telephonic Screening; freq. 8799) (Screening Interview; freq. 7809) (Background Check; freq. 7809) (Coding Interview; freq. 3904) (Behavioral Interview; freq. 3796) (Make Job Offer; freq. 3401) (Frontend Interview; freq. 2913) (ML Interview; freq. 2334) (Extensive Background Check; freq. 2099) (Backend Interview; freq. 1351)
+case:citizen  empty: 0 values: (True; freq. 39611) (False; freq. 24258)
+case:gender  empty: 0 values: (True; freq. 39461) (False; freq. 24408)
+case:german speaking  empty: 0 values: (False; freq. 32248) (True; freq. 31621)
+case:protected  empty: 0 values: (False; freq. 50613) (True; freq. 13256)
+case:religious  empty: 0 values: (True; freq. 39683) (False; freq. 24186)
+concept:name  empty: 0 values: (Hand In Job Application; freq. 10000) (Application Rejected; freq. 9654) (Telephonic Screening; freq. 8799) (Screening Interview; freq. 7809) (Background Check; freq. 7809) (Coding Interview; freq. 3904) (Behavioral Interview; freq. 3796) (Make Job Offer; freq. 3401) (Frontend Interview; freq. 2913) (ML Interview; freq. 2334) (Extensive Background Check; freq. 2099) (Backend Interview; freq. 1351)
+resource  empty: 0 values: (HR-dummy; freq. 18126) (Senior Partner; freq. 10680) (Coding Interviewer; freq. 10502) (HR-pro; freq. 9509) (Online System; freq. 5083) (Front Desk; freq. 4917) (HR-pro and Senior Partner; freq. 3796) (deepResearch Inc.; freq. 1256)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}

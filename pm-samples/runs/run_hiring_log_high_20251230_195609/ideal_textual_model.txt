@@ -1,0 +1,79 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a controlled, consistent candidate evaluation flow that eliminates contradictory outcomes, limits rework, sequences diligence sensibly, and accelerates time-to-decision and time-to-offer while preserving necessary assessments.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source. This IDEAL model describes control-flow improvements only and does not assign tasks to specific actors.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Trigger: Candidate submits “Hand In Job Application”.
+
+Target activities and control flow (streamlined, governance-focused)
+1) Initial screening
+   - Telephonic Screening: standardize as the first screening step (remove the unconditional skip). If a case policy requires omission, record a justified bypass, but the default path executes this step.
+
+2) Early interview sequence (remove early parallelism with background checks)
+   - Screening Interview: conduct after Telephonic Screening. Do not execute Background Check in parallel; defer intensive checks to later to avoid waste.
+
+3) Technical evaluation
+   - Coding Interview: conditional based on role/need (the model already allows skipping; retain that, but require an explicit decision rationale).
+   - Specialized technical interviews: ML, Backend, Frontend as applicable. Allow parallel execution for efficiency, but perform each at most once. Synchronize before moving forward.
+
+4) Behavioral assessment
+   - Behavioral Interview: conduct once. Allow at most one additional re-interview only upon explicit decision; remove open-ended looping.
+
+5) Single, exclusive decision gate (replace the parallel rejection/offer split)
+   - Exclusive-OR decision: Is the candidate moving forward?
+     - No → Application Rejected (single occurrence) → End.
+     - Yes → proceed to Make Job Offer.
+
+6) Offer and diligence sequencing
+   - Make Job Offer: single issuance (allow one formal amendment if necessary; remove open-ended looping).
+   - Extensive Background Check: perform after the offer (as a condition of finalization). This repositions diligence to finalists, reducing unnecessary delays and costs earlier in the process.
+     - If Extensive Background Check fails → Application Rejected → End.
+     - If it passes → End with offer maintained (process completion).
+
+7) Background Check (basic)
+   - If a basic Background Check is required, execute either combined with Extensive Background Check at this late stage or omit when redundant. The intent is to avoid running checks on non-finalists.
+
+Decision points with criteria and outcomes
+- Telephonic/Coding/Technical specialization: conditional execution must be explicitly decided and recorded; default avoids unnecessary steps.
+- Exclusive hiring decision: exactly one of [Reject, Proceed to Offer] can occur; they cannot co-occur or alternate.
+- Post-offer diligence outcome: pass (complete) or fail (reject), with no loops.
+
+Parallel activities and synchronization points
+- Allow parallelism only within the specialized technical interviews (ML/Backend/Frontend) to shorten cycle time. All other phases are sequenced to prevent contradictory states.
+
+Exception handling and error paths
+- If any interview is inconclusive, permit one controlled re-interview (behavioral) with documented justification; further repeats are disallowed.
+- If an offered candidate’s background check fails, terminate with a single Application Rejected event; do not retain or reissue offers concurrently.
+
+Rework loops and escalation
+- Remove unbounded loops:
+  - Behavioral Interview: capped at one re-interview maximum.
+  - Make Job Offer: capped at one amendment maximum.
+  - Application Rejected: no repeat rejections in the same case.
+- If delays exceed internal SLAs (e.g., background-check turnaround), handle via operational oversight outside this control flow (no new activities added in the model).
+
+End conditions and outcomes
+- Two clear terminal outcomes:
+  - Rejected (after exclusive decision or post-offer background-check failure).
+  - Offer maintained (after offer and successful Extensive Background Check).
+
+Process metrics and performance characteristics (expected improvements)
+- Variance reduction:
+  - Eliminate contradictory paths (Offer → Reject, Reject → Offer): target 100% reduction of these sequences.
+- Cycle-time improvements (directional):
+  - Remove unbounded loops for Behavioral Interview and Make Job Offer; expect material reduction versus observed ~530k time-unit paths to offer in AS-IS.
+  - Defer Extensive Background Check until post-offer to avoid ~155k–171k time-unit delays on non-finalists.
+- Throughput predictability:
+  - Exclusive decisioning and capped rework should narrow the distribution of completion times and reduce long tails.
+
+Improvements made (summary)
+- Replaced parallel “Rejection” and “Behavioral/Offer” branches with an exclusive decision gate to prevent mixed outcomes.
+- Eliminated open-ended loops in Behavioral Interview, Make Job Offer, and Application Rejected.
+- Repositioned Extensive Background Check to post-offer; consolidated basic Background Check to late stage when needed.
+- Removed unnecessary early parallelism with background checks; maintained bounded parallelism only among specialized technical interviews.
+- Clarified start/end states to map to business outcomes rather than a technical merge.

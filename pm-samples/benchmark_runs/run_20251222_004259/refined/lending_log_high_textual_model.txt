@@ -1,0 +1,85 @@
+# AS-IS Process Model
+
+Process overview and scope
+- Purpose: Origination of a credit/loan from appointment request through assessment to one of the visible outcomes: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement.
+- Scope: From Request Appointment to one terminal event.
+
+Start and strict mandatory prefix (global ordering constraints)
+- The process always starts with Request Appointment.
+- If the case continues (i.e., not denied immediately), the mandatory prefix occurs in this exact order:
+  1) Request Appointment
+  2) Set Appointment
+  3) Hand In Credit Appliaction
+  4) Verify Borrowers Information
+- The above four activities must appear in the listed order without swapping. Any deviation (e.g., Hand In Credit Appliaction before Set Appointment) is invalid.
+
+Early exit after start
+- Appointment Denied may occur immediately after Request Appointment; it is terminal and no further activities follow.
+
+Verification decision (exclusive)
+- After Verify Borrowers Information, either:
+  - Application Rejected occurs and the case ends (terminal), or
+  - The case proceeds to preparation/decision work.
+
+Post-verification preparation and decision work
+- Conceptual parallelism exists internally, but the observed log imposes the following visible-order constraints.
+
+Preparation/Submission track (Branch B)
+- Two mutually exclusive options:
+  Option B1: Fast-track to signing
+  - skipped_examination occurs immediately after Verify Borrowers Information and is directly followed by Sign Loan Agreement.
+  - No Submit File to Underwriter, no Loan Denied, and no other activities occur between or after these two events in this path.
+  Option B2: Regular path leading to submission
+  - Optional sub-work (may happen in any order and may interleave):
+    • Request Co-Signer On Loan (0 or 1+ occurrences observed as 0 or 1; optional).
+    • Make Visit to Assess Colatteral (0 or more times; self-loop allowed).
+  - All instances of Request Co-Signer On Loan and Make Visit to Assess Colatteral, if they occur, happen strictly before Submit File to Underwriter; they never occur after Submit File to Underwriter.
+  - After optional sub-work completes (including the possibility of skipping either/both), Submit File to Underwriter occurs once.
+
+Decision/denial track (Branch A)
+- Only one visible activity may occur here: Loan Denied (terminal).
+- Visible-order constraint with Branch B:
+  - If the case follows the regular path (Option B2), Loan Denied, when it occurs, is logged only after Submit File to Underwriter. Loan Denied never appears before Submit File to Underwriter and is never followed by Submit File to Underwriter.
+  - If the case follows the fast-track (Option B1), Loan Denied does not occur.
+
+Contract/signing and terminal outcomes
+- After Submit File to Underwriter (regular path):
+  - If approved (no Loan Denied), Sign Loan Agreement occurs (terminal).
+  - If denied (Loan Denied occurs), no Sign Loan Agreement occurs; the case ends with Loan Denied (terminal).
+- After skipped_examination (fast-track):
+  - Sign Loan Agreement occurs immediately; this path never includes Submit File to Underwriter or Loan Denied.
+- Terminal activities and exclusivity:
+  - Appointment Denied, Application Rejected, Loan Denied, and Sign Loan Agreement are mutually exclusive per case and are terminal. No activity may follow a terminal event.
+
+Optionality and multiplicity
+- Request Co-Signer On Loan: optional; at most once per case in observed data; occurs only between Verify Borrowers Information and Submit File to Underwriter on the regular path.
+- Make Visit to Assess Colatteral: optional; may repeat (0, 1, or many times); occurs only between Verify Borrowers Information and Submit File to Underwriter on the regular path.
+- skipped_examination: optional; if it occurs, it appears once, immediately after Verify Borrowers Information and immediately followed by Sign Loan Agreement.
+- Submit File to Underwriter: required on all non-fast-track cases; occurs once and strictly after Verify Borrowers Information and before any Loan Denied or Sign Loan Agreement.
+
+Explicit validity constraints (to reject anomalous sequences)
+- Prefix order is strict: Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information.
+- Submit File to Underwriter must be preceded by Verify Borrowers Information.
+- Request Co-Signer On Loan and Make Visit to Assess Colatteral never occur after Submit File to Underwriter.
+- Loan Denied:
+  - Never occurs before Submit File to Underwriter (on regular path).
+  - Never co-occurs with skipped_examination.
+  - Is terminal; no activity may follow it (e.g., no Submit File to Underwriter or any other event after Loan Denied).
+- skipped_examination:
+  - Occurs (if at all) immediately after Verify Borrowers Information and is immediately followed by Sign Loan Agreement.
+  - Not followed or preceded by Submit File to Underwriter or Loan Denied.
+- Sign Loan Agreement is terminal and never co-occurs with Loan Denied in the same case.
+
+Examples of valid patterns (not exhaustive)
+- Request Appointment -> Appointment Denied
+- Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Application Rejected
+- Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Loan Denied
+- Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Sign Loan Agreement
+- Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral (0+ times, any order) -> Submit File to Underwriter -> Loan Denied
+- Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement
+
+Examples of invalid patterns (reject)
+- Any occurrence of Loan Denied -> Submit File to Underwriter (Loan Denied cannot precede or be followed by Submit File to Underwriter).
+- Request Appointment -> Hand In Credit Appliaction -> Set Appointment -> ... (Set Appointment must precede Hand In Credit Appliaction).
+- Any activity after a terminal event (Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement).
+- skipped_examination not immediately followed by Sign Loan Agreement, or co-occurring with Submit File to Underwriter or Loan Denied.

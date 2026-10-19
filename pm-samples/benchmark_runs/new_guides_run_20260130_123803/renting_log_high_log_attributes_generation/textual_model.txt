@@ -1,0 +1,216 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Scope: Residential rental lifecycle from prospecting (viewing request) through tenant onboarding and ongoing rent collection, including exceptions for cancellations, rejections, late payments, and evictions.
+- Purpose: Describe how prospects become tenants and how rent is subsequently collected, reflecting observed behavior in the event log.
+
+Key stakeholders and roles involved
+- Tenant: Initiates viewing requests, attends viewings, submits paperwork, signs contract, moves in, pays rent, may cancel.
+- Hotline: Customer-contact channel supporting appointment-related interactions (e.g., handling inquiries/scheduling on behalf of tenant).
+- Real Estate Agents (Real Estate Agent 1–5): Set appointments, conduct/host property viewings, perform initial screening of prospective tenants, communicate rejections.
+- Lawyers (Lawyer 1–3): Perform extensive screening when required; handle evictions.
+- Landlords (Landlord 1–5): Final decision-maker on approvals, sign contracts, issue warnings for missed payments, accept late payments.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Tenant expresses interest in a property and requests a viewing.
+- Observed start activity: Apply for Viewing Appointment (10,000 occurrences).
+
+Pre-visit planning and appointment handling
+1) Apply for Viewing Appointment (Tenant; occasionally via Hotline)
+   - Input: Tenant’s interest and basic details.
+   - Output: Request queued for scheduling.
+2) Set Appointment (Real Estate Agent)
+   - Agent proposes and confirms a viewing slot.
+   - Exception path: Tenant Cancels Appartment (2,680 occurrences)
+     - Observed as cancelation of the planned interaction; frequency suggests cancellations may occur both pre- and post-viewing setup.
+     - Outcome: Case typically ends with no viewing. Re-application may occur as a new case (not explicitly recorded as a loop with a distinct re-apply step).
+
+Property viewing
+3) View The Property (Tenant with Real Estate Agent) (9,151 occurrences)
+   - Outcome decision: Does the tenant proceed with an application?
+     - If no interest: Frequently manifests as Tenant Cancels Appartment; case ends.
+     - If yes: Tenant proceeds to documentation.
+
+Application and screening
+4) Hand In The Paperwork (Tenant) (7,441 occurrences)
+   - Documents submitted following the viewing.
+5) Screening and verification activities
+   - Screen Prospective Tenant (Real Estate Agent) (7,441 occurrences)
+   - Check Paperwork (often by Lawyers) (7,441 occurrences)
+   - Behavioral interpretation: These two checks are commonly both performed for each applicant who submitted paperwork. They may be sequential or loosely parallel, but both are present prior to final decision.
+6) Extensive Screening (Lawyers) (2,793 occurrences)
+   - Conditional, performed for higher-risk or unclear cases identified during checks.
+
+Decision and outcome of application
+7) Decision node: Approve or Reject
+   - Reject Prospective Tenant (Real Estate Agent/Landlord communication) (7,230 occurrences)
+     - End state: Application Rejected.
+   - If approved:
+     8) Sign Contract (Landlord and Tenant) (2,770 occurrences)
+     9) Move In (Tenant) (2,770 occurrences)
+       - End of onboarding; transition into tenancy.
+
+Tenancy and rent collection cycle
+10) Periodic Rent Collection (repeating cycle)
+    - Pay Rent (Tenant) (18,269 occurrences)
+      - Represents the normal, repeated payment events across active tenancies.
+    - Exception branch for missed payments:
+      a) Miss Rent Payment (945 occurrences)
+      b) Issue Warning (Landlord) (945 occurrences)
+         - Post-warning outcomes:
+           i) Accept Late Payment (Landlord records acceptance; Tenant pays) (855 occurrences)
+              - Loop back to normal Pay Rent in next cycle.
+           ii) Evict Tenant (Lawyers, with Landlord authorization) (90 occurrences)
+              - End state: Tenancy Terminated by Eviction.
+
+Decision points with criteria and possible outcomes
+- After viewing: proceed or cancel (Tenant Cancels Appartment).
+- After screening/check paperwork/extensive screening: Reject Prospective Tenant or proceed to Sign Contract.
+- After missed payment warning: Accept Late Payment and continue the cycle, or Evict Tenant and terminate the tenancy.
+
+Parallel activities and synchronization points
+- Practical concurrency: Screen Prospective Tenant and Check Paperwork often co-occur for the same application cohort. Synchronization is required before the final approval/rejection decision.
+- Extensive Screening occurs conditionally after initial checks are available; it extends the decision timeline before final outcome.
+
+Exception handling and error paths
+- Appointment cancellations: Tenant Cancels Appartment can occur around the appointment stages and after viewing. Outcome is early termination with no contract.
+- Missed rent: When Miss Rent Payment occurs, the process enters an exception path with Issue Warning, then either Accept Late Payment (return to routine) or Evict Tenant (termination).
+
+Rework loops and escalation procedures
+- Rent cycle loop: After Accept Late Payment, tenant returns to the regular Pay Rent loop in subsequent periods.
+- No explicit rework steps for application screening are present in the log; however, repetitive screening beyond Extensive Screening is not observed as distinct activities.
+
+End conditions and outcomes
+- No engagement: Appointment canceled (Tenant Cancels Appartment).
+- Application rejected: Reject Prospective Tenant.
+- Successful onboarding: Sign Contract followed by Move In.
+- Tenancy terminated due to non-payment: Evict Tenant.
+
+Process metrics and performance characteristics (derived from observed frequencies and timestamps)
+- Volume and timeframe: Events span 2015-01-05 through 2015-03-17 (UTC). Median activity date: 2015-01-08.
+- Funnel indicators (approximate, based on event frequencies; note these are event counts, not deduplicated case counts):
+  - Apply for Viewing Appointment: 10,000
+  - Set Appointment: 9,151
+  - View The Property: 9,151
+  - Hand In The Paperwork: 7,441
+  - Screen Prospective Tenant: 7,441
+  - Check Paperwork: 7,441
+  - Extensive Screening: 2,793 (subset of applications requiring deeper checks)
+  - Reject Prospective Tenant: 7,230
+  - Sign Contract: 2,770
+  - Move In: 2,770
+- Indicative rates:
+  - From Apply to Move In: roughly 27–28% of application-related event volume leads to successful onboarding.
+  - Cancellations: Tenant Cancels Appartment observed 2,680 times, suggesting significant attrition before contract.
+  - Payment reliability: 18,269 Pay Rent vs. 945 Miss Rent Payment → missed payments ~5% of recorded payment events; 90 evictions imply ~9.5% of missed-payment cases escalate to eviction, with ~90.5% resolved by Accept Late Payment.
+- Role load patterns (by resource counts):
+  - Tenant actions dominate initiation, paperwork, and rent events.
+  - Real Estate Agents handle most appointment and screening tasks.
+  - Lawyers appear prominently in Check Paperwork/Extensive Screening and all evictions.
+  - Landlords are concentrated in warnings, contract signing, and accepting late payments.
+
+Key challenges and pain points
+- High attrition and rejections: Large gap between applications (10,000) and contracts signed (2,770), with 7,230 rejections and 2,680 cancellations indicating late-stage filtering and potential inefficiencies.
+- Late qualification: Screening and paperwork checks occur after viewings, causing unnecessary appointment load and no-shows/cancellations.
+- Additional deep-dive (Extensive Screening) is frequent (~2,793), extending cycle time and increasing operational effort.
+- Late payment management overhead: Although most late payments are cured, the exception handling path (warnings, follow-ups) consumes landlord resources and occasionally escalates to eviction.
+- Fragmented responsibilities: Screening split between agents and legal checks leads to handoffs and potential delays due to synchronization before a decision can be made.
+- Data caution: Event counts suggest co-occurrence but not strict sequencing for some tasks; variability likely exists in timing/order across cases, which complicates planning and resource allocation.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Scope: Streamlined residential rental lifecycle that reduces cancellations and rejections, accelerates qualified applicants to contract, and enforces disciplined rent exception handling.
+- Purpose: Reorder and synchronize existing activities, eliminate wasteful late-stage screening, and tighten exception management while maintaining the same set of operational tasks observed in the log.
+
+Key stakeholders and roles involved
+- Tenant: Applies, provides documents, attends viewing, signs contract, moves in, pays rent.
+- Hotline: Supports appointment coordination as needed.
+- Real Estate Agents (1–5): Pre-qualify applicants, schedule and conduct viewings, communicate decisions.
+- Lawyers (1–3): Perform Extensive Screening only when flagged; manage evictions.
+- Landlords (1–5): Approve final decisions, sign contracts, issue warnings, accept late payments.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Tenant signals interest in a property.
+
+Front-loaded qualification to reduce waste
+1) Apply for Viewing Appointment (Tenant; Hotline may assist)
+   - Immediately request necessary documents from the tenant.
+2) Hand In The Paperwork (Tenant)
+   - Collect essential documents upfront to enable early decisioning.
+3) Parallel early checks (synchronized before scheduling)
+   - Screen Prospective Tenant (Real Estate Agent)
+   - Check Paperwork (Lawyers or specialized staff)
+   - Synchronization point: Both screenings complete before proceeding.
+4) Conditional deep-dive
+   - Extensive Screening (Lawyers) only if triggered by the early checks.
+   - Synchronization point: Finalize outcomes of any extensive screening prior to scheduling.
+
+Decision to proceed or decline
+5) Decision node: Pre-approval to proceed to viewing
+   - If not suitable: Reject Prospective Tenant (end state: Application Rejected).
+   - If suitable: Proceed to appointment scheduling.
+
+Viewing and closing
+6) Set Appointment (Real Estate Agent; Hotline supports if needed)
+   - With pre-qualified candidates only, to reduce cancellations/no-shows.
+7) View The Property (Tenant with Real Estate Agent)
+   - Decision node: Candidate intention to proceed.
+     - If candidate declines after viewing: Case ends with no contract (no additional cancel step required).
+     - If candidate confirms: Move to contracting.
+8) Sign Contract (Landlord and Tenant)
+9) Move In (Tenant)
+
+Tenancy and rent collection with tight exception control
+10) Periodic Rent Collection (loop)
+    - Pay Rent (Tenant) as the default path.
+    - Exception branch:
+      a) Miss Rent Payment
+      b) Issue Warning (Landlord)
+         - Outcomes:
+           i) Accept Late Payment (Landlord records acceptance; Tenant pays) → return to Pay Rent in next cycle.
+           ii) Evict Tenant (Lawyers with Landlord authorization) → end state Tenancy Terminated.
+
+Decision points with criteria and possible outcomes
+- Pre-approval decision (after parallel early checks and any Extensive Screening): Reject Prospective Tenant or proceed to Set Appointment.
+- Post-viewing decision (tenant choice): Proceed to Sign Contract or stop with no contract.
+- Post-warning decision (rent exception): Accept Late Payment or Evict Tenant.
+
+Parallel activities and synchronization points
+- Parallel early checks: Screen Prospective Tenant and Check Paperwork run concurrently after documents are provided, synchronized before the pre-approval decision.
+- Extensive Screening runs only when flagged and must complete before pre-approval is finalized.
+
+Exception handling and error paths
+- Candidate withdrawal: If the tenant loses interest at any point before contract, the case can end without needing an explicit cancel activity (behaviorally equivalent to cancellation but avoided by prior pre-qualification).
+- Missed rent: Managed via Issue Warning followed by Accept Late Payment or Evict Tenant, same as AS-IS but with clearer gating and SLAs (policy-level firmness without adding new activities).
+
+Rework loops and escalation procedures
+- Rent cycle: After Accept Late Payment, the process loops back to Pay Rent for the next cycle.
+- Screening rework is minimized by early parallelization; Extensive Screening serves as the only sanctioned deep-dive, avoiding repeated back-and-forth.
+
+End conditions and outcomes
+- Application rejected during pre-approval.
+- Candidate declines after viewing (no contract).
+- Successful onboarding: Signed Contract and Move In.
+- Tenancy terminated by Eviction after unresolved non-payment.
+
+Process metrics and performance characteristics (expected improvements)
+- Reduced cancellations: By pre-qualifying before scheduling, observed cancellations (2,680 in AS-IS) should decrease markedly because only suitable candidates are invited to viewings.
+- Improved conversion rate: Fewer post-viewing rejections; screening before viewings should shift rejections earlier and increase the proportion of viewings that lead to contracts (AS-IS signed contracts 2,770; target is to lift this without adding tasks, by sequence optimization).
+- Lower operational load: Parallel early checks reduce total cycle time to decision; viewings are allocated to higher-probability candidates, improving agent utilization.
+- Rent exceptions: Clearer escalation should maintain high cure rate after warnings (historically ~90.5% cured), with faster resolution and fewer evictions per missed payment.
+
+Improvements made (rationale)
+- Move Hand In The Paperwork, Screen Prospective Tenant, and Check Paperwork before Set Appointment and View The Property, and execute screening checks in parallel. This uses existing activities but optimizes their sequence to avoid unnecessary viewings and late-stage rejections.
+- Restrict Extensive Screening to flagged cases only and complete it before scheduling; this prevents scheduling churn and last-minute denials.
+- Maintain the existing rent exception path (Miss Rent Payment → Issue Warning → Accept Late Payment/Evict Tenant) but emphasize timely decisioning to minimize prolonged delinquency without introducing new activities.
+- Clarify role boundaries: Agents own initial screening; Lawyers focus on paperwork verification and deep-dive/eviction; Landlords decide on contract signing and payment exceptions. This reduces handoff ambiguity and delays.
+
+")

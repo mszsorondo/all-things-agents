@@ -1,0 +1,28 @@
+{
+  "run_timestamp": "2025-12-30T22:58:42.057752",
+  "dataset_name": "hospital_log_high",
+  "xes_path": "benchmark/hospital/hospital_log_high.xes",
+  "model": "xai:grok-4-1-fast-reasoning",
+  "method": "run_agent",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_11, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (3ebaa701-3d88-43ca-8779-df5d6d4829cc, 'Discharge'), (4dc3a5cc-9f74-487c-9c71-cb6ced2fbe00, 'Treatment unsuccessful'), (5fde276c-becd-412f-9684-10d813173ffa, 'Diagnosis'), (81454b57-73ba-45f4-b7e6-59d27cd5332e, 'Treatment successful'), (83c53971-00a4-41c9-b567-f49e2d74797e, 'Examination'), (9479177e-b200-4eca-bdf4-599a2c792a22, 'Thorough Examin...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "xai:grok-4-1-fast-reasoning",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

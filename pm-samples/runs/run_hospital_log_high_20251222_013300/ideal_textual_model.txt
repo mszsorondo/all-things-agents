@@ -1,0 +1,71 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined and governed version of the same patient episode from registration to discharge, eliminating undocumented discharges, minimizing unnecessary rework, and standardizing examination depth prior to Diagnosis.
+- Scope: Single patient journey per case; still sequential (no concurrency introduced). Decision rules are clarified to enforce appropriate assessment and outcome recording.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source. The IDEAL model retains the same activity set and clarifies their sequencing and decision rules: Register at FD, Register at ER, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge.
+
+Detailed step-by-step process flow
+- Start conditions and triggers
+  - Trigger: Patient arrives and is registered via one of two allowed starts:
+    1) Register at FD
+    2) Register at ER
+  - Immediately after registration, both entry points converge into a unified clinical pathway with standardized decision logic.
+
+- Standardized assessment pathway (no skip of all exams)
+  - Mandatory preliminary examination: At least one of the two preliminary examinations must occur before Diagnosis:
+    - Exclusive decision: Examination OR Expert Examination.
+    - Selection criteria (governance rules):
+      - ER entries and/ or cases re-entering after any Treatment unsuccessful must select Expert Examination.
+      - FD entries with lower complexity may select Examination; if risk factors or uncertainty present, select Expert Examination.
+  - Conditional Thorough Examination:
+    - If initial Examination is selected and findings are inconclusive or risk factors present, perform Thorough Examination.
+    - If Expert Examination is selected and complexity remains high, perform Thorough Examination.
+    - Otherwise, skip Thorough Examination and proceed to Diagnosis.
+  - Prohibited behavior in IDEAL: Skipping both preliminary examinations entirely. Direct registration → Diagnosis is disallowed.
+
+- Diagnostic stage
+  - Diagnosis occurs after the standardized assessment pathway has completed (i.e., after either Examination or Expert Examination, with optional Thorough Examination when warranted).
+
+- Treatment stage and post-treatment outcome (documentation enforced)
+  - After Diagnosis, Treatment is performed.
+  - Post-treatment outcome decision (exclusive) with mandatory documentation:
+    1) Treatment successful → must be explicitly recorded as Treatment successful, then proceed to Discharge.
+    2) Treatment unsuccessful → loop back to Diagnosis for re-evaluation.
+  - Prohibited behavior in IDEAL: Direct Treatment → Discharge without an outcome label. All discharges must be preceded by an explicit outcome record.
+
+- Structured rework loop governance (using existing activities)
+  - Upon Treatment unsuccessful:
+    - Mandatory reassessment via Expert Examination for the next cycle.
+    - Perform Thorough Examination unless a clear, documented reason exists to skip it.
+    - Then re-Diagnosis and proceed to Treatment again.
+  - The loop may repeat but with the above stricter reassessment requirements to reduce recurrence.
+
+- End conditions and outcomes
+  - The only permitted end state is Discharge following Treatment successful. Discharge without recorded success is not allowed.
+
+Decision points and criteria
+- Preliminary exam selection (XOR): Examination vs Expert Examination, guided by entry point and case complexity; rework cycles mandate Expert Examination.
+- Thorough Examination (XOR with skip): Performed when initial assessment is inconclusive/high-risk or on rework cycles unless explicitly waived.
+- Post-treatment outcome (XOR): Explicit classification as Treatment successful or Treatment unsuccessful; discharge permitted only after successful outcome.
+
+Parallel activities and synchronization points
+- None. The model remains sequential.
+
+Exception handling and error paths
+- If Treatment unsuccessful occurs, the governed loop requires Expert Examination (and usually Thorough Examination) before the next Diagnosis.
+- Exceptional waivers (e.g., skipping Thorough Examination) are allowed only with documented justification; no new activities are introduced, only stricter rules for existing ones.
+
+Process metrics and performance characteristics (targets)
+- Data completeness: 100% of cases must have a recorded treatment outcome; target 0% Treatment → Discharge without outcome.
+- Rework reduction: Target ≥50% reduction in Treatment unsuccessful occurrences per 10k cases versus AS-IS (~1,746/11,746 executions). Aim for <7.5% unsuccessful after first treatment by enforcing expert-led reassessment on rework.
+- Cycle time: Expect average cycle time improvement by removing undocumented discharges (which often add delay) and by reducing repeat loops. Specific targets depend on local baselines; directional improvement expected across Diagnosis → Treatment and Treatment → Discharge intervals.
+
+Improvements made compared to AS-IS
+- Removed the undocumented discharge path (Treatment → Discharge) by enforcing outcome recording.
+- Standardized entry into clinical assessment: disallowed the complete skip of preliminary examinations before Diagnosis.
+- Introduced governance for rework: after an unsuccessful outcome, require Expert Examination and typically Thorough Examination before re-Diagnosis.
+- Clarified XOR decisions and sequencing so that Diagnosis always follows a documented assessment path.
+- Preserved all legitimate clinical behaviors (Examination, Expert Examination, optional Thorough Examination) while eliminating wasteful and noncompliant variations.

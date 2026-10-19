@@ -1,0 +1,83 @@
+
+============================================================
+REPRESENTATION 1: LOG_SKELETON
+============================================================
+
+
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model capturing behavioral constraints
+observed in an event log.
+
+OUTPUT FORMAT:
+--------------
+The output starts with an explanation, then lists constraints:
+"The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence: ('A', 'B') ('C', 'D') ...
+Always Before: ('A', 'B') ...
+Always After: ('A', 'B') ...
+Never Together: ('A', 'B') ...
+Directly-Follows: ('A', 'B') ..."
+
+CONSTRAINT TYPES:
+1. Equivalence: Activities A and B always occur the same number of times
+2. Always Before: If A occurs, B must have occurred before
+3. Always After: If A occurs, B must occur afterwards
+4. Never Together: A and B cannot both occur in the same case
+5. Activity Occurrences: Bounds on how many times an activity occurs
+6. Directly-Follows: B must immediately follow A
+
+READING THE CONSTRAINTS:
+- Tuples ('A', 'B'): Constraint relates activity A to activity B
+- Multiple tuples: Each represents one constraint instance
+- Order matters: First activity triggers the constraint
+
+USE FOR:
+- Compliance checking
+- Process auditing
+- Anomaly detection
+- Understanding mandatory relationships
+- Validating process instances
+
+COMPARISON:
+- vs Petri Net: Declarative vs procedural
+- vs DECLARE: Log skeleton is simpler subset
+- vs DFG: Captures more than direct follows
+
+
+--- DISCOVERED MODEL ---
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('Sign Contract', 'Screen Prospective Tenant') ('Move In', 'View The Property') ('Check Paperwork', 'View The Property') ('Hand In The Paperwork', 'Screen Prospective Tenant') ('Sign Contract', 'View The Property') ('Evict Tenant', 'Apply for Viewing Appointment') ('Tenant Cancels Appartment', 'Sign Contract') ('Move In', 'Set Appointment') ('Check Paperwork', 'Set Appointment') ('Tenant Cancels Appartment', 'Check Paperwork') ('Extensive Screening', 'Check Paperwork') ('Hand In The Paperwork', 'View The Property') ('Set Appointment', 'Apply for Viewing Appointment') ('Sign Contract', 'Set Appointment') ('Move In', 'Apply for Viewing Appointment') ('Tenant Cancels Appartment', 'Hand In The Paperwork') ('Extensive Screening', 'Hand In The Paperwork') ('Check Paperwork', 'Apply for Viewing Appointment') ('Screen Prospective Tenant', 'View The Property') ('Hand In The Paperwork', 'Set Appointment') ('Sign Contract', 'Apply for Viewing Appointment') ('Tenant Cancels Appartment', 'Move In') ('Issue Warning', 'Miss Rent Payment') ('Hand In The Paperwork', 'Apply for Viewing Appointment') ('View The Property', 'Set Appointment') ('Screen Prospective Tenant', 'Set Appointment') ('Evict Tenant', 'Sign Contract') ('Extensive Screening', 'Screen Prospective Tenant') ('Evict Tenant', 'Check Paperwork') ('Tenant Cancels Appartment', 'Screen Prospective Tenant') ('View The Property', 'Apply for Viewing Appointment') ('Screen Prospective Tenant', 'Apply for Viewing Appointment') ('Evict Tenant', 'Hand In The Paperwork') ('Move In', 'Sign Contract') ('Evict Tenant', 'Move In') ('Tenant Cancels Appartment', 'View The Property') ('Extensive Screening', 'View The Property') ('Move In', 'Check Paperwork') ('Tenant Cancels Appartment', 'Set Appointment') ('Extensive Screening', 'Set Appointment') ('Sign Contract', 'Check Paperwork') ('Move In', 'Hand In The Paperwork') ('Evict Tenant', 'Screen Prospective Tenant') ('Check Paperwork', 'Hand In The Paperwork') ('Hand In The Paperwork', 'Check Paperwork') ('Sign Contract', 'Hand In The Paperwork') ('Tenant Cancels Appartment', 'Apply for Viewing Appointment') ('Extensive Screening', 'Apply for Viewing Appointment') ('Sign Contract', 'Move In') ('Evict Tenant', 'View The Property') ('Miss Rent Payment', 'Issue Warning') ('Screen Prospective Tenant', 'Check Paperwork') ('Reject Prospective Tenant', 'Apply for Viewing Appointment') ('Check Paperwork', 'Screen Prospective Tenant') ('Move In', 'Screen Prospective Tenant') ('Evict Tenant', 'Set Appointment') ('Set Appointment', 'View The Property') ('Screen Prospective Tenant', 'Hand In The Paperwork')
+
+Always Before:  ('Sign Contract', 'Screen Prospective Tenant') ('Move In', 'View The Property') ('Check Paperwork', 'View The Property') ('Sign Contract', 'View The Property') ('Evict Tenant', 'Apply for Viewing Appointment') ('Tenant Cancels Appartment', 'Sign Contract') ('Move In', 'Set Appointment') ('Check Paperwork', 'Set Appointment') ('Tenant Cancels Appartment', 'Check Paperwork') ('Extensive Screening', 'Check Paperwork') ('Set Appointment', 'Apply for Viewing Appointment') ('Sign Contract', 'Set Appointment') ('Hand In The Paperwork', 'View The Property') ('Move In', 'Apply for Viewing Appointment') ('Tenant Cancels Appartment', 'Hand In The Paperwork') ('Extensive Screening', 'Hand In The Paperwork') ('Evict Tenant', 'Miss Rent Payment') ('Check Paperwork', 'Apply for Viewing Appointment') ('Screen Prospective Tenant', 'View The Property') ('Hand In The Paperwork', 'Set Appointment') ('Sign Contract', 'Apply for Viewing Appointment') ('Tenant Cancels Appartment', 'Move In') ('Hand In The Paperwork', 'Apply for Viewing Appointment') ('View The Property', 'Set Appointment') ('Screen Prospective Tenant', 'Set Appointment') ('Evict Tenant', 'Sign Contract') ('Extensive Screening', 'Screen Prospective Tenant') ('Tenant Cancels Appartment', 'Pay Rent') ('Evict Tenant', 'Check Paperwork') ('Tenant Cancels Appartment', 'Screen Prospective Tenant') ('View The Property', 'Apply for Viewing Appointment') ('Screen Prospective Tenant', 'Apply for Viewing Appointment') ('Evict Tenant', 'Hand In The Paperwork') ('Move In', 'Sign Contract') ('Evict Tenant', 'Move In') ('Tenant Cancels Appartment', 'View The Property') ('Extensive Screening', 'View The Property') ('Move In', 'Check Paperwork') ('Tenant Cancels Appartment', 'Set Appointment') ('Extensive Screening', 'Set Appointment') ('Move In', 'Hand In The Paperwork') ('Sign Contract', 'Check Paperwork') ('Evict Tenant', 'Screen Prospective Tenant') ('Check Paperwork', 'Hand In The Paperwork') ('Sign Contract', 'Hand In The Paperwork') ('Evict Tenant', 'Issue Warning') ('Tenant Cancels Appartment', 'Apply for Viewing Appointment') ('Extensive Screening', 'Apply for Viewing Appointment') ('Evict Tenant', 'View The Property') ('Screen Prospective Tenant', 'Check Paperwork') ('Reject Prospective Tenant', 'Apply for Viewing Appointment') ('Move In', 'Screen Prospective Tenant') ('Evict Tenant', 'Set Appointment') ('Screen Prospective Tenant', 'Hand In The Paperwork')
+
+Always After:  ('Hand In The Paperwork', 'Check Paperwork') ('Hand In The Paperwork', 'Screen Prospective Tenant') ('Sign Contract', 'Move In') ('Check Paperwork', 'Screen Prospective Tenant') ('Set Appointment', 'View The Property')
+
+Never Together:  ('Reject Prospective Tenant', 'Pay Rent') ('Move In', 'Reject Prospective Tenant') ('Evict Tenant', 'Tenant Cancels Appartment') ('Tenant Cancels Appartment', 'Reject Prospective Tenant') ('Tenant Cancels Appartment', 'Evict Tenant') ('Pay Rent', 'Reject Prospective Tenant') ('Reject Prospective Tenant', 'Miss Rent Payment') ('Evict Tenant', 'Reject Prospective Tenant') ('Reject Prospective Tenant', 'Accept Late Payment') ('Reject Prospective Tenant', 'Move In') ('Sign Contract', 'Reject Prospective Tenant') ('Reject Prospective Tenant', 'Tenant Cancels Appartment') ('Reject Prospective Tenant', 'Issue Warning') ('Issue Warning', 'Reject Prospective Tenant') ('Reject Prospective Tenant', 'Evict Tenant') ('Accept Late Payment', 'Reject Prospective Tenant') ('Reject Prospective Tenant', 'Sign Contract') ('Miss Rent Payment', 'Reject Prospective Tenant')
+
+Activity Occurrences:  Apply for Viewing Appointment: 1; Set Appointment: 0, 1; View The Property: 0, 1; Hand In The Paperwork: 0, 1; Check Paperwork: 0, 1; Screen Prospective Tenant: 0, 1; Extensive Screening: 0, 1; Sign Contract: 0, 1; Move In: 0, 1; Pay Rent: 0, 1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 2, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 3, 30, 31, 33, 34, 35, 36, 37, 39, 4, 40, 41, 42, 44, 5, 50, 6, 63, 7, 8, 9; Miss Rent Payment: 0, 1, 2, 3, 4, 5, 6; Issue Warning: 0, 1, 2, 3, 4, 5, 6; Accept Late Payment: 0, 1, 2, 3, 4, 5, 6; Tenant Cancels Appartment: 0, 1; Reject Prospective Tenant: 0, 1; Evict Tenant: 0, 1;
+
+Directly-Follows Constraints:  ('Hand In The Paperwork', 'Check Paperwork') ('Sign Contract', 'Move In') ('Miss Rent Payment', 'Issue Warning') ('Check Paperwork', 'Screen Prospective Tenant') ('Set Appointment', 'View The Property')
+
+

@@ -1,0 +1,99 @@
+AS-IS Process Model
+
+1. Process overview and purpose
+
+This AS-IS description documents the observed rental application and tenancy lifecycle extracted from the inductive-miner Petri net. The process begins when an individual applies to view a rental property and ends when a tenant exits the system (by eviction, voluntary cancellation) or a prospective tenant is rejected. The model includes application handling, appointment scheduling, property viewing, paperwork submission and checking, tenant screening (including an optional extensive screening), contract signing and move-in, and post-move tenancy events including rent payment, missed payments, warnings, late-payment acceptance, rework loops, and eviction.
+
+Purpose: capture the actual behavior of applicants and tenants as observed in the process logs (including optional/skip paths and repeat loops) so the organization can understand variability, nonstandard paths, rework, and compliance risks.
+
+2. Key stakeholders and roles involved
+
+Note: the source model does not explicitly name organizational roles or departments. Roles are therefore listed only as actors implied directly by activity labels (not invented):
+- Prospective tenant / Applicant — the person applying to view or rent the property (implied by activities such as "Apply for Viewing Appointment," "Tenant Cancels Appartment").
+- Property management / landlord / letting agent — responsible for setting appointments, showing the property, processing paperwork, screening, issuing warnings, accepting payments, and eviction actions (implied by activities such as "Set Appointment," "Check Paperwork," "Issue Warning").
+- Screening function / background-check service — implied by activities "Screen Prospective Tenant" and "Extensive Screening."
+
+3. Detailed step-by-step process flow (AS-IS)
+
+Start conditions and trigger
+- Start: Process begins at the implicit start event (Petri net place 'source') when a person performs "Apply for Viewing Appointment." This is the only explicit start transition.
+
+Primary sequence and branching logic (high-level)
+1) Application and appointment
+   - Activity: "Apply for Viewing Appointment" (start).
+   - After applying, the observed behavior splits (non-deterministic/optional paths):
+     a) The applicant sets a viewing appointment: "Set Appointment" -> leads to "View The Property."
+     b) An invisible skip (labeled "skip_1" in the model) sends the flow directly to the screening/decision place (p_4) without an explicit appointment or viewing. This represents observed cases where applicants bypass appointment and proceed to the decision/screening step.
+
+2) Viewing and paperwork
+   - If a viewing is scheduled: "Set Appointment" -> "View The Property."
+   - After viewing, two observed outcomes:
+     a) Applicant "Hand In The Paperwork" -> "Check Paperwork" -> "Screen Prospective Tenant."
+     b) An invisible skip ("skip_2") bypasses paperwork and moves the case directly to the decision place (p_4).
+
+3) Screening and decision
+   - "Screen Prospective Tenant" -> either: "Extensive Screening" (activity observed for some cases) or an invisible skip ("skip_3") that also moves to the decision place (p_4). "Extensive Screening" also leads to the same decision place.
+   - At place p_4 the model shows an exclusive choice: either "Reject Prospective Tenant" which goes directly to the final sink, or "Sign Contract." The decision criteria are not recorded in the Petri net; the model only shows that both outcomes exist.
+   - Note: Because of the invisible transitions (skip_1 and skip_2), some applicants are able to reach the decision point without setting appointments or handing in paperwork. This indicates inconsistencies in enforced sequencing.
+
+4) Contract and move-in
+   - If the choice is "Sign Contract" -> token placed at p_10 -> this enables the visible transition "Move In" -> after "Move In" token reaches place p_13.
+   - From p_13 there are two observed continuations:
+     a) The workflow moves to an invisible loop start (via "init_loop_7" -> p_16), which begins the tenancy lifecycle where missed payments and warnings are possible.
+     b) An invisible skip ("skip_6") leads to place p_15 that is associated with payment handling (see below).
+
+5) Tenancy — payment, missed payments, warnings, late acceptance, rework loops
+   - Missed payment loop path:
+     - p_16 -> "Miss Rent Payment" -> p_18 -> "Issue Warning" -> p_19.
+     - From p_19 the observed behavior splits: the visible transition "Accept Late Payment" moves the token to p_17, and there is also an invisible skip ("skip_9") that also moves to p_17. Both result in p_17 being marked.
+     - From p_17, invisible transitions split the flow:
+         - "skip_10" returns to p_16 (back to the missed-payment state), representing a loop where the tenant re-enters a risk of another missed payment or further non-payment cycles.
+         - "skip_11" moves to p_15 (payment handling place) where the tenant can pay rent.
+   - Payment handling:
+     - p_15 enables "Pay Rent" (visible) which moves the token to p_14. There is also an observed invisible transition "skip_12" from p_15 to p_14, indicating some cases where the payment step is recorded/handled differently.
+     - From p_14 there are two invisible continuations:
+         - "skip_13" returns to p_13 (the tenancy active place) — representing the normal case where payment returns the tenant to an active tenancy state.
+         - "skip_14" moves to p_12, a place that leads to end-of-tenancy actions (eviction or tenant cancellation).
+   - Exit from tenancy:
+     - The model shows p_12 leads to two final visible transitions: "Evict Tenant" (to sink) and "Tenant Cancels Appartment" (to sink). Both are terminal/end events in the Petri net.
+
+6) Alternative direct termination
+   - There are terminal visible transitions earlier in the flow: "Reject Prospective Tenant" (from p_4 to sink) and "Tenant Cancels Appartment" (from p_12 to sink). These represent end conditions for unsuccessful/aborted cases.
+
+Silent/invisible transitions and variability
+- The model contains a substantial number of invisible transitions labeled skip_* and init_loop_7. Their observed effect is to create optional bypasses and loops at these points:
+  - skip_1: bypasses appointment to decision
+  - skip_2: bypasses paperwork to decision
+  - skip_3: bypasses extensive screening to decision
+  - skip_6, skip_11, skip_12, skip_13, skip_14, skip_9, skip_10: control variants in the post-move lifecycle and payment flows
+  - init_loop_7: forms the initiation into the tenancy / missed-payment loop
+- These invisible transitions produce multiple alternative paths and significant behavioral variability. They also make compliance checks and end-to-end auditing more difficult because required activities (e.g., paperwork submission) may be skipped in practice.
+
+Exception handling and rework loops
+- Rework/loop behaviors are concentrated in the tenancy phase: missed payments -> warning -> possible acceptance of late payment -> either return to missed payments or to payment completion -> then either resume tenancy or move to a termination place. This is implemented via a combination of visible transitions (Miss Rent Payment, Issue Warning, Accept Late Payment, Pay Rent) and invisible transitions that route the case back and forth.
+- There is no explicit multi-step formal eviction process captured in visible steps besides the single transition "Evict Tenant" to sink. The model suggests eviction can occur after tokens reach p_12, but the conditions that push a case to p_12 are ambiguous (skip_14 from p_14). That ambiguity indicates inconsistent or under-documented eviction triggers in the observed logs.
+
+End conditions and outcomes
+- The process ends when a token reaches the sink place via one of the final visible transitions:
+  - "Reject Prospective Tenant" (applicant rejected)
+  - "Tenant Cancels Appartment" (applicant/tenant cancels)
+  - "Evict Tenant" (tenant removed by landlord)
+- There is no visible explicit completion state for a normal ongoing tenancy; the process can remain in active looped places (p_13/p_16/p_15/p_14) indefinitely until a termination transition occurs.
+
+4. Process metrics and performance characteristics (what the model implies we should measure)
+- Structural complexity: High branching due to many skip_* invisible transitions; measure the branching factor (average number of outgoing choices per place).
+- Sequence variability: many alternate paths from application to decision (set appointment vs. skip_1; paperwork vs. skip_2; screening vs. skip_3). Metric: percent of cases that skip required activities (paperwork, appointment, screening).
+- Rework frequency: number and rate of cycles in the missed-payment/accept-late-payment loop. Metric: average number of repeated missed-payment cycles per tenancy.
+- Time-based metrics to track (not available in model but recommended): time from apply -> sign (lead time), time from sign -> move-in, time from missed payment -> eviction, average number of warnings issued before eviction.
+- End-state distribution: proportion of cases ending in rejection, voluntary cancellation, eviction.
+
+5. Key challenges and pain points (AS-IS)
+- Inconsistent enforcement of mandatory steps: invisible skip transitions permit applicants to reach decision without setting appointments or submitting paperwork, increasing compliance and quality risk.
+- Non-transparent screening path: "Extensive Screening" happens for some cases but is optional; criteria or triggers are not captured in the model.
+- Messy tenancy lifecycle: multiple invisible transitions and loops between missed payment, warning and payment create unclear business rules; the model doesn’t show a clear, documented escalation policy.
+- Eviction logic is ambiguous: the path to p_12 (eviction/tenant cancel) can be reached from the payment place p_14 via an invisible skip; it is unclear what triggers eviction and whether sufficient notices are sent.
+- Auditability and compliance risks: the frequent use of invisible transitions implies undocumented deviations and makes audit trails weak.
+- Potential customer experience issues: applicants may be able to sign a contract without paperwork being checked, resulting in later problems.
+
+Summary (AS-IS):
+The observed process is highly variable. The organization allows several optional/skipped steps in application processing and exhibits looping behavior during tenancy for missed payments and warnings. These behaviors produce compliance and quality risks and make the process difficult to manage or to reason about in policy terms. The Petri net shows the core activities and many invisible transitions that explain why the logs show many different variants of the same high-level process.

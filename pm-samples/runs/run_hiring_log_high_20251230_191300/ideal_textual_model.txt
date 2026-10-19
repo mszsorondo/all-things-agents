@@ -1,0 +1,96 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a streamlined, governed hiring process that preserves necessary quality controls (technical and background checks) while removing redundant steps, eliminating unproductive loops, reducing cycle time, and preventing state reversals (reject -> offer) caused by process or recording issues.
+- Scope: From candidate application submission to final disposition: 'Offer Accepted / Candidate Hired' (or 'Make Job Offer' as the offer-sent milestone) and 'Application Rejected' as terminal rejection. The IDEAL model enforces deterministic sequencing and clear decision criteria while allowing controlled parallel execution where efficient.
+
+Key stakeholders and roles involved
+- Applicant: submits application and participates in assessments.
+- Recruiter / Talent Acquisition: initial screening (Telephonic Screening), coordinates interviews, initiates and monitors background checks, communicates outcomes and offers.
+- Technical Hiring Panel: defined set of technical interviewers (Coding, ML, Frontend, Backend) who follow a prescribed routing policy (see flow). A designated Technical Coordinator schedules and ensures synchronization of technical evaluation results.
+- Hiring Manager / Behavioral Interviewer: conducts a single structured behavioral assessment and makes or recommends final decision.
+- Background Check / Compliance Team: performs Background Check; Extensive Background Check is triggered only on clearly defined risk criteria post-offer or when mandatory by law/role.
+- ATS / Recruitment System: enforces sequencing, writes timestamps, prevents inconsistent state transitions, and enforces SLAs.
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and triggers
+1. Start: Candidate performs 'Hand In Job Application'. The ATS validates minimum eligibility fields and assigns the case to a Recruiter within a fixed SLA (e.g., 48 hours).
+
+Core flow and controlled sequence
+2. Telephonic Screening (Recruiter) — mandatory first step for all applications passing basic eligibility.
+   - Decision outcomes (exclusive):
+     a) Clear pass -> advance to Screening Interview (technical prescreen scheduling).
+     b) Fail -> Application Rejected (end state).
+     c) Conditional pass for specialist roles -> bypass Screening Interview and move directly to Technical Evaluation (documented by recruiter with justification).
+   - KPI targets: 95% of telephonic screens completed within 3 business days; conversion to screening interview tracked.
+
+3. Screening Interview (structured) — standardized checklist and scoring.
+   - Decision outcomes (exclusive, based on score thresholds):
+     a) Pass -> proceed to Technical Evaluation (Coding Interview or technical panel).
+     b) Borderline -> request focused technical exercise (time-boxed) before panel.
+     c) Fail -> Application Rejected (end).
+   - Background checks are not run routinely before offer unless required by role or red flags; exception rules are defined.
+
+4. Technical Evaluation (Technical Hiring Panel)
+   - Mode: Define two allowed patterns to reduce rework:
+     Pattern A (sequential for small teams): Coding Interview -> ML or Frontend/Backend as required by role (prescribed order determined by job profile).
+     Pattern B (parallel for faster hiring): Schedule concurrent technical assessments (Coding and role-specific interviews) completed within a synchronized evaluation window (e.g., 1 week) and aggregated by Technical Coordinator.
+   - Synchronization: All technical interviews must be completed and aggregated into a single technical result before behavioral interview or final decision. The ATS enforces a synchronization point; partial results cannot trigger final decision.
+   - Rework eliminated: No ad-hoc re-routing between ML and Frontend; re-assessment only allowed if documented remediation or a new technical exercise is assigned.
+   - KPI targets: Technical panel round completed within 7 calendar days from scheduling; reduce cycles between technical interview types to <5% of cases.
+
+5. Behavioral Interview / Hiring Manager Decision
+   - Conduct a single structured behavioral interview (one round) with standardized scoring and documented decision criteria.
+   - Combine technical aggregate score and behavioral score to compute a recommended hiring decision.
+   - Decision outcomes (exclusive): Hire -> proceed to Offer Preparation; Reject -> Application Rejected (end); Borderline -> one short remediation interview or technical task (timeboxed) OR reject if SLA exceeded.
+
+6. Background Check (timed and gated)
+   - Policy: Run Background Check after conditional offer (offer-accepted-by-candidate or after Hiring Manager approval to extend an offer) for most roles, unless role requires background checks earlier (e.g., sensitive roles) or red flags during earlier stages demand earlier checks.
+   - Extensive Background Check: only triggered when predefined red-flag conditions are met (discrepancies, regulatory requirements) and executed with higher priority SLA.
+   - Rationale: Moving background checks to after decision reduces wasted checks for candidates who will be rejected and reduces lead time for hiring.
+
+7. Offer issuance and closure
+   - Recruiter prepares and sends the official Make Job Offer once Hiring Manager approves and Background Check policy gating is satisfied (conditional offer allowed pending background result when policy permits).
+   - ATS prevents contradictory terminal states: once Application Rejected is set, reopening requires a documented override by a senior HR officer and is logged; similarly, rescinding an offer requires approval and documented rationale.
+   - End states: Make Job Offer (offer sent) -> ideal subsequent flow includes Offer Accepted and Onboarding (outside current scope); Application Rejected (final), or Offer Declined (handled by Recruiter).
+
+Decision points with criteria and possible outcomes (IDEAL)
+- Telephonic Screening: pass/fail/bypass with documented justification; strictly exclusive.
+- Screening Interview scoring: pass -> technical panel; fail -> reject; borderline -> limited remediation.
+- Technical evaluation: aggregated numeric threshold for progression to behavioral interview.
+- Background check gating: trigger conditions explicitly stated; Extensive Background Check triggers documented and limited.
+- Final hiring decision: combination of technical and behavioral aggregate >= threshold -> offer; else reject. Overrides require documented approvals.
+
+Parallel activities and synchronization points (IDEAL)
+- Controlled parallelization allowed for technical interviews with ATS-enforced synchronization: technical results must be aggregated before moving to behavioral or offer.
+- Background checks are decoupled from routine early interviewing; they can run in parallel with final paperwork only when policy allows but must not produce contradictory terminal states.
+
+Exception handling and rework policy (IDEAL)
+- Re-assessment allowed only via documented remediation paths with timeboxing and approvals (e.g., candidate given a technical task to re-evaluate within 7 days).
+- Overrides of terminal states (reopen a rejected case, rescind an offer) require senior HR approval and are logged for audit; target is <1% of cases.
+- Reducing repeated behavioral rounds: cap to one formal behavioral interview; additional informal clarifications documented but not recorded as new behavioral rounds in ATS.
+
+Performance targets and process metrics (IDEAL)
+- Telephonic Screening completion within 3 business days for 95% of applications.
+- Time from Hand In Job Application to Make Job Offer target: median < 21 calendar days (reduce from current medians observed in many variants which span months in escalation cases).
+- Technical evaluation cycle time target: complete panel and aggregation within 7 calendar days in 90% of cases.
+- Background Check turn-around: standard checks completed within 5 business days; extensive checks within 10 business days when required.
+- Rework / loops: aim to reduce inter-technical re-routing events (ML<->Frontend<->Backend) to <5% of cases; reduce behavioral re-interviews to <2%.
+- Data-quality: eliminate contradictory state transitions (Application Rejected <-> Make Job Offer) from recorded history except with documented overrides.
+
+Improvements made (IDEAL)
+- Enforced sequencing: Clear mandatory telephonic screening and screening interview with strict gateways reduces inconsistent ordering.
+- Synchronization of technical evaluations: ATS-enforced aggregation prevents multiple back-and-forth technical rounds and inconsistent decisions.
+- Background check policy tightened: background checks executed at the appropriate gating point (post-decision or conditional) to avoid wasted checks and late-stage rejections.
+- Reduction of loops and repeated interviews: remediation paths timeboxed; no unlimited repeats; behavioral interviews capped.
+- Governance and audit: overrides and state changes require approval and are logged; this eliminates data-quality anomalies and rescinds without trace.
+- KPI-driven SLAs: performance targets for each stage reduce overall time-to-hire and improve candidate experience.
+
+Risks and implementation considerations
+- Some senior/hard-to-fill roles may require adaptation (e.g., parallel technical tracks may still be necessary). The IDEAL model allows documented exceptions with approval.
+- Cultural change: interviewers and recruiters must adopt structured scoring and use ATS enforcement; training and change management required.
+- Technical enablement: ATS must be configured to enforce gateways, aggregate technical feedback, and prevent invalid state transitions.
+
+Summary of IDEAL
+The IDEAL model converts the observed flexible but chaotic hiring process into a governed, efficient pipeline: mandatory initial screening, structured and synchronized technical evaluations, focused behavioral assessment, and controlled background-check gating. This reduces redundant checks, eliminates most rework loops, shortens time-to-hire, and fixes data-quality/state reversal issues while preserving the necessary quality gates for hiring decisions.
+

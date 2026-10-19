@@ -1,0 +1,226 @@
+write_AS_IS_comprehensive_textual_description(content:
+"AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage end-to-end candidate evaluation for technical positions, from application through screening, background checks, interviews, and final decision.
+- Modeling basis: Derived from a Log Skeleton with strong Equivalence and Always Before constraints and no Always After or Directly-Follows constraints. The model is declarative; the description below reconstructs a procedural view that preserves all observed behaviors.
+
+Key stakeholders and roles involved
+- The source model does not specify roles, departments, or systems. Responsibilities are therefore not assigned to specific actors in this AS-IS description.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A candidate submits “Hand In Job Application”.
+- Frequency: Exactly one application event occurs per case (log constraint: Activity Occurrences = 1). Multiple other activities are Equivalence-linked to this, implying they also occur exactly once in each case.
+
+Core activities and ordering (derived from Equivalence and Always Before)
+1) Hand In Job Application (exactly once)
+   - Acts as the case start in practice. Many subsequent activities must have occurred after the application (Always Before links from those activities to the application).
+
+2) Telephonic Screening (exactly once)
+   - Constraint: Always Before(Telephonic Screening, Hand In Job Application) indicates the application must be executed previously, so application precedes telephonic screening.
+   - Additional constraints from other activities require telephonic screening to have occurred prior to several subsequent steps (e.g., Background Check must have Telephonic Screening previously executed).
+
+3) Screening Interview (exactly once)
+   - Constraints: Always Before(Screening Interview, Hand In Job Application) and Always Before(Screening Interview, Telephonic Screening) imply both the application and telephonic screening have occurred previously; thus Telephonic Screening precedes Screening Interview.
+   - Equivalence with multiple activities implies Screening Interview occurs once per case.
+
+4) Background Check (exactly once)
+   - Constraint: Always Before(Background Check, Telephonic Screening) means Telephonic Screening must have been executed previously; hence Background Check occurs after Telephonic Screening.
+   - Also required to have occurred prior to later interviews (Always Before relationships from later interviews to Background Check).
+
+5) Extensive Background Check (exactly once)
+   - Constraints: Always Before(Extensive Background Check, Hand In Job Application), Always Before(Extensive Background Check, Telephonic Screening), Always Before(Extensive Background Check, Screening Interview), and Always Before(Extensive Background Check, Background Check) collectively imply that Extensive Background Check takes place after Application, Telephonic Screening, Screening Interview, and the standard Background Check.
+   - Equivalence indicates this happens once for every case (i.e., all candidates receive an extensive check).
+
+6) Coding Interview (exactly once)
+   - Constraints: Always Before(Coding Interview, Hand In Job Application), Always Before(Coding Interview, Telephonic Screening), Always Before(Coding Interview, Screening Interview), Always Before(Coding Interview, Background Check) indicate all those must have been executed previously; thus Coding Interview occurs after the screening and background-check phase.
+   - Additionally, later specialty interviews require Coding Interview to have occurred previously.
+
+7) Role-specific technical interviews (each exactly once; order not constrained among them)
+   - Frontend Interview (exactly once)
+     - Must occur after: Coding Interview, Screening Interview, Telephonic Screening, Background Check (via Always Before constraints from Frontend Interview to each).
+   - Backend Interview (exactly once)
+     - Must occur after: Coding Interview, Screening Interview, Telephonic Screening, Background Check.
+   - ML Interview (exactly once)
+     - Must occur after: Coding Interview, Screening Interview, Telephonic Screening, Background Check.
+   - Observed behavior: No ordering constraints exist between Frontend vs Backend vs ML interviews. They can be scheduled in any sequence; the log does not enforce serial or parallel execution. All three occur once in every case (Equivalence with the application).
+
+Additional/optional activities with flexible timing and looping
+- Behavioral Interview (0 to 3 occurrences)
+  - No precedence constraints were discovered; therefore it may appear at any point, before, between, or after the activities above, and can repeat up to three times per case.
+- Make Job Offer (0 to 3 occurrences)
+  - Unconstrained by the log regarding ordering; can occur multiple times, potentially interleaved with interviews or after them.
+- Application Rejected (0 to 3 occurrences)
+  - Unconstrained; can occur at any time and can co-exist with Make Job Offer in the same case (no Never Together constraint).
+
+Decision points and criteria (implicit from constraints)
+- The declarative model does not impose explicit exclusive or inclusive gateways. However:
+  - Progression to Coding/Technical Interviews implies completion of earlier screens and checks (due to Always Before).
+  - No constraints prevent early rejection or multiple offers; thus decisions are not governed by strong control logic in the observed model.
+
+Parallel activities and synchronization points
+- The model does not enforce explicit parallelism. The three specialty interviews (Frontend, Backend, ML) lack mutual ordering constraints; they may be arranged in any order, potentially concurrently in practice, but concurrency is not guaranteed by the log.
+- There is no explicit synchronization gate before decision events.
+
+Exception handling and error paths
+- Behavioral Interview can occur up to three times; this can serve as ad hoc remediation or additional assessment without being anchored to a specific phase.
+- Make Job Offer and Application Rejected can both occur in the same case and can repeat, creating potential oscillation (offer → reject → new offer) without a defined cap beyond three per log bounds.
+
+Rework loops and escalation procedures
+- Rework loops explicitly observed via occurrence bounds:
+  - Behavioral Interview: up to 3 iterations, anywhere in the timeline.
+  - Make Job Offer: up to 3 iterations, with the possibility of reversals.
+  - Application Rejected: up to 3 iterations, with the possibility of reversals.
+- Extensive Background Check is not conditional in the observed behavior; it occurs for all cases after the standard check, effectively escalating every case.
+
+End conditions and outcomes
+- The log does not impose an Always After constraint to close the case. Possible terminal states observed:
+  - One or more Make Job Offer events as last recorded event.
+  - One or more Application Rejected events as last recorded event.
+  - Potentially, no final decision recorded (case ends after last interview or background check).
+- Make Job Offer and Application Rejected are not mutually exclusive; both may appear before the case ends.
+
+Process metrics and performance characteristics
+- Per-case mandatory count (via Equivalence): 1 each of Hand In Job Application, Telephonic Screening, Screening Interview, Background Check, Extensive Background Check, Coding Interview, Frontend Interview, Backend Interview, ML Interview.
+- Optional/repeatable counts: Behavioral Interview (0–3), Make Job Offer (0–3), Application Rejected (0–3).
+- Ordering guarantees (Always Before):
+  - Application precedes all subsequent activities that reference it.
+  - Telephonic Screening precedes Screening Interview and Background Check.
+  - Background Check precedes Extensive Background Check and all later technical interviews.
+  - Extensive Background Check occurs after application, telephonic screening, screening interview, and background check.
+  - Coding Interview occurs after the screening and background check phase, and precedes all specialty interviews.
+- No guarantees on cycle time, but potential elongation due to mandatory extensive checks for all candidates and multiple iterative interviews/offers.
+
+Key challenges and pain points
+- Overprocessing and waste:
+  - All candidates are routed through all three specialty interviews (Frontend, Backend, ML) even when only one role is relevant.
+  - Extensive Background Check is performed for every case, not conditionally.
+- Lack of decision discipline:
+  - Offer and rejection can both occur, can repeat up to three times, and can interleave with other steps. No mutual exclusivity or finality is enforced.
+  - Behavioral Interview is unconstrained and can repeat up to three times, causing unpredictable loops and scheduling variability.
+- Missing end-of-case governance:
+  - No “must end with exactly one final decision” rule; cases may conclude without a recorded outcome.
+- Scheduling and coordination complexity:
+  - Specialty interviews have no prescribed order or gating, complicating coordination and potentially extending cycle time.
+")
+
+write_IDEAL_comprehensive_textual_description(content:
+"IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Streamline candidate evaluation for technical roles by enforcing a sensible, gated sequence; eliminate unnecessary steps; and ensure clear, single-outcome case closure.
+- Design approach: Retain all necessary activities from the observed process but correct wasteful and noncompliant behavior, introduce clear control-flow gateways, and remove uncontrolled loops.
+
+Key stakeholders and roles involved
+- The source did not provide role assignments. This IDEAL design specifies control-flow only and does not assign activities to particular actors.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Hand In Job Application (exactly once per case).
+- Case entry criteria: Application is complete and accepted for screening.
+
+Phase 1 — Initial screening
+1) Telephonic Screening (exactly once)
+   - Objective: Early qualification.
+   - Must occur after application.
+
+2) Screening Interview (exactly once)
+   - Objective: Deeper fit/competency screening.
+   - Must occur after Telephonic Screening.
+
+Phase 2 — Background verification (right-sized)
+3) Background Check (exactly once, mandatory)
+   - Must occur after Screening Interview.
+4) Decision Gateway: Need Extensive Background Check?
+   - Criteria: Triggered only when risk, role sensitivity, or screening discrepancies exist.
+   - If Yes → 5) Extensive Background Check (exactly once, conditional), then proceed.
+   - If No → Skip to Phase 3.
+   - Rationale: Converts the AS-IS “always extensive” into a conditional escalation to reduce cost and time.
+
+Phase 3 — Technical assessment
+6) Coding Interview (exactly once, mandatory)
+   - Must occur after Background Check (and after Extensive Background Check if taken).
+
+7) Exclusive Gateway: Select relevant technical track
+   - Options (exclusive by default; choose the track aligned to the requisition/candidate path):
+     - Frontend Interview (exactly once)
+     - Backend Interview (exactly once)
+     - ML Interview (exactly once)
+   - Rationale: Replace “all candidates take all three specialty interviews” with a role-aligned exclusive choice. If business policy allows rare multi-track consideration, use an inclusive gateway with explicit approval and synchronization, but the default is one track to avoid overprocessing.
+
+8) Optional soft-skill assessment
+   - Behavioral Interview (0 or 1)
+   - Must occur after the selected technical track.
+   - Rationale: Cap at one iteration; schedule only when needed to confirm fit.
+
+Synchronization point
+- If inclusive multi-track is exceptionally used, synchronize all selected tracks before moving to the decision phase. Otherwise, proceed directly after the single selected track (and optional Behavioral Interview).
+
+Phase 4 — Final decision (mutually exclusive and final)
+9) Decision Gateway: Hire decision
+   - Preconditions for making a decision:
+     - Completion of Coding Interview.
+     - Completion of the selected technical track.
+     - Completion of Background Check (and Extensive Background Check if required).
+     - Behavioral Interview completed if it was invoked.
+   - Outcomes (exactly one, exactly once):
+     - Make Job Offer
+     - Application Rejected
+   - Enforce mutual exclusivity and finality: only one of the two may occur, one time, and it terminates the case.
+
+Exception handling and escalation
+- If at any stage significant concerns arise:
+  - Option to prematurely end with Application Rejected (before Phase 3 completion) with proper justification.
+  - Option to invoke Extensive Background Check (if not already done) when new risks surface.
+- Prohibit “offer–rejection–offer” oscillation; any change after a decision must open a new case or follow a controlled appeal/reopen policy (outside this process).
+
+Rework loops (minimized and controlled)
+- Remove uncontrolled loops:
+  - Behavioral Interview limited to at most one iteration.
+  - Make Job Offer/Application Rejected limited to exactly one final occurrence.
+- Allow only purposeful rework:
+  - Re-scheduling of interviews for logistics is permitted without changing the logical sequence.
+  - Upgrading to Extensive Background Check is a controlled escalation.
+
+Parallel activities and synchronization points
+- By default, specialty technical assessment uses an exclusive single-track path (no parallelism).
+- If business policy exceptionally requires multiple tracks, run them in parallel or any order, but:
+  - Use an inclusive gateway to start the selected set.
+  - Synchronize at a merge point before final decision.
+
+End conditions and outcomes
+- A case must end with exactly one of:
+  - Make Job Offer
+  - Application Rejected
+- No case may close without a recorded decision.
+
+Process metrics and performance characteristics
+- Throughput and quality KPIs:
+  - Cycle time from Application to Decision (target reduction by removing universal extensive checks and unnecessary interviews).
+  - First-pass yield to decision without rework.
+  - Number of interviews per case (target: Coding + one track ± optional Behavioral).
+  - Proportion requiring Extensive Background Check (target: limited to risk-based subset).
+  - Decision finality rate (target: 100% cases close with one, mutually exclusive outcome).
+- Compliance checks (derived from control-flow rules):
+  - No Make Job Offer or Application Rejected before required prior steps are complete (unless early rejection is invoked as an exception).
+  - No multiple offers or multiple rejections in a single case.
+  - No co-occurrence of offer and rejection in the same case.
+  - Behavioral Interview occurrence ≤ 1, and after technical assessment.
+  - If Extensive Background Check occurs, it must follow the standard Background Check.
+
+Improvements made (vs AS-IS)
+- Eliminate overprocessing:
+  - Only one relevant specialty interview path per candidate by default; others are not scheduled.
+  - Extensive Background Check becomes conditional, not universal.
+- Enforce clean, gated sequencing:
+  - Background checks complete before technical assessment; coding precedes specialty track; optional Behavioral follows technical.
+- Tighten decision governance:
+  - Exactly one terminal decision; offer and rejection are mutually exclusive and not repeatable.
+  - Cases cannot end without a decision.
+- Reduce variability and loops:
+  - Cap Behavioral Interview at one iteration; remove offer/reject oscillations.
+- Provide explicit synchronization when multiple tracks are exceptionally required, ensuring coherent consolidation before decision.
+")

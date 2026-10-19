@@ -1,0 +1,92 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a standardized, efficient, and safe patient care pathway from registration to discharge that removes unnecessary variability, ensures consistent documentation of assessment and outcome, limits avoidable rework, and enforces escalation rules for unsuccessful treatments.
+- Scope: From patient registration (FD or ER) through triage, assessment, diagnosis, treatment, outcome validation, escalation (if required), and discharge.
+- Design principles: single defined triage decision, mandatory recording of assessment and outcome steps (no undocumented skips), bounded rework loops with mandatory escalation, and clear acceptance criteria before discharge.
+
+Key stakeholders and recommended roles and responsibilities (recommended for the IDEAL process)
+- Patient: receives care and provides contact/consent information.
+- Registration/Triage Clerk or Triage Nurse: captures presenting complaint, assigns acuity, and routes to the appropriate assessment stream (Examination or Expert/Thorough pathway).
+- Assessment Clinician (Examiner): performs the initial clinical Examination; documents findings and decides whether Expert Examination / Thorough Examination is required.
+- Specialist / Expert Clinician: performs Expert Examination for complex cases or where initial assessment indicates advanced workup is required.
+- Treatment Clinician: administers treatment and documents outcome (Treatment successful / Treatment unsuccessful) in standard codes.
+- Senior Clinician / Escalation Team: reviews cases after predefined unsuccessful treatment attempts, adjusts diagnosis or treatment plan, and approves further re-treatment.
+- Discharge Coordinator: validates that outcome criteria are met and records Discharge with final status.
+(These role definitions are recommended to support the IDEAL flow and do not invent activities beyond those implied by the source.)
+
+Detailed step-by-step IDEAL process flow
+Start conditions and triggers
+1. Start: Patient registers at either FD or ER. Immediately after registration, the patient is triaged by a Triage Nurse/Clerk to determine the appropriate assessment stream (simple vs complex case) based on pre-defined criteria (e.g., vital signs, red flags, presenting complaint severity).
+
+Standardized assessment path (no undocumented skips)
+2. Triage decision (exclusive gateway):
+   - If simple/low-acuity: route to Examination (standard assessment).
+   - If complex/high-acuity or suspected specialized condition: route to Expert Examination (specialist assessment) which includes Thorough Examination as required.
+   - Rule: The process forbids undocumented skips; if an activity is bypassed operationally, the system must record a formal 'Not Required' token so the trace documents the decision.
+
+3. Assessment activities (sequence and options):
+   - Path A (simple): Examination -> (if indicated) Thorough Examination -> Diagnosis.
+   - Path B (complex): Expert Examination -> Thorough Examination (if required) -> Diagnosis.
+   - The design collapses redundant branching by ensuring that 'Expert Examination' is used only when triage or Examiner indicates complexity; 'Thorough Examination' is a defined step (either performed by the Expert or the Examiner) and is not optional without documentation.
+
+4. Diagnosis -> Treatment (mandatory step)
+   - After Diagnosis the Treatment Clinician administers treatment according to protocol.
+
+5. Treatment outcome verification (mandatory explicit outcome step)
+   - Immediately after a Treatment, the Treatment Clinician must record one of two outcomes: Treatment successful or Treatment unsuccessful. Discharge without recording an outcome is not permitted.
+   - If Treatment successful: proceed to Discharge.
+   - If Treatment unsuccessful: proceed to a defined rework/escalation sub-process.
+
+Rework and escalation sub-process (controlled loop)
+6. Controlled rework loop rules:
+   - First Treatment unsuccessful: trigger re-evaluation (Diagnosis review). The Examiner and Treatment Clinician jointly re-assess the case and either adjust the treatment or order further investigations (Thorough Examination or Expert escalation).
+   - Second Treatment unsuccessful (if required): require mandatory Senior Clinician / Specialist review before another re-treatment is authorized.
+   - Maximum explicit re-treatment attempts: limit to two formal re-treatment cycles before escalation to a multidisciplinary review or referral to higher care (exceptions require documented approval).
+   - All rework cycles are recorded as explicit events: Treatment unsuccessful -> Diagnosis (re-evaluate) -> Treatment (re-administer). The system enforces the mandatory senior review at the configured threshold.
+
+7. Escalation and referral
+   - If the case reaches the escalation threshold (e.g., two unsuccessful treatments) the Senior Clinician evaluates the need for specialist referral, diagnostic imaging, or transfer of care. The Senior Clinician's decision is an explicit branch with documented outcomes.
+
+8. Discharge criteria and end conditions
+   - Only patients with an explicit Treatment successful recorded can be discharged without further review (Discharge successful flow).
+   - For patients discharged after successful treatment: Discharge activity records final diagnostic code, outcome summary, and follow-up instructions.
+   - For cases where discharge occurs for operational/other reasons, a mandatory closing form documents the rationale and flags for audit.
+
+Decision points with criteria and possible outcomes (defined)
+- Triage: rules-based (acuity, red flags); outcomes: Examination or Expert Examination.
+- Assessment decision: does this patient require Thorough Examination? Criteria: abnormal findings, complex presentation.
+- Treatment outcome: binary recorded outcome (success/failure) required immediately post-treatment.
+- Re-treatment escalation: after 1 unsuccessful attempt, require re-evaluation; after 2 unsuccessful attempts, require Senior Clinician approval.
+
+Parallel activities and synchronization (if necessary)
+- IDEAL keeps the flow essentially sequential but allows parallel ordering of diagnostics (imaging, labs) while maintaining synchronization points before major decision gates (Diagnosis review prior to re-treatment). Any parallel diagnostics must be synchronized into the diagnosis decision.
+
+Exception handling and error paths
+- Documented skips: if an activity is not performed for clinical reasons, a standardized 'Not Required' event must be recorded; invisible skips are eliminated.
+- Missing documentation: system validation prevents Discharge if treatment outcome is not recorded.
+- Escalation exceptions: when resource constraints or exceptional clinical circumstances require deviation from standard loop limits, an exception request form must be completed and approved by Senior Clinician; these exceptions are routed to Quality/Audit for review.
+
+Process metrics and expected performance targets (IDEAL)
+- Reduce frequency of Treatment unsuccessful (target: reduce by X% baseline — recommend 30% reduction within 6 months through improved assessment and escalation).
+- Reduce mean time from Diagnosis -> Treatment by improving assessment throughput (target: reduce relation performance values by 10–20% where applicable).
+- Reduce average number of treatment rework cycles to <= 1 per case (target: majority of cases have 0 rework cycles; <5% exceed 1 rework cycle).
+- Enforce documentation compliance: 100% of treatment outcomes recorded; 0% direct Treatment -> Discharge without outcome code.
+- Monitor key KPIs weekly: frequency of Expert Examination (to control specialist workload), time-to-diagnosis, time-to-treatment, unsuccessful treatment rate, rework cycle counts, and time-to-escalation.
+
+Key improvements made (IDEAL)
+- Standardization: single triage decision enforces consistent routing to Examination or Expert/Thorough track.
+- Eliminated undocumented skips: every bypass is documented, improving traceability and auditability.
+- Bounded rework: limit the number of allowed re-treatments and make escalation mandatory, reducing repeated unsuccessful cycles and resource waste.
+- Forced outcome recording: prevent silent discharges by requiring explicit Treatment successful or unsuccessful coding before Discharge.
+- Clear escalation: mandatory Senior Clinician review after threshold failures improves clinical oversight and reduces long, unproductive treatment loops.
+- Measurability: define KPIs and targets to quantify improvements and monitor adherence.
+
+Implementation notes and practical considerations
+- Capture or map existing event-log fields to the new mandatory events (Triage decision, Treatment outcome, Senior Clinician approval) to allow monitoring via process mining.
+- Introduce lightweight electronic forms to record ‘Not Required’ reasons for steps omitted for clinical reasons to avoid invisible skip artifacts in event logs.
+- Staff training: train triage staff and clinicians on the new routing rules and the requirement to record outcomes and escalation approvals.
+- Pilot the IDEAL flow on a subset of units (e.g., one ER shift and one FD practice) to measure KPI improvements and adjust thresholds before full rollout.
+
+Summary (IDEAL)
+The IDEAL process establishes a controlled, auditable patient flow that preserves clinical flexibility but reduces variability and waste. It standardizes triage and assessment, removes undocumented skips, enforces explicit outcome recording, bounds rework loops with mandatory escalation, and provides clear KPI targets to measure and sustain improvements. These changes directly address the pain points observed in the AS-IS model and provide a pragmatic path to safer, faster, and more consistent care.

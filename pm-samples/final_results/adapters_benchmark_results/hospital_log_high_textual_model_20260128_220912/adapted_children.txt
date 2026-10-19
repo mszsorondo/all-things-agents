@@ -1,0 +1,143 @@
+This is the story of how one patient’s visit goes from the first hello to going home.
+
+Imagine a person named Alex. Alex comes to the hospital. We follow Alex’s whole journey, one step at a time, until discharge (that means “going home” or leaving the hospital). We always do things in order. We choose one path when there is a fork in the road. We never do two steps at the same time in this story.
+
+Who does the steps
+- Different helpers do these steps, but the exact job titles are not listed. We will just use the step names: Register at FD, Register at ER, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge.
+
+Important rules of the journey
+- Only one path is chosen at each fork (choose one path, like a fork in the road).
+- No steps happen in parallel. We always finish one step before the next.
+- Sometimes we loop (that means we go back and repeat steps) when treatment does not work.
+- Every case ends with Discharge. There is no end without Discharge.
+
+How the journey begins (start conditions)
+- The journey starts when Alex arrives and registers in one of two ways. Only one of these is chosen for each case:
+  1) Register at FD (Front Desk)
+  2) Register at ER (Emergency Room)
+
+What happens after registration: picking one road for checks
+- After registration, we meet a choice. We pick exactly one path (choose one path, like a fork in the road):
+  a) Examination (a standard check), or
+  b) Expert Examination (a specialist check), or
+  c) Skip both preliminary examinations and move toward the next stage.
+
+- If Alex had Examination or Expert Examination, there is another choice about depth of checking:
+  - Thorough Examination may happen, or it may be skipped. We pick only one of these (choose one path, like a fork in the road).
+
+- So the control logic is:
+  Register at FD or ER → choose one path {Examination OR Expert Examination OR skip} → choose one path {Thorough Examination OR skip} → Diagnosis.
+
+- What we saw in the data after registration:
+  - Many people go to Expert Examination. Total Expert Examinations are about 5,754 times (Register at FD → Expert Examination: 2,888; Register at ER → Expert Examination: 2,866).
+  - Many people go to Examination. Total Examinations are about 3,609 times (Register at ER → Examination: 1,826; Register at FD → Examination: 1,783).
+  - A smaller number go straight to Diagnosis without a preliminary exam (Register at FD → Diagnosis: 163; Register at ER → Diagnosis: 157).
+  - A few people go straight to Thorough Examination right after registration (this is small but present).
+
+- After the first exam, how often do we use Thorough Examination?
+  - From Expert Examination → Thorough Examination happens 3,637 times; Expert Examination → Diagnosis happens 2,117 times (this means Thorough is used more often than skipped here).
+  - From Examination → Thorough Examination happens 1,968 times; Examination → Diagnosis happens 1,641 times (Thorough is also common here, but skipping it also happens often).
+
+Moving to Diagnosis
+- Diagnosis always happens before treatment in every journey we observed. We never saw treatment before diagnosis.
+
+Going from Diagnosis to Treatment
+- After Diagnosis, Treatment happens. This move from Diagnosis to Treatment occurs 11,746 times in total (think of this as the total number of treatment cycles we saw).
+- The typical waiting times between steps (we call them time units; we do not know the exact unit):
+  - Registration → Examination/Expert Examination: about 40,000 time units.
+  - Examination/Expert Examination → Thorough Examination: about 60,000 time units.
+  - Thorough Examination → Diagnosis: about 60,000 time units.
+  - Diagnosis → Treatment: about 60,000 time units.
+
+What happens after Treatment: three possible outcomes (choose one path)
+- After Treatment, there is a fork. Only one path is taken:
+  1) Treatment successful → then Discharge.
+     - Here, we record “Treatment successful.” There is a short buffer point (a small waiting step) before Discharge.
+     - This path happens 9,005 times. That is about 77 out of every 100 treatments (exactly ~76.6%).
+     - Typical timing: Treatment → Treatment successful is about 60,000 time units. Treatment successful → Discharge is about 40,000 time units.
+  2) Treatment unsuccessful → go back to Diagnosis.
+     - This means the treatment did not work yet. We loop back to Diagnosis for re-checking and another try.
+     - This path happens 1,746 times. That is about 15 out of every 100 treatments (exactly ~14.9%).
+     - Because we loop, some people repeat this path more than once. Some cases include two or three unsuccessful treatments in a row before success.
+  3) Treatment → Discharge directly, without recording success.
+     - This uses a hidden shortcut in the system (an invisible step) that skips the “Treatment successful” label. It means the outcome was not recorded. This is allowed by the system we mined, but it is not ideal for records.
+     - This path happens 995 times. That is about 9 out of every 100 treatments (exactly ~8.5%).
+     - Typical timing: Treatment → Discharge directly is about 100,000 time units. This is longer, on average, than going through “Treatment successful” and then Discharge (which totals about 60,000 + 40,000 = 100,000 time units, but the patterns suggest different lags and possible administrative waiting).
+
+Looping back when treatment is not successful
+- If Alex has Treatment unsuccessful, we go back to Diagnosis. From there, the same choices are allowed as the first time:
+  - We may do Examination, or Expert Examination, or skip to the next stage.
+  - After Examination or Expert Examination, we may do Thorough Examination or skip it.
+  - Then we do Treatment again.
+- We might need to do this loop more than once. Some journeys show two or three loops before success.
+- In extreme journeys with several loops, the total time can grow a lot, up to about 640,000 time units.
+
+How the journey ends (end conditions)
+- Every single journey ends with Discharge. There are two ways we reach Discharge:
+  - After Treatment successful (the success is clearly recorded), then Discharge.
+  - Or directly after Treatment when the success label is skipped (outcome not recorded).
+- We never saw Discharge immediately after Treatment unsuccessful. Unsuccessful always loops back to Diagnosis first.
+
+How choices are made (what we know and do not know)
+- We do not have formal rules that say when to pick Examination vs Expert Examination, or when to do Thorough Examination. The model does not give criteria.
+- We do see that both ER and FD starters go to Examination or Expert Examination in similar amounts.
+- We also see that Thorough Examination is sometimes done and sometimes skipped after either kind of exam.
+
+All steps are sequential (no parallel tasks)
+- There are no “wait for all tasks to finish” moments. We never do two steps at the same time in this story. It is a one-thing-after-another journey with forks where we choose one path and sometimes loops where we go back.
+
+Common full-path stories we saw (examples of whole journeys)
+- Out of the journeys that include treatment (using 11,746 treatment journeys as the baseline), here are some popular stories:
+  - Register (FD or ER) → Expert Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge:
+    3,035 cases. That is about 26 out of every 100 treatment journeys.
+  - Register (FD or ER) → Expert Examination → Diagnosis (skipping Thorough) → Treatment → Treatment successful → Discharge:
+    1,598 cases. That is about 14 out of every 100 treatment journeys.
+  - Register (FD or ER) → Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge:
+    1,502 cases. That is about 13 out of every 100 treatment journeys.
+  - Register (FD or ER) → Examination → Diagnosis (skipping Thorough) → Treatment → Treatment successful → Discharge:
+    1,094 cases. That is about 9 out of every 100 treatment journeys.
+- Paths with at least one Treatment unsuccessful happen often. Paths with two or three loops are less common but do exist.
+
+Numbers to remember (activity counts and timings)
+- Diagnosis → Treatment happens 11,746 times (this is our treatment baseline).
+- Treatment → Treatment successful happens 9,005 times (~76.6%, about 77 in 100).
+- Treatment → Treatment unsuccessful happens 1,746 times (~14.9%, about 15 in 100).
+- Treatment → Discharge without success label happens 995 times (~8.5%, about 9 in 100).
+- After registration:
+  - Expert Examination totals ≈ 5,754 (FD→Expert 2,888; ER→Expert 2,866).
+  - Examination totals ≈ 3,609 (ER→Exam 1,826; FD→Exam 1,783).
+  - Direct to Diagnosis without preliminary exam is present (FD→Diagnosis 163; ER→Diagnosis 157).
+  - Small counts go directly to Thorough Examination right after registration.
+- After an initial exam:
+  - Expert Examination → Thorough Examination: 3,637; Expert Examination → Diagnosis: 2,117.
+  - Examination → Thorough Examination: 1,968; Examination → Diagnosis: 1,641.
+- Typical durations (time units):
+  - Registration → Examination/Expert Examination: ~40,000.
+  - Examination/Expert Examination → Thorough Examination: ~60,000.
+  - Thorough Examination → Diagnosis: ~60,000.
+  - Diagnosis → Treatment: ~60,000.
+  - Treatment → Treatment successful: ~60,000.
+  - Treatment → Discharge (no success label): ~100,000.
+  - Treatment successful → Discharge: ~40,000.
+
+What is hard in this journey (challenges)
+- Missing outcome records: About 9 in 100 treatments (exactly ~8.5%) go from Treatment straight to Discharge without recording “Treatment successful.” This makes it hard to track how well treatments work later.
+- Rework (trying again): About 15 in 100 treatments (exactly ~14.9%) are marked as Treatment unsuccessful, which sends people back to Diagnosis. Some journeys loop two or three times. This increases total time, sometimes up to ~640,000 time units.
+- Uneven checking: The use of Examination vs Expert Examination varies a lot. Sometimes we do Thorough Examination; sometimes we skip it. People can even go straight to Diagnosis without any preliminary exam. This might raise the chance of rework later.
+- Two starting doors: Starting at FD or ER leads to similar paths later. But we do not have triage rules that explain when to pick FD or ER in the model.
+- Timing differences: Direct Treatment → Discharge takes longer on average (~100,000 time units) than going Treatment → Treatment successful → Discharge (~60,000 + 40,000). This may show waiting or missing paperwork.
+- No clear rules: There is no rulebook in the model telling us when to require Expert Examination or Thorough Examination, especially after a failed treatment. This may cause uneven care and extra loops.
+
+Quick summary of the logic (in simple words)
+- Start: Register at FD or ER (pick one).
+- Then pick one path: Examination, or Expert Examination, or skip directly forward.
+- If an exam happens, decide if we do Thorough Examination or skip it (pick one).
+- Do Diagnosis (always before Treatment).
+- Do Treatment.
+- After Treatment, pick one path:
+  - If Treatment successful, go through a short buffer point, then Discharge.
+  - If Treatment unsuccessful, loop back to Diagnosis, and repeat the choices and Treatment.
+  - Or, take a hidden shortcut to Discharge without recording success (less common).
+- Finish: Discharge (always the end). We never discharge immediately after “Treatment unsuccessful.”
+
+And that’s how the whole process works!

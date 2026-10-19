@@ -1,0 +1,104 @@
+IDEAL Process Model
+
+1. Process overview and purpose
+- Purpose: Define a controlled, efficient, auditable target process for retail loan applications that eliminates unnecessary rework, enforces required verifications prior to underwriting, reduces the number of field visits, removes unsafe bypasses, and improves throughput and approval rates.
+- Scope: Covers the entire customer loan application lifecycle from appointment request to final disposition, with clearly enforced sequencing, decision criteria, and escalation rules.
+
+2. Key stakeholders and roles (recommended and explicitly assigned in the IDEAL model)
+- Borrower / Applicant: supplies application and information.
+- Front-office Scheduler / Appointment System: handles Request Appointment, Set Appointment, and Appointment Denied decisions.
+- Intake & Verification Team (Loan Officer or Automated Checks): responsible for "Hand In Credit Application" and "Verify Borrowers Information".
+- Underwriter: receives the completed file and gives final credit decision.
+- Field Assessor / Collateral Inspector (on-demand): performs collateral visits when strictly required.
+- Co-signer Coordinator (or Loan Officer): initiates co-signer requests and verifies co-signer qualification.
+- Document Management & Workflow Engine (system): enforces required sequences, records skip reasons, limits loops, and provides dashboards/alerts for escalations.
+
+3. Start conditions and triggers
+- Start: Borrower initiates Request Appointment.
+- If the appointment request fails basic pre-screening (e.g., missing documents, obviously ineligible), the scheduler returns Appointment Denied with a documented reason and the case ends.
+
+4. Detailed step-by-step IDEAL process flow
+- Step 1: Request Appointment (Front-office)
+  - System validates minimal eligibility documents electronically at request time (ID, contact, basic income flag).
+  - If validation passes -> Set Appointment. If validation fails -> Appointment Denied with immediate feedback and guidance.
+
+- Step 2: Set Appointment -> Hand In Credit Application (Borrower / Intake)
+  - Borrower hands in the application at the appointment or via secure portal.
+  - Intake Team performs an initial completeness check within defined SLA (e.g., 24 hours).
+  - If incomplete, Intake requests missing items (single rework loop limited to 2 attempts) and records the reason.
+
+- Step 3: Verify Borrowers Information (Intake & Verification Team or automated checks)
+  - The Verification Team runs a predefined checklist and automated checks (identity, credit bureau, income verification).
+  - Decision outcomes (mutually exclusive but may produce flags for mandatory follow-ups):
+    - Fail verification -> Application Rejected (documented reason), case ends.
+    - Pass verification with no flags -> proceed to Underwriter submission.
+    - Conditional approval requiring co-signer -> create a Co-signer request task (Request Co-Signer On Loan).
+    - Conditional approval requiring collateral inspection -> create Collateral Assessment task (Make Visit to Assess Collateral).
+  - Important: Request Co-Signer and Make Visit are now modeled as required follow-up tasks when flagged, but the workflow enforces completion (or documented exception) before final submission to Underwriter.
+
+- Step 4: Coordinated follow-ups (Co-signer and Collateral)
+  - Tasks for Co-signer and Collateral are created in the workflow engine and can be worked in parallel if independent.
+  - Rules to avoid uncontrolled loops:
+    - Maximum visits per case: e.g., max 3 physical visits before escalation.
+    - If collateral assessment requires rework more than thresholds, escalate to a supervisor and open a remediation plan rather than repeating visits ad infinitum.
+    - Co-signer requests follow a fixed timeline (e.g., 14 days) and automated reminders; if co-signer not secured within timeframe, case is escalated for decision (reject or offer alternate terms).
+  - The system will not allow final submission to Underwriter until the mandatory flagged tasks are completed or a formal exception is approved by a supervisor (documented and auditable).
+
+- Step 5: Submit File to Underwriter (Underwriter)
+  - The Underwriter receives a consolidated, validated file with all required attachments and a checklist showing completed verification, co-signer status (if any), and collateral assessment outcome.
+  - Underwriter decision options:
+    - Approve -> Sign Loan Agreement.
+    - Deny -> Loan Denied with documented denial code and automated communication to borrower.
+  - Escalation for borderline cases: route to Senior Underwriter or Credit Committee within defined SLAs.
+
+- Step 6: Sign Loan Agreement (if approved)
+  - Triggered only after underwriter approval and after all required tasks and controls are satisfied. The signing step includes final KYC checks and digital signing where possible.
+
+- Step 7: End conditions
+  - Successful completion: Sign Loan Agreement -> Case closed as Approved.
+  - Denied outcomes: Loan Denied or Application Rejected -> Case closed with documented reason.
+  - Appointment Denied: early termination with guidance for re-application if applicable.
+
+5. Decision points with criteria (IDEAL enforcement)
+- Appointment Denied: explicit eligibility check with return guidance.
+- Verification pass/fail/conditional: automated rules and human verification define whether co-signer/collateral is required.
+- Co-signer required: determined by explicit credit policy thresholds.
+- Collateral assessment required: determined by loan type, loan-to-value, and policy rules.
+- Underwriter decision: documented scoring model and manual review thresholds; required fields must be completed.
+
+6. Parallel activities and synchronization
+- Co-signer request and collateral assessment can proceed in parallel when both are flagged, but both must be completed (or have an approved exception) before submission.
+- The workflow engine synchronizes these branches prior to the Submit File to Underwriter task.
+
+7. Exception handling, rework limits and escalation
+- No silent bypasses: "skipped_examination" style bypasses are disallowed. Any exception to skip a task must be authorized in the system by a supervisor with a mandatory comment.
+- Rework limits: set a firm maximum number of allowed repeats (e.g., 2 rework cycles for missing documents, 3 physical visits) after which the case is escalated.
+- Escalation: predefined escalation to supervisor/senior underwriter with SLA timers and alerts.
+
+8. Process metrics and target performance characteristics (KPIs)
+- Throughput and targets (sample recommended targets):
+  - Average lead time Request -> Verify: target < 48 hours.
+  - Average time Verify -> Submit to Underwriter (when no follow-ups): target < 72 hours.
+  - Maximum allowed physical visits per case: 3; target average visits << current observed average.
+  - Approval rate improvement target: reduce submit->deny ratio by 25% through better verification and gating.
+  - Percentage of cases with documented exceptions (should be <1%).
+  - SLA compliance: 95% of verifications completed within target SLA.
+- Measurement: use the same logging and performance metrics as the AS-IS analysis, but track them in dashboards and produce weekly reports for continuous improvement.
+
+9. Improvements made (IDEAL vs AS-IS)
+- Enforced gating at verification stage prevents premature submission to underwriting and reduces downstream denials.
+- Formalized and limited collateral assessment process reduces repeated visits and associated cost and time.
+- Removal of undocumented bypasses (skipped_examination) and mandatory exception logging increases compliance and auditability.
+- Parallelization of independent follow-ups with synchronization before submission reduces idle wait when both tasks are needed.
+- Automated pre-screening at appointment reduces appointment denials and wasted customer effort.
+- Clear escalation rules prevent indefinite rework loops and provide managerial oversight for difficult cases.
+
+10. Implementation considerations and system support
+- Implement a workflow engine that enforces the required sequences, supports parallel branches with joins, records exceptions and approvals, and limits rework counts.
+- Integrate with credit bureau, document management, and scheduling systems for automated checks and reminders.
+- Train intake staff and underwriters on the new gating rules and exception handling policy.
+- Monitor KPIs and run a pilot to validate assumed targets, then tune thresholds (e.g., max visits, SLA durations) based on pilot results.
+
+11. Summary (IDEAL)
+- The IDEAL model transforms the observed ad-hoc, loop-prone process into a governed, auditable, and efficient workflow. It removes unsafe bypasses, rationalizes follow-ups, enforces verification gates before underwriting, and caps rework cycles with escalation. Expected outcomes: lower average cycle time, fewer repeated field visits, improved approval accuracy, and better customer experience.
+

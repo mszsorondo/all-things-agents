@@ -1,0 +1,195 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: This is the observed (AS‑IS) patient intake → diagnosis → treatment → discharge process for a clinical setting that accepts registrations at either a family doctor (FD) desk or an emergency room (ER) desk. The process covers patient registration, triage/examination (in several alternate forms), diagnosis, one or more treatment attempts (some unsuccessful), and eventual discharge. The description below captures every behavior observed in the event log, including main, alternative and rare variants, repeated rework loops (treatment failures), and traces that omit some examination steps.
+
+Key stakeholders and roles (as observed in the log)
+- Medical staff (doctors and nurses) and registration clerks. The event log identifies resources by name; the most frequent resource values are:
+  - Doc. Low (most frequent), Doc. Pro (second most frequent)
+  - Nurse 1, Nurse 2, Nurse 3, Nurse 4, Nurse 5
+- The log does not provide a complete, consistent per-activity mapping of each role. Therefore we do not invent role-to-activity assignments; rather: doctors and nurses are the primary performers of clinical activities (diagnosis, treatment, examinations) and registration activities are done by front‑desk staff / triage personnel (resources exist in the log but activity ownership is not formally modeled).
+
+Start conditions and triggers
+- Start of a case: patient arrival/registration at the facility. Observed start events:
+  - "Register at FD" OR "Register at ER" — these two are mutually exclusive (a case contains one or the other, never both).
+  - A small number of traces show that registration may be immediately followed by diagnosis (some cases skip examination steps entirely).
+- Initialization: any case begins when a patient is registered (Register at FD or Register at ER) as observed.
+
+High-level observed structure (summary)
+- Core observed sequence (most typical): Register -> (optionally an examination variant) -> (optionally a thorough examination) -> Diagnosis -> Treatment -> (Treatment successful OR Treatment unsuccessful leading to repeat Diagnosis→Treatment loops) -> Discharge.
+- The process is flexible: examination steps are optional; thorough examination is optional; treatment may succeed or fail; failed treatment(s) cause one or more Diagnosis→Treatment cycles. Some traces show Treatment directly followed by Discharge without an explicit “Treatment successful” event.
+
+Detailed step-by-step process flow (all observed behaviors and variants)
+1. Registration (exclusive choice)
+   - One of:
+     - Register at FD (Register at Family Doctor) OR
+     - Register at ER (Register at Emergency Room)
+   - Constraint: A case never contains both Register at FD and Register at ER.
+   - Observed frequencies: both registration types occur frequently and roughly evenly (Register at FD ≈ 4992 occurrences, Register at ER ≈ 5008 occurrences).
+
+2. Post-registration options (exclusive/optional)
+   - After registration one of three outcomes is observed:
+     A. Expert Examination (observed frequently)
+     B. Examination (a different, mutually exclusive exam; cases contain either Expert Examination or Examination, not both)
+     C. Skip examination (no Expert Examination / Examination event before proceeding)
+   - Observed behavior:
+     - Expert Examination and Examination are alternatives (never together in the same case).
+     - Some traces skip both examination events and go directly toward diagnosis.
+
+3. Optional Thorough Examination
+   - After the chosen examination (or after registration when an exam was skipped), an optional "Thorough Examination" may occur.
+   - Observed: Thorough Examination sometimes appears between Examination/Expert Examination and Diagnosis, but many cases do not include it.
+   - It is optional (can be present or absent); if present, it precedes Diagnosis.
+
+4. Diagnosis (mandatory in observed traces)
+   - Diagnosis occurs (the vast majority of traces include at least one Diagnosis).
+   - In most observed flows Diagnosis immediately precedes Treatment (Diagnosis -> Treatment is the main directly-follows relation).
+   - Rare variants: a small number of traces show registration directly followed by Diagnosis (i.e., registration -> Diagnosis without prior Examination/Expert/Thorough).
+
+5. Treatment attempts and result branching (core loop)
+   - After Diagnosis the process moves to Treatment.
+   - Treatment has two observed outcomes:
+     A. Treatment successful
+        - Observed in the majority of completed successful cycles.
+        - When Treatment successful occurs it typically precedes Discharge.
+        - Some cases show Treatment successful explicitly; other cases show Treatment followed directly by Discharge without a separate "Treatment successful" event (both patterns were observed and are valid).
+     B. Treatment unsuccessful
+        - Observed in a subset of cases (Treatment -> Treatment unsuccessful observed frequently as rework).
+        - When Treatment unsuccessful occurs, the case returns to Diagnosis, and then Treatment is attempted again.
+        - This creates a loop: Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment ...
+        - The loop can repeat multiple times. The log contains many cases with 1–5+ repetition cycles; a small but significant set of cases shows very long sequences of repeated unsuccessful Treatment attempts (examples in variants show up to many repeats before eventual success or discharge).
+   - Termination of the loop:
+     - Eventually a Treatment attempt may succeed (Treatment successful) and the case proceeds toward Discharge.
+     - Rare variants also show Treatment leading directly to Discharge without a recorded Treatment successful event (these traces are allowed by the data).
+
+6. Discharge (end)
+   - After a successful treatment (or in some traces directly after Treatment), the case ends with Discharge.
+   - Observed: Discharge appears in almost all completed traces as the final event.
+   - Discharge is the final state in all observed variants.
+
+All observed alternative paths and variants (explicit list of valid orderings)
+- Major high-frequency variants (representative, by observed relative frequency):
+  1. Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈15% of cases)
+  2. Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈14%)
+  3. Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈8%)
+  4. Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈7%)
+  5. Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈7%)
+  6. Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈7%)
+  7. Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈5%)
+  8. Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (≈5%)
+- Rework / multi-attempt variants (examples observed with lower frequency but present):
+  - Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> ... (repeated) ... -> Treatment successful -> Discharge (≈2% for one specific long variant shown)
+  - Many rare traces contain repeated cycles of (Diagnosis -> Treatment -> Treatment unsuccessful) repeated multiple times (some show 3–8 repeats) before either success or discharge.
+- Observed shorter exceptions:
+  - Register -> Diagnosis -> Treatment -> Discharge (no examination; sometimes no explicit Treatment successful).
+- Important: All sequences above are valid observed traces. The AS‑IS model must accept:
+  - Any ordering where Diagnosis precedes Treatment (which is the dominant constraint), but also small numbers of traces where registration is followed directly by Diagnosis.
+  - Multiple interleavings where the optional exam/thorough exam may be present or absent.
+  - Any number (including zero) of Treatment unsuccessful cycles; loops can repeat many times.
+
+Decision points and criteria (as observed)
+- Registration choice (exclusive): FD vs ER — determined by patient arrival/triage; mutually exclusive.
+- Examination option (exclusive/optional): either Expert Examination OR Examination OR none. No case contains both Examination and Expert Examination.
+- Thorough Examination optional: may be performed after the chosen examination or omitted.
+- Treatment outcome decision (branching after each Treatment):
+  - If treatment results are favorable → Treatment successful (sometimes implicit) → proceed to Discharge.
+  - If treatment fails → Treatment unsuccessful → return to Diagnosis and attempt another Treatment.
+- No explicit recorded decision criteria (e.g., clinical criteria) are present in the log; only observed branching behavior.
+
+Parallelism and synchronization
+- The observed model is primarily sequential; no evidence of parallel execution of clinical activities (the process tree and DFG show sequence and choices, not parallel branches). Therefore, treat activities as sequential and the model as largely single-threaded per case.
+
+Exception handling, error paths and rework loops
+- Treatment unsuccessful is the principal exception/rework event. When it occurs:
+  - Process flows back to Diagnosis and then to another Treatment attempt.
+  - This loop can repeat multiple times.
+- There are no recorded deadlocks in the log; loops eventually resolve (in observed cases) to Discharge, though some traces have very long cycles.
+- There are no observed cases where Treatment unsuccessful leads to termination without further diagnosis/treatment — the pattern is to re-diagnose and re-treat.
+
+Synchronization and invisible/silent steps
+- The process discovery introduced silent transitions to allow optional skipping of examination/thorough exam/treatment-success. In plain terms, the observed behavior is that several intermediate steps are optional and may be skipped; we model these as explicit optional branches (no invented hidden business activities).
+
+End conditions and outcomes
+- Normal end: Discharge after Treatment successful (explicit) OR after Treatment (implicit success).
+- Observed alternative end: Some traces end after repeated unsuccessful treatment loops but still arrive at Discharge (eventually), sometimes with much longer total duration.
+- No traces observed that end without Discharge in the discovered, accepted variants (Discharge is included as final event in almost all cases).
+
+Process metrics and performance characteristics (observed from the log)
+- Activity frequencies (total event counts in the log):
+  - Treatment: 11,746 occurrences
+  - Diagnosis: 11,746 occurrences
+  - Discharge: 10,000 occurrences
+  - Treatment successful: 9,005 occurrences
+  - Thorough Examination: 5,922 occurrences
+  - Expert Examination: 5,754 occurrences
+  - Register at ER: 5,008 occurrences
+  - Register at FD: 4,992 occurrences
+  - Examination: 3,609 occurrences
+  - Treatment unsuccessful: 1,746 occurrences
+- Directly-follows edge frequencies (top edges):
+  - Diagnosis -> Treatment: 11,746 times (average inter-event time ≈ 60,000 s)
+  - Treatment -> Treatment successful: 9,005 times (≈ 60,000 s)
+  - Treatment successful -> Discharge: 9,005 times (≈ 40,000 s)
+  - Thorough Examination -> Diagnosis: 5,922 times (≈ 60,000 s)
+  - Expert Examination -> Thorough Examination: 3,637 times (≈ 60,000 s)
+  - Treatment -> Treatment unsuccessful: 1,746 times (≈ 60,001 s)
+  - Treatment unsuccessful -> Diagnosis: 1,746 times (≈ 40,000 s)
+  - Treatment -> Discharge (direct without explicit Treatment successful): 995 times (≈ 100,003 s)
+- Case/variant performance (example mean whole-case durations from observed variants):
+  - Typical "full exam + successful treatment" variants: ~320,000 seconds (≈ 3.7 days) on average.
+  - Variants with fewer steps (skipping thorough exam) show somewhat lower averages (≈ 260,000 seconds in some variants).
+  - Long rework variants (multiple treatment failures) show drastically higher mean durations (examples: 640,000 s to 1,120,000 s or more), reflecting repeated cycles and long waits — these are the slowest/most resource-consuming cases.
+- Interpretation of timing values: many directly-follows average times are in the range of 40,000–60,000 seconds (≈ 11–17 hours) between key steps; some treatment→discharge direct edges show longer average (≈ 100,000 s ≈ 28 hours). Whole-case durations indicate median-to-mean multi‑day flows for typical cases, with outliers in the multi‑week scale due to repeated unsuccessful cycles.
+
+Key challenges and pain points observed in the current process
+- Rework due to unsuccessful treatments:
+  - Treatment unsuccessful occurs in a non-trivial share of cases (1,746 treatment unsuccessful events recorded), causing Diagnosis→Treatment loop iterations. Rework increases patient cycle time massively for affected cases.
+  - Some cases have many repeated unsuccessful cycles; those cases dominate worst-case response times.
+- Variability and optional steps:
+  - Multiple alternative examination paths (Expert Examination vs Examination vs skip) and optional Thorough Examination increase branchiness and variability, making throughput and resource planning difficult.
+  - Lack of standardization: some patient flows include more diagnostic steps while others skip them entirely — the reason for different paths is not recorded, increasing process unpredictability.
+- Inconsistent recording of treatment success:
+  - Some traces record "Treatment successful" explicitly, others jump directly from Treatment to Discharge. This inconsistent event recording complicates analytics and performance attribution.
+- Resource and capacity pressure:
+  - The high counts of Diagnosis and Treatment and the prominent resources (Doc. Low, Doc. Pro) suggest potential bottlenecks around clinical staff capacity, especially when repeated treatment attempts are required.
+- Long wait times between activities:
+  - Average inter-event times (40k–60k seconds) indicate substantial waiting or lead time between steps (possible delays for lab results, scheduling, or resource availability).
+- Data quality challenges:
+  - Mutual exclusion of registration types and exam types is clear, but sometimes small unexpected direct edges (e.g., Register -> Diagnosis) indicate either legitimate fast-track paths or logging omissions.
+  - Event attributes show variable activity occurrence counts; some activities are present 0/1 times per case while Diagnosis and Treatment can occur multiple times — model must allow multiple Diagnosis/Treatment cycles.
+- Compliance and traceability:
+  - The process is partly declarative in nature (some required relations exist: Diagnosis generally precedes Treatment, Treatment successful generally precedes Discharge), but variability and optional omissions may break explicit procedural expectations if the organization assumes a rigid sequence.
+
+Behavioral constraints and rules distilled from observed behavior
+- Mutual exclusions (always observed):
+  - Register at FD and Register at ER are never both present in the same case.
+  - Expert Examination and Examination are mutually exclusive.
+- Strongly observed precedences:
+  - Diagnosis precedes Treatment in almost all cases (Diagnosis -> Treatment is the dominant directly-following relation).
+  - Treatment successful (when present) precedes Discharge.
+- Loop behavior:
+  - A Treatment unsuccessful event is always followed later by Diagnosis (Treatment unsuccessful -> Diagnosis), enabling repeated Treatment attempts.
+- Occurrence bounds (observed):
+  - Diagnosis and Treatment can occur multiple times per case (activity occurrence bounds observed up to 6 times for some cases).
+  - Discharge occurs exactly once per observed completed case.
+
+Recommendations (brief, for context)
+- Reduce rework: investigate clinical reasons for Treatment unsuccessful cycles (diagnostic accuracy, treatment selection, patient non-compliance).
+- Standardize recording: enforce consistent logging of Treatment success/failure to avoid ambiguity.
+- Triage consistency: review differences between Expert Examination, Examination and Thorough Examination to reduce unnecessary steps or duplication.
+- Capacity planning: focus on doctors/nurses resource allocation to reduce long waiting times between Diagnosis and Treatment and between Treatment and Discharge for high-volume paths.
+- Monitor long-tail cases: create alerts for cases that enter repeated unsuccessful treatment loops so they can be escalated or reviewed.
+
+Final summary (what any valid trace must allow)
+- Any valid execution observed in the log must accept:
+  - Start with exactly one registration event: either Register at FD OR Register at ER.
+  - Optionally perform one of: Expert Examination OR Examination OR no exam.
+  - Optionally perform Thorough Examination.
+  - One or more cycles of: Diagnosis followed by Treatment.
+  - After each Treatment, either:
+    - Treatment successful (then Discharge follows), OR
+    - Treatment unsuccessful (which leads back to Diagnosis and another Treatment attempt).
+  - Some traces may have Treatment directly followed by Discharge (without an explicit Treatment successful event).
+  - Discharge must appear as the final outcome in observed completed cases.
+
+This AS‑IS model describes the actual observed behavior from the event log: all alternative sequences, optional steps, and repeated unsuccessful treatment loops are permitted and reflected above. Any analysis, compliance check, or redesign should use this permissive description to ensure all observed variants remain valid or are intentionally restricted.

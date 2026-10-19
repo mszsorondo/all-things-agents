@@ -1,0 +1,193 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+This process covers a patient episode from initial registration, through clinical examinations, diagnosis, treatment, assessment of treatment outcome, and discharge. The description reflects the behavior discovered by a Heuristics Miner Petri net, including optional steps and a rework loop upon unsuccessful treatment outcomes.
+
+Key stakeholders and roles involved
+- Roles are not explicitly provided in the source model. Responsibilities are therefore not assigned to named roles or departments in this description.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: A new patient episode begins when the patient is registered. The model provides two mutually exclusive registration options:
+  - Register at ER
+  - Register at FD
+
+2) Registration (exclusive start choice)
+- Decision point (exclusive): Exactly one of the following occurs at the start:
+  - Register at ER
+  - Register at FD
+- Outcome: Registration enables the episode to proceed to clinical examination pathways. The model uses internal (hidden) joins that remember the registration source for later routing conditions.
+
+3) Initial clinical examination (exclusive choice)
+- After registration, the process proceeds with exactly one of the following alternatives:
+  - Examination (standard)
+  - Expert Examination (specialized)
+- Decision logic: The model does not encode explicit decision criteria; behavior shows that only one of these is taken per case. The choice is recorded and later combined with the registration source by implicit (hidden) transitions to enable downstream steps.
+
+4) Optional thorough examination (conditional, before diagnosis)
+- Thorough Examination is an optional step that may precede Diagnosis.
+- Synchronization/enablement: Hidden joins combine two facts before allowing Thorough Examination:
+  - The registration source (ER or FD), and
+  - The type of initial examination completed (Examination or Expert Examination).
+- Control logic: If conditions indicate the need, Thorough Examination occurs; otherwise the process can proceed toward Diagnosis without this step.
+
+5) Diagnosis (after required preconditions)
+- Diagnosis is performed once the model’s hidden joins establish that at least one prior examination (Examination or Expert Examination) has been completed. If Thorough Examination occurred, that also enables Diagnosis.
+- Outcome: Upon completion of Diagnosis, the process moves to Treatment.
+
+6) Treatment
+- A single Treatment activity follows Diagnosis.
+
+7) Treatment outcome and branching
+- Decision point (exclusive):
+  - Treatment unsuccessful: The process returns to Diagnosis (rework loop). This allows iterative cycles of re-diagnosis and re-treatment until a successful outcome is achieved. There is no limit encoded on the number of cycles.
+  - Treatment successful: The model enforces two conditions before discharge:
+    - A confirmation step recorded as Treatment successful.
+    - A readiness token stemming from completion of Treatment.
+  - Synchronization: Discharge requires both the completion of Treatment successful and the post-Treatment readiness, i.e., Discharge will not occur until the success confirmation is recorded.
+
+8) End conditions and outcomes
+- Discharge: Once Treatment successful is recorded and the discharge readiness from Treatment is present, Discharge completes the episode and ends the process.
+- There is no modeled terminal outcome other than Discharge; unresolved cases remain in the rework loop.
+
+Decision points with criteria and possible outcomes (summary)
+- Start decision (exclusive): Register at ER vs. Register at FD.
+- Initial examination decision (exclusive): Examination vs. Expert Examination.
+- Optional Thorough Examination: Performed only when enabled by prior steps; criteria are implicit (not encoded).
+- Treatment outcome (exclusive): Successful (proceed to confirmation and then Discharge) vs. Unsuccessful (loop back to Diagnosis).
+
+Parallel activities and synchronization points
+- No true parallel execution is observed. Instead, hidden transitions represent synchronization/enablement conditions:
+  - Enabling Thorough Examination requires the combination of registration source and examination type.
+  - Enabling Diagnosis requires that an initial examination has occurred, with optional inclusion of Thorough Examination results.
+  - Discharge is synchronized on two prerequisites: evidence of Treatment completion and the explicit Treatment successful confirmation.
+
+Exception handling and error paths
+- Primary exception path: Treatment unsuccessful leads to a rework loop back to Diagnosis. Subsequent iterations may repeat examination activities and Thorough Examination as needed prior to re-diagnosis and re-treatment.
+- No other exception types are explicitly modeled.
+
+Rework loops and escalation procedures
+- Rework: An unbounded loop exists from Treatment unsuccessful back to Diagnosis. The model does not encode escalation thresholds or mandatory additional reviews upon repeated failures.
+
+Process metrics and performance characteristics
+- Potential metrics (not measured here):
+  - Lead time: Registration to Discharge.
+  - Diagnosis lead time: Registration to Diagnosis.
+  - Rework rate: Percentage of cases experiencing Treatment unsuccessful and re-diagnosis.
+  - Number of rework cycles per case.
+  - Waiting time between Treatment and Treatment successful confirmation.
+  - Optional step utilization: Percentage requiring Thorough Examination.
+  - Entry distribution: Proportion registering at ER vs. FD.
+- Control characteristics:
+  - Exclusive choices early (entry channel, examination type).
+  - Conditional, synchronized enabling of Thorough Examination and Diagnosis based on prior steps.
+  - AND synchronization before Discharge (Treatment completion + success confirmation).
+
+Key challenges and pain points
+- Fragmented entry and examination variants: Early exclusive choices create variability and potential inconsistency in routing; criteria are implicit.
+- Opaque enablement conditions: Hidden transitions mask the business logic that gates Thorough Examination and Diagnosis, making governance and compliance hard to verify.
+- Rework without bounds: The loop on Treatment unsuccessful lacks escalation rules or safeguards, risking extended cycle times.
+- Discharge dependency timing: Discharge waits on both treatment completion and a separate Treatment successful confirmation; if confirmation is delayed, cases can bottleneck near completion.
+- Limited concurrency: Mutually exclusive selection of Examination vs. Expert Examination may force sequential rework if both perspectives are needed, increasing time to diagnosis.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+This improved process streamlines entry, clarifies decision logic for examinations, enforces clean synchronization points before diagnosis and discharge, and introduces disciplined rework governance—while retaining the same set of business activities discovered in the source model.
+
+Key stakeholders and roles involved
+- Roles are not provided in the source. Responsibilities are therefore not assigned to specific actors in this target design.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: A new patient episode begins with patient registration.
+- Improvement: Consolidate the two alternative start activities into one conceptual step with standardized data capture:
+  - Register patient (entry point attribute = ER or FD)
+- Rationale: This unifies governance and data quality while preserving the original behavior (registration can occur at ER or FD).
+
+2) Examination selection (inclusive, policy-driven)
+- Decision point (inclusive OR):
+  - Examination (standard)
+  - Expert Examination (specialized)
+- Improvement:
+  - Permit one or both examinations when clinically indicated. If both are needed, they may be conducted in parallel (resource permitting) or in a defined sequence.
+  - Define policy criteria (protocol-driven) for when Expert Examination is required in addition to standard Examination.
+- Synchronization:
+  - If both examinations are performed, their results must be available before proceeding.
+
+3) Thorough Examination (conditional, governed by criteria)
+- Decision point (conditional step):
+  - Perform Thorough Examination only when specific criteria are met (e.g., ambiguous findings, elevated risk, or protocol flags). Criteria should be explicit in clinical guidance, replacing opaque hidden gating.
+- Synchronization before Diagnosis:
+  - Ready for Diagnosis gate requires:
+    - Completion of at least one of Examination or Expert Examination, and
+    - Completion of Thorough Examination if it is required by protocol.
+  - This replaces hidden joins with an explicit data-complete checkpoint.
+
+4) Diagnosis
+- Perform Diagnosis once the Ready for Diagnosis gate is satisfied (all required examination results present).
+- Output: A clear diagnostic conclusion that informs treatment.
+
+5) Treatment
+- Execute Treatment based on the Diagnosis.
+
+6) Treatment outcome assessment and discharge synchronization
+- Outcome decision (exclusive):
+  - Treatment unsuccessful:
+    - Controlled rework: Return to Diagnosis with governance (see rework below).
+  - Treatment successful:
+    - Record Treatment successful as the formal clinical confirmation.
+    - Proceed to Discharge.
+- Improvement:
+  - Simplify the discharge gating: Discharge is triggered from Treatment successful (confirmation) rather than from parallel signals. This removes ambiguity and ensures discharge only occurs after explicit success confirmation.
+
+7) End conditions and outcomes
+- Discharge concludes the episode after Treatment successful is recorded.
+- Cases with repeated unsuccessful outcomes remain in a governed rework path (see below) until a successful outcome is achieved or an alternative disposition is chosen per policy.
+
+Parallel activities and synchronization points
+- Inclusive examination selection permits Examination and Expert Examination to occur in parallel when indicated.
+- Explicit synchronization gates:
+  - Ready for Diagnosis: Requires completion of all examinations mandated by protocol (and Thorough Examination if required).
+  - Ready for Discharge: Requires Treatment successful confirmation.
+
+Exception handling, rework loops, and escalation procedures
+- Rework loop (controlled):
+  - If Treatment unsuccessful, return to Diagnosis under the following governance:
+    - Mandatory Expert Examination if not previously conducted or if the clinical picture has changed.
+    - Consider Thorough Examination if criteria are met or if prior findings were inconclusive.
+    - Explicitly document rationale for repeating or skipping each examination.
+  - Limit uncontrolled cycling by establishing review checkpoints after repeated failures (e.g., after the first unsuccessful treatment, additional examinations are mandated before re-diagnosis; after subsequent failures, stricter criteria for advancing to treatment again).
+- These controls use only existing activities (Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment) while introducing clear policy rules.
+
+Process metrics and performance characteristics
+- Target metrics (no numeric targets assigned here):
+  - Registration-to-Discharge lead time, with variance by entry point (ER/FD).
+  - Time to Diagnosis, with stratification by examination pathway used.
+  - First-pass treatment success rate and rework rate.
+  - Number of rework cycles per episode; percentage requiring escalation criteria.
+  - Time from Treatment completion to Treatment successful confirmation (confirmation latency).
+  - Utilization rates of Expert Examination and Thorough Examination against protocol indications (appropriateness).
+  - Conformance metrics: percentage of cases meeting Ready for Diagnosis and Ready for Discharge gate criteria without exception.
+- Control characteristics:
+  - Explicit, policy-based gating replaces hidden joins.
+  - Inclusive examination capability reduces rework caused by missing perspectives.
+  - Discharge strictly contingent on documented Treatment successful confirmation.
+
+Improvements made (summary)
+- Entry standardization: Consolidate Register at ER / Register at FD into one governed registration step with an entry-point attribute.
+- Examination flexibility: Allow both Examination and Expert Examination when indicated; enable parallel execution to reduce delay.
+- Transparent gating: Replace opaque hidden enablement with explicit Ready for Diagnosis and Ready for Discharge gates tied to completion of required steps.
+- Conditional Thorough Examination: Performed only under defined criteria, minimizing unnecessary steps while ensuring clinical sufficiency when needed.
+- Clean discharge logic: Discharge triggered solely by Treatment successful confirmation, eliminating dual-signal ambiguity.
+- Rework governance: Mandate evidence-based additional examinations before re-diagnosis after an unsuccessful treatment, and set review thresholds to prevent uncontrolled cycling.
+
+Notes on fidelity to source behavior
+- All activities used in the target model exist in the discovered model (Register at ER/FD consolidated; Examination; Expert Examination; Thorough Examination; Diagnosis; Treatment; Treatment successful; Discharge).
+- The IDEAL model streamlines control flow, clarifies decisions, and introduces governance on rework without inventing new activities.
+""")

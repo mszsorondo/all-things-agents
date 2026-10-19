@@ -1,0 +1,74 @@
+Title: IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a cleaned, controlled loan intake-to-signing process that preserves the observed successful business outcomes but eliminates the risky, wasteful and inconsistent behaviors found in the AS-IS model. The IDEAL model enforces mandatory verification and examination steps, removes uncontrolled skip paths, bounds collateral visits, consolidates decisions to reduce parallel synchronization overhead, and clarifies escalation and denial criteria for auditability and efficiency.
+
+Key stakeholders and roles involved
+- Applicant / Borrower
+- Branch/front-office staff (appointments, hand-in, initial checks)
+- Field assessor (collateral visits)
+- Loan officer / Credit analyst (verification, co-signer assessment)
+- Underwriter (final credit decision)
+- Compliance officer / Risk manager (oversight for mandatory checks)
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and triggers
+1. Start: Applicant triggers Request Appointment (explicit start).
+
+Main sequence and enforced flow
+2. Appointment handling
+   - Request Appointment -> Set Appointment (appointment is modeled as mandatory once a request is valid). Appointment Denied is an explicit outcome only when applicant fails eligibility pre-checks; denial must be recorded with a reason and routed to compliance review.
+
+3. Application submission and mandatory verification
+   - After Set Appointment: Hand In Credit Application -> Verify Borrowers Information.
+   - Verify Borrowers Information is mandatory and must result in one of two outcomes: Approved for processing or Application Rejected (with documented reasons). The conditional parallel split in AS-IS is removed: verification no longer triggers uncontrolled concurrent threads.
+
+4. Conditional work: Co-signer and Collateral assessment (sequentialized and bounded)
+   - If verification indicates risk that requires a co-signer or collateral assessment, the Loan Officer initiates a coordinated assessment activity. These two assessments are performed as coordinated tasks (either in sequence or via controlled parallelism with explicit synchronization points) but both must complete before submission to underwriting.
+   - Co-signer assessment: Loan Officer evaluates necessity; if required, Request Co-Signer On Loan is performed and documented. If not required, this is explicitly recorded as "No Co-Signer Required" (no invisible skips).
+   - Collateral assessment: Field Assessor performs Make Visit to Assess Collateral. The IDEAL model enforces a maximum number of allowed visits (e.g., up to 2 attempts) and requires escalation to a supervisor if visits exceed the limit. Each visit produces an explicit outcome: Assessment OK, Requires Additional Info (allowed one retry), or Not Available (escalate).
+
+5. Submission to Underwriter
+   - After co-signer and collateral assessment complete (both branches synchronized), Submit File to Underwriter is mandatory. There is no skip of this step; submit must include a compliance checklist proving mandatory verifications and assessments were performed.
+
+6. Underwriter decision and signing
+   - Underwriter reviews submitted file; possible outcomes: Approve (proceed to Sign Loan Agreement), Reject (Application Rejected or Loan Denied depending on stage and severity), or Request Conditions (back to Loan Officer for remedial action). Conditional requests lead to a controlled rework loop with clear maximum iterations and escalation paths.
+   - Sign Loan Agreement is mandatory for approved loans; omission is not allowed.
+
+Exception handling, rework loops, and escalation
+- Application Rejected or Appointment Denied: explicit, recorded with reasons, sent to compliance for audit. Early rejections are rare and must follow defined criteria.
+- Bounded rework: Collateral visits limited (max 2). If conditions are not met after retries, escalate to supervisor for decision to continue or reject.
+- Conditional requests from Underwriter result in formal Remediation tasks (documented) with a single allowed iteration before escalation to senior underwriter.
+
+Decision points with criteria and outcomes
+- Appointment Denial: failing pre-screen eligibility checks -> Deny and record reason.
+- Verification: fail -> Application Rejected; pass -> proceed to coordinated assessment.
+- Co-signer needed? yes/no recorded explicitly.
+- Collateral assessment outcomes: Assessment OK -> proceed; Additional Info -> one retry; Not Available -> escalate.
+- Underwriter: Approve -> Sign; Reject -> Application Rejected; Request Conditions -> Remediation loop.
+
+Parallelism and synchronization
+- Controlled parallelism: co-signer and collateral can be worked in parallel but must be synchronized with an explicit join before submission. All optional invisible skips are removed; any omission must be logged as an explicit outcome.
+
+End conditions and outcomes
+- Successful completion: Sign Loan Agreement -> Case Closed (Approved and Funded).
+- Rejection: Application Rejected or Loan Denied with documented reasons and routed to Compliance for reporting.
+
+Process metrics and performance targets
+- Targets to monitor and control:
+  - Percentage of cases with skipped checks: target 0% (no silent skips)
+  - Average number of collateral visits: target <= 1.2 (limit retries)
+  - Time from Request Appointment to Submit to Underwriter: target <= X hours/days (set organization-specific SLA)
+  - Underwriter turnaround time: target <= Y hours/days
+  - Rework/Remediation rate: target < 5%
+  - Early termination rate: target < 2% (Appointment Denied/Application Rejected)
+
+Improvements made vs AS-IS
+- Eliminated invisible skip transitions by making optional outcomes explicit and recorded.
+- Bounded collateral visit loops and introduced escalation to avoid unbounded rework.
+- Consolidated and synchronized co-signer and collateral assessments to reduce chaotic parallelism.
+- Made Submit File to Underwriter mandatory and introduced a compliance checklist to ensure traceability.
+- Formalized underwriter remediation loops with iteration limits and escalation.
+
+Summary (IDEAL)
+- The IDEAL model describes a deterministic, auditable, and efficient loan processing flow that preserves the business goals from the AS-IS model but removes the observed inconsistencies and risks. It enforces mandatory checks, removes silent skips, bounds rework, and clarifies escalation and denial handling to improve compliance, reduce cycle time and lower operational costs.

@@ -1,0 +1,50 @@
+AS-IS Process Model — External Background Checker (deepResearch Inc.)
+============================================================
+
+Title: AS-IS Process Model — External Background Checker (deepResearch Inc.)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Perform extensive (in-depth) background checks when HR escalates cases beyond the standard Background Check.
+- Responsibilities observed: Execute 'Extensive Background Check' activity and return results to HR or hand over to technical interviewers or senior decision-makers depending on outcome.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Extensive Background Check: Conduct deep investigations into candidate background (employment history, references, deeper vetting). This is the only activity observed in the log carried out by deepResearch Inc.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Activated when HR Screener (HR-dummy or HR-pro or Senior Partner) escalates a case from Background Check or Screening Interview to Extensive Background Check. Common triggering sequences include:
+  - Telephonic Screening -> Background Check -> Extensive Background Check
+  - Screening Interview -> Background Check -> Extensive Background Check
+- Observed next steps after Extensive Background Check (all valid orderings):
+  - Extensive Background Check -> Coding Interview (observed frequently)
+  - Extensive Background Check -> Application Rejected (observed frequently)
+  - Extensive Background Check -> (handed back to Senior Partner or HR-dummy for further processing)
+- Decision points handled by External Background Checker: The entity supplies the outcome of the extensive check; the log shows two main outcomes: clear to progress (hand to Coding Interview) or fail (Application Rejected). The final decision to reject or progress is recorded in the system after receiving the external check result.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO deepResearch Inc. (observed handovers):
+  - HR-dummy -> deepResearch Inc. (observed; HR-dummy outsources escalation)
+  - HR-pro -> deepResearch Inc. (observed smaller weight)
+  - Senior Partner -> deepResearch Inc. (observed occasionally)
+- Who deepResearch Inc. hands work TO (observed handovers):
+  - Coding Interviewer (deepResearch Inc. -> Coding Interviewer observed handover weight)
+  - Senior Partner (deepResearch Inc. -> Senior Partner observed)
+  - HR-dummy (deepResearch Inc. -> HR-dummy observed)
+  - Application outcome activity (Application Rejected) is often recorded after their check; the log shows Extensive Background Check -> Application Rejected directly.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency observed variants involving Extensive Background Check:
+  - Background Check -> Extensive Background Check -> Coding Interview (Extensive Background Check frequently enables technical interviews; DFG frequency for Extensive Background Check -> Coding Interview is ~974)
+  - Background Check -> Extensive Background Check -> Application Rejected (Extensive Background Check -> Application Rejected frequency ~1125)
+- Medium/low-frequency variants:
+  - Background Check -> Extensive Background Check -> (series of technical interviews and behavioral interviews) — in long traces Extensive Background Check precedes long interview sequences and contributes to very long case durations.
+- Exceptions and optionality:
+  - Extensive Background Check is optional and only occurs in a minority of cases (~5% of traces). It is never the first activity; it always follows prior screening activities.
+  - No evidence of deepResearch Inc. performing interviews or offer/rejection activities beyond providing the check; rejections or offers are recorded by HR or decision-makers after receiving the check.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Extensive Background Check is associated with large increases in case duration (variants with this activity have high performance values), indicating a bottleneck or slow external turnaround.
+- Two clear outcomes (progress to technical interview or rejection) exist, but the transition probabilities are split — both outcomes are common.
+- Handovers to and from deepResearch Inc. are present but low-frequency in the handover network, indicating limited outsourcing volume but significant impact when it occurs.
+- Because deepResearch Inc. only performs the Extensive Background Check, coordination and SLA management between HR and this external provider are critical to avoid long delays.
+
+Notes: All behaviors described are strictly those observed in the event log (Extensive Background Check performed by deepResearch Inc. and its observed successors). No unobserved activities were assumed.

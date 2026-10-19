@@ -1,0 +1,227 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage a patient episode from initial registration, through clinical assessment, diagnosis, treatment, and eventual discharge.
+- Scope captured from the discovered model: Two alternative entry points (Register at ER or Register at FD), an initial assessment (either Examination or Expert Examination), a mandatory Thorough Examination, a synchronized Diagnosis, Treatment, and an outcome that either loops back to Diagnosis (Treatment unsuccessful) or allows Discharge after Treatment successful.
+
+Key stakeholders and roles involved
+- Specific roles are not named in the source. Activities are described generically as performed by the clinical care team and registration/in-take staff associated with the activity labels.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Patient episode begins upon arrival and registration.
+- Start event: A single start enables exactly one of the following mutually exclusive activities:
+  - Register at ER
+  - Register at FD
+
+2) Registration (exclusive start choice)
+- Activity options (exclusive OR):
+  - Register at ER
+  - Register at FD
+- Effect of registration:
+  - Provides the prerequisite token/condition used later for Diagnosis.
+  - Enables the initial clinical assessment options (Examination or Expert Examination).
+  - Pre-enables Thorough Examination in conjunction with the initial assessment (see synchronization below).
+
+3) Initial clinical assessment (exclusive choice)
+- Exactly one of the following is performed after registration:
+  - Examination
+  - Expert Examination
+- Behavioral effect:
+  - Completes one of the prerequisites needed for both Thorough Examination (enables it) and, ultimately, Diagnosis.
+
+4) Thorough Examination (mandatory before first Diagnosis)
+- Execution constraints:
+  - Thorough Examination cannot occur until BOTH:
+    - Registration is completed, and
+    - Exactly one of Examination or Expert Examination has been performed.
+- Behavioral effect:
+  - Completes the second prerequisite needed for Diagnosis.
+  - In this discovered behavior, Thorough Examination is required for every case prior to the first Diagnosis (there is no bypass around Thorough Examination).
+
+5) Synchronized Diagnosis (AND-join of preconditions)
+- Diagnosis fires only when ALL of these conditions are satisfied:
+  - Case has been registered (Register at ER or Register at FD),
+  - An initial assessment is complete (Examination OR Expert Examination),
+  - A Thorough Examination is complete.
+- Notes:
+  - This is an explicit synchronization point: Diagnosis is gated until all required prior assessments are done.
+
+6) Treatment
+- Performed immediately after Diagnosis.
+- Produces two outcome-precondition tokens that must be resolved by subsequent transitions (see outcome logic below).
+
+7) Outcome decision and case continuation
+- Two transitions are enabled by Treatment; how they combine determines the next step:
+  - Treatment successful:
+    - When selected, Discharge becomes enabled (together with the post-Treatment completion token).
+  - Treatment unsuccessful:
+    - When selected, the process loops back to Diagnosis.
+    - The model directly re-enables Diagnosis without requiring the examinations again; “Treatment unsuccessful” supplies the necessary prerequisites for Diagnosis.
+- Discharge:
+  - Can occur only after Treatment successful has occurred.
+  - Represents the end of the clinical episode.
+
+8) Rework loops and escalation procedures
+- Rework loop:
+  - Treatment unsuccessful → directly back to Diagnosis (no repeat of Examination or Thorough Examination is required by the model for re-diagnosis).
+  - Then Treatment is performed again, with the same outcome logic.
+  - This loop may repeat multiple times until a Treatment successful outcome is achieved.
+- There is no explicit escalation activity in the discovered model; repeated unsuccessful outcomes simply re-trigger Diagnosis.
+
+9) Exception handling and error paths
+- The model does not include explicit exception paths for early discharge, skip-to-discharge, or administrative cancellations.
+- There is no modeled path to Discharge without Treatment successful; discharge is contingent on success.
+
+10) Parallel activities and synchronization points
+- The model ultimately requires the following synchronization before the first Diagnosis:
+  - Registration completed,
+  - Exactly one of Examination or Expert Examination completed,
+  - Thorough Examination completed.
+- There is no concurrent execution of Examination and Expert Examination (exclusive choice).
+- Thorough Examination is enabled only after the initial assessment and registration and must be completed before Diagnosis.
+
+End conditions and outcomes
+- End event: Discharge.
+- Discharge can only be reached after Treatment successful has occurred (no direct discharge without success).
+
+Process metrics and performance characteristics (as evidenced by structure)
+- Lead time components:
+  - Registration to initial assessment,
+  - Initial assessment to Thorough Examination,
+  - Thorough Examination to Diagnosis,
+  - Diagnosis to Treatment,
+  - Treatment to outcome (success/unsuccessful) and, if successful, to Discharge.
+- Rework intensity:
+  - Potentially unbounded loop count for (Treatment → Treatment unsuccessful → Diagnosis → Treatment).
+  - No modeled requirement to repeat examinations in the loop, which shortens re-diagnosis time at the cost of potential under-assessment.
+- Flow rigidity:
+  - Thorough Examination is mandatory before the first Diagnosis, adding time and resource load to all cases.
+- Outcome gating:
+  - Discharge rate is tightly coupled to Treatment successful frequency.
+
+Key challenges and pain points
+- Mandatory Thorough Examination for all cases:
+  - Increases time-to-diagnosis and resource consumption even for straightforward cases.
+- Limited flexibility in assessment sequencing:
+  - Exactly one of Examination or Expert Examination can be performed; the other cannot be used complementarily for the same case prior to Diagnosis.
+- Re-diagnosis after unsuccessful treatment does not mandate any additional assessment:
+  - May cause under-informed re-diagnosis, risking multiple unsuccessful treatment loops.
+- No discharge without success:
+  - Appropriate clinically, but the model does not show structured alternative outcomes (e.g., transfer), so prolonged loops may accumulate if success is hard to achieve.
+- Potential bottlenecks:
+  - Thorough Examination acts as a global gate for all cases before the first Diagnosis.
+- Governance ambiguity:
+  - No explicit criteria are encoded for choosing Examination vs Expert Examination, nor for when Thorough Examination might be clinically optional—yet it is required structurally in all cases.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Deliver a clinically sound, efficient episode-of-care process from registration through assessment, diagnosis, treatment, and discharge.
+- Design goals:
+  - Reduce unnecessary mandatory steps (make Thorough Examination conditional rather than universal),
+  - Preserve clinical safety by synchronizing only the information actually required for Diagnosis,
+  - Improve loop governance when treatments fail, enabling targeted re-assessment.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source. This design describes responsibilities by activity name without assigning new actors.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Patient arrives and registers.
+- Entry options (exclusive):
+  - Register at ER
+  - Register at FD
+- IDEAL governance:
+  - Either registration path creates a unified “registered case” status used downstream; both paths feed the same subsequent clinical flow.
+
+2) Initial clinical assessment (triage-informed, exclusive choice)
+- Decision gateway: Select the appropriate initial assessment based on presenting signs, severity, or availability:
+  - Examination (standard)
+  - Expert Examination (specialist-level)
+- Rationale:
+  - Maintain exclusivity (as-is behavior) but formalize selection criteria so the choice is consistent and auditable.
+
+3) Conditional Thorough Examination
+- Decision gateway: “Is a Thorough Examination required for safe and accurate Diagnosis?”
+  - Yes → Perform Thorough Examination.
+  - No → Bypass Thorough Examination and proceed toward Diagnosis.
+- Synchronization rule for Diagnosis:
+  - Diagnosis requires:
+    - Registration completed, and
+    - At least one suitable assessment path that satisfies clinical information needs:
+      - Either: Expert Examination alone if sufficient, or
+      - Examination + Thorough Examination if the case warrants, or
+      - Examination alone if protocols deem it sufficient for straightforward cases.
+- Rationale:
+  - Converts the universal requirement for Thorough Examination into an evidence-based, conditional step, eliminating waste for uncomplicated cases while keeping it mandatory when needed.
+
+4) Diagnosis (information-driven AND-join)
+- Inputs:
+  - Registered case,
+  - Required clinical information (produced by the selected assessment path as above).
+- Behavior:
+  - Proceed once the chosen assessment path has provided the necessary information for a confident diagnosis.
+
+5) Treatment
+- Performed after Diagnosis.
+- Outcome evaluation immediately follows.
+
+6) Outcome decision, completion, and loop governance
+- Decision gateway:
+  - Treatment successful → Discharge.
+  - Treatment unsuccessful → Re-diagnose.
+- Re-diagnosis loop (improved governance):
+  - On Treatment unsuccessful, perform Diagnosis again.
+  - Optional, targeted re-assessment before re-diagnosis:
+    - Use existing assessment activities (Examination, Expert Examination, and/or Thorough Examination) only if new or clarifying information is required, based on defined clinical criteria.
+  - Loop continues until Treatment successful is achieved.
+- Discharge:
+  - Occurs only after Treatment successful (as in as-is), ensuring clinical completion.
+
+7) Exception handling and error paths
+- If repeated unsuccessful treatments occur:
+  - Enforce escalation rules within existing activity choices:
+    - Prefer Expert Examination on re-assessment if standard Examination was previously chosen and proved insufficient.
+    - Prefer Thorough Examination when uncertainty persists after initial assessments.
+- Early administrative terminations, transfers, or alternative dispositions are not added as new activities; the model remains clinically focused and ends at Discharge upon success.
+
+8) Parallel activities and synchronization points
+- No concurrent use of Examination and Expert Examination for the same diagnosis cycle (exclusive choice maintained).
+- Synchronization before Diagnosis is simplified:
+  - Registration + “sufficient clinical information present” rather than Registration + (Initial Assessment) + (Mandatory Thorough Examination).
+- Thorough Examination remains available but is only synchronized in when required.
+
+End conditions and outcomes
+- End event: Discharge, reachable only after Treatment successful.
+- The process supports multiple Diagnosis–Treatment cycles, with structured criteria guiding when additional assessments are needed.
+
+Process metrics and performance characteristics (target state)
+- Lead time reduction:
+  - Fewer mandatory Thorough Examinations reduce time to first Diagnosis for straightforward cases.
+- Diagnostic adequacy:
+  - Conditional use of Expert Examination and Thorough Examination guided by explicit criteria strengthens diagnostic quality without universal overhead.
+- Rework management:
+  - Track the number of Diagnosis–Treatment cycles per case; trigger defined reassessment criteria upon each unsuccessful outcome.
+- Throughput and capacity:
+  - Reduced unnecessary thorough exams free specialist resources, improving overall throughput.
+- Compliance and auditability:
+  - Documented decision criteria for assessment selection improve consistency and governance.
+
+Key improvements vs AS-IS
+- Conditional Thorough Examination:
+  - Eliminates the blanket requirement; kept only when clinically justified.
+- Formalized assessment selection:
+  - Clear criteria for choosing Examination vs Expert Examination minimize misrouting and rework.
+- Smarter re-diagnosis:
+  - After Treatment unsuccessful, re-assess only as needed using existing activities; avoids blind loops and under-informed decisions.
+- Streamlined synchronization:
+  - Diagnosis requires “sufficient information,” not a fixed set of all prior assessments, reducing delays while preserving safety.
+- Outcome clarity:
+  - Discharge remains contingent on Treatment successful (no unsafe early exits), but the path to success is made more efficient and governed.
+""")

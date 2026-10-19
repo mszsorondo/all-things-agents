@@ -1,0 +1,83 @@
+IDEAL Process Model
+
+Process overview and purpose
+- This IDEAL description proposes a streamlined, clinically safe, and auditable target process for patient registration, examination, diagnosis, treatment and discharge. It removes avoidable rework, enforces consistent triage and recording, and introduces formal escalation for unsuccessful treatments. The goal is to reduce cycle time, variation, and repeat treatments while maintaining clinical integrity.
+
+Key stakeholders and roles involved
+- Patient
+- Registration staff (FD and ER)
+- Triage nurse or clinician — standardized triage upon registration to determine next steps.
+- Clinician / General clinician — conducts initial Examination.
+- Specialist / Expert clinician — conducts Expert Examination and decides whether Thorough Examination is needed.
+- Diagnostics services — carry out Thorough Examination (imaging/labs) with prioritized scheduling.
+- Diagnosing clinician — makes formal Diagnosis and documents criteria.
+- Treatment team — implements Treatment(s) following standardized protocols.
+- Case Manager / Multidisciplinary Review Board — monitors cases with treatment failure or protracted courses for escalation.
+- Discharge coordinator — manages Discharge and follow-up arrangements.
+
+Detailed step-by-step process flow (idealized)
+Start conditions and triggers
+1. Start: Patient registers at FD or ER. A standardized triage occurs immediately and is recorded (new mandatory activity: "Triage and Route Decision"). This triage assigns the case to either immediate Expert Examination, standard Examination, or direct routing to diagnostics if indicated.
+
+Main flow
+2. Triage outcomes (exclusive decision):
+   - Route to Expert Examination if case is complex or high-risk.
+   - Route to Examination for standard cases.
+   - Route directly to Thorough Examination if triage identifies need for imaging/labs before clinical exam.
+   The triage decision is recorded with rationale to aid audit and future improvement.
+
+3. Examination and Expert Examination (sequencing with decision gate):
+   - Examination or Expert Examination occurs as assigned.
+   - After either exam, the responsible clinician must decide within a specified SLA whether to: (a) request Thorough Examination, or (b) proceed to Diagnosis. The choice is based on defined clinical criteria (e.g., red flags, need for confirmatory imaging/labs).
+   - If Thorough Examination is required, diagnostics scheduling is prioritized and tracked; results are linked back to the case.
+
+4. Diagnosis: Document diagnosis with mandatory fields (evidence and confidence level). If confidence is low, case is flagged for specialist review before treatment.
+
+5. Treatment: Treatment is delivered according to standardized protocols. Immediately after treatment, outcome must be recorded as either "Treatment successful" or "Treatment unsuccessful" within a defined observation window.
+
+6. Post-treatment decision (exclusive with escalation):
+   - If Treatment successful -> proceed to Discharge (with standardized discharge checklist and follow-up instructions).
+   - If Treatment unsuccessful -> automatic escalation to Case Manager and a formal Multidisciplinary Review (MDR) within a defined timeframe. The MDR decides next steps: adjust treatment, order additional diagnostics, or refer to higher-level specialist. The MDR outcome becomes the updated plan.
+   - Limit the number of consecutive treatment iterations without MDR to one. Any repeated failure triggers MDR to prevent endless loops.
+
+7. Discharge: Discharge completes the case and triggers follow-up scheduling where appropriate. A discharge summary including interventions, outcomes, and follow-up is stored in the EHR.
+
+Parallel activities and synchronization
+- Diagnostics and results processing can run in parallel with administrative tasks (scheduling, consent), but all diagnostic results must be synchronized and available before final Diagnosis if required by the triage decision.
+- When MDR is convened, relevant specialists join in parallel but the MDR decision synchronizes into a single revised plan.
+
+Exception handling, rework loops and escalation
+- Standardized rework policy: one re-treatment allowed under the treating team's protocol. Any subsequent unsuccessful treatment must be escalated to MDR.
+- Missing data / skipped exams: Triage enforces mandatory minimal data capture. Any record missing required documentation is returned (reopened) for completion before Treatment is scheduled (prevention of skips).
+- Unrecorded outcomes: Logging rules enforce that Treatment outcome must be recorded before Discharge; discharge denied if outcome not recorded (unless an emergency override is documented).
+
+End conditions and outcomes
+- Normal end: Treatment successful -> Discharge with documented follow-up.
+- Escalated end: MDR results in referral or advanced therapy; discharge occurs after final documented outcome or transfer.
+
+Process metrics and target performance characteristics
+- Key metrics to monitor:
+   - Cycle time from Registration to Diagnosis: target ≤ median of current (reduce by 20%).
+   - Time from Diagnosis to Treatment start: target ≤ current median - 10%.
+   - Treatment success rate first attempt: target increase from current observed (~9005/11746 ≈ 76.7% at first treatment) to >85% via protocol standardization.
+   - Fraction of cases requiring MDR: target <5% of treated cases.
+   - Rework loops per case: target ≤1 re-treatment (>1 triggers MDR).
+   - Documentation completeness: 100% recording of Treatment outcome and triage rationale.
+   - Variants concentration: reduce number of observed high-frequency variants by standardizing routing to a few preferred paths (e.g., two main variants covering >70% of cases).
+- SLA targets: Triage decision within 15 minutes of registration (ER) or within same shift for FD; MDR convened within 48 hours of reported unsuccessful treatment.
+
+Improvements made (mapping to AS-IS pain points)
+1. Reduces variability: Standard triage and routing reduces unnecessary alternative paths and missing steps.
+2. Limits rework: Enforce MDR after one failed re-treatment prevents long repetitive cycles and reduces case durations dramatically.
+3. Eliminates skips: Mandatory data capture and pre-treatment checks prevent skipping critical exams; skips become explicit and justified only via override.
+4. Introduces formal escalation: MDR provides a controlled forum for complex cases, improving decision quality and ownership.
+5. Improves recording: Enforced logging of outcomes removes ambiguous direct Treatment->Discharge traces.
+6. Reduces bottlenecks: Prioritized diagnostics scheduling and SLA targets reduce time spent waiting for thorough exams and long delays between diagnosis and treatment.
+
+Implementation considerations and risks
+- Training needed for triage criteria, MDR processes, and documentation enforcement.
+- Potential initial increase in administrative time due to mandatory recording and MDR meetings; benefits arise from reduced rework and faster definitive care.
+- IT support required to enforce logging constraints and to trigger MDR workflows automatically when unsuccessful treatments are recorded.
+
+Summary of IDEAL implications
+- The IDEAL process keeps necessary clinical flexibility (clinician judgement for ordering thorough exams) while making routing, documentation, and escalation explicit and enforceable. Expected outcomes: lower mean and variance in case durations, fewer repeat treatments, better auditability, and improved patient safety and satisfaction.

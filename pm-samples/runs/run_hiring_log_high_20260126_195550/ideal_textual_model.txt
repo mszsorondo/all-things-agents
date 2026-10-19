@@ -1,0 +1,108 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a streamlined, deterministic recruitment and selection flow that preserves rigorous candidate evaluation while eliminating rework, redundant steps, long waits, and inconsistent state transitions observed in the AS-IS model. The IDEAL model aims to reduce cycle time, increase predictability, improve candidate experience, and ensure data consistency.
+- Scope: From candidate application submission to final disposition (offer or rejection). The IDEAL process standardizes ordering of checks and interviews, limits repetition, formalizes escalation rules for Extensive Background Check, and closes anomalous reopen/reverse flows.
+
+Key stakeholders and roles involved
+- Applicant (candidate)
+- Recruiter / Recruiter Coordinator — single point-of-contact for scheduling and status updates
+- Technical Panel Lead (combined coordination for Coding, Frontend, Backend, ML interviews) — ensures consistent technical evaluation sequencing
+- Hiring Manager / Behavioral Interviewer — conducts final fit assessment and has approval authority for offers
+- Background Check Vendor / HR Compliance — executes background checks under defined gating rules
+- ATS / Workflow System — enforces sequencing, records immutable status transitions, automates routine notifications and SLA enforcement
+Note: Roles are derived from observed activities; IDEAL introduces a single coordinator role (Recruiter) to remove ad-hoc routing, which reflects common best-practice governance and is consistent with the observed activity names.
+
+High-level principles and design decisions
+- Gate background checks to post-technical shortlist (conduct full Background Check only for candidates who pass technical assessments and are shortlisted for hire). Use Pre-checks (basic screening) earlier to reduce unnecessary long checks.
+- Standardize technical assessment: run Coding Interview followed by a single consolidated technical panel (up to three focused assessments scheduled as one panel or in a defined order) to avoid repeated switching between Frontend/ML/Backend.
+- Limit behavioral/manager interviews: allow at most two behavioral interactions (initial + final) with explicit rationale for repeats.
+- Prevent reopenings: once a candidate is marked 'Rejected' in the system, changes must go through a formal reconsideration/appeal workflow requiring documented justification and recruiter approval (no implicit transitions back to interviews or offers).
+- Use automated state enforcement in ATS to avoid duplicate events and self-loops (idempotent transitions, one canonical record per state change).
+
+Detailed step-by-step IDEAL process flow
+Start conditions and trigger
+1. Candidate submits application (Hand In Job Application).
+2. ATS automatically records application and creates a case. Recruiter performs initial triage within SLA (e.g., 3 business days).
+
+Step 1 — Telephonic Screening (initial gate)
+3. Recruiter or screener conducts Telephonic Screening to validate minimum qualifications and interest. Outcomes:
+  - Fail (does not meet basic criteria) -> Application Rejected (end).
+  - Pass -> proceed to Coding Interview scheduling.
+  - Soft-fail / borderline -> Recruiter documents issues and may send to Hiring Manager for quick review; avoid repeated telephonic screens.
+
+Step 2 — Coding Interview (structured technical assessment)
+4. Candidate takes a single, time-boxed Coding Interview (automated or live). Outcomes:
+  - Fail -> Application Rejected (end).
+  - Pass -> Candidate moves to Technical Panel.
+
+Step 3 — Technical Panel (consolidated Frontend/Backend/ML assessments)
+5. Technical Panel Lead schedules a consolidated panel within a target SLA (e.g., within 7 business days of Coding Interview). Implementation options:
+  - Option A: Parallel panel (panelists rotate in a single session; results combined)
+  - Option B: Ordered sequence (Coding -> Frontend -> Backend -> ML) with strict rules on which tracks are required (based on role requirements). The panel approach is preferred to reduce repeated handoffs and avoid interleaving loops.
+6. Panel outcomes:
+  - Strong Pass -> move to Behavioral Interview (Hiring Manager)
+  - Weak / Borderline -> Recruiter escalates for calibration meeting; may request at most one additional, targeted technical follow-up (explicitly logged and justified).
+  - Fail -> Application Rejected (end)
+
+Step 4 — Behavioral Interview and Hiring Decision
+7. Behavioral Interview (single, structured interview by Hiring Manager or panel) to assess fit, culture, and final role suitability. Outcomes:
+  - Pass -> Recruiter initiates Background Check and Compensation/Offer preparation in parallel.
+  - Fail -> Application Rejected (end)
+
+Step 5 — Background Check and Offer
+8. Background Check policy (gating rule): Only initiated for candidates that have passed Technical Panel and Behavioral Interview and are formally shortlisted for hire. There are two levels:
+  - Basic Background Check (automated): identity, employment verification — run immediately after shortlist.
+  - Extensive Background Check (manual / additional checks): reserved for roles with compliance requirement or flagged results from the basic check; only triggered by recruiter + HR approval.
+9. If Basic Background Check fails -> candidate is Rejected (documented). If issues require Extensive Background Check, HR conducts it; failing Extensive Background Check -> Rejected.
+10. Once background checks are clear, Recruiter issues Make Job Offer. Offer issuance is a single, auditable transition. Offer acceptance by candidate is final; any reversal (rescinded offer) must follow written HR policy and be logged with reason.
+
+End conditions and outcomes (IDEAL)
+- Application Rejected (conclusive end) — only reachable through explicit decisions; reopening requires documented appeal.
+- Make Job Offer -> Candidate accepts -> Hire (onboard); if candidate declines, mark as Declined and optionally place in talent pool.
+
+Decision points with criteria (explicit rules)
+- Telephonic Screening: pass if minimum qualifications and availability met.
+- Coding Interview: pass if score >= threshold on coding rubric.
+- Technical Panel: aggregated score across domain-specific interview rubrics; panel lead enforces role-specific mapping which determines which sub-interviews are mandatory.
+- Behavioral Interview: pass if hiring manager and panel agree on fit and competency.
+- Background Check: fail criteria clearly defined (e.g., falsified employment, criminal records violating role requirements).
+
+Parallel activities and synchronization
+- When an offer is to be prepared, basic background checks and compensation approval work in parallel but both must be completed before offer is issued. The ATS coordinates these parallel tasks and only allows the Make Job Offer transition when both gates are green.
+
+Exception handling and rework (controlled)
+- No-shows: if candidate does not attend scheduled interview, Recruiter attempts one reschedule within set SLA; if candidate no-shows again, Application Rejected.
+- Borderline technical cases: allowed one focused retest only with Hiring Manager approval; retest must be justified and timeboxed.
+- Background check flags: if basic check flags issues, HR triggers Extensive Background Check; appeals are timeboxed and documented.
+- Offer rescind: permitted only under documented contractual or compliance reason; automated audit trail records rescind actions.
+
+Escalation procedures
+- If any stage exceeds SLA (e.g., scheduling >7 business days), case escalates automatically to Hiring Manager and Recruiting Lead.
+- If repeated interviewer disagreement occurs, an objective calibration committee (Recruiter + Technical Lead + Hiring Manager) resolves ties.
+
+Process metrics and target performance characteristics (IDEAL KPIs)
+- Target Cycle Time (Hand In -> Decision): median <= 21 calendar days (configurable by role seniority).
+- Telephonic Screening SLA: initial contact within 3 business days of application.
+- Time from Coding Interview -> Technical Panel: <= 7 business days.
+- Background Check duration: Basic check <= 3 business days; Extensive check <= 10 business days (where required).
+- Rework limits: allow at most 1 re-interview per role (retest), reduce Behavioral Interview repeats to <= 0.1 per candidate on average.
+- Offer consistency: 0% illicit state flips (Application Rejected -> Make Job Offer) in system logs; rescinds documented and <1% of offers.
+- Quality metrics: time-to-hire, interview-to-offer conversion, pass rate per interview stage.
+
+Improvements made vs AS-IS
+- Standardized sequencing: background checks are gated post-shortlist and will not be run arbitrarily before technical assessment, eliminating inconsistent ordering observed in AS-IS.
+- Consolidated technical assessment: panel approach reduces repeated transitions and interleaving among Frontend/Backend/ML interviews.
+- Controlled rework: specify when and how re-tests are allowed; eliminates frequent Behavioral->Behavioral looping.
+- Eliminate state flips: ATS enforces one-way transitions; reopening requires documented appeal and recruiter approval. This prevents Application Rejected -> Behavioral Interview or similar anomalous flows.
+- SLA enforcement and escalation: automates overdue handling to reduce long waiting times visible in AS-IS.
+- Improved reporting: idempotent status events and audit trails reduce duplicate logging (no Make Job Offer self-loops without reason).
+
+Implementation notes and change management
+- Update ATS event model to make decision transitions atomic and idempotent to remove logging artifacts.
+- Create role-specific rubrics for Coding, Frontend, Backend, ML and Behavioral interviews to standardize pass/fail thresholds.
+- Train recruiters and hiring managers on new gating rules and the appeal process.
+- Pilot the consolidated technical panel for one or two roles, measure KPI improvements, then roll out.
+
+Summary (IDEAL)
+The IDEAL process reduces variability by enforcing a single, auditable forward progression: Hand In -> Telephonic Screening -> Coding -> Consolidated Technical Panel -> Behavioral -> Background Check (if shortlisted) -> Make Job Offer. This eliminates redundant work, long waits, and state inconsistencies observed in the AS-IS model, with concrete KPIs and SLAs to measure improvements.

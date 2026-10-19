@@ -1,0 +1,167 @@
+IDEAL Process Model
+
+1) Process overview and purpose
+- Overview: The IDEAL model describes the optimized patient intake-to-discharge pathway using only the activities observed in the AS-IS model: Register at ER, Register at FD, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, and Discharge. The model enforces standardized sequencing, removes undocumented/skipped steps, reduces unnecessary rework by strengthening pre-treatment assessment and structured escalation, and requires consistent outcome logging.
+- Purpose: Deliver timely, consistent, and well-documented clinical episodes that minimize re-treatment loops and variability, improve patient throughput, and provide reliable outcome data for performance monitoring.
+
+2) Key stakeholders and roles (inferred from AS-IS activities)
+- Registration Staff: performs Register at ER or Register at FD.
+- Clinician / Examiner: performs Examination and initial Diagnosis.
+- Expert Clinician / Specialist: performs Expert Examination and participates in escalations.
+- Treating Clinician: executes Treatment and records Treatment successful / Treatment unsuccessful.
+- Discharge Coordinator / Nurse: executes Discharge and validates that outcome recording is complete.
+(These role assignments are inferred from the AS-IS activity names; the model uses the existing activities only.)
+
+3) High-level objectives and rules enforced in IDEAL
+- Mandatory pre-treatment assessment: Every case must undergo at least one documented examination activity (Examination OR Expert Examination OR Thorough Examination) before Diagnosis and Treatment.
+- Standardized escalation: If Treatment is unsuccessful, the case must undergo Expert Examination (and/or Thorough Examination) before any repeat Treatment attempt.
+- Outcome logging consistency: Treatment successful must be recorded whenever a successful clinical resolution is reached; direct Treatment -> Discharge without Treatment successful is disallowed.
+- Controlled use of Expert Examination: Expert Examination is used only when pre-defined clinical criteria are met (severe presentation, failed previous treatment, ambiguous findings) or when required by escalation rules.
+- Reduction of variance: Eliminate backdoor skips from registration directly to Diagnosis or Thorough Examination unless explicitly justified and documented; ensure an examination activity is present in the case record.
+
+4) Detailed step-by-step process flow (optimized sequence)
+
+Start conditions and triggers
+- Start: Patient arrival triggers one of two entry events:
+  - Register at ER OR Register at FD (exclusive; one only).
+- Immediately upon registration, the registration staff routes the case to the clinical assessment queue.
+
+Primary flow (standard path)
+1. Post-registration clinical assessment (mandatory)
+   - Decision: Based on triage/clinical criteria at registration, the case must be assigned to one of:
+     - Examination (standard cases), OR
+     - Expert Examination (complex/severe cases or cases meeting expert criteria).
+   - NOTE: If initial evaluation indicates need for a more detailed assessment, the clinician performs Thorough Examination after either Examination or Expert Examination (see next step). The critical requirement is that at least one documented examination activity occurs prior to Diagnosis.
+
+2. Optional Thorough Examination (conditional, but controlled)
+   - Trigger: If initial Examination or Expert Examination reveals complexity, ambiguity, or risk factors, perform Thorough Examination.
+   - Outcome: Thorough Examination results feed directly into Diagnosis.
+
+   Parallel option (selected complex cases only)
+   - For select complex cases where parallel assessment reduces delay (e.g., time-critical but multiple expertise required), Examination and Expert Examination can be executed in parallel if resources permit, with synchronization before Diagnosis.
+   - Synchronization: Diagnosis proceeds only after both exam results are available. Parallel execution is used sparingly and only under explicitly defined conditions (resource availability and documented clinical rationale).
+
+3. Diagnosis (required before Treatment)
+   - After the mandatory examination(s) and after any synchronization, the responsible clinician records Diagnosis.
+   - Rule: Direct jumps from registration to Diagnosis without an examination record are not accepted in normal operations.
+
+4. Treatment (single attempt under controlled conditions)
+   - Following Diagnosis, Treating Clinician administers Treatment.
+   - Requirement: Treatment must be planned based on the documented Diagnosis and exam findings.
+
+5. Treatment outcome recording (enforced)
+   - Immediately after Treatment, the Treating Clinician must record the outcome as either:
+     - Treatment successful, OR
+     - Treatment unsuccessful.
+   - Direct Treatment -> Discharge without a recorded Treatment successful event is not permitted.
+
+6. Outcome-based routing
+   - If Treatment successful:
+     - Proceed to Discharge (Discharge Coordinator validates that Treatment successful is recorded and that all discharge criteria are met).
+   - If Treatment unsuccessful:
+     - Escalate: The case MUST go to Expert Examination (if not already performed as primary) and/or Thorough Examination (repeat or deepen assessment) before any subsequent Treatment attempt.
+     - After Expert/Thorough re-assessment, record Diagnosis (updated if necessary) and proceed to a single repeat Treatment attempt.
+     - Repeat policy: Allow a maximum of one structured re-treatment cycle under the same diagnosis without external review. If, after one re-treatment following Expert re-assessment, treatment is still unsuccessful, the case requires documented multidisciplinary review or an authorized exception (handled by policy, using existing Expert Examination and Thorough Examination activities as primary reassessment steps). In the IDEAL model this is enforced as a hard stop on further automatic loops.
+
+7. Discharge (end)
+   - Discharge occurs only after Treatment successful is recorded and discharge criteria are met.
+   - The Discharge Coordinator confirms that the case includes: registration, at least one exam record, a Diagnosis, a Treatment record, and a Treatment successful outcome.
+   - The process ends with Discharge.
+
+5) Decision points, criteria and possible outcomes (explicit)
+- Entry decision (Registration routing):
+  - Criteria: Patient source and severity determine Register at ER vs Register at FD (operational triage rules; no new activities invented).
+- Examination selection:
+  - If triage indicates severe/complex presentation OR prior history suggesting complexity => Expert Examination.
+  - Otherwise => Examination.
+- Need for Thorough Examination:
+  - If Examination or Expert Examination reveals ambiguity, multiple findings, or high-risk features => perform Thorough Examination (mandatory before Treatment).
+- Treatment outcome decision:
+  - Treatment successful => Discharge.
+  - Treatment unsuccessful => Mandatory Expert Examination and Thorough re-evaluation before repeat Treatment attempt.
+- Re-treatment policy:
+  - After one Expert-guided re-treatment attempt, if still unsuccessful, the case requires formal approval to proceed (this formal approval is a governance policy step and uses existing Expert Examination/Thorough Examination records to justify any further attempts).
+
+6) Parallel activities and synchronization
+- Optional parallel: Examination and Expert Examination may be executed in parallel for a subset of complex cases to reduce elapsed time.
+- Synchronization point: Diagnosis waits for both exam outputs; the Diagnosis activity must consume and reconcile both results before Treatment is planned.
+- Parallelism is constrained to cases where it demonstrably improves throughput and where both examiner resources are available.
+
+7) Exception handling and streamlined rework
+- Disallowed behaviors removed:
+  - Registration -> Diagnosis direct jump (unless exceptional, documented).
+  - Treatment -> Discharge without Treatment successful recorded.
+  - Uncontrolled multiple repeats of Treatment unsuccessful -> Diagnosis -> Treatment loops.
+- Structured exception handling:
+  - Treatment unsuccessful triggers mandatory Expert Examination and Thorough Examination before re-treatment.
+  - Only one re-treatment attempt is allowed after expert re-evaluation without additional approval; this limits the number of automatic rework loops.
+  - All deviations (e.g., bypassed exams, multiple re-treatment attempts) require documented exception justification in the case file.
+- Documentation enforcement: Every decision point must be logged (exam performed, diagnosis changes, expert involvement, outcome record).
+
+8) End conditions and outcomes
+- Primary successful finish:
+  - Diagnosis -> Treatment -> Treatment successful -> Discharge (with all required documentation present).
+- Alternate (rare, allowable) finish:
+  - If a treatment attempt is clinically contraindicated or the patient leaves against medical advice, discharge may occur but must include a Treatment unsuccessful entry and a documented exception; these are treated as outliers and audited.
+- The IDEAL model expects the vast majority of traces to end with the standard successful finish and to include complete documentation for audit and metrics.
+
+9) Expected process metrics and performance improvements
+(Estimates are based on AS-IS frequencies and targeted improvements; actual values depend on implementation fidelity.)
+
+- Reduction in Treatment unsuccessful rate:
+  - AS-IS explicit unsuccessful rate: ≈14.9% (1,746 / 11,746 treatments).
+  - IDEAL target: reduce to ≤5% via mandatory pre-treatment assessment (Thorough/Expert Examination where indicated) and improved diagnosis quality.
+  - Expected improvement: ~66% relative reduction in unsuccessful outcomes.
+
+- Reduction in rework loops:
+  - AS-IS observed repeated unsuccessful loops up to 4 cycles.
+  - IDEAL enforces maximum 1 structured re-treatment after Expert re-assessment without approval.
+  - Expected reduction in average treatment attempts per case from ~1.15 to ≤1.05 and elimination of high-iteration loop tail events.
+
+- Improvement in logging consistency:
+  - AS-IS direct Treatment->Discharge ambiguous cases ≈8.5% (995 / 11,746).
+  - IDEAL enforces Treatment successful recording for discharge; expected near-0% direct Treatment->Discharge anomalies.
+  - This yields more accurate KPIs and outcome-based reporting.
+
+- Throughput and lead time:
+  - AS-IS per-edge performance clustered ~40k–60k units; complex variants ranged into hundreds of thousands.
+  - IDEAL expected average case duration reduction: 20–40% for typical cases by eliminating repeated loops and standardizing exam-before-treatment.
+  - For complex cases, some additional exam activity (Thorough Examination) may add minor up-front time but reduces downstream rework and thus reduces overall cycle time.
+
+- Standardization and variance:
+  - Expected reduction in variant diversity (fewer rare direct jumps and fewer multi-loop variants).
+  - Improved predictability facilitates resource planning (clinician and expert availability).
+
+10) Key improvements made compared to AS-IS
+- Enforced mandatory examination prior to Diagnosis/Treatment eliminates undocumented skips and reduces misdiagnosis-driven rework.
+- Formalized escalation: Treatment unsuccessful now triggers Expert Examination and Thorough reassessment before any repeat Treatment, reducing repeated blind treatments and improving clinical decisions.
+- Eliminated ambiguous outcome logging by requiring Treatment successful recording before Discharge; this improves data quality.
+- Bounded rework loops with a maximum structured re-treatment, preventing uncontrolled repeated cycles that previously drove extremely long case durations.
+- Introduced controlled parallelism for a narrow, well-defined set of complex cases to reduce elapsed time without increasing variability.
+- Strengthened documentation and exception-handling rules to enable auditing and continuous improvement.
+
+11) Implementation considerations (operational governance)
+- Policy and training:
+  - Update clinical protocols to require at least one exam activity pre-Diagnosis; define criteria for Expert vs Examination assignment.
+  - Train staff to record Treatment successful/un-successful consistently.
+- IT/Logging changes:
+  - Configure the information system to enforce mandatory fields (exam present before Diagnosis entry, mandatory Treatment outcome before Discharge).
+  - Add automated checks to prevent direct Treatment->Discharge without a Treatment successful record.
+- Monitoring:
+  - Track KPIs: unsuccessful treatment rate, number of re-treatment attempts, average case duration, percentage of traces with missing exam records.
+  - Audit exceptions and rare variants to identify process or system gaps.
+- Resource planning:
+  - Ensure Expert Clinician availability (or on-call) to meet the new escalation rules and to avoid creating bottlenecks due to mandatory expert reassessments.
+  - Reserve capacity for Thorough Examinations to avoid shifting delays to unscheduled times.
+
+12) Behavioral constraints maintained
+- No new business activities were introduced. All optimizations use the existing activity set (Register at ER, Register at FD, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge).
+- The core clinical goal (assess, diagnose, treat, discharge) is maintained while eliminating wasteful behaviors and enforcing consistent sequencing and documentation.
+
+13) Summary of the IDEAL end-to-end flow (compact)
+- Register at ER | Register at FD → Examination OR Expert Examination (mandatory) → (Conditional Thorough Examination) → Diagnosis → Treatment → Record Treatment successful OR Treatment unsuccessful.
+  - If Treatment successful → Discharge.
+  - If Treatment unsuccessful → Expert Examination + Thorough Examination → Updated Diagnosis → One structured repeat Treatment → If successful → Discharge; if unsuccessful → requires documented approval for further attempts (governance stop).
+- Optional parallel: Examination + Expert Examination in controlled complex cases; both must synchronize prior to Diagnosis.
+
+End of IDEAL Process Model.

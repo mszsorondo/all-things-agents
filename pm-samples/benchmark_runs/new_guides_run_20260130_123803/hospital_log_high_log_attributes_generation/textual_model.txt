@@ -1,0 +1,234 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Scope: Patient throughput from registration to discharge as observed in the event log. The model reflects actual behaviors, including repeats and deviations.
+- Purpose: Document how cases flow across Registration (ER/FD), Examinations (basic/thorough/expert), Diagnosis, Treatment, Treatment outcome recording (successful/unsuccessful), and Discharge.
+
+Key stakeholders and roles involved
+- Physicians: Doc. Low, Doc. Pro (as seen in resource attribute). Typically responsible for Diagnosis and Treatment, and frequently involved in higher-complexity examinations.
+- Nursing staff: Nurse 1, Nurse 2, Nurse 3, Nurse 4, Nurse 5. Typically involved in registration and examinations; may assist clinicians across steps.
+- Note: The log lists these resources but does not bind each activity exclusively to a role. The responsibilities above reflect typical patterns and observed resource presence.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Patient arrives to the facility (explicitly materialized as one of two registration activities).
+- Exclusive registration entry (mutually exclusive):
+  1) Register at ER (freq. 5,008)
+  2) Register at FD (Front Desk) (freq. 4,992)
+- These two start variants together account for approximately 10,000 registered cases (matches Discharge frequency).
+
+Core flow and activities
+1) Registration (exclusive alternative)
+   - Either Register at ER or Register at FD is performed. No evidence of both in a single case at start.
+   - Data captured at registration varies by entry point in practice (implied by split), which can lead to variability downstream.
+
+2) Examination block (variations and escalation)
+   - After registration, examinations occur in variable combinations, orders, and counts. The following examination activities are observed:
+     - Examination (freq. 3,609)
+     - Thorough Examination (freq. 5,922)
+     - Expert Examination (freq. 5,754)
+   - Observed behavior indicates:
+     - Some cases have only one examination type.
+     - Others escalate from a basic Examination to Thorough Examination, and then to Expert Examination.
+     - Some cases combine multiple examination types (counts across exam types sum to more than cases), indicating multiple or repeated exams within a case.
+     - The ordering is not strictly enforced; re-examinations may occur later in the case, including after unsuccessful treatments (see rework loop).
+
+3) Diagnosis (freq. 11,746)
+   - Diagnosis typically follows examinations, but the higher count relative to discharges indicates multiple diagnoses per case occur frequently.
+   - Diagnosis is often repeated when treatment outcomes are unsuccessful or when additional findings emerge after re-examination.
+
+4) Treatment (freq. 11,746)
+   - Treatment generally follows Diagnosis.
+   - Treatments are repeated in many cases (count exceeds the apparent number of cases), often as part of rework after an unsuccessful outcome.
+
+5) Treatment outcome recording (variant end-of-cycle events)
+   - Treatment successful (freq. 9,005)
+   - Treatment unsuccessful (freq. 1,746)
+   - Observations:
+     - Not every Treatment event is followed by an explicit outcome event in the log (11,746 treatments vs 10,751 outcome recordings).
+     - Some cases have multiple outcome events across multiple treatments (e.g., unsuccessful followed by a later successful outcome).
+     - Unsuccessful outcomes frequently lead to additional examinations and/or repeat Diagnosis-Treatment cycles (rework).
+
+6) Discharge (freq. 10,000)
+   - One Discharge event per case is strongly suggested (10,000).
+   - Discharge occurs after treatment cycles; it may occur after a successful outcome, or (in some observed paths) after an unsuccessful outcome without a subsequent success being recorded.
+
+Decision points and criteria
+- Registration decision (exclusive):
+  - Condition: Patient arrival channel and acuity.
+  - Outcomes: Register at ER or Register at FD.
+- Examination selection (inclusive/iterative behavior):
+  - Conditions: Clinical judgment based on patient condition and initial findings.
+  - Outcomes: One or more of Examination, Thorough Examination, Expert Examination, possibly repeated or escalated.
+- Post-treatment outcome decision:
+  - If Treatment successful: Proceed toward Discharge (possibly after short observation; not separately recorded).
+  - If Treatment unsuccessful: Rework loop initiated—may return to Examination and/or repeat Diagnosis and Treatment.
+  - If no outcome recorded: The case may still continue to discharge based on clinical decisions, but the log shows missing outcome documentation in some treatment cycles.
+
+Parallel activities and synchronization points
+- The log does not explicitly confirm parallelism. Examinations appear to be performed in sequence or in multiple iterations rather than clearly in parallel. Synchronization is implicit at the point where results are used for Diagnosis.
+
+Exception handling and error paths
+- Missing outcome documentation: Some treatments do not have an explicit successful/unsuccessful record yet cases advance. This creates ambiguity at the clinical and data quality levels.
+- Discharge after unsuccessful outcome: Some cases appear to be discharged following an unsuccessful treatment without further recorded success; this may reflect clinical necessity, transfer of care, or documentation gaps (not discernible from the log).
+
+Rework loops and escalation procedures
+- A prominent loop exists:
+  Treatment → Treatment unsuccessful → (back to) Examination (optional) → Diagnosis → Treatment → (Outcome) ...
+- Re-examinations and repeat diagnoses are common; escalation to Expert Examination often appears within rework cycles.
+
+End conditions and outcomes
+- End state: Discharge (single recorded terminal event).
+- Possible business meanings at discharge:
+  - Discharge after successful treatment.
+  - Discharge after unsuccessful treatment (clinical stabilization, referral, or other non-logged follow-up).
+  - Discharge after treatment with unrecorded outcome event.
+
+Process metrics and performance characteristics
+- Activity frequencies (events):
+  - Register at ER: 5,008
+  - Register at FD: 4,992
+  - Examination: 3,609
+  - Thorough Examination: 5,922
+  - Expert Examination: 5,754
+  - Diagnosis: 11,746
+  - Treatment: 11,746
+  - Treatment successful: 9,005
+  - Treatment unsuccessful: 1,746
+  - Discharge: 10,000
+- Resource participation (events):
+  - Doc. Low: 27,075
+  - Doc. Pro: 20,707
+  - Nurse 3: 7,310
+  - Nurse 2: 4,957
+  - Nurse 1: 4,797
+  - Nurse 4: 2,356
+  - Nurse 5: 2,326
+- Time span (log-level, not case lead time):
+  - Earliest: 2015-01-05
+  - Latest: 2015-01-17
+  - Quartiles: 25% at 2015-01-05 11:08, median 2015-01-06 20:27, 75% at 2015-01-08 00:15
+- Case attributes observed (available for filtering/analysis; not enforced by the control flow):
+  - citizen, gender (boolean-coded), german speaking, private_insurance, underlying_condition, protected.
+
+Key challenges and pain points
+- Rework/bounce-back: High counts of repeated Diagnosis and Treatment indicate inefficiencies and potential clinical iteration.
+- Outcome documentation gaps: A subset of Treatment events lack an explicit successful/unsuccessful follow-up event, hindering auditability and performance tracking.
+- Variable examination pathways: Multiple and repeated examination types create variability; lack of standardized escalation criteria increases cycle time.
+- Split registration channels: ER vs FD split introduces potential data and handoff inconsistencies at the start of the process.
+- Potential bottlenecks: Expert Examination demand is high relative to cases, suggesting possible queueing or delay before definitive Diagnosis.
+- Data quality inconsistencies: Binary-coded gender and other attributes exist but are not linked to control flow; documentation of outcomes appears inconsistent in part of the log.
+"")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Scope: Standardized, governed pathway from registration to discharge using the same activity set observed in the log, with improved sequencing, documentation, and escalation logic.
+- Purpose: Reduce rework, ensure one clear outcome per treatment cycle, and harmonize entry and examination practices while preserving necessary clinical flexibility.
+
+Key stakeholders and roles involved
+- Physicians (Doc. Low, Doc. Pro): Lead Diagnosis and Treatment; perform Expert Examination; participate in Thorough Examination as required.
+- Nursing staff (Nurse 1–5): Execute registration activities and support Examination and Thorough Examination per protocol.
+- Role assignment is standardized via skill-based routing:
+  - Expert Examination: primarily Doc. Pro or senior physicians.
+  - Thorough Examination: physician-led with nurse support.
+  - Examination (basic): nurse-initiated with physician oversight where needed.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Patient arrival.
+- Harmonized registration (exclusive channel, standardized data set):
+  - Register at ER or Register at FD.
+  - Both channels capture an identical, complete data set to avoid downstream variability (same mandatory fields, same identifiers).
+  - Both feed into the same standardized clinical pathway.
+
+Standardized clinical pathway
+1) Initial Examination baseline
+   - Perform Examination (basic) once as the default intake assessment.
+   - Decision: If complexity/severity warrants, escalate; otherwise proceed.
+
+2) Escalation criteria and options (exclusive-or-escalatory)
+   - If findings are unclear or higher acuity is detected, perform Thorough Examination (once per clinical episode).
+   - If specialized assessment is required or repeated unsuccessful outcomes occur, perform Expert Examination (once per escalation event).
+   - Avoid unnecessary repetition: each examination type should occur at most once per diagnostic cycle unless new clinical information emerges.
+
+3) Diagnosis (must follow examination)
+   - Exactly one Diagnosis per treatment cycle.
+   - Rule: No Treatment without a preceding Diagnosis in the same cycle.
+
+4) Treatment (must follow diagnosis)
+   - Execute Treatment aligned to the current Diagnosis.
+
+5) Mandatory treatment outcome recording (exactly one outcome per treatment)
+   - Immediately after each Treatment, record exactly one:
+     - Treatment successful, or
+     - Treatment unsuccessful.
+   - This closes the treatment cycle and enables clear loop control.
+
+6) Post-outcome decision and loop control
+   - If Treatment successful: Proceed to Discharge.
+   - If Treatment unsuccessful:
+     - Initiate controlled rework loop:
+       a) Optionally perform additional Examination or escalate to Expert Examination if not yet performed in this episode.
+       b) Perform a new Diagnosis reflecting updated findings.
+       c) Perform a new Treatment.
+       d) Record the outcome (exactly one).
+     - After a bounded number of cycles (as per clinical policy), require Expert Examination before any further treatment.
+
+7) Discharge
+   - Discharge after the final successful treatment OR, if clinically required, after an unsuccessful treatment when further intervention is not indicated (e.g., referral/transfer context). The Discharge activity remains the single terminal event; the context is captured in case data.
+
+Decision points with criteria and possible outcomes
+- Registration (exclusive): ER vs FD based on arrival channel; same data standards apply.
+- Examination escalation (exclusive-or):
+  - Criteria: Vital signs, severity scales, abnormal findings.
+  - Outcomes: Remain at Examination, escalate to Thorough Examination, or escalate to Expert Examination.
+- Post-treatment decision (exclusive):
+  - Treatment successful → Discharge.
+  - Treatment unsuccessful → Controlled rework cycle (with bounded repetitions and enforced Expert Examination before third cycle, when applicable).
+
+Parallel activities and synchronization points
+- Examinations are sequenced to enforce clarity of escalation and avoid redundant work. Parallelism is not required to achieve the target improvements and is therefore not introduced.
+- Synchronization point: Complete necessary examinations before Diagnosis; record outcome before moving to the next step.
+
+Exception handling and error paths
+- Documentation assurance: System enforces one outcome event per treatment; cannot proceed without it.
+- Early discharge on clinical grounds after unsuccessful outcome is permitted but must be justified and tagged at Discharge (case attribute), ensuring auditability.
+- Protected or special-status patients (per case attributes) are flagged, but the activity set remains the same; access and privacy safeguards apply without altering the control flow.
+
+Rework loops and escalation procedures
+- Rework loop is allowed only after Treatment unsuccessful and must include:
+  - Optional Examination (typically escalate to Expert Examination if repetition occurs),
+  - Mandatory new Diagnosis,
+  - Treatment,
+  - Single outcome recording.
+- Loop is bounded by policy (e.g., escalation to Expert Examination before repeat treatments; hard limits set by governance to avoid uncontrolled cycling).
+
+End conditions and outcomes
+- End state: Discharge.
+- Two governed contexts:
+  1) Discharge after Treatment successful (default).
+  2) Discharge after Treatment unsuccessful with documented clinical rationale (e.g., transfer or no further indicated intervention).
+
+Process metrics and performance characteristics (targets)
+- Compliance:
+  - 100% of Treatments have exactly one recorded outcome event.
+  - 100% of Diagnoses are preceded by at least one Examination in the same cycle.
+- Rework control:
+  - Median of 1 Diagnosis and 1 Treatment per case; rework rate reduced vs. AS-IS.
+  - Unsuccessful-to-successful conversion within one rework cycle in the majority of cases.
+- Examination efficiency:
+  - At most one occurrence of each examination type per cycle unless new data justify repetition.
+  - Expert Examination performed before any third treatment attempt.
+- Registration harmonization:
+  - Zero data-field discrepancies between ER and FD registration; complete and consistent identifiers.
+
+Improvements made (vs. AS-IS)
+- Removed ambiguity in treatment outcomes by enforcing exactly-one outcome event per treatment.
+- Structured and bounded rework loop with mandatory re-diagnosis and escalation rules, reducing unnecessary repetitions of exams and treatments.
+- Standardized examination progression (basic → thorough → expert as needed) to reduce variability and cycle time.
+- Harmonized ER and FD registration to eliminate data inconsistencies while preserving both channels.
+- Clarified role routing: senior physicians (Doc. Pro) lead Expert Examination and complex cases; nurses support standardized examination steps, improving throughput and reducing bottlenecks.
+""")

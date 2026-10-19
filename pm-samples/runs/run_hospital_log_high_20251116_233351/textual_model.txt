@@ -1,0 +1,304 @@
+AS-IS PROCESS MODEL
+
+================================================================================
+HEALTHCARE PATIENT JOURNEY PROCESS - CURRENT STATE
+================================================================================
+
+PROCESS OVERVIEW AND PURPOSE
+--------------------------------------------------------------------------------
+This process represents the actual patient journey through a healthcare facility from initial registration through diagnosis, treatment, and discharge. The process handles patients entering through two different channels (Emergency Room and Front Desk) and manages their complete care cycle including examinations, diagnosis, treatment attempts (with potential failures and rework), and eventual discharge.
+
+The process is characterized by significant variability in patient pathways, multiple treatment retry loops when treatments are unsuccessful, and various examination routes depending on patient condition and entry point. The observed behavior shows substantial rework cycles and performance bottlenecks at key decision and treatment points.
+
+KEY STAKEHOLDERS AND ROLES
+--------------------------------------------------------------------------------
+- **Registration Staff**: Responsible for patient intake at ER and FD
+- **Examination Physicians**: Conduct initial examinations
+- **Expert Specialists**: Perform specialized expert examinations
+- **Diagnostic Physicians**: Responsible for patient diagnosis
+- **Treatment Medical Staff**: Administer treatments to patients
+- **Discharge Coordinators**: Process patient discharge procedures
+- **Emergency Room Staff**: Handle emergency patient registration and triage
+- **Front Desk Staff**: Handle non-emergency patient registration
+
+DETAILED STEP-BY-STEP PROCESS FLOW
+--------------------------------------------------------------------------------
+
+START CONDITIONS AND TRIGGERS
+The process is triggered when a patient arrives at the healthcare facility requiring medical attention. The patient must choose or be directed to one of two entry points:
+- Emergency Room (ER) registration for urgent/emergency cases
+- Front Desk (FD) registration for scheduled or non-emergency cases
+
+STEP 1: PATIENT REGISTRATION (PARALLEL ENTRY POINTS)
+The process begins with one of two mutually exclusive registration activities:
+
+**Option 1A: Register at Emergency Room (ER)**
+- Activity: Register at ER
+- Frequency: Approximately 5,758 cases observed
+- Purpose: Capture patient information for emergency/urgent cases
+- Outcomes: Patient registered and ready for examination/diagnosis path
+
+**Option 1B: Register at Front Desk (FD)**
+- Activity: Register at FD
+- Frequency: Approximately 4,992 cases observed
+- Purpose: Capture patient information for scheduled/non-emergency cases
+- Outcomes: Patient registered and ready for examination/diagnosis path
+
+Performance Note: Registration takes approximately 40,000 seconds average before next activity across both channels.
+
+STEP 2: EXAMINATION/DIAGNOSIS ROUTING (INCLUSIVE CHOICE)
+After registration, the patient flow diverges into multiple possible paths. The process exhibits four distinct routing options, which may be skipped entirely in some cases:
+
+**Option 2A: Expert Examination Path**
+- Activity: Expert Examination
+- Frequency: 5,754 cases (approximately 53% of all cases)
+- Trigger: Patient condition requires specialist assessment
+- From ER: 2,866 cases
+- From FD: 2,888 cases
+- Average duration: 40,000 seconds from registration
+- Outcomes: Patient examined by specialist, ready for either Thorough Examination or direct Diagnosis
+
+**Option 2B: General Examination Path**
+- Activity: Examination
+- Frequency: 3,609 cases (approximately 33% of all cases)
+- Trigger: Patient requires standard medical examination
+- From ER: 1,826 cases
+- From FD: 1,783 cases
+- Average duration: 40,000 seconds from registration
+- Outcomes: Patient examined, ready for Thorough Examination or Diagnosis
+
+**Option 2C: Thorough Examination Path (Direct)**
+- Activity: Thorough Examination (bypassing prior examinations)
+- Frequency: 317 cases (approximately 3% of all cases)
+- Trigger: Patient condition assessment indicates need for comprehensive examination
+- From ER: 159 cases
+- From FD: 158 cases
+- Average duration: 80,000 seconds from registration
+- Outcomes: Patient receives comprehensive examination, proceeds to Diagnosis
+
+**Option 2D: Direct to Diagnosis (Skip all examinations)**
+- Activity: Skip directly to Diagnosis
+- Frequency: 320 cases (approximately 3% of all cases)
+- Trigger: Patient condition is clear or follow-up visit
+- From ER: 157 cases
+- From FD: 163 cases
+- Average duration: 80,000 seconds from registration
+- Outcomes: Patient proceeds directly to diagnosis phase
+
+STEP 3: SECONDARY EXAMINATION ROUTING (CONDITIONAL)
+For patients who underwent Expert Examination or General Examination, a second decision point exists:
+
+**Option 3A: Proceed to Thorough Examination**
+- Activity: Thorough Examination
+- Frequency: 5,922 cases
+- Trigger: Initial examination indicates need for comprehensive assessment
+- From Expert Examination: 3,637 cases
+- From General Examination: 1,968 cases
+- Average duration: 60,000 seconds from prior examination
+- Outcomes: Patient receives comprehensive examination, proceeds to Diagnosis
+
+**Option 3B: Skip Thorough Examination (from Expert Examination)**
+- Activity: Skip directly to Diagnosis
+- Frequency: 2,117 cases from Expert Examination
+- Average duration: 60,001 seconds
+- Outcomes: Proceed directly to Diagnosis
+
+**Option 3C: Skip Thorough Examination (from General Examination)**
+- Activity: Skip directly to Diagnosis
+- Frequency: 1,641 cases from Examination
+- Average duration: 60,002 seconds
+- Outcomes: Proceed directly to Diagnosis
+
+STEP 4: DIAGNOSIS
+All examination paths converge at the Diagnosis activity (with possible skip transitions merging here):
+
+- Activity: Diagnosis
+- Frequency: 11,746 cases total (includes initial diagnosis and rework)
+- Purpose: Medical professional determines patient condition and treatment plan
+- Inputs: Results from Expert Examination, Thorough Examination, General Examination, or direct from registration
+- Average duration: 60,000 seconds before treatment
+- Outcomes: Diagnosis completed, treatment plan established
+
+Key Observation: The diagnosis step shows significantly higher frequency (11,746) than the total patient intake (~10,750), indicating that many patients return to diagnosis after unsuccessful treatment attempts.
+
+STEP 5: TREATMENT
+Following diagnosis, all patients proceed to treatment:
+
+- Activity: Treatment
+- Frequency: 11,746 cases (includes initial treatments and rework)
+- Purpose: Administer medical treatment according to diagnosis
+- Average duration: 60,000 seconds before outcome assessment
+- Outcomes: Treatment administered, awaiting outcome evaluation
+
+STEP 6: TREATMENT OUTCOME EVALUATION (EXCLUSIVE DECISION)
+After treatment, the process branches based on treatment success:
+
+**Option 6A: Treatment Successful**
+- Activity: Treatment successful
+- Frequency: 9,005 cases (approximately 77% of treatment attempts)
+- Criteria: Patient responds positively to treatment, condition improved/resolved
+- Average duration: 60,001 seconds from treatment start
+- Outcomes: Patient cleared for discharge
+
+**Option 6B: Treatment Unsuccessful**
+- Activity: Treatment unsuccessful
+- Frequency: 1,746 cases (approximately 15% of treatment attempts)
+- Criteria: Patient does not respond adequately to treatment
+- Average duration: 60,002 seconds from treatment start
+- Outcomes: Patient requires rework - return to Diagnosis for reassessment
+
+**Option 6C: Direct to Discharge (Skip outcome declaration)**
+- Activity: Skip outcome activities, proceed directly to Discharge
+- Frequency: 995 cases (approximately 8% of treatment cases)
+- Trigger: Uncertain - possibly administrative fast-tracking or process deviation
+- Average duration: 100,003 seconds from treatment start
+- Outcomes: Patient discharged without formal success/failure declaration
+
+Performance Issue: This direct discharge path represents a significant process deviation where proper treatment outcome evaluation is bypassed.
+
+STEP 7: TREATMENT REWORK LOOP (EXCEPTION HANDLING)
+When treatment is unsuccessful, the patient enters a rework cycle:
+
+- Activity: Return to Diagnosis
+- Frequency: 1,746 cases enter first rework loop
+- Average duration: 40,001 seconds from unsuccessful treatment to re-diagnosis
+- Purpose: Reassess patient condition and develop alternative treatment plan
+- Outcomes: New diagnosis leads to repeat treatment (Treatment → outcome evaluation)
+
+Rework Loop Characteristics:
+- First rework cycle: 1,746 cases
+- Second rework cycle: Approximately 200-300 cases (from variant data)
+- Third rework cycle: Approximately 50-100 cases
+- Fourth+ rework cycles: Less than 20 cases
+
+Pain Point: Multiple rework cycles significantly extend patient journey time. Cases with two treatment failures reach 480,000-640,000 seconds total duration. Cases with three or more failures can exceed 800,000 seconds (over 9 days).
+
+STEP 8: DISCHARGE (END STATE)
+All successful paths eventually converge at discharge:
+
+- Activity: Discharge
+- Frequency: 10,750+ cases (all patients eventually discharged)
+- Trigger: Treatment successful confirmed OR direct discharge path
+- Inputs: 
+  - Treatment successful outcome (9,005 cases via standard path)
+  - Direct from treatment (995 cases via skip path)
+- Average duration: 40,001 seconds from treatment success to discharge
+- Outcomes: Patient discharged from facility, process ends
+
+END CONDITIONS
+The process terminates when the patient is formally discharged from the healthcare facility. All patients eventually reach this end state, though the path taken varies significantly based on:
+- Entry point (ER vs FD)
+- Examination route taken
+- Treatment success rate
+- Number of rework cycles required
+
+PROCESS METRICS AND PERFORMANCE CHARACTERISTICS
+--------------------------------------------------------------------------------
+
+**Volume Metrics:**
+- Total cases processed: ~10,750 patients
+- ER registrations: 53.5% of total intake
+- FD registrations: 46.5% of total intake
+- Expert Examination route: 53% of patients
+- General Examination route: 34% of patients
+- Direct/Skip examination routes: 13% of patients
+
+**Success Metrics:**
+- First-time treatment success rate: ~77%
+- Treatment failure requiring rework: ~15%
+- Cases requiring 2+ treatment attempts: ~15-20%
+- Cases requiring 3+ treatment attempts: ~5%
+- Cases requiring 4+ treatment attempts: <1%
+
+**Performance Metrics:**
+- Fastest case completion: 240,000 seconds (~2.8 days) - direct diagnosis path
+- Standard case completion: 260,000-320,000 seconds (~3.0-3.7 days) - single examination + successful treatment
+- Cases with one rework: 400,000-480,000 seconds (~4.6-5.6 days)
+- Cases with two reworks: 580,000-640,000 seconds (~6.7-7.4 days)
+- Cases with three+ reworks: 740,000-800,000+ seconds (~8.6-9.3+ days)
+- Average step duration: 40,000-60,000 seconds between major activities
+
+**Bottlenecks Identified:**
+- Treatment outcome evaluation: 60,000+ second average duration
+- Diagnosis step: High frequency (11,746 vs ~10,750 intake) indicates rework burden
+- Rework loops: Significantly extend case duration
+- Throughput constraint: Treatment capacity handling both new and rework cases
+
+KEY CHALLENGES AND PAIN POINTS
+--------------------------------------------------------------------------------
+
+1. **High Treatment Failure Rate**
+   - 15-20% of treatments are unsuccessful on first attempt
+   - Creates significant rework burden on diagnosis and treatment resources
+   - Extends patient length of stay substantially
+
+2. **Multiple Rework Cycles**
+   - Some patients cycle through diagnosis-treatment loop 3-4+ times
+   - Each cycle adds 160,000+ seconds (~1.85 days) to patient journey
+   - No apparent escalation or alternative pathway for persistent failures
+   - Suggests inadequate initial diagnosis or treatment protocol issues
+
+3. **Process Path Variability**
+   - 55+ distinct process variants observed
+   - Inconsistent examination routing logic
+   - Unclear criteria for Expert vs General Examination vs skip paths
+   - Makes process prediction and resource planning difficult
+
+4. **Direct Discharge Bypass**
+   - 995 cases (~8%) skip formal treatment outcome evaluation
+   - Represents process compliance issue
+   - Potential quality and safety concern
+   - May indicate workarounds or system gaming
+
+5. **Skip Path Inconsistency**
+   - Multiple "skip" transitions in Petri net (skip_1, skip_2, skip_5, skip_6)
+   - 13% of cases skip examination steps entirely
+   - Criteria for skipping unclear from observed behavior
+   - May represent both legitimate fast-tracking and inappropriate shortcuts
+
+6. **Long Activity Durations**
+   - Most activities show 40,000-60,000 second durations
+   - Suggests either measurement issues (wall-clock time including waiting) or significant delays
+   - Limited parallelization of activities
+   - Potential capacity constraints
+
+7. **No Clear Escalation Path**
+   - Patients with repeated treatment failures continue same loop indefinitely
+   - No observed transfer to specialist care or alternative treatment protocols
+   - No maximum retry limit observed
+
+8. **Entry Channel Parity**
+   - ER and FD patients follow nearly identical paths post-registration
+   - Suggests ER triage may not be functioning optimally
+   - ER patients should potentially have faster or prioritized routing
+
+9. **Examination Redundancy**
+   - Some patients receive multiple examination types sequentially
+   - Expert Examination → Thorough Examination common (3,637 cases)
+   - May indicate redundant assessment steps
+
+10. **Performance Variability**
+    - High standard deviation in case completion times
+    - Same variant can show 20-30% variation in performance
+    - Suggests inconsistent resource availability or process execution
+
+COMPLIANCE AND QUALITY CONCERNS
+--------------------------------------------------------------------------------
+
+1. **Missing Treatment Outcome Documentation**: 8% of cases bypass formal outcome evaluation
+2. **Incomplete Examination Protocols**: Inconsistent application of examination standards
+3. **Rework Without Review**: No observed intervention or review for repeated treatment failures
+4. **Process Deviation Tolerance**: Multiple skip paths suggest low process standardization
+5. **Duration Reporting**: Unclear if durations include only active work or total elapsed time with waiting
+
+OBSERVED BEHAVIORAL PATTERNS
+--------------------------------------------------------------------------------
+
+- **Convergent Flow**: All paths eventually funnel through Diagnosis → Treatment → Outcome → Discharge
+- **Parallel Entry, Serial Processing**: Two entry points but no observed parallel processing of activities
+- **Rework Dominance**: Diagnosis activity frequency (11,746) significantly exceeds patient intake (10,750)
+- **Treatment Centricity**: Treatment is the primary value-adding activity, but 15-20% failure rate
+- **Examination Optionality**: Wide variety of examination combinations suggests high discretion
+- **Outcome Bypass**: Workaround pattern allowing direct discharge without outcome declaration
+
+This AS-IS model reflects actual observed behavior with all its inefficiencies, inconsistencies, and quality concerns. The process functions but shows significant opportunities for improvement in treatment effectiveness, process standardization, rework reduction, and patient flow optimization.

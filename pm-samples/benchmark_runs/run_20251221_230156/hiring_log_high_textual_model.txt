@@ -1,0 +1,95 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The process described is a recruiting workflow for candidate applications in an organization. It involves various stages of interviews and checks to assess potential employees before making job offers or rejecting applications. The workflow is aimed at ensuring that the best candidates are selected while also documenting areas where candidates may not meet the organization's requirements.
+
+## Key Stakeholders and Roles Involved
+While specific roles are not explicitly described, the following stakeholders can be inferred from the context:
+
+- **Candidates**: Individuals applying for a position.
+- **Recruiters**: Personnel responsible for screening applications and conducting interviews.
+- **Hiring Managers**: Decision-makers who may participate in interviews.
+- **Background Check Services**: External internal checks for verifying candidate information.
+
+## Detailed Step-by-Step Process Flow 
+
+### Start Conditions and Triggers
+1. **Trigger**: The process begins when a candidate submits a job application.
+
+### Process Activities/Tasks
+1. **Hand In Job Application**: 
+   - The candidate submits their application to the recruiting team.
+
+2. **Telephonic Screening**: 
+   - A recruiter performs an initial screening via telephone to assess the candidate's suitability.
+
+3. **Screening Interview**: 
+   - If the candidate passes the telephonic screening, they will be invited for a more in-depth screening interview.
+
+4. **Background Check**: 
+   - Candidates who pass the screening interview undergo a background check. 
+
+   - **Decision Point**: Post-background check:
+     - If cleared: Proceed with interviews.
+     - If issues arise: **Application Rejected**.
+
+5. **Coding Interview** (If applicable):
+   - Candidates who pass the background check may be required to undergo a coding interview to assess technical skills.
+
+6. **Behavioral Interview** (If applicable):
+   - Candidates may also participate in a behavioral interview to assess their soft skills and cultural fit.
+
+7. **Frontend Interview** (If relevant to the position):
+   - Candidates may be asked to interview with frontend development team members, if applicable.
+
+8. **ML Interview** (If relevant to the position):
+   - For candidates applying for machine learning roles, an additional interview with ML team members is conducted.
+
+9. **Backend Interview** (If applicable):
+   - Similar to the frontend interview, candidates may undergo a backend specific interview.
+
+10. **Make Job Offer**:
+    - Candidates who successfully complete the interview process may receive a job offer.
+
+### Decision Points with Criteria and Possible Outcomes
+
+- **Post-Background Check Decision**:
+  - **Outcome 1**: Clear background check — Proceed to interviews (Coding, Behavioral, Frontend, ML, and/or Backend).
+  - **Outcome 2**: Issues detected — **Application Rejected**.
+
+- **Post-Interview Decision**:
+  - If candidates do not meet the expectations in any interview, they may receive a **Application Rejected** notification.
+
+### Parallel Activities and Synchronization Points
+- Candidates may undergo multiple interviews (Coding, Behavioral, Frontend) in parallel, with decisions based on performance.
+
+### Exception Handling and Error Paths
+- **Application Rejected** paths can occur after various stages:
+  - Directly after Telephonic Screening,
+  - After Background Check if issues are found,
+  - After any interview stage if the candidate does not meet selection criteria.
+
+### Rework Loops and Escalation Procedures
+- The **Behavioral Interview** may loop back to itself for additional interviews until a satisfactory evaluation is made.
+- Different interview types may require additional evaluations leading back to previous stages.
+
+### End Conditions and Outcomes
+1. **Successful Outcome**: 
+   - Candidate receives a **Make Job Offer**, leading to hire.
+   
+2. **Unsuccessful Outcome**:
+   - Candidate receives an **Application Rejected** notification which can occur at multiple points in the process.
+
+## Process Metrics and Performance Characteristics
+- Various stages are monitored for frequency (how often a path is taken) and performance (time taken):
+  
+  - High frequencies are seen in paths leading from **Hand In Job Application** to **Application Rejected**.
+  - Timely evaluations occur across stages, but delays are indicated in **Behavioral Interviews** due to potential rework.
+
+## Key Challenges and Pain Points Observed in the Current Process
+- **Frequent Rejections**: A significant number of applications are rejected during various stages, indicating potential efficiency issues.
+- **Complexity in Interviewing**: The number of interview types can overload both recruiters and candidates, leading to possible candidate drop-off.
+- **Potential for Delays**: Multiple rework loops and decisions could slow down the overall process significantly.
+- **Resource Allocation**: High frequency of parallel paths could necessitate more time from interviewers, leading to scheduling challenges.
+
+Overall, this AS-IS process model provides insights into the recruiting workflow, highlighting efficiency issues while maintaining a candidate-focused approach.

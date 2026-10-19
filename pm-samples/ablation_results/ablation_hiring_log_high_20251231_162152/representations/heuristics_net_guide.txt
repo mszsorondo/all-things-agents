@@ -1,0 +1,30 @@
+
+=== HEURISTICS NET INTERPRETATION GUIDE ===
+A Heuristics Net improves on DFG by using dependency measures:
+
+1. DEPENDENCY MEASURE:
+   - Calculates |A→B| = (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+   - Range: -1 to 1
+   - Positive: A causes B
+   - Negative: B causes A
+   - Near 0: No clear dependency
+
+2. ADVANTAGES OVER DFG:
+   - Handles noise and incomplete logs
+   - Detects true dependencies vs. coincidence
+   - Identifies AND/XOR splits and joins
+   - Removes infrequent behaviors
+
+3. CONSTRUCTION RULES:
+   - Only includes edges above dependency threshold
+   - Detects long-distance dependencies
+   - Identifies loops based on frequency
+   - Constructs split/join semantics
+
+4. READING THE NET:
+   - Solid edges: Strong dependencies
+   - Dashed edges: Weaker dependencies
+   - AND-split: All outgoing edges activated
+   - XOR-split: One outgoing edge activated
+   - AND-join: Wait for all incoming edges
+   - XOR-join: Proceed on any incoming edge

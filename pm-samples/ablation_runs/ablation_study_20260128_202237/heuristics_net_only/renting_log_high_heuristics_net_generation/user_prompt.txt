@@ -1,0 +1,95 @@
+
+============================================================
+REPRESENTATION 1: HEURISTICS_NET
+============================================================
+
+
+=== HEURISTICS NET INTERPRETATION GUIDE ===
+
+A Heuristics Net improves on DFG by using dependency measures to identify
+true causal relationships between activities.
+
+OUTPUT FORMAT:
+--------------
+"Heuristics Net:
+
+Activities (N): Activity1, Activity2, ...
+
+Start activities: StartActivity1, StartActivity2, ...
+End activities: EndActivity1, EndActivity2, ...
+
+Dependency relations (activity -> activity: dependency_value):
+  ActivityA -> ActivityB: dependency=0.999, frequency=1234
+  ActivityC -> ActivityD: dependency=0.850, frequency=567
+  ..."
+
+READING THE OUTPUT:
+
+1. ACTIVITIES: List of all activities in the process
+
+2. START/END ACTIVITIES: Entry and exit points of the process
+
+3. DEPENDENCY RELATIONS:
+   - Source -> Target: Causal relationship from source to target
+   - dependency: Measure from 0 to 1 (higher = stronger causality)
+   - frequency: How many times this succession was observed
+
+DEPENDENCY MEASURE FORMULA:
+- dependency(A,B) = (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1 (we show only positive, strong dependencies)
+- Near 1.0: Very strong causal relationship
+- Near 0.5: Moderate relationship
+- Below 0.5: Usually filtered out as noise
+
+INTERPRETING DEPENDENCY VALUES:
+- 0.9-1.0: Almost always A causes B (main flow)
+- 0.7-0.9: Strong relationship (common path)
+- 0.5-0.7: Moderate relationship (alternative path)
+- <0.5: Weak/coincidental (typically noise)
+
+ADVANTAGES OVER DFG:
+- Filters noise using dependency thresholds
+- Identifies true causal vs coincidental relationships
+- Handles loops of length 1 and 2
+- Shows strength of each dependency
+
+USE FOR:
+- Understanding main process flow
+- Identifying strong vs weak paths
+- Filtering out noise in event logs
+- Process analysis before formal modeling
+
+
+--- DISCOVERED MODEL ---
+Heuristics Net:
+
+Activities (16): Pay Rent, Apply for Viewing Appointment, View The Property, Set Appointment, Check Paperwork, Screen Prospective Tenant, Hand In The Paperwork, Reject Prospective Tenant, Extensive Screening, Sign Contract, Move In, Tenant Cancels Appartment, Issue Warning, Miss Rent Payment, Accept Late Payment, Evict Tenant
+
+Start activities: Apply for Viewing Appointment
+End activities: Tenant Cancels Appartment, Reject Prospective Tenant, Evict Tenant
+
+
+Dependency relations (activity -> activity: dependency_value):
+  Accept Late Payment -> Miss Rent Payment: dependency=0.984, frequency=61
+  Accept Late Payment -> Pay Rent: dependency=0.999, frequency=794
+  Apply for Viewing Appointment -> Reject Prospective Tenant: dependency=0.999, frequency=849
+  Apply for Viewing Appointment -> Set Appointment: dependency=1.000, frequency=9151
+  Check Paperwork -> Screen Prospective Tenant: dependency=1.000, frequency=7441
+  Extensive Screening -> Reject Prospective Tenant: dependency=0.999, frequency=1815
+  Extensive Screening -> Sign Contract: dependency=0.999, frequency=978
+  Hand In The Paperwork -> Check Paperwork: dependency=1.000, frequency=7441
+  Issue Warning -> Accept Late Payment: dependency=0.999, frequency=855
+  Issue Warning -> Evict Tenant: dependency=0.989, frequency=90
+  Miss Rent Payment -> Issue Warning: dependency=0.999, frequency=945
+  Move In -> Miss Rent Payment: dependency=0.991, frequency=114
+  Move In -> Pay Rent: dependency=1.000, frequency=2656
+  Pay Rent -> Miss Rent Payment: dependency=0.999, frequency=770
+  Pay Rent -> Pay Rent: dependency=1.000, frequency=14819
+  Pay Rent -> Tenant Cancels Appartment: dependency=1.000, frequency=2680
+  Screen Prospective Tenant -> Extensive Screening: dependency=1.000, frequency=2793
+  Screen Prospective Tenant -> Reject Prospective Tenant: dependency=1.000, frequency=2856
+  Screen Prospective Tenant -> Sign Contract: dependency=0.999, frequency=1792
+  Set Appointment -> View The Property: dependency=1.000, frequency=9151
+  Sign Contract -> Move In: dependency=1.000, frequency=2770
+  View The Property -> Hand In The Paperwork: dependency=1.000, frequency=7441
+  View The Property -> Reject Prospective Tenant: dependency=0.999, frequency=1710

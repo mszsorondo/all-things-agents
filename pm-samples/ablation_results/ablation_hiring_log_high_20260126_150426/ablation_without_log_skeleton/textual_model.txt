@@ -1,0 +1,186 @@
+AS-IS Process Model
+
+1. Process overview and purpose
+- Purpose: This is the observed (AS‑IS) hiring/recruitment process for job applicants. It captures end-to-end case behavior from application submission to one or more terminal decisions (typically "Application Rejected" or "Make Job Offer"), including screening, background checks, technical interviews and behavioral interviews. The discovered models and logs show that the actual process is flexible, contains many alternative and concurrent paths, repeated activities, and multiple acceptance/rejection events per case.
+- Scope: From "Hand In Job Application" (process start) through screening and interviewing activities to final outcomes (primarily "Application Rejected" or "Make Job Offer"). The models include both routine flows and many exception/looping behaviors observed in the event log.
+
+2. Key stakeholders and roles observed
+- Roles present in the event log (observed as event resources): HR-dummy, HR-pro, Senior Partner, Coding Interviewer, Online System, Front Desk, HR-pro and Senior Partner (joint), deepResearch Inc.
+- Role-to-activity mapping is not fully specified in the source models; therefore the AS‑IS description does not invent responsibilities where not explicit. Where mapping is evident from labels:
+  - Coding Interview → typically performed by "Coding Interviewer" (resource name suggests this mapping).
+  - Hand In Job Application → often recorded by "Online System" or "Front Desk" (these resources appear in the log and are plausible performers of application submission).
+- Other resources are present in the log (HR-pro, Senior Partner, deepResearch Inc.) but the models do not provide a definitive mapping of every activity to a single role; therefore most activity assignments remain unspecified in the models and should be treated as “observed participants” rather than strict activity owners.
+
+3. Start conditions and trigger(s)
+- Start event (initial activity): Hand In Job Application. All observed traces initialize with this activity (DECLARE initialization and start in mined models).
+- Preconditions: Candidate has submitted an application (system or front-desk entry). No other mandatory pre-activity is required.
+
+4. Detailed step-by-step process flow (all observed variants and control logic)
+Note: The process is highly permissive. The description below enumerates all observed paths, optional activities, possible concurrent/interleaving behavior and loops. Any execution that matches one of the observed variants below is considered valid in the AS‑IS model.
+
+4.1 High-level sequence (core backbone)
+1) Hand In Job Application (mandatory start)
+2) Optionally proceed to Telephonic Screening (many cases do; some cases skip it)
+3) After Telephonic Screening (or skipping it), Screening Interview and Background Check are commonly executed — they may both occur, one may occur, their order can vary, and sometimes an Extensive Background Check occurs after them.
+4) Candidate may then proceed to a Coding Interview (in many cases) and from there to one or more technical interviews (ML Interview, Frontend Interview, Backend Interview) in various orders and combinations.
+5) Behavioral Interview(s) typically follow the technical interviews (but can be repeated).
+6) Final outcomes: Make Job Offer or Application Rejected. Both are observed as legitimate end states; they may occur multiple times in traces and do not always conclude the case immediately.
+
+4.2 Concrete activities (visible transitions)
+- Hand In Job Application (start)
+- Telephonic Screening (optional after Hand In Job Application)
+- Screening Interview (often occurs after Telephonic Screening; may occur before or after Background Check)
+- Background Check (often occurs after Telephonic Screening; may occur before or after Screening Interview)
+- Extensive Background Check (optional, observed as an additional verification step after Background Check or Screening Interview)
+- Coding Interview (technical screening)
+- ML Interview (technical)
+- Frontend Interview (technical)
+- Backend Interview (technical)
+- Behavioral Interview (soft-skills / HR interview; observed repeatable)
+- Application Rejected (decision status; appears throughout the process and may repeat)
+- Make Job Offer (decision status; appears as an outcome and can repeat)
+
+4.3 Decision points, optional paths and branching logic (all observed alternatives)
+- Immediately after Hand In Job Application:
+  - Either Telephonic Screening occurs (frequent) OR the case goes directly to Application Rejected (observed in many cases) OR other downstream activities may start (some variants show other activities following application directly).
+  - The models show the pair of relations "Hand In Job Application -> Telephonic Screening" and also "Hand In Job Application -> Application Rejected" as alternative branches.
+- After Telephonic Screening:
+  - Observed outcomes include:
+    - Telephonic Screening -> Background Check
+    - Telephonic Screening -> Screening Interview
+    - Telephonic Screening -> Application Rejected
+  - Background Check and Screening Interview are not mutually exclusive: both may occur in the same case and in either order. The models support all of these possibilities:
+    - Telephonic -> Background -> Screening
+    - Telephonic -> Screening -> Background
+    - Telephonic -> Background (only)
+    - Telephonic -> Screening (only)
+- Extensive Background Check:
+  - Optional; appears after Background Check or Screening Interview in many variants. It may lead to Coding Interview or to Application Rejected.
+- Coding Interview:
+  - Optional overall (not all cases reach the coding interview).
+  - When present, Coding Interview commonly precedes the set of technical interviews (ML, Frontend, Backend), but Coding Interview itself can be followed by Application Rejected as well.
+- Technical interviews (ML, Frontend, Backend):
+  - Observed behavior:
+    - These can occur singly or in combinations (multiple technical interviews in the same case).
+    - Their relative order is flexible: all interleavings observed (ML ↔ Frontend, Frontend ↔ Backend, Backend ↔ ML, etc.).
+    - Repetition/rework is possible (an interview may occur more than once).
+    - There is no strict exclusive choice that limits to exactly one technical interview; cases show sequences where candidates go through 1, 2, or all 3 technical interviews in various orders.
+- Behavioral Interview:
+  - Often executed after technical interviews (many variants show Behavioral Interview(s) after ML/Frontend/Backend).
+  - Behavioral Interview is repeatable (Behavioral Interview -> Behavioral Interview observed), i.e., re-assessments or multiple rounds happen.
+  - Behavioral Interview can directly lead to Make Job Offer or to Application Rejected (or be followed by further activities).
+- Application Rejected:
+  - Observed at many points in the flow: directly after Hand In Job Application, after Telephonic Screening, after Screening Interview, after Background Check, after Extensive Background Check, after Coding/technical interviews, and even after Behavioral Interview.
+  - Application Rejected is not strictly terminal in the observed data — traces exist where Application Rejected is followed by further interviews or even Make Job Offer. In practice this indicates repeated status updates or multiple "rejection" events per case; the AS‑IS model preserves this flexibility (i.e., Application Rejected can occur multiple times and does not imply immediate termination unless it is the last recorded event).
+- Make Job Offer:
+  - Observed as a final outcome in many cases and frequently follows Behavioral Interview.
+  - Make Job Offer can repeat (cases contain multiple Make Job Offer events), and in rare observed variants it can be preceded or followed by Application Rejected events (status changes post-offer).
+  - Make Job Offer is an end state in many traces but not uniquely final if additional events occur after it.
+
+4.4 Parallelism and synchronization
+- Background Check and Screening Interview behave like parallel / co‑existing activities: they may both occur and in any order (the models indicate their co‑existence and both orders are frequent).
+- The three technical interviews (ML, Frontend, Backend) form a loosely coupled cluster: they can interleave in any order and multiple of them can be executed for a single candidate. There is no strict synchronization that requires completion of one before starting another in all cases.
+- There is no explicit enforced synchronization (join) visible in the mined models that mandates a final single merge before proceeding to Behavioral Interview or decision; behavioral interview typically follows technical interviews but the models accept alternate interleavings.
+
+4.5 Loops, rework and repetition (all observed looping behavior)
+- Application Rejected repeats: high frequency of Application Rejected -> Application Rejected indicates repeated rejection events/status updates.
+- Behavioral Interview repeats: Behavioral Interview -> Behavioral Interview observed frequently.
+- Make Job Offer repeats: Make Job Offer -> Make Job Offer observed (multiple offer/offer-update events).
+- Technical interviews can appear in cycles/reorderings (e.g., Coding Interview -> ML -> Frontend -> Backend -> ML etc. observed in variants).
+- These loops reflect re-assessments, multiple rounds, re-opened cases, or status updates — the AS‑IS model allows repeating any of these activities if the log shows such repetitions.
+
+4.6 Exception handling and odd paths (observed anomalies)
+- Status toggles: Some traces show Application Rejected followed by further interviews and then Make Job Offer. The AS‑IS model allows such toggles because they were observed.
+- Missing Telephonic Screening: Telephonic Screening, though frequent, is not mandatory — candidates may be rejected directly after application or proceed to Screening/Background without telephonic screening.
+- Extensive Background Check is present only in a subset of cases; when present it can either lead to Coding Interview or to Application Rejected.
+- There is no single exception-handling actor or path visible; exceptions manifest as alternative traces (rejections, repeated events, unusual orderings) rather than explicit exception tasks.
+
+4.7 End conditions and outcomes
+- Observed legitimate end states (cases in the log terminate in these forms):
+  - End with one or more Application Rejected events (Application Rejected final).
+  - End with one or more Make Job Offer events (Make Job Offer final).
+  - Rare traces end after other activities without an explicit final decision recorded; however majority end in Application Rejected or Make Job Offer.
+- Because of repeated/duplicate events, a case may contain both Make Job Offer and Application Rejected events — the log contains such mixed endings. The AS‑IS model allows these sequences as valid traces if they were observed.
+- Final marking (net-level): The discovered inductive miner model shows a sink place receiving tokens after merge of branches — i.e., modeled completion after the observed combinations of branches.
+
+5. All valid activity orderings and interleavings (explicit set of observed orderings)
+The process permits (but is not limited to) the following order families (each item enumerates the ordering patterns observed; within each family many interleavings and repeats are allowed):
+
+- Hand In Job Application -> Application Rejected
+- Hand In Job Application -> Telephonic Screening -> Application Rejected
+- Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected
+- Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected
+- Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Application Rejected
+- Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Application Rejected
+- Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> [any permutation of ML, Frontend, Backend interviews, possibly repeating] -> Behavioral Interview(s) -> Make Job Offer
+- Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer (and many variants where Application Rejected occurs at multiple points)
+- Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Make Job Offer
+- Variants where technical interviews occur in different orders (e.g., Coding -> Backend -> Frontend -> ML -> Behavioral), including repetitions of technical interviews
+- Variants where Application Rejected appears, then further interviews occur, then Make Job Offer (status toggling)
+- Variants with multiple Behavioral Interview events before make/reject decision
+- Variants that end with repeated Make Job Offer events (Make Job Offer -> Make Job Offer)
+
+Important: The above families are representative; the log contains many fine-grained variants (see abstract variants). The AS‑IS model accepts any trace that follows any of the observed permutations, interleavings and repetitions.
+
+6. Behavioral fidelity notes (why the model is permissive)
+- Co‑existence and parallelism: Background Check and Screening Interview co-occur frequently and in either order — model allows both and both skipped.
+- Technical interview cluster is flexible: ML, Frontend and Backend interviews can occur in multiple orders and combinations; sometimes candidates receive multiple technical interviews.
+- Status events are not strictly terminal: "Application Rejected" and "Make Job Offer" appear multiple times and in different places; the model treats them as activities that can occur repeatedly and not always as terminal unless they are the final recorded event.
+- Loops and repeated activities are preserved: observed self-loops on Behavioral Interview, Make Job Offer and Application Rejected are allowed.
+
+7. Process metrics and performance characteristics (observed from logs and DFG)
+- Case and activity volumes (from log attributes):
+  - Total observed activity event counts (approx.): Hand In Job Application (10,000), Telephonic Screening (8,799), Screening Interview (7,809), Background Check (7,809), Coding Interview (3,904), Behavioral Interview (3,796), Make Job Offer (3,401), Frontend Interview (2,913), ML Interview (2,334), Extensive Background Check (2,099), Backend Interview (1,351), Application Rejected (9,654).
+- High-frequency direct-follow relations (indicative of core flow):
+  - Hand In Job Application -> Telephonic Screening (8,799)
+  - Telephonic Screening -> Background Check (3,961)
+  - Telephonic Screening -> Screening Interview (3,848)
+  - Screening Interview -> Coding Interview (1,517)
+  - Coding Interview -> Frontend Interview (1,513)
+  - Background Check -> Coding Interview (1,413)
+  - Behavioral Interview -> Make Job Offer (1,850)
+- Observed long average delays (DFG performance numbers, given in seconds between activities):
+  - Typical handoffs after Telephonic Screening and Screening/Background checks show average inter-activity times ~80,000–130,000 seconds (~1–3 days).
+  - Paths that include extended loops and multiple technical/behavioral rounds can have very long case durations: several hundred thousand seconds (~3–7+ days) average for the longer multi-round variants (abstract variants show performance values e.g., ~530,000 seconds ~6.1 days).
+  - Some edges have especially high average time (e.g., Extensive Background Check -> Application Rejected ~171,097 sec ~2.0 days).
+- Bottlenecks and hotspots (observed):
+  - Telephonic Screening → Background Check / Screening Interview transitions are very frequent; any delays here affect many cases.
+  - Coding Interview and the following technical interview sequences create long, variable durations for extended candidate assessment, particularly in long variants where multiple interview rounds occur.
+  - Significant variability in durations across variants; some long-running variants indicate coordination delays between technical and behavioral interviews.
+
+8. Key challenges and pain points observed in the current process
+- High variability and unpredictability:
+  - Many alternative orders, optional steps and loops make the process unpredictable; difficult to estimate time‑to‑hire reliably.
+- Frequent status toggling:
+  - Application Rejected and Make Job Offer appear multiple times and in changing order in traces — this creates ambiguity about case state, complicates reporting and automation.
+- Long waiting times and bottlenecks:
+  - Average delays between screening, background checks and interview rounds are significant (days). Coordination between departments (background checks, interviewers) likely causes delays.
+- Rework and repeated interviews:
+  - Repeated Behavioral Interviews and repeated technical interviews are common, suggesting inefficient re-evaluation or poorly defined pass/fail criteria.
+- Concurrency coordination:
+  - Parallel activities (Background Check and Screening Interview) and multiple interview streams require synchronization and scheduling complexity; absence of enforced join points can cause redundant effort.
+- Compliance and data-quality concerns:
+  - The presence of many Application Rejected events interleaved with later activities suggests inconsistent use of decision-status events (possibly different teams update status differently), causing confusing audit trails.
+- Lack of clear role-to-activity mapping:
+  - The log contains several resource types but the process models do not provide a definitive mapping of who is responsible for each activity; this obscures accountability and handoff responsibilities.
+- Overfitting to history / noise:
+  - Some rare but observed traces (e.g., sequences where rejection precedes final hiring) may be noise or special-case handling; the process is permissive to cover these observed behaviors, but they indicate irregularities.
+
+9. Recommendations to interpret the AS‑IS model (for users)
+- Treat "Application Rejected" and "Make Job Offer" as activities/events, not strictly terminal signals — analyze downstream events to determine whether status events reflect real termination or interim updates.
+- If the organization wants a stricter process model (for automation or SLA enforcement), define explicit state semantics (e.g., only final rejection/offer closes the case) and standardize the points at which status changes are recorded.
+- Investigate bottlenecks at transition points with high frequencies and long average delays (Telephonic Screening → Background/Screening; Coding → technical interviews → Behavioral).
+- Audit cases with unusual sequences (rejection followed by later hire) to understand whether they reflect legitimate reconsiderations, data quality issues, or logging inconsistencies.
+
+10. Summary of permitted trace types (concise)
+- Any trace must start with Hand In Job Application.
+- From there, either:
+  - direct Application Rejected (case may end), OR
+  - Telephonic Screening (common) OR Telephonic skipped.
+- After Telephonic Screening (if performed), Background Check and Screening Interview may occur in any order, one, both, or be skipped; Extensive Background Check may follow.
+- Coding Interview may follow those checks; after Coding Interview any subset and order of ML/Frontend/Backend interviews may occur; repeats allowed.
+- Behavioral Interview typically follows technical rounds; may repeat.
+- Application Rejected and Make Job Offer may appear multiple times at many points; cases typically end on one or more Application Rejected or Make Job Offer events.
+- All interleavings and repetitions observed in the event log and represented by the mined models are allowed in the AS‑IS description.
+
+End of AS-IS Process Model description.

@@ -1,0 +1,82 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This AS-IS model describes the observed loan origination and approval process as discovered by process mining (inductive miner Petri net, DFG and variant analysis). The process covers request and scheduling of appointments, collection and verification of borrower and collateral information, repeated collateral assessments and co-signer requests, submission to underwriting, and the possible outcomes (loan approved and signed, loan denied, application rejected, appointment denied). The dataset contains 9,038 observed cases following the core sequence Request Appointment -> Set Appointment -> Hand In Credit Application -> Verify Borrowers Information -> Submit File to Underwriter, with multiple branching and rework variants.
+
+Key stakeholders and roles (inferred from activity names)
+- Borrower / Applicant: initiates the process by requesting an appointment and hands in the credit application.
+- Front-office / Appointment Scheduler (branch staff): sets appointments and accepts or denies appointment requests.
+- Loan Officer / Credit Officer: receives the application, performs borrower verification, requests co-signers, and coordinates collateral visits.
+- Field Assessor / Valuer: makes visits to assess collateral (one or more visits may occur).
+- Underwriter: receives the submitted file and issues final decisions (loan denied, application rejected, or sign loan agreement).
+- Co-signer (external party): a third party whose signature is requested in some cases.
+
+Detailed step-by-step process flow (observed behavior)
+Start conditions and triggers
+1. Start: Borrower initiates a loan application by requesting an appointment (activity: Request Appointment). This is the explicit start event observed in the log.
+
+Main happy path (most common sequence)
+1. Request Appointment -> Set Appointment
+   - Observed frequency: 9,038 cases follow Request Appointment -> Set Appointment (DFG).
+   - Typical decision: appointment is accepted and scheduled. If accepted, the borrower is given an appointment slot.
+2. Set Appointment -> Hand In Credit Application
+   - Frequency: 9,038 cases. Borrower attends and hands in the credit application (paper or digital).
+3. Hand In Credit Application -> Verify Borrowers Information
+   - Frequency: 9,038 cases. The loan officer initiates verification of borrower identity, income, credit history, and documentation.
+4. Verify Borrowers Information -> Submit File to Underwriter OR alternative branches
+   - Submit to Underwriter frequency: 4,623 observed transitions; after submitting, the underwriter makes the final decision.
+   - From Submit File to Underwriter, two major outcomes observed: Loan Denied (4,787 transitions) or Sign Loan Agreement (2,295 transitions).
+
+Decision points with criteria and observed outcomes
+- Appointment denied vs scheduled
+  - Request Appointment -> Appointment Denied: observed 962 cases. Appointment denial ends the case early (sink). Reasons inferred from data: incomplete paperwork, ineligible candidate, or scheduling conflicts.
+- Verification outcomes
+  - Verify -> Application Rejected: 1,624 cases (immediate rejection). This ends the case.
+  - Verify -> Request Co-Signer On Loan: 1,233 transitions (loan officer determines borrower needs co-signer due to insufficient creditworthiness).
+  - Verify -> Make Visit to Assess Collateral: 1,226 transitions (loan officer orders field visit to verify collateral or when more evidence is needed).
+  - Verify -> skipped_examination: 332 cases (skipping the verification step unexpectedly; these then often proceed directly to Sign Loan Agreement). This is a policy deviation.
+- Co-signer and collateral interactions
+  - Request Co-Signer -> Submit File to Underwriter: 1,039 transitions (co-signer requested and file later sent), and Request Co-Signer -> Make Visit to Assess Collateral: 733 transitions.
+  - Make Visit -> Submit File to Underwriter: 1,420 transitions.
+  - Make Visit has self-loop (Make Visit -> Make Visit) 563 times: repeated visits to the collateral (rework).
+  - Make Visit -> Request Co-Signer also occurs (539 cases), indicating intertwined loops between valuation and credit decisions.
+- Underwriting decision
+  - Submit File -> Loan Denied: 4,787 transitions (high denial rate observed at the underwriting stage).
+  - Submit File -> Sign Loan Agreement: 2,295 transitions (approved cases proceed to signing).
+
+Parallel activities, synchronization points and invisible transitions (from Petri net)
+- After verification there is a model element (tauSplit) that spawns parallel branches: one leading to immediate denial or skip, another to further checks (e.g., skipped_examination path and paths to request co-signer and collateral assessment). The discovered model contains invisible (tau) splits and joins which explain flexible routing: multiple optional activities can be executed or skipped, and later synchronized before submission.
+- Several skip transitions (skip_*) indicate optional branches that were bypassed in many traces; e.g., skip_13 leads directly toward the signing/join path without performing 'Sign Loan Agreement' prerequisites in some variants.
+
+Exception handling, rework loops and escalation procedures (observed)
+- Repeated collateral visits: Make Visit appears many times in long variants; cases show repeated visits (up to many repetitions in rare variants). This is rework typically triggered by insufficient or changing collateral information.
+- Multiple co-signer requests and back-and-forth: Request Co-Signer often leads to further visits and re-submissions to underwriter; some variants chain Request Co-Signer -> Make Visit -> Request Co-Signer -> ... before final submission.
+- Skipped examinations: In 332 cases, verification was skipped and cases moved directly to signing, representing noncompliant bypass of verification controls.
+- Early terminations: Appointment Denied and Application Rejected directly end cases (sink).
+
+End conditions and outcomes
+- Signed loan agreement: successful outcome for approved cases (observed 2,295 direct Submit->Sign transitions plus additional sign events from skipped_examination path with 332 occurrences).
+- Loan Denied: common negative outcome (4,787 Submit->Loan Denied transitions plus other denial paths like Loan Denied earlier in variants).
+- Application Rejected or Appointment Denied: early termination without underwriting.
+
+Process metrics and performance characteristics (observed from DFG and variants)
+- Total observed cases: ~9,038 (based on high-frequency DFG links).
+- Observed lead times (performance column as provided in DFG): measured values appear large (e.g., Request Appointment -> Set Appointment avg 82,658; Set Appointment -> Hand In avg 82,658; Verify -> Submit avg 48,326). The units come from the event log extraction (not shown); they indicate substantial average delays at scheduling and handover steps.
+- Bottlenecks:
+  - Scheduling and initial hand-in show large lead times.
+  - Underwriting exhibits a high rejection rate and is a throughput bottleneck (Submit -> Loan Denied high frequency).
+  - Collateral assessment is a rework hotspot (many repeated visits), increasing overall cycle time.
+
+Key challenges and pain points (AS-IS)
+- High cycle times and long delays between Request Appointment and subsequent steps.
+- High level of rework: repeated collateral visits and repeated co-signer cycles create long, unstable cases.
+- Skipped verification in a non-negligible share of cases (policy deviation leads to risk exposure).
+- Underwriter denial rate is high, suggesting upstream quality of submissions is low—many files lack completeness or meet underwriting rules.
+- Many optional/skip branches and invisible transitions cause unpredictability in case routing and difficulty enforcing SLAs.
+- Lack of explicit business rules visible in the log: the process behaves variably (co-signer requested before or after visits) leading to inconsistent customer experience.
+
+Summary of AS-IS observations
+- The process is fundamentally linear in the majority of cases (request -> appointment -> hand-in -> verify -> submit), but a substantial portion of cases branch into co-signer requests and collateral visits, often with multiple iterations.
+- The process shows both compliance issues (skipped verification) and inefficiency (repeated field visits, long wait times, and a high rejection ratio at underwriting).
+- Any future improvement program should focus on reducing rework, enforcing verification controls, improving data quality before submission, and reducing waiting times at scheduling and underwriting.
+

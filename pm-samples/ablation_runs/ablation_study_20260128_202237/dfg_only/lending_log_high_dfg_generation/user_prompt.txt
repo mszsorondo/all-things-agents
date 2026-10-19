@@ -1,0 +1,69 @@
+
+============================================================
+REPRESENTATION 1: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Set Appointment -> Hand In Credit Appliaction ( frequency = 9038  performance = 82658.872 )
+Request Appointment -> Set Appointment ( frequency = 9038  performance = 82658.194 )
+Hand In Credit Appliaction -> Verify Borrowers Information ( frequency = 9038  performance = 42027.519 )
+Submit File to Underwriter -> Loan Denied ( frequency = 4787  performance = 82666.413 )
+Verify Borrowers Information -> Submit File to Underwriter ( frequency = 4623  performance = 48326.675 )
+Submit File to Underwriter -> Sign Loan Agreement ( frequency = 2295  performance = 80724.983 )
+Verify Borrowers Information -> Application Rejected ( frequency = 1624  performance = 32266.345 )
+Make Visit to Assess Colatteral -> Submit File to Underwriter ( frequency = 1420  performance = 33926.961 )
+Verify Borrowers Information -> Request Co-Signer On Loan ( frequency = 1233  performance = 35838.067 )
+Verify Borrowers Information -> Make Visit to Assess Colatteral ( frequency = 1226  performance = 35269.232 )
+Request Co-Signer On Loan -> Submit File to Underwriter ( frequency = 1039  performance = 37792.042 )
+Request Appointment -> Appointment Denied ( frequency = 962  performance = 86227.410 )
+Request Co-Signer On Loan -> Make Visit to Assess Colatteral ( frequency = 733  performance = 4966.044 )
+Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral ( frequency = 563  performance = 22399.107 )
+Make Visit to Assess Colatteral -> Request Co-Signer On Loan ( frequency = 539  performance = 0.000 )
+skipped_examination -> Sign Loan Agreement ( frequency = 332  performance = 0.000 )
+Verify Borrowers Information -> skipped_examination ( frequency = 332  performance = 50001.380 )
+
+
+

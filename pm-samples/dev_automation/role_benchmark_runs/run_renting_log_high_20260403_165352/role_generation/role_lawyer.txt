@@ -1,0 +1,43 @@
+AS-IS Process Model — Lawyer
+============================================================
+
+AS-IS Process Model — Lawyer
+
+Section 1: Role Overview (purpose, responsibilities)
+The Lawyer role performs the Check Paperwork activity observed in the log. Lawyers review and validate the paperwork that applicants hand in and then hand the checked information back to the Real Estate Agent for screening and decision-making. There are multiple lawyer resources (Lawyer 1..3) that behave consistently and are grouped here.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Check Paperwork: review and validate applicant documents, perform legal/contractual checks, and record the result (pass/fail). This is the primary visible activity for the Lawyer role in the dataset.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation triggers
+- Hand In The Paperwork: Lawyers are activated after agents or applicants hand in paperwork. The observed direct succession Hand In The Paperwork -> Check Paperwork is frequent.
+
+Typical sequences and decision points (all observed variants)
+- Paperwork review path (high-frequency): Hand In The Paperwork -> Check Paperwork -> (then control returns to agent for Screen Prospective Tenant). Check Paperwork generally precedes screening.
+- Optionality: Hand In The Paperwork can be skipped in traces where the prospect is rejected immediately after viewing (View The Property -> Reject Prospective Tenant) — in those cases lawyers are not involved.
+
+Decision criteria handled by the role
+- Determine whether submitted paperwork satisfies legal/contractual requirements. Although the log does not provide explicit pass/fail labels, the common observed successor to Check Paperwork is Screen Prospective Tenant — indicating that paperwork check completion enables screening. Negative findings would likely cause a stop or return to agent, sometimes leading to rejection.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Lawyer
+- Real Estate Agents: agents hand paperwork to lawyers for checking (observed RA -> Lawyer handovers with weights ~0.01).
+- Real Estate Agent 2 appears as a common sender to lawyers in the handover network.
+
+Who Lawyer hands work TO
+- Real Estate Agents: lawyers hand back the results of the paperwork check to the agent (Lawyer -> Real Estate Agent edges observed), enabling the agent to proceed with Screen Prospective Tenant or make a rejection decision.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- The primary and most frequent path: Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant. This sequence is observed in many traces and is part of the main documented variants.
+- Exceptions: When a prospect is rejected at viewing (no paperwork handed in), lawyers are not invoked.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Check Paperwork is a high-frequency precondition for screening (Check Paperwork -> Screen Prospective Tenant is a strong edge). If lawyers are a bottleneck (turnaround time not provided here but likely reflected in case durations), they can delay the screening and decision process.
+- Because lawyers are a specialized role, handovers to/from lawyers are required but limited in variety; ensuring timely processing by lawyers would speed the central path.
+
+Practical notes for someone assuming this role
+- Expect a steady inflow of paperwork handed in by agents after viewings; your timely checks directly enable the screening and acceptance decisions.
+- Coordinate clearly with agents to avoid repeated handovers or unclear paperwork that could cause rework.
+
+(End of Lawyer role description)

@@ -1,0 +1,913 @@
+{
+  "_meta": {
+    "benchmark_start_time": "2025-12-21T17:30:38.082260",
+    "benchmark_end_time": null,
+    "run_folder": "benchmark_runs/run_20251221_173038",
+    "status": "running"
+  },
+  "hiring_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "experiment_info": {
+      "mining_configuration": {
+        "source": "generated",
+        "precomputed_model_path": null,
+        "mining_config": {
+          "representations": [
+            "petri_net",
+            "dfg",
+            "abstract_variants"
+          ],
+          "model_name": "openai:gpt-5-mini",
+          "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+          "output_dir": "runs",
+          "enable_logging": true,
+          "save_experiment_config": true,
+          "stream_mode": "updates",
+          "use_cache": true
+        },
+        "run_folder": "runs/run_hiring_log_high_20251221_173039",
+        "generation_timestamp": "2025-12-21T17:32:54.375590"
+      },
+      "trace_classification": {
+        "validator_model": "gpt-5-nano",
+        "system_prompt_path": "benchmark_runs/run_20251221_173038/hiring_log_high_system_prompt.txt"
+      },
+      "trace_generation": {
+        "cache_key": "0e3e58bdc82b86137fd0e279192cf46f",
+        "k_valid": 100,
+        "k_invalid": 100,
+        "perturbations": [
+          "random_swap_events"
+        ],
+        "traces_generated_at": "loaded_from_cache"
+      }
+    },
+    "textual_model_path": "benchmark_runs/run_20251221_173038/hiring_log_high_textual_model.txt",
+    "llm": {
+      "precision": 0.8130081300813008,
+      "recall": 1.0,
+      "f1": 0.8968609865470852,
+      "TP": 100,
+      "TN": 77,
+      "FP": 23,
+      "FN": 0,
+      "total_compute_time_seconds": 1921.071393251419,
+      "total_tokens": 886424,
+      "prompt_tokens": 684992,
+      "completion_tokens": 201432
+    },
+    "misclassified_traces": {
+      "folder": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high",
+      "false_negatives": [],
+      "false_positives": [
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0006.pkl",
+          "index": 6,
+          "case_id": "5879",
+          "activities": [
+            "Hand In Job Application",
+            "Application Rejected",
+            "Telephonic Screening"
+          ],
+          "num_events": 3,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0009.pkl",
+          "index": 9,
+          "case_id": "5303",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "Behavioral Interview",
+            "ML Interview",
+            "Frontend Interview",
+            "Behavioral Interview",
+            "Make Job Offer",
+            "Make Job Offer"
+          ],
+          "num_events": 11,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0013.pkl",
+          "index": 13,
+          "case_id": "3217",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "Frontend Interview",
+            "Behavioral Interview",
+            "ML Interview",
+            "Application Rejected",
+            "Make Job Offer"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0014.pkl",
+          "index": 14,
+          "case_id": "2013",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Application Rejected",
+            "Background Check"
+          ],
+          "num_events": 5,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0016.pkl",
+          "index": 16,
+          "case_id": "5817",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "ML Interview",
+            "Extensive Background Check",
+            "Coding Interview",
+            "Frontend Interview",
+            "Screening Interview",
+            "Application Rejected",
+            "Application Rejected"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0018.pkl",
+          "index": 18,
+          "case_id": "1147",
+          "activities": [
+            "Hand In Job Application",
+            "Application Rejected",
+            "Screening Interview",
+            "Background Check",
+            "Telephonic Screening"
+          ],
+          "num_events": 5,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0019.pkl",
+          "index": 19,
+          "case_id": "5303",
+          "activities": [
+            "Hand In Job Application",
+            "ML Interview",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "Frontend Interview",
+            "Telephonic Screening",
+            "Behavioral Interview",
+            "Behavioral Interview",
+            "Make Job Offer",
+            "Make Job Offer"
+          ],
+          "num_events": 11,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0024.pkl",
+          "index": 24,
+          "case_id": "8653",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Application Rejected"
+          ],
+          "num_events": 5,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0036.pkl",
+          "index": 36,
+          "case_id": "3704",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Coding Interview",
+            "Frontend Interview",
+            "Application Rejected"
+          ],
+          "num_events": 7,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0040.pkl",
+          "index": 40,
+          "case_id": "493",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "ML Interview",
+            "Frontend Interview",
+            "Backend Interview",
+            "Application Rejected",
+            "Application Rejected",
+            "Behavioral Interview",
+            "Make Job Offer"
+          ],
+          "num_events": 12,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0045.pkl",
+          "index": 45,
+          "case_id": "5096",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Frontend Interview",
+            "Coding Interview",
+            "ML Interview",
+            "Extensive Background Check",
+            "Application Rejected",
+            "Application Rejected"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0047.pkl",
+          "index": 47,
+          "case_id": "1976",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Application Rejected",
+            "Coding Interview"
+          ],
+          "num_events": 6,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0052.pkl",
+          "index": 52,
+          "case_id": "4630",
+          "activities": [
+            "Application Rejected",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Hand In Job Application"
+          ],
+          "num_events": 5,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0053.pkl",
+          "index": 53,
+          "case_id": "1428",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "Frontend Interview",
+            "ML Interview",
+            "Application Rejected",
+            "Behavioral Interview",
+            "Make Job Offer"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0056.pkl",
+          "index": 56,
+          "case_id": "8794",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "ML Interview",
+            "Frontend Interview",
+            "Application Rejected",
+            "Behavioral Interview",
+            "Make Job Offer"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0062.pkl",
+          "index": 62,
+          "case_id": "326",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "Frontend Interview",
+            "Behavioral Interview",
+            "ML Interview",
+            "Application Rejected",
+            "Make Job Offer"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0069.pkl",
+          "index": 69,
+          "case_id": "6974",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Coding Interview",
+            "Frontend Interview",
+            "ML Interview",
+            "Behavioral Interview",
+            "Application Rejected",
+            "Make Job Offer"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0074.pkl",
+          "index": 74,
+          "case_id": "5401",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Application Rejected",
+            "Screening Interview",
+            "Background Check"
+          ],
+          "num_events": 5,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0083.pkl",
+          "index": 83,
+          "case_id": "8309",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Extensive Background Check",
+            "Frontend Interview",
+            "ML Interview",
+            "Coding Interview",
+            "Application Rejected",
+            "Behavioral Interview",
+            "Make Job Offer"
+          ],
+          "num_events": 11,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0084.pkl",
+          "index": 84,
+          "case_id": "3704",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Coding Interview",
+            "Background Check",
+            "Frontend Interview",
+            "Application Rejected"
+          ],
+          "num_events": 7,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0087.pkl",
+          "index": 87,
+          "case_id": "1428",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Coding Interview",
+            "Application Rejected",
+            "ML Interview",
+            "Frontend Interview",
+            "Behavioral Interview",
+            "Make Job Offer"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0090.pkl",
+          "index": 90,
+          "case_id": "6340",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Background Check",
+            "Screening Interview",
+            "Extensive Background Check",
+            "Coding Interview",
+            "Backend Interview",
+            "ML Interview",
+            "Frontend Interview",
+            "Application Rejected",
+            "Behavioral Interview",
+            "Behavioral Interview",
+            "Make Job Offer",
+            "Make Job Offer"
+          ],
+          "num_events": 14,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hiring_log_high/fp_0097.pkl",
+          "index": 97,
+          "case_id": "8319",
+          "activities": [
+            "Hand In Job Application",
+            "Telephonic Screening",
+            "Screening Interview",
+            "Background Check",
+            "Coding Interview",
+            "Frontend Interview",
+            "Backend Interview",
+            "Behavioral Interview",
+            "Behavioral Interview",
+            "Make Job Offer",
+            "Make Job Offer"
+          ],
+          "num_events": 11,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        }
+      ]
+    },
+    "random_baseline": {
+      "precision": 0.44086021505376344,
+      "recall": 0.41,
+      "f1": 0.4248704663212435,
+      "TP": 41,
+      "TN": 48,
+      "FP": 52,
+      "FN": 59,
+      "total_compute_time_seconds": 0.0,
+      "total_tokens": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    }
+  },
+  "hospital_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/hospital/hospital_log_high.xes",
+    "experiment_info": {
+      "mining_configuration": {
+        "source": "generated",
+        "precomputed_model_path": null,
+        "mining_config": {
+          "representations": [
+            "petri_net",
+            "dfg",
+            "abstract_variants"
+          ],
+          "model_name": "openai:gpt-5-mini",
+          "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+          "output_dir": "runs",
+          "enable_logging": true,
+          "save_experiment_config": true,
+          "stream_mode": "updates",
+          "use_cache": true
+        },
+        "run_folder": "runs/run_hospital_log_high_20251221_181223",
+        "generation_timestamp": "2025-12-21T18:14:57.435595"
+      },
+      "trace_classification": {
+        "validator_model": "gpt-5-nano",
+        "system_prompt_path": "benchmark_runs/run_20251221_173038/hospital_log_high_system_prompt.txt"
+      },
+      "trace_generation": {
+        "cache_key": "6eddfc7a27510559901051d68a881cb5",
+        "k_valid": 100,
+        "k_invalid": 100,
+        "perturbations": [
+          "random_swap_events"
+        ],
+        "traces_generated_at": "loaded_from_cache"
+      }
+    },
+    "textual_model_path": "benchmark_runs/run_20251221_173038/hospital_log_high_textual_model.txt",
+    "llm": {
+      "precision": 0.9615384615384616,
+      "recall": 1.0,
+      "f1": 0.9803921568627451,
+      "TP": 100,
+      "TN": 96,
+      "FP": 4,
+      "FN": 0,
+      "total_compute_time_seconds": 1413.7378220558167,
+      "total_tokens": 730475,
+      "prompt_tokens": 592913,
+      "completion_tokens": 137562
+    },
+    "misclassified_traces": {
+      "folder": "benchmark_runs/run_20251221_173038/misclassified/hospital_log_high",
+      "false_negatives": [],
+      "false_positives": [
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hospital_log_high/fp_0003.pkl",
+          "index": 3,
+          "case_id": "8315",
+          "activities": [
+            "Register at FD",
+            "Examination",
+            "Diagnosis",
+            "Treatment",
+            "Treatment unsuccessful",
+            "Diagnosis",
+            "Treatment",
+            "Treatment successful",
+            "Discharge"
+          ],
+          "num_events": 9,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hospital_log_high/fp_0076.pkl",
+          "index": 76,
+          "case_id": "215",
+          "activities": [
+            "Register at ER",
+            "Thorough Examination",
+            "Diagnosis",
+            "Treatment successful",
+            "Treatment",
+            "Discharge"
+          ],
+          "num_events": 6,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hospital_log_high/fp_0090.pkl",
+          "index": 90,
+          "case_id": "9478",
+          "activities": [
+            "Register at ER",
+            "Expert Examination",
+            "Thorough Examination",
+            "Treatment",
+            "Diagnosis",
+            "Treatment successful",
+            "Discharge"
+          ],
+          "num_events": 7,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/hospital_log_high/fp_0096.pkl",
+          "index": 96,
+          "case_id": "9481",
+          "activities": [
+            "Register at ER",
+            "Expert Examination",
+            "Thorough Examination",
+            "Treatment",
+            "Diagnosis",
+            "Treatment unsuccessful",
+            "Diagnosis",
+            "Treatment",
+            "Treatment successful",
+            "Discharge"
+          ],
+          "num_events": 10,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        }
+      ]
+    },
+    "random_baseline": {
+      "precision": 0.5,
+      "recall": 0.45,
+      "f1": 0.4736842105263158,
+      "TP": 45,
+      "TN": 55,
+      "FP": 45,
+      "FN": 55,
+      "total_compute_time_seconds": 0.0,
+      "total_tokens": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    }
+  },
+  "lending_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/lending/lending_log_high.xes",
+    "experiment_info": {
+      "mining_configuration": {
+        "source": "generated",
+        "precomputed_model_path": null,
+        "mining_config": {
+          "representations": [
+            "petri_net",
+            "dfg",
+            "abstract_variants"
+          ],
+          "model_name": "openai:gpt-5-mini",
+          "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+          "output_dir": "runs",
+          "enable_logging": true,
+          "save_experiment_config": true,
+          "stream_mode": "updates",
+          "use_cache": true
+        },
+        "run_folder": "runs/run_lending_log_high_20251221_184740",
+        "generation_timestamp": "2025-12-21T18:50:35.181725"
+      },
+      "trace_classification": {
+        "validator_model": "gpt-5-nano",
+        "system_prompt_path": "benchmark_runs/run_20251221_173038/lending_log_high_system_prompt.txt"
+      },
+      "trace_generation": {
+        "cache_key": "aad8ef1a5efa4bf6fb5ef5703bae3781",
+        "k_valid": 100,
+        "k_invalid": 100,
+        "perturbations": [
+          "random_swap_events"
+        ],
+        "traces_generated_at": "loaded_from_cache"
+      }
+    },
+    "textual_model_path": "benchmark_runs/run_20251221_173038/lending_log_high_textual_model.txt",
+    "llm": {
+      "precision": 0.9345794392523364,
+      "recall": 1.0,
+      "f1": 0.966183574879227,
+      "TP": 100,
+      "TN": 93,
+      "FP": 7,
+      "FN": 0,
+      "total_compute_time_seconds": 1150.8265550136566,
+      "total_tokens": 710221,
+      "prompt_tokens": 588594,
+      "completion_tokens": 121627
+    },
+    "misclassified_traces": {
+      "folder": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high",
+      "false_negatives": [],
+      "false_positives": [
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0022.pkl",
+          "index": 22,
+          "case_id": "8495",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Verify Borrowers Information",
+            "Hand In Credit Appliaction",
+            "Make Visit to Assess Colatteral",
+            "Request Co-Signer On Loan",
+            "Submit File to Underwriter",
+            "Loan Denied"
+          ],
+          "num_events": 8,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0033.pkl",
+          "index": 33,
+          "case_id": "9840",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Verify Borrowers Information",
+            "Hand In Credit Appliaction",
+            "Submit File to Underwriter",
+            "Sign Loan Agreement"
+          ],
+          "num_events": 6,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0040.pkl",
+          "index": 40,
+          "case_id": "1874",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Hand In Credit Appliaction",
+            "Verify Borrowers Information",
+            "Submit File to Underwriter",
+            "Request Co-Signer On Loan",
+            "Make Visit to Assess Colatteral",
+            "Loan Denied"
+          ],
+          "num_events": 8,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0049.pkl",
+          "index": 49,
+          "case_id": "2896",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Verify Borrowers Information",
+            "Hand In Credit Appliaction",
+            "Submit File to Underwriter",
+            "Loan Denied"
+          ],
+          "num_events": 6,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0056.pkl",
+          "index": 56,
+          "case_id": "2350",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Hand In Credit Appliaction",
+            "Make Visit to Assess Colatteral",
+            "Request Co-Signer On Loan",
+            "Verify Borrowers Information",
+            "Submit File to Underwriter",
+            "Loan Denied"
+          ],
+          "num_events": 8,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0080.pkl",
+          "index": 80,
+          "case_id": "623",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Verify Borrowers Information",
+            "Hand In Credit Appliaction",
+            "Submit File to Underwriter",
+            "Loan Denied"
+          ],
+          "num_events": 6,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        },
+        {
+          "file": "benchmark_runs/run_20251221_173038/misclassified/lending_log_high/fp_0096.pkl",
+          "index": 96,
+          "case_id": "6761",
+          "activities": [
+            "Request Appointment",
+            "Set Appointment",
+            "Verify Borrowers Information",
+            "Hand In Credit Appliaction",
+            "Submit File to Underwriter",
+            "Sign Loan Agreement"
+          ],
+          "num_events": 6,
+          "expected": "INVALID",
+          "predicted": "VALID"
+        }
+      ]
+    },
+    "random_baseline": {
+      "precision": 0.4777777777777778,
+      "recall": 0.43,
+      "f1": 0.45263157894736844,
+      "TP": 43,
+      "TN": 53,
+      "FP": 47,
+      "FN": 57,
+      "total_compute_time_seconds": 0.0,
+      "total_tokens": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    }
+  },
+  "renting_log_high": {
+    "status": "in_progress",
+    "xes_path": "benchmark/renting/renting_log_high.xes",
+    "experiment_info": {
+      "mining_configuration": {
+        "source": "to_be_generated",
+        "precomputed_model_path": null,
+        "mining_config": {
+          "representations": [
+            "petri_net",
+            "dfg",
+            "abstract_variants"
+          ],
+          "model_name": "openai:gpt-5-mini",
+          "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+          "output_dir": "runs",
+          "enable_logging": true,
+          "save_experiment_config": true,
+          "stream_mode": "updates",
+          "use_cache": true
+        },
+        "run_folder": null,
+        "generation_timestamp": null
+      },
+      "trace_classification": {
+        "validator_model": "gpt-5-nano",
+        "system_prompt_path": "benchmark_runs/run_20251221_173038/renting_log_high_system_prompt.txt"
+      },
+      "trace_generation": {
+        "cache_key": "d5b76a953e5d6e9749f4818a7e541d6d",
+        "k_valid": 100,
+        "k_invalid": 100,
+        "perturbations": [
+          "random_swap_events"
+        ],
+        "traces_generated_at": "loaded_from_cache"
+      }
+    },
+    "textual_model_path": "benchmark_runs/run_20251221_173038/renting_log_high_textual_model.txt",
+    "llm": {
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "TP": null,
+      "TN": null,
+      "FP": null,
+      "FN": null,
+      "total_compute_time_seconds": null,
+      "total_tokens": null,
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    "misclassified_traces": {
+      "folder": "benchmark_runs/run_20251221_173038/misclassified/renting_log_high",
+      "false_negatives": [],
+      "false_positives": []
+    },
+    "random_baseline": {
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "TP": null,
+      "TN": null,
+      "FP": null,
+      "FN": null,
+      "total_compute_time_seconds": null,
+      "total_tokens": null,
+      "prompt_tokens": null,
+      "completion_tokens": null
+    }
+  }
+}

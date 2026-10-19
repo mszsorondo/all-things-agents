@@ -1,0 +1,187 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+This AS-IS process model represents a hospital patient treatment workflow discovered through process mining. The process handles patient registration, examination, diagnosis, treatment, and discharge, with multiple entry points and complex treatment pathways including rework loops for unsuccessful treatments.
+
+## Key Stakeholders and Roles Involved
+* **Patients** - Individuals seeking medical care
+* **Emergency Room (ER) Staff** - Handle emergency patient registrations
+* **Family Doctor (FD) Staff** - Handle non-emergency patient registrations
+* **Medical Examiners** - Conduct initial examinations
+* **Expert Medical Specialists** - Perform specialized examinations
+* **Diagnosticians** - Make medical diagnoses
+* **Treatment Providers** - Administer medical treatments
+* **Discharge Coordinators** - Manage patient discharge
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+The process begins when a patient arrives at either:
+1. **Emergency Room (ER)** - For urgent/emergency cases
+2. **Family Doctor (FD)** - For non-emergency/routine cases
+
+### Process Activities/Tasks in Sequence
+
+#### Phase 1: Registration
+1. **Register at ER** (Emergency Room registration)
+   * Trigger: Patient arrives at emergency room
+   * Frequency: 4,692 cases (combined with various examination paths)
+   * Average performance time: ~40,000 time units
+
+2. **Register at FD** (Family Doctor registration)
+   * Trigger: Patient arrives at family doctor/clinic
+   * Frequency: 4,584 cases (combined with various examination paths)
+   * Average performance time: ~40,000 time units
+
+#### Phase 2: Examination Pathways
+After registration, patients follow one of several examination pathways:
+
+**Path A: Expert Examination Route**
+- **Expert Examination** → **Thorough Examination** → **Diagnosis**
+- **Expert Examination** → **Diagnosis** (skipping thorough examination)
+- Frequency: Most common pathway (6,525 cases via various combinations)
+
+**Path B: Standard Examination Route**
+- **Examination** → **Thorough Examination** → **Diagnosis**
+- **Examination** → **Diagnosis** (skipping thorough examination)
+- Frequency: 3,531 cases via various combinations
+
+**Path C: Direct Diagnosis Route**
+- **Register** → **Diagnosis** (skipping both examination types)
+- Frequency: 320 cases
+- Average performance time: ~80,000 time units
+
+**Path D: Direct Thorough Examination Route**
+- **Register** → **Thorough Examination** → **Diagnosis**
+- Frequency: 317 cases
+- Average performance time: ~80,000 time units
+
+#### Phase 3: Diagnosis and Treatment
+3. **Diagnosis**
+   * Medical condition assessment and determination
+   * Frequency: 11,746 cases
+   * Average performance time: ~60,000 time units
+   * Always precedes treatment
+
+4. **Treatment**
+   * Medical intervention based on diagnosis
+   * Frequency: 11,746 cases
+   * Average performance time: ~60,000 time units
+
+#### Phase 4: Treatment Outcomes and Discharge
+5. **Treatment Successful**
+   * Positive treatment outcome
+   * Frequency: 9,005 cases
+   * Average performance time: ~60,000 time units
+   * Leads to discharge
+
+6. **Treatment Unsuccessful**
+   * Negative treatment outcome requiring rework
+   * Frequency: 1,746 cases
+   * Average performance time: ~60,000 time units
+   * Triggers re-diagnosis and re-treatment loop
+
+7. **Discharge**
+   * Patient release from care
+   * Frequency: 10,000 cases (9,005 successful + 995 direct discharges)
+   * Average performance time: Varies by path
+
+### Decision Points and Possible Outcomes
+
+#### Decision Point 1: Registration Type
+* **Criteria**: Patient condition and arrival point
+* **Outcomes**:
+  - Emergency Room registration (49.5%)
+  - Family Doctor registration (50.5%)
+
+#### Decision Point 2: Examination Pathway Selection
+* **Criteria**: Patient condition, resource availability, triage assessment
+* **Outcomes**:
+  - Expert Examination route (68.9%)
+  - Standard Examination route (37.3%)
+  - Direct Diagnosis (3.4%)
+  - Direct Thorough Examination (3.3%)
+
+#### Decision Point 3: Treatment Outcome
+* **Criteria**: Treatment effectiveness and patient response
+* **Outcomes**:
+  - Treatment Successful (76.6%)
+  - Treatment Unsuccessful (14.9%)
+  - Direct Discharge (8.5% - treatment bypassed)
+
+### Parallel Activities and Synchronization Points
+* No true parallel activities observed in the mined model
+* Sequential flow with optional skipping of examination steps
+* Synchronization occurs at diagnosis phase where all examination paths converge
+
+### Exception Handling and Error Paths
+* **Treatment Unsuccessful** path triggers rework loop:
+  - Treatment Unsuccessful → Diagnosis → Treatment (repeated cycle)
+  - Multiple rework iterations observed (up to 4 cycles in some variants)
+  - 14.9% of cases experience at least one unsuccessful treatment
+
+### Rework Loops and Escalation Procedures
+**Primary Rework Loop**: Treatment Unsuccessful → Diagnosis → Treatment
+- Frequency: 1,746 initial unsuccessful treatments
+- Multiple iterations observed in complex variants
+- Maximum observed iterations: 4 treatment cycles
+- Escalation: No formal escalation procedure observed in mined data
+
+### End Conditions and Outcomes
+**Successful Discharge**: Patient completes treatment successfully and is discharged
+- Frequency: 9,005 cases (76.6% of treatments)
+- Average performance: 240,000-320,000 time units depending on path
+
+**Direct Discharge**: Patient discharged without successful treatment outcome
+- Frequency: 995 cases (8.5% of treatments)
+- Average performance: 100,002 time units
+
+**Complex Discharge**: Multiple treatment cycles before successful discharge
+- Frequency: Various frequencies for multi-cycle paths
+- Performance: 400,000-800,000 time units depending on cycles
+
+## Process Metrics and Performance Characteristics
+
+### Frequency Distribution
+* Total cases analyzed: ~11,746
+* Most common variant: Expert Examination → Thorough Examination → Diagnosis → Treatment → Treatment Successful → Discharge (3,035 cases)
+* Direct discharge variants: 995 cases
+
+### Performance Metrics
+* **Average process duration**: 260,000-320,000 time units for standard successful paths
+* **Rework impact**: Adds 120,000-240,000 time units per unsuccessful cycle
+* **Examination time**: ~60,000 time units per examination step
+* **Treatment time**: ~60,000 time units per treatment cycle
+
+### Efficiency Indicators
+* **First-time treatment success rate**: 76.6%
+* **Rework rate**: 14.9% require at least one retreatment
+* **Examination skipping rate**: 6.7% skip some examination steps
+* **Direct discharge rate**: 8.5% bypass successful treatment outcome
+
+## Key Challenges and Pain Points
+
+### Process Variability Issues
+1. **Inconsistent Examination Pathways**: Multiple examination routes with no clear criteria for selection
+2. **Direct Diagnosis Bypass**: 3.4% of cases skip examinations entirely, potentially compromising diagnostic accuracy
+3. **Resource Inefficiency**: Expert examinations used in 68.9% of cases, possibly overutilizing specialist resources
+
+### Quality and Compliance Concerns
+1. **Treatment Success Rate**: Only 76.6% first-time success rate indicates potential treatment protocol issues
+2. **Rework Complexity**: Up to 4 treatment cycles observed, suggesting inadequate initial treatment planning
+3. **Direct Discharges**: 8.5% of patients discharged without documented successful treatment outcome
+
+### Performance Bottlenecks
+1. **Examination Delays**: Average 60,000 time units per examination step
+2. **Rework Loops**: Add significant time (120,000+ time units per cycle)
+3. **Registration Variations**: Different performance times for ER vs FD registrations
+
+### Data Quality Issues
+1. **Missing Role Assignments**: No clear responsibility assignments in mined data
+2. **Decision Criteria Opaqueness**: No documented criteria for pathway selections
+3. **Outcome Documentation**: Direct discharges lack clear success/failure documentation
+
+### Resource Utilization Problems
+1. **Expert Resource Overuse**: High utilization of expert examinations for potentially routine cases
+2. **Treatment Protocol Variability**: Inconsistent treatment approaches leading to rework
+3. **Process Standardization Gap**: Multiple variants indicate lack of standardized protocols

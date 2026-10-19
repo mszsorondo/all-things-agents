@@ -1,0 +1,202 @@
+write_AS_IS_comprehensive_textual_description(content:
+"AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage a patient’s visit from registration through clinical assessment, diagnosis, treatment, outcome determination, and discharge.
+- Scope covered by the provided model: Registration (two alternative points), optional examinations, diagnosis, treatment, potential rework if treatment fails, and final discharge.
+- Important note on model semantics: The discovered Petri net includes silent (invisible) transitions that permit skipping certain steps and allow discharge without explicitly logging a successful treatment in some cases.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source model. Activities are described generically as performed by administrative and clinical staff according to their labels (e.g., registration activities, examination activities, diagnosis, treatment, discharge).
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A patient presents for care.
+- Start: A single process instance begins at the source place in the workflow net.
+
+Activities and sequence (with decisions and loops)
+1) Registration (exclusive alternatives)
+   - Either:
+     a) Register at ER
+     or
+     b) Register at FD
+   - Only one of these occurs per case. Both lead to the same subsequent state.
+
+2) Initial examination selection (exclusive choice, including the possibility of skipping)
+   - From the common post-registration state, exactly one of the following happens:
+     a) Examination (a general examination)
+     b) Expert Examination (a specialized examination)
+     c) Skip examination entirely (silent transition)
+   - All three options lead to the same subsequent state.
+
+3) Thorough Examination (optional)
+   - Either:
+     a) Thorough Examination is performed
+     or
+     b) Thorough Examination is skipped (silent transition)
+   - Both options converge to the same subsequent state.
+
+4) Diagnosis
+   - A Diagnosis activity occurs, initiating the treatment cycle.
+
+5) Treatment and outcome classification (with rework loop)
+   - Treatment is performed.
+   - Post-treatment, two alternative paths are observed:
+     a) Treatment unsuccessful (visible event): the case returns to Diagnosis, creating a rework loop that can repeat multiple times (Diagnosis → Treatment → Unsuccessful → back to Diagnosis).
+     b) Proceed to a “success stage” without an explicit outcome marker (silent transition): the case advances toward completion without yet recording success.
+   - From the “success stage,” either:
+     i) Treatment successful (visible event) is recorded, then proceed to discharge,
+     or
+     ii) A silent transition moves directly to the pre-discharge state, enabling discharge without an explicit “Treatment successful” record.
+
+6) Discharge
+   - Discharge finalizes the case.
+
+Decision points with criteria and outcomes (as implied by the model)
+- Registration channel decision (exclusive): ER vs FD. Criteria are not specified in the source.
+- Initial examination decision (exclusive): General Examination vs Expert Examination vs Skip. Criteria not specified; skipping is allowed by the model.
+- Thorough Examination decision (exclusive): Perform vs Skip. Criteria not specified.
+- Post-treatment outcome decision: Unsuccessful vs “advance to completion.” The model allows either a visible “Treatment successful” event or a silent short-cut to discharge without logging success.
+
+Parallel activities and synchronization points
+- No parallel branches are present in the discovered model. All branches are exclusive choices that merge into a single-threaded sequence.
+
+Exception handling and error paths
+- Rework loop: When Treatment unsuccessful occurs, the process explicitly loops back to Diagnosis and may repeat indefinitely until the path no longer signals “unsuccessful.”
+- Silent bypasses: The model permits silent skipping of examinations and silent bypass of the “Treatment successful” record.
+- No explicit exception paths for other scenarios (e.g., transfer, patient leaving before seen) are modeled.
+
+Rework loops and escalation procedures
+- Rework loop: Diagnosis → Treatment → Treatment unsuccessful → Diagnosis.
+- No explicit escalation steps or caps on the number of loops are modeled.
+
+End conditions and outcomes
+- End: Discharge.
+- Possible terminal states before discharge:
+  - The case may reach discharge after an explicitly recorded “Treatment successful,” or
+  - The case may reach discharge via silent transitions, without an explicit “Treatment successful” event.
+
+Process metrics and performance characteristics (inferred/observable from structure)
+- Potential metrics (not provided in the source data):
+  - Share of cases using ER vs FD registration.
+  - Rate of cases that skip any initial examination.
+  - Rate of Thorough Examination usage.
+  - Average number of treatment cycles per case (loop iterations).
+  - Share of cases discharged without a logged “Treatment successful” event.
+  - End-to-end lead time from registration to discharge.
+
+Key challenges and pain points
+- Inconsistent diagnostic rigor:
+  - The model allows skipping the initial examination entirely, and Thorough Examination is optional. This may lead to under-assessment or variability.
+- Outcome recording gaps:
+  - A silent path allows discharge without explicitly recording “Treatment successful,” creating data integrity and governance risks.
+- Potential for prolonged rework:
+  - The loop between Diagnosis and Treatment can repeat indefinitely with no modeled escalation or cap, risking inefficiency and delays.
+- Ambiguous criteria for choices:
+  - The model lacks explicit criteria for choosing between Examination, Expert Examination, or skipping; and for choosing Thorough Examination vs skipping.
+- Duplication/overlap risk:
+  - Coexistence of Examination and Expert Examination as mutually exclusive options with no guiding rule may lead to inconsistent practices.
+")
+
+
+write_IDEAL_comprehensive_textual_description(content:
+"IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a governed, consistent path from registration through appropriate examinations, diagnosis, treatment, outcome recording, and discharge while removing silent shortcuts and unnecessary variability.
+- Objectives:
+  - Ensure every case receives at least one examination before diagnosis.
+  - Enforce explicit outcome recording after treatment.
+  - Retain the ability to re-treat when needed, but with structured rules to reduce unnecessary loops.
+  - Preserve the observed activities while eliminating silent, nontransparent paths.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source model. This improved flow assumes the same activity set (registration, examination variants, diagnosis, treatment, discharge) carried out by the appropriate administrative and clinical staff implied by the activity names.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A patient presents for care.
+- Start: A single process instance begins.
+
+Activities and sequence (with decisions, synchronization, and controls)
+1) Registration (exclusive, criteria-driven)
+   - Either:
+     a) Register at ER
+     or
+     b) Register at FD
+   - Selection is criteria-driven (e.g., urgency/severity), ensuring consistent routing, though detailed criteria are outside the provided model.
+
+2) Mandatory initial examination (exclusive choice, with no skip allowed)
+   - Exactly one of the following must occur:
+     a) Examination (general)
+     or
+     b) Expert Examination (specialized), when indicated by the registration context or case attributes.
+   - The prior “skip examination” option is removed. Every case undergoes at least one examination.
+
+3) Thorough Examination (conditional, governed)
+   - Decision: Perform Thorough Examination only when indicated by findings from the initial exam.
+   - If not indicated, it may be omitted; however, skipping is a governed decision rather than a silent default.
+
+4) Diagnosis
+   - Mandatory Diagnosis follows the examination stage(s).
+
+5) Treatment and explicit outcome recording (with controlled rework)
+   - Treatment is performed.
+   - Immediately after Treatment, the outcome must be explicitly classified:
+     a) Treatment successful → proceed to discharge preparation.
+     b) Treatment unsuccessful → loop back to Diagnosis for reassessment and possible adjustment of the care approach.
+   - The silent transitions that previously allowed bypassing the “Treatment successful” record are removed. Outcome recording is mandatory.
+
+6) Discharge
+   - Discharge occurs only after “Treatment successful” is explicitly recorded.
+
+Decision points with criteria and outcomes
+- Registration decision (exclusive): ER vs FD, using defined clinical/operational criteria (outside model scope).
+- Examination selection (exclusive): General Examination vs Expert Examination based on case need. No “skip” path.
+- Thorough Examination decision: Perform only if warranted by examination findings.
+- Post-treatment outcome decision: Must explicitly be either Treatment successful or Treatment unsuccessful; discharge cannot occur without the successful outcome recorded.
+
+Parallel activities and synchronization points
+- No parallelism is necessary in the improved model; sequence remains single-threaded for clarity and control.
+
+Exception handling and error paths
+- Rework loop remains available:
+  - Treatment unsuccessful → Diagnosis → Treatment, repeat as clinically necessary.
+- Governance improvement:
+  - While the model retains the loop structurally, organizational policy should define review checkpoints (e.g., require Expert Examination or Thorough Examination before repeating cycles) to prevent uncontrolled iteration. These checkpoints utilize existing activities and do not introduce new tasks.
+
+Rework loops and escalation procedures
+- Controlled rework:
+  - After any Treatment unsuccessful, re-enter Diagnosis.
+  - Before a subsequent Treatment cycle, consider performing Expert Examination and/or Thorough Examination if they were previously skipped or if new findings emerge.
+  - The aim is to reduce repeated cycles by ensuring deeper assessment before repeating treatment.
+
+End conditions and outcomes
+- End: Discharge is permitted only following an explicitly recorded Treatment successful event.
+- No silent bypasses to the end state.
+
+Process metrics and performance characteristics
+- Compliance-oriented metrics:
+  - 100% of cases have at least one examination before Diagnosis.
+  - 100% of cases have an explicit outcome recorded after Treatment (either successful or unsuccessful).
+- Effectiveness and efficiency metrics:
+  - Rate of Expert Examination and Thorough Examination usage when indicated.
+  - Average number of treatment cycles per case (target reduction over AS-IS).
+  - Lead time from registration to discharge (target reduction with fewer unnecessary loops).
+  - First-pass success rate (treatments leading to success without rework).
+- Data integrity metrics:
+  - Zero discharges without recorded “Treatment successful.”
+
+Improvements made (relative to AS-IS)
+- Removed silent, nontransparent paths:
+  - No skipping of all examinations prior to Diagnosis.
+  - No discharge without explicit “Treatment successful” record.
+- Standardized assessment:
+  - Enforced at least one initial examination; Thorough Examination becomes a governed decision based on findings.
+- Controlled rework:
+  - Retained the ability to re-treat but with governance that encourages Expert Examination/Thorough Examination when prior cycles fail.
+- Clear, auditable flow:
+  - Every critical decision is visible and justified; all outcomes are recorded, improving traceability, compliance, and care quality.
+")

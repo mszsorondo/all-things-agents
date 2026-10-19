@@ -1,0 +1,169 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The AS-IS process represents the current hiring and recruitment workflow for technical positions within the organization. This process handles candidate applications from initial submission through various screening, interviewing, and background check stages, culminating in either job offers or rejections. The process exhibits significant complexity with multiple parallel tracks, rework loops, and high variability in execution paths.
+
+## Key Stakeholders and Roles Involved
+* **Candidates**: Individuals submitting job applications
+* **Recruitment Team**: Responsible for initial screening and coordination
+* **Hiring Managers**: Conduct technical interviews and make hiring decisions
+- **Background Check Team**: Performs standard and extensive background verifications
+* **Technical Interviewers**: Specialists conducting domain-specific interviews (Frontend, Backend, ML, Coding)
+* **HR Department**: Manages offer letters and final hiring documentation
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+1. **Process Trigger**: A candidate submits a job application through the company's career portal or recruitment system
+2. **Initial Event**: "Hand In Job Application" - The candidate completes and submits their application materials
+
+### Process Activities/Tasks in Sequence
+
+#### Phase 1: Initial Screening
+1. **Telephonic Screening** (Optional): Some applications proceed directly to rejection without screening
+2. **Background Check** (Parallel/Alternative): May occur before or after screening interview
+3. **Screening Interview**: Initial assessment by recruitment team
+   - Note: Background Check and Screening Interview can occur in either order (3961 vs 3848 frequency)
+
+#### Phase 2: Technical Assessment
+4. **Coding Interview**: Technical coding assessment
+5. **Parallel Technical Interviews** (Choice of one or more):
+   - **ML Interview**: Machine learning specialization
+   - **Frontend Interview**: Frontend development skills
+   - **Backend Interview**: Backend development skills
+   - Note: These interviews can occur in various sequences and combinations
+
+#### Phase 3: Extended Verification
+6. **Extensive Background Check** (Conditional): Additional verification for certain candidates
+   - Can occur after Screening Interview or Background Check
+
+#### Phase 4: Final Assessment
+7. **Behavioral Interview**: Cultural fit and soft skills assessment
+   - Contains significant rework loops (1032 instances of Behavioral Interview -> Behavioral Interview)
+
+#### Phase 5: Decision and Offer
+8. **Make Job Offer**: Formal job offer extended to candidate
+   - Contains rework loops (861 instances of Make Job Offer -> Make Job Offer)
+9. **Application Rejected**: Candidate rejection at various stages
+
+### Decision Points with Criteria and Possible Outcomes
+
+#### Decision Point 1: After Telephonic Screening
+* **Criteria**: Candidate qualifications and initial fit
+* **Outcomes**:
+  - Proceed to Background Check (3961 instances)
+  - Proceed directly to Screening Interview (3848 instances)
+  - Immediate Rejection (990 instances)
+
+#### Decision Point 2: After Screening/Background Check
+* **Criteria**: Combined assessment results
+* **Outcomes**:
+  - Proceed to Coding Interview (1517 + 1413 instances)
+  - Proceed to Extensive Background Check (1055 + 1044 instances)
+  - Immediate Rejection (1391 + 1389 instances)
+
+#### Decision Point 3: After Coding Interview
+* **Criteria**: Technical performance and role requirements
+* **Outcomes**:
+  - Proceed to ML Interview (1304 instances)
+  - Proceed to Frontend Interview (1513 instances)
+  - Proceed to Backend Interview (701 instances)
+  - Immediate Rejection (386 instances)
+
+#### Decision Point 4: After Technical Interviews
+* **Criteria**: Technical competency and team fit
+* **Outcomes**:
+  - Proceed to Behavioral Interview (multiple paths)
+  - Immediate Rejection (various paths)
+  - Additional technical interviews (looping between Frontend/ML/Backend)
+
+#### Decision Point 5: After Behavioral Interview
+* **Criteria**: Cultural fit and final assessment
+* **Outcomes**:
+  - Make Job Offer (1850 instances)
+  - Additional Behavioral Interview (1032 rework instances)
+  - Rejection (914 instances)
+
+### Parallel Activities and Synchronization Points
+
+* **Parallel Split 1**: After initial assessment, candidates may take different technical interview tracks
+* **Parallel Split 2**: Technical interviews (ML, Frontend, Backend) can occur in various sequences
+* **Synchronization Point**: All paths converge before final decision making
+* **Parallel Processing**: Background checks and interviews can occur concurrently
+
+### Exception Handling and Error Paths
+
+1. **Immediate Rejections**: Can occur at multiple stages without proceeding through full process
+2. **Rework Loops**: Behavioral interviews and job offers frequently require repetition
+3. **Process Variability**: 40+ distinct process paths indicate inconsistent application of hiring criteria
+
+### Rework Loops and Escalation Procedures
+
+#### Significant Rework Patterns:
+1. **Behavioral Interview Rework**: 1032 instances of consecutive behavioral interviews
+2. **Job Offer Rework**: 861 instances of repeated job offer activities
+3. **Application Rejection Rework**: 654 instances of repeated rejection activities
+4. **Interview Sequence Loops**: Multiple instances of interviews repeating or occurring in circular patterns
+
+#### Escalation Procedures:
+* No clear escalation paths documented in process mining data
+* Complex paths suggest manual interventions and exceptions
+
+### End Conditions and Outcomes
+
+#### Successful Completion:
+* **End State**: Job offer successfully made and accepted
+* **Frequency**: Multiple successful paths with varying complexity
+* **Performance**: Average completion time ~530,000 time units for successful paths
+
+#### Unsuccessful Completion:
+* **End State**: Application rejected at various stages
+* **Frequency**: High rejection rates across all stages
+* **Performance**: Average time to rejection varies from 146,345 to 427,833 time units
+
+## Process Metrics and Performance Characteristics
+
+### Key Performance Indicators:
+1. **Process Duration**: Highly variable (146,345 to 530,559 time units)
+2. **Success Rate**: Low relative to total applications processed
+3. **Rework Rate**: High (significant loops in behavioral interviews and job offers)
+4. **Path Variability**: Extremely high (40+ distinct process variants)
+
+### Performance Issues:
+* **Inefficient Sequencing**: Background checks and screening interviews occur in inconsistent orders
+* **Excessive Rework**: Behavioral interviews and job offers frequently repeat
+* **High Rejection Rates**: Significant resource investment in candidates who are ultimately rejected
+* **Process Inconsistency**: Lack of standardized workflow leads to 40+ variants
+
+## Key Challenges and Pain Points
+
+### Structural Issues:
+1. **Unclear Decision Criteria**: Inconsistent application of screening and evaluation standards
+2. **Excessive Process Variability**: 40+ distinct paths indicate lack of standardized workflow
+3. **Inefficient Resource Utilization**: High investment in candidates who are rejected early
+
+### Operational Issues:
+1. **Rework Overload**: Behavioral interviews and job offers require frequent repetition
+2. **Timeline Inconsistency**: Process duration varies dramatically between candidates
+3. **Quality Control Gaps**: Parallel interview tracks lack synchronization and standardization
+
+### Compliance and Governance Issues:
+1. **Inconsistent Background Checks**: Standard vs extensive checks applied inconsistently
+2. **Unstructured Decision Making**: Multiple decision points without clear criteria
+3. **Lack of Audit Trail**: Complex paths make it difficult to track decision rationale
+
+### Candidate Experience Issues:
+1. **Unpredictable Timelines**: Candidates experience widely varying process durations
+2. **Excessive Interviewing**: Some candidates undergo multiple rounds of similar interviews
+3. **Communication Gaps**: High rejection rates at various stages without clear feedback mechanisms
+
+This AS-IS process represents a highly complex, variable, and inefficient hiring workflow that requires significant rationalization and standardization to improve effectiveness, efficiency, and candidate experience.
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

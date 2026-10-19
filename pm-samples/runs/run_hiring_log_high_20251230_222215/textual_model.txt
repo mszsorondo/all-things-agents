@@ -1,0 +1,140 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The AS-IS process represents a complex technical job hiring workflow for software engineering and data science positions. This process captures the actual observed behavior from process mining data, including all variants, deviations, rework loops, and compliance issues. The purpose is to screen, evaluate, and select candidates through multiple assessment stages, with various paths leading to either job offers or rejections.
+
+## Key Stakeholders and Roles Involved
+* **Candidates/Applicants**: Individuals submitting job applications
+* **Recruiters/HR Team**: Conduct initial screening and background checks
+* **Hiring Managers**: Conduct screening and behavioral interviews
+* **Technical Interviewers**: Specialists conducting coding, frontend, backend, and ML interviews
+* **Background Check Providers**: Third-party or internal teams conducting verification
+* **Approval Authorities**: Final decision-makers for job offers
+
+## Detailed Step-by-Step Process Flow
+
+### 1. Start Conditions and Triggers
+* **Trigger**: Candidate submits a job application
+* **Start Event**: "Hand In Job Application" activity begins the process
+
+### 2. Initial Screening Phase
+1. **Hand In Job Application**: Candidate submits application materials through the designated portal/system.
+2. **Telephonic Screening**: Recruiter conducts an initial phone screening to assess basic qualifications and interest.
+   * **Decision Point**: Based on screening outcome:
+     * **Path A (39.5%)**: Proceed to Background Check
+     * **Path B (43.7%)**: Proceed to Screening Interview  
+     * **Path C (11.3%)**: Immediate Application Rejected
+     * **Path D (5.5%)**: Direct to Application Rejected without further processing
+
+### 3. Parallel/Interchangeable Core Assessments
+The process exhibits significant variability in the ordering of these core activities:
+
+* **Background Check**: Verification of candidate's employment history, education, and credentials
+* **Screening Interview**: More in-depth assessment by hiring manager or team lead
+* **Extensive Background Check**: Additional, more thorough verification (optional path)
+
+**Observed Ordering Patterns:**
+* Background Check → Screening Interview (45.0% of cases)
+* Screening Interview → Background Check (43.7% of cases)
+* Both activities may trigger Extensive Background Check (11.8% of cases)
+
+### 4. Technical Assessment Phase
+After initial screening, candidates proceed to various technical interviews:
+
+1. **Coding Interview**: Assessment of programming skills and problem-solving ability
+2. **Parallel Technical Interview Tracks**: Based on role requirements, candidates may undergo:
+   * **ML Interview**: Machine learning and data science competency assessment
+   * **Frontend Interview**: Frontend development skills evaluation
+   * **Backend Interview**: Backend systems and architecture assessment
+
+**Complex Interview Sequencing:**
+* Multiple possible orderings of technical interviews (ML↔Frontend, Frontend↔Backend loops observed)
+* Candidates may cycle between different technical interview types
+* Technical interviews may be skipped entirely in some paths
+
+### 5. Behavioral Assessment Phase
+* **Behavioral Interview**: Evaluation of soft skills, cultural fit, and behavioral competencies
+* **Notable Issue**: Self-loops observed where Behavioral Interview repeats multiple times (1,032 instances of consecutive Behavioral Interviews)
+
+### 6. Decision and Outcome Phase
+* **Make Job Offer**: Extended to selected candidates
+  * **Issue**: Self-loops observed where Make Job Offer activity repeats (861 instances)
+* **Application Rejected**: Candidate is not selected
+  * Rejections can occur at multiple points throughout the process
+
+### 7. Exception Handling and Rework Paths
+
+**Major Compliance Issues and Rework:**
+1. **Post-Rejection Reconsideration**: 740 instances where Application Rejected leads to Behavioral Interview, and 690 instances where Application Rejected leads directly to Make Job Offer
+2. **Interview Sequence Chaos**: Unstructured ordering of technical interviews leads to assessment inconsistency
+3. **Excessive Loops**: 
+   * Behavioral Interview → Behavioral Interview (1,032 occurrences)
+   * Make Job Offer → Make Job Offer (861 occurrences)
+4. **Early Rejection Inconsistency**: Applications rejected at different stages without consistent criteria
+
+### 8. End Conditions and Outcomes
+* **Successful Outcome**: Make Job Offer → Process Completion
+* **Unsuccessful Outcome**: Application Rejected → Process Completion
+* **Process Completion**: Marked by reaching the sink place in Petri net
+
+## Process Metrics and Performance Characteristics
+
+### Frequency Analysis
+* Total process instances observed: Approximately 8,799 starting with Hand In Job Application
+* Most frequent path: Telephonic Screening → Screening Interview → Background Check → Application Rejected (1,391 instances)
+* Second most frequent: Telephonic Screening → Background Check → Screening Interview → Application Rejected (1,389 instances)
+* Early rejections: 1,201 immediate rejections after application submission
+
+### Performance Metrics
+* **Average Process Duration**: Highly variable across paths
+* **Fastest Path**: Hand In Job Application → Application Rejected (146,345.624 time units)
+* **Slowest Paths**: Complex interview sequences with reconsideration (up to 530,732.370 time units)
+* **Performance Issues**: 
+  * Extensive Background Check → Application Rejected: 171,097.167 time units
+  * Screening Interview → Application Rejected: 155,969.168 time units
+  * Background Check → Application Rejected: 155,319.566 time units
+
+### Cycle Time Analysis
+* Technical interview sequences show significant delays
+* Reconsideration paths add substantial time to process
+* Self-loops contribute to extended cycle times without value addition
+
+## Key Challenges and Pain Points
+
+### 1. Process Variability and Inconsistency
+* No standardized sequence for Background Check and Screening Interview
+* Unstructured technical interview ordering
+* Inconsistent rejection criteria application
+
+### 2. Rework and Compliance Issues
+* Rejected applications being reconsidered through backchannels
+* Excessive self-loops in Behavioral Interview and Make Job Offer activities
+* Multiple points of rejection without clear governance
+
+### 3. Performance Bottlenecks
+* Extensive Background Check adds significant time (up to 171k time units)
+* Complex interview sequences delay hiring decisions
+* Reconsideration paths extend process duration unnecessarily
+
+### 4. Quality Control Problems
+* Different candidates assessed through different interview sequences
+* Lack of standardized evaluation criteria application
+* Potential for bias due to inconsistent process paths
+
+### 5. Data and Tracking Issues
+* Process mining reveals chaotic behavior not captured in formal process documentation
+* High frequency of exceptional paths suggests poor process control
+* Multiple variants indicate lack of process standardization
+
+### 6. Resource Utilization Concerns
+* Interviewer time wasted on reconsidered candidates
+* Background check costs incurred for candidates who are later rejected
+* HR/recruiter effort spent on managing complex, non-standard paths
+
+## Process Control and Governance Gaps
+* No clear gates or checkpoints to enforce standardized sequences
+* Missing approval mechanisms for reconsideration paths
+* Lack of escalation procedures for exceptional cases
+* Insufficient monitoring of process compliance and performance
+
+This AS-IS model represents the actual observed process with all its complexities, inefficiencies, and compliance issues, providing a foundation for process improvement initiatives.

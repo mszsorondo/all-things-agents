@@ -1,0 +1,214 @@
+AS-IS Process Model
+
+1) Process overview and purpose
+- Purpose: This process describes how loan applications progress from a customer’s appointment request through intake, verification and underwriting to one of several observed outcomes: loan signed (approval), loan denied, application rejected, or appointment denied. The description captures all observed variants (happy path and all alternatives) and the timing/frequency characteristics recorded in the event log.
+- Scope: customer appointment request → appointment setting → application submission → borrower verification → optional/coordinated examinations (visits/co-signer) → file submission to underwriter → final decision (sign, deny, reject) or earlier termination (appointment denied).
+
+2) Key stakeholders and roles (as observed in the log)
+- Customers/applicants (implicit initiating actor).
+- Systems and contact points:
+  - Online System (highly frequent actor in log).
+  - Hotline (observed as an actor).
+- Loan Officers (several: Loan Officer 1..5 and other “Resource X” entries appear in the log).
+- Underwriters / Underwriting Assessors (several named resources in the log: Chill UW1/2/3, Strict UW1/2/3, MostChillUW).
+- Note: The log identifies these resource names and their frequencies, but the dataset does not explicitly map every activity to a single role in all cases. The above roles are therefore reported because they appear in the event log; where specific responsibility per activity is not explicit, this is noted below rather than invented.
+
+3) Start conditions and triggers
+- Initialization: Every observed case starts with Request Appointment (the log skeleton and declarative model both identify Request Appointment as the initial activity). This activity is triggered by the applicant requesting a meeting/appointment (via Online System or Hotline in the event data).
+- Immediately after Request Appointment, two mutually exclusive outcomes are observed:
+  - Set Appointment (most cases) — moves the case into the intake flow.
+  - Appointment Denied — immediate termination (observed in ≈9% of cases).
+
+4) High-level end states (observed outcomes)
+- Sign Loan Agreement (loan approved and signed) — observed final state in many variants (≈16% overall for one common variant; additional variants ending in Sign also exist).
+- Loan Denied — underwriter denies the loan (single outcome in many variants; most frequent single variant ends here at ≈29%).
+- Application Rejected — verification step rejects the application before underwriting (observed ≈16% in one variant).
+- Appointment Denied — early termination immediately after Request Appointment (≈9%).
+- Note: These end states are terminal in observed traces (no further activities after these endpoints).
+
+5) Detailed step-by-step process flow (all observed variants and their alternatives)
+
+A. Core mandatory prefix (observed and required by the log)
+- 1. Request Appointment (start).
+- 2. Set Appointment — in all cases that proceed, Set Appointment immediately follows Request Appointment (chain constraints and DFG show Request Appointment -> Set Appointment and Set Appointment -> Hand In Credit Application).
+- 3. Hand In Credit Appliaction (applicant hands in credit application) — always follows Set Appointment in observed traces.
+- 4. Verify Borrowers Information — verification of the borrower’s data follows Hand In Credit Appliaction in the observed traces.
+
+B. Branching after Verify Borrowers Information (this is the main branching point; all observed options are listed)
+After Verify Borrowers Information, one of the following mutually exclusive or combinable alternatives is observed. The AS-IS model must permit any of these alternatives and their interleavings as observed:
+
+Option 1 — Application Rejected (early terminal)
+- Verify Borrowers Information -> Application Rejected (case ends). Observed as a distinct final outcome in a significant fraction of traces (e.g., one variant with ~16% frequency ends here).
+
+Option 2 — Skip further examination and sign (skipped_examination path)
+- Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement (case ends with a sign).
+- Observed in the log (332 events / ~3% variant in the variant listing). This path bypasses later steps and leads directly to Sign Loan Agreement.
+
+Option 3 — Proceed to additional evidence gathering / checks, then underwriting
+- This is the most complex and variable part of the observed behavior. It may include:
+  - Request Co-Signer On Loan (optional)
+  - Make Visit to Assess Colatteral (zero or more visits; repetition observed)
+  - These activities may occur in any of the following patterns (all observed and therefore permitted):
+    - Verify -> Request Co-Signer On Loan -> Submit File to Underwriter
+    - Verify -> Make Visit to Assess Colatteral -> Submit File to Underwriter
+    - Verify -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Submit File to Underwriter
+    - Verify -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Submit File to Underwriter
+    - Verify -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> … (repeat) -> Submit File to Underwriter
+    - Any interleaving/alternation of Request Co-Signer and Make Visit; Make Visit has a self-loop (rework) and can be repeated multiple times before submission. The log shows cases with many repeated Make Visit steps (variants with up to 7+ visits observed). DFG frequencies show transitions both from Request Co-Signer -> Make Visit and Make Visit -> Request Co-Signer, and Make Visit -> Make Visit (self-loop).
+  - Observed multiplicity:
+    - Request Co-Signer On Loan: optional (0 or 1 occurrences observed in a case).
+    - Make Visit to Assess Colatteral: occurs 0..8 times (log skeleton records occurrences up to 8).
+  - After the optional/iterative evidence gathering, the file is submitted: Submit File to Underwriter (observed in many variants; DFG shows Verify -> Submit File to Underwriter link in many cases, but commonly Submit occurs after the optional steps).
+
+C. Underwriter decision (Submit File to Underwriter -> final outcome)
+- After submission, two alternative outcomes are observed:
+  - Submit File to Underwriter -> Loan Denied (case ends).
+  - Submit File to Underwriter -> Sign Loan Agreement (case ends).
+- Both outcomes are frequent in the event data. Submit -> Loan Denied occurs more often than Submit -> Sign in raw DFG counts (Submit->Loan Denied frequency 4787 vs Submit->Sign Loan Agreement 2295 in DFG). The declarative models identify that loan denial and signing are alternative completions after submission.
+- Note: Some traces show direct Sign Loan Agreement after skipped_examination (no Submit), so Sign can also be reached before Submit in the skipped_examination variant.
+
+D. Early termination paths (observed)
+- Request Appointment -> Appointment Denied (terminal). No further activities are present in these traces (observed ≈9%).
+- Verify Borrowers Information -> Application Rejected (terminal) as described above.
+
+E. All observed ordering rules / interleavings (explicit)
+- The sequence Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information is always observed before the branching choices above (chain/precedence constraints confirm this).
+- Optional/alternative flows after verification must accept ALL the observed permutations:
+  - Zero or more Make Visit activities may occur. Any number of Make Visit occurrences (including 0) is permitted. When multiple Make Visit occurrences are present, they can repeat consecutively or be interrupted by a Request Co-Signer activity.
+  - Request Co-Signer On Loan may occur 0 or 1 times, at any point after Verify Borrowers Information and before Submit File to Underwriter (observed both before and after Make Visit activities). The observed logs show both orders are possible and both occur in practice.
+  - Submit File to Underwriter may occur immediately after Verify Borrowers Information (in some traces) or after running the optional Request Co-Signer / Make Visit steps. Both are allowed by the observed data.
+  - skipped_examination is an optional branch that, if present, leads directly to Sign Loan Agreement without a Submit to Underwriter. This is seen in multiple traces and must be allowed.
+- All observed traces that contain Request Co-Signer and/or Make Visit(s) and then Submit must be considered valid; the model must therefore be permissive about ordering and repetitions between those activities as recorded.
+
+6) Decision points with observed criteria (as inferred from behavior)
+- Decision A: Post-Request Appointment acceptance
+  - Possible outcomes: Set Appointment OR Appointment Denied.
+  - Observed behavior: Appointment Denied ends the case; Set Appointment proceeds to intake.
+  - Criteria: Not available in the log (business criteria not recorded), so the model treats both outcomes as possible.
+
+- Decision B: Post-Verify Borrowers Information branching
+  - Possible outcomes:
+    - Application Rejected (ends case)
+    - skipped_examination -> Sign Loan Agreement (bypass)
+    - Request Co-Signer and/or Make Visit(s) (evidence gathering), then Submit File to Underwriter
+    - Direct Submit File to Underwriter (in some traces)
+  - Observed frequencies:
+    - Application Rejected occurs frequently (e.g., 16% in a top variant).
+    - skipped_examination -> Sign is less frequent (~3%).
+    - Various sequences with Request Co-Signer and Make Visit(s) then Submit are observed across many medium- and low-frequency variants.
+  - Criteria: The log does not provide the business decision rules; observed behavior indicates that verification can either stop the case (rejection), skip further checks and sign, or lead to additional checks.
+
+- Decision C: Underwriter decision (after Submit File)
+  - Possible outcomes: Loan Denied OR Sign Loan Agreement.
+  - Observed frequencies in DFG: Submit->Loan Denied has higher count than Submit->Sign. Exact criteria for underwriter decision are not in the log.
+
+7) Parallelism and synchronization
+- No explicit AND-parallel constructs are observed in the discovered models. The process tree indicates exclusive choices and optional branches rather than parallel AND-splits.
+- However, optional branches and interleavings (Request Co-Signer vs Make Visit, repeated visits) mean interleavings of activities can appear in many orders. These are not modeled as true parallel tasks originating from an AND-split, but they do produce many possible interleavings and repeated activities in observed traces.
+- Synchronization points (implicit):
+  - Before Submit File to Underwriter there is an implicit synchronization/merge of possible preceding variants (direct submit, after visits, after co-signer). The Petri net includes silent joins to consolidate branches before Submit.
+
+8) Exception handling, rework loops, and escalation (observed)
+- Rework: Make Visit to Assess Colatteral has a self-loop (Make Visit -> Make Visit) observed frequently. Cases exist with many repeated Make Visit steps (variants with up to 7+ repeats). This is explicit rework / repeated on-site assessment.
+- Rework interplay: Request Co-Signer and Make Visit can alternate; sequences like Request Co-Signer -> Make Visit -> Request Co-Signer -> Make Visit are observed in traces.
+- Exceptions / early termination:
+  - Application Rejected and Appointment Denied are early termination states (observed across many traces).
+  - Some traces take skipped_examination, which appears to bypass typical further checks and leads directly to signing; this may represent an exception or an administrative bypass in the real process.
+- Escalation: The log identifies underwriter roles (Chill UW/Strict UW) and Submit File to Underwriter centralizes decision-making; the log does not show formal escalation steps beyond the repeated visits and co-signer requests (these are the operational ways cases become more complex).
+
+9) Activity list (visible activities observed)
+- Request Appointment (start)
+- Appointment Denied (terminal)
+- Set Appointment
+- Hand In Credit Appliaction (note spelling in log)
+- Verify Borrowers Information
+- Application Rejected (terminal)
+- skipped_examination (optional, leads to Sign)
+- Request Co-Signer On Loan (optional)
+- Make Visit to Assess Colatteral (0..many, rework)
+- Submit File to Underwriter
+- Sign Loan Agreement (terminal)
+- Loan Denied (terminal)
+
+10) Observed frequencies and performance (summary of measurable metrics)
+- Trace count base: Request Appointment appears in ~10,000 cases (the log’s activity frequencies show Request Appointment freq = 10,000). Percentages below are relative to that population (variants list gives percentages).
+- Top variant frequencies (representative; all of these variants and the many low-frequency permutations were observed and must be permitted):
+  - Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Loan Denied — frequency ≈ 29% of cases; average case duration ≈ 337,686 s (~3.9 days).
+  - Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Sign Loan Agreement — frequency ≈ 16%; avg duration ≈ 339,454 s (~3.9 days).
+  - Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Application Rejected — frequency ≈ 16%; avg duration ≈ 236,355 s (~2.7 days).
+  - Request Appointment -> Appointment Denied — frequency ≈ 9%; avg duration ≈ 86,227 s (~1.0 day).
+  - Variants involving Request Co-Signer and/or Make Visit(s) are medium/low frequency individually (e.g., Verify -> Request Co-Signer observed in DFG frequency 1,233; Verify -> Make Visit observed 1,226). Submit File to Underwriter appears in ~7,082 activity occurrences (log attribute); Sign Loan Agreement appears ~2,627 times; Loan Denied ~4,787 times.
+- DFG (directly-follows) key edge counts and mean inter-activity delays (selected):
+  - Request Appointment -> Set Appointment: freq 9,038 (performance ~82,658 s)
+  - Set Appointment -> Hand In Credit Appliaction: freq 9,038 (perf ~82,659 s)
+  - Hand In Credit Appliaction -> Verify Borrowers Information: freq 9,038 (perf ~42,028 s)
+  - Verify Borrowers Information -> Submit File to Underwriter: freq 4,623 (perf ~48,327 s)
+  - Submit File to Underwriter -> Loan Denied: freq 4,787 (perf ~82,666 s)
+  - Submit File to Underwriter -> Sign Loan Agreement: freq 2,295 (perf ~80,725 s)
+  - Verify Borrowers Information -> Request Co-Signer On Loan: freq 1,233 (perf ~35,838 s)
+  - Verify Borrowers Information -> Make Visit to Assess Colatteral: freq 1,226 (perf ~35,269 s)
+  - Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral: freq 563 (perf ~22,399 s) — indicates repeated visits with non-trivial waiting or travel time between repeats.
+  - skipped_examination -> Sign Loan Agreement: freq 332 (perf 0.000 in DFG: logged as immediate in DFG but mean case durations show ~260,013 s in variants where skipped_examination occurs).
+- Interpretation of performance numbers:
+  - The average case durations for the main variants are in the order of multiple days (hundreds of thousands of seconds). Variants with many Make Visit repetitions have the largest mean durations (up to ~470,000 s in some low-frequency variants — ~5.4 days).
+
+11) Process metrics and performance characteristics (summary)
+- Throughput and outcome distribution (approx., from variant frequencies):
+  - Loan Denied is the most common observed final outcome in the top variant set (~29% in the top variant; overall denied occurrences 4,787).
+  - Sign Loan Agreement occurs significantly but less than denial in submit-to-underwriter paths (sign occurrences ~2,627).
+  - Application Rejected occurs often as an early termination (~16% top variant).
+  - Appointment Denied = ~9%.
+- Bottlenecks and delay sources:
+  - Repeated Make Visit to Assess Colatteral contributes to long case durations and variability; rework loop and multiple iterations are clearly a driver of slow performance.
+  - Submit File to Underwriter and subsequent decision steps have high per-edge average times (~80k–82k s), indicating long waits around underwriting decisions.
+  - Cases involving co-signer requests and multiple visits tend to have higher average durations (variants with many visits show the highest mean durations).
+- Activity occurrence bounds (from log-skeleton / frequency observations):
+  - Request Appointment: exactly 1 occurrence per case (initialization).
+  - Set Appointment, Hand In Credit Appliaction, Verify Borrowers Information: typically occur once when present (chain constraints suggest these appear in order in most progressing cases).
+  - Make Visit to Assess Colatteral: 0..8 occurrences observed.
+  - Request Co-Signer On Loan: 0..1 occurrences observed.
+  - Submit File to Underwriter: 0..1 occurrences observed (some traces end before submit due to skipped_examination or application rejection).
+  - Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied: 0..1 occurrences (final states).
+
+12) Key challenges and pain points observed in the current process (AS-IS)
+- High denial and rejection rates: a large share of cases either end in Loan Denied or Application Rejected. The top variant ends in Loan Denied (~29%), which suggests a significant proportion of applicants do not reach an approval outcome.
+- Long and variable lead-times: many variants have mean durations of multiple days; cases that require multiple Make Visit steps or a co-signer escalate elapsed time strongly (some multi-visit variants exceed 5 days average).
+- Rework loops causing delays: Make Visit to Assess Colatteral shows frequent repetition; repeated on-site assessments are both time-consuming and common in problematic variants.
+- Many alternative interleavings and ad-hoc behavior: Request Co-Signer and Make Visit steps appear in many orders and interleavings, making the process complex and hard to standardize; this increases operational variability.
+- Bypass behavior (skipped_examination): Some cases skip further checks and proceed to Sign Loan Agreement (observed ~3%); this bypass may indicate inconsistent application of verification policy or valid but undocumented fast-track cases — it is a compliance and control risk if not intentionally designed.
+- Data quality / naming issues: Spelling inconsistencies are present in logged activity names (e.g., "Hand In Credit Appliaction" / "Make Visit to Assess Colatteral")—this complicates automated analysis and reporting.
+- Resource variability: many different resource names (multiple Loan Officers and multiple underwriter profiles, “Chill” vs “Strict” underwriters) suggests inconsistent decision posture across underwriters, which may contribute to uneven outcomes and rework.
+- Early terminations without feedback: Appointment Denied is a common early exit; if denial reasons are not recorded or standardized, customers may not receive consistent reasons and the organization cannot reliably reduce avoidable denials.
+
+13) All permitted trace variants / coverage statement
+- The AS-IS description above accepts any trace that:
+  - Begins with Request Appointment, then either Set Appointment → Hand In Credit Appliaction → Verify Borrowers Information (normal flow) OR Appointment Denied (immediate termination).
+  - After Verify Borrowers Information, any of the following are permitted:
+    - Application Rejected (terminate)
+    - skipped_examination -> Sign Loan Agreement (terminate)
+    - Zero or more Make Visit to Assess Colatteral events (may be 0..8+), with optional Request Co-Signer On Loan occurring 0..1 times at any point before Submit
+    - Any interleaving of Request Co-Signer and Make Visit(s) as observed in the log (both orders and alternations)
+    - Submit File to Underwriter at the point the case proceeds (may occur directly after Verify or after other optional steps)
+    - After Submit File to Underwriter, either Loan Denied or Sign Loan Agreement terminates the case
+- All the above variants (including the many low-frequency variants with many repeated Make Visit steps) were observed in the event data and are permitted behaviors in the AS-IS model.
+
+14) Observed compliance/declarative constraints summary (practical implications)
+- Initialization: Request Appointment is always the first observed activity.
+- Chain constraints: Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information is the canonical required prefix in progressing cases.
+- Never-together constraints observed in the log imply that terminal outcomes such as Appointment Denied do not co-occur with later activities (e.g., Appointment Denied never co-occurs with Submit File to Underwriter or Sign).
+- Directly-follows constraints: Set Appointment directly precedes Hand In Credit Appliaction, Hand In Credit Appliaction directly precedes Verify Borrowers Information in most progressing traces.
+- These constraints should be used cautiously; the process remains flexible after verification and allows many optional or repeated activities.
+
+15) Recommendations (immediate topics to investigate based on AS-IS)
+- Investigate causes of high denial/rejection rates and whether verification criteria or customer guidance can reduce avoidable denials.
+- Review Make Visit rework: analyze why many repeat visits are required and whether better initial data or remote assessments could reduce on-site repeats.
+- Clarify and control skipped_examination cases to ensure they are deliberate and compliant (document business rules for skips).
+- Standardize logging and activity naming to improve monitoring and automation (fix typos in activity names).
+- Review underwriter decision variability (different underwriter profiles observed) to identify opportunities for more consistent underwriting policies or decision support.
+
+16) Notes, assumptions and limitations
+- The description is strictly derived from the event log and discovered models. Where the data does not include explicit business decision criteria, the AS-IS model reports alternative outcomes as observed without inventing criteria.
+- Role-to-activity assignments are reported at a high level based on resource lists in the log; the model does not assign each activity to a role unless it was explicitly evident in the provided data.
+- The AS-IS model is intentionally permissive to accept all observed variants: any trace that follows any of the described variants (including all permutations/interleavings and repetitions of Make Visit / Request Co-Signer) is considered valid according to the AS-IS behavior captured here.
+
+End of AS-IS Process Model.

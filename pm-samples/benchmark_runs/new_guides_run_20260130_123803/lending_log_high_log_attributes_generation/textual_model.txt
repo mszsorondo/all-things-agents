@@ -1,0 +1,197 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end handling of retail credit applications from initial contact to final lending decision and, if approved, contract signing.
+- Scope covered by the observed log: Intake and screening, appointment management, application submission, optional collateral assessment, underwriting decisioning (manual or auto-skip), conditional co-signer requests, and outcomes (approval/denial).
+- Observation window: Events recorded between 2015-01-05 and 2015-01-10 (UTC).
+
+Key stakeholders and roles involved (as observed in the log)
+- Online System: System channel that records events (notably early-stage interactions).
+- Hotline: Phone channel that records initial interactions/decisions.
+- Loan Officers 1–5: Front-office staff conducting verification, appointment handling, intake, and interactions with applicants.
+- Resource 1–5: Generic operational staff recorded in the log (perform various back-office and field activities, including file handling and collateral-related activities).
+- Underwriters:
+  - Chill UW1–UW3, MostChillUW
+  - Strict UW1–UW3
+  These labels suggest heterogeneous underwriting behavior across reviewers or teams.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A prospective borrower initiates contact requesting an appointment.
+- Start activity: Request Appointment (freq. 10,000). Performed via Online System and/or Hotline.
+
+Stage 1: Appointment screening
+- Decision point: Appointment allowable?
+  - If No: Appointment Denied (freq. 962) → End state: Case stopped prior to application intake.
+  - If Yes: Proceed to intake steps (the remaining 9,038 cases).
+
+Stage 2: Intake preparation and appointment logistics
+- Verify Borrowers Information (freq. 9,038): Front-office verification of borrower-provided data at the pre-intake stage.
+- Set Appointment (freq. 9,038): Appointment is scheduled for application handling.
+- Hand In Credit Appliaction (freq. 9,038): Borrower submits the credit application and required documentation.
+
+Decision point: Intake completeness and front-office eligibility
+- If fails or incomplete: Application Rejected (freq. 1,624) → End state: Case closed by front-office without underwriting.
+- If passes: Proceed to decision stage (9,038 − 1,624 = 7,414 cases).
+
+Stage 3: Pre-underwriting checks (conditional)
+- Inclusive/optional branch: Make Visit to Assess Colatteral (freq. 2,522)
+  - Occurs for collateralized or risk-flagged cases only (optional subset).
+  - In practice, this may happen before or around the underwriting handoff; observed as an optional step that is not universal.
+- Exception/alternate routing artifact: skipped_examination (freq. 332)
+  - Indicates that some examination step was bypassed. These 332 cases align with those that reached a decision without a recorded Submit File to Underwriter event, suggesting an auto-skip or an unlogged manual review.
+
+Stage 4: Underwriting handoff and decisioning
+- Manual handoff: Submit File to Underwriter (freq. 7,082)
+  - Majority of decision-stage cases are routed to manual underwriting using underwriter resources (Chill/Strict variants).
+- Alternate/implicit path: Cases with skipped_examination (freq. 332) proceed to a decision outcome without a recorded submit event (possible straight-through or unlogged manual assessment).
+
+Underwriting outcomes and conditional rework
+- Loan Denied (freq. 4,787): Final negative outcome (usually after manual or implicit review).
+- Request Co-Signer On Loan (freq. 1,772): Conditional requirement raised for borderline applications; upon obtaining a co-signer, the case continues toward a final decision. This can introduce a rework loop that may include additional documentation and re-evaluation by underwriting. The log does not consistently show multiple submit/resubmit events, but the co-signer request indicates at least one rework cycle prior to final outcome.
+- Sign Loan Agreement (freq. 2,627): Approval materialized as contract signing; represents the positive end state of the process.
+
+Parallel activities and synchronization points
+- Operationally, Verify Borrowers Information, Set Appointment, and pre-underwriting collateral activities may be coordinated across different staff/systems, but the log primarily shows them in sequence. Collateral assessment (when required) should complete before final decision; the log suggests some timing variability around this step.
+
+Exception handling and error paths
+- Appointment Denied: Early termination due to scheduling or basic criteria not met.
+- Application Rejected: Termination at intake due to missing prerequisites, incomplete documentation, or front-office rules.
+- skipped_examination: A process path where a review/examination step was skipped, yet the case still received a decision (compliance risk).
+- Heterogeneous underwriter behaviors (Chill vs Strict) create inconsistent outcomes and possible oscillation around the co-signer loop.
+
+Rework loops and escalation procedures
+- Conditional co-signer loop: Request Co-Signer On Loan → provide additional party → re-evaluation (not always explicitly logged as re-submission). Loop ends in either Loan Denied or Sign Loan Agreement.
+- Potential documentation update loop around collateral assessment if initial visit findings are inconclusive (not explicitly visible as a named activity beyond the recorded visit).
+
+End conditions and outcomes
+- Positive end: Sign Loan Agreement (approval realized).
+- Negative ends:
+  - Appointment Denied (pre-intake stop).
+  - Application Rejected (intake stop).
+  - Loan Denied (post-review stop).
+
+Process metrics and performance characteristics (derived from frequencies)
+- Funnel (approximate, based on 10,000 starting cases):
+  - Appointment Denied: 962 (9.6% stop before intake).
+  - Intake completed: 9,038 (90.4% proceed).
+  - Application Rejected at intake: 1,624 of 9,038 (18.0% of intake; 16.2% of all starts).
+  - To decision stage (post-intake): 7,414 (74.1% of all starts).
+  - Underwriting routing:
+    - Manual Submit File to Underwriter: 7,082 (~95.5% of decision-stage).
+    - skipped_examination/implicit path: 332 (~4.5% of decision-stage).
+  - Outcomes (decision-stage):
+    - Loan Denied: 4,787 (64.6% of decision-stage; 47.9% of all starts).
+    - Sign Loan Agreement: 2,627 (35.4% of decision-stage; 26.3% of all starts).
+- Optional steps:
+  - Make Visit to Assess Colatteral: 2,522 (25.2% of all starts; subset of cases).
+  - Request Co-Signer On Loan: 1,772 (17.7% of all starts; indicates conditional rework).
+- Time characteristics:
+  - Log covers Jan 5–10, 2015; per-case cycle times are not derivable from these attributes alone.
+- Organizational variation:
+  - Underwriter groups labeled Chill vs Strict suggest differing decision thresholds; likely source of variability.
+
+Key challenges and pain points
+- High rejection rate overall (appointment denied + intake rejected + loan denied ≈ 73.7%), indicating costly intake and underwriting churn.
+- Inconsistent underwriting practices (Chill vs Strict vs MostChillUW) lead to variability and potential fairness/compliance concerns; may trigger unnecessary co-signer loops.
+- Control gap: 332 cases decided without a recorded Submit File to Underwriter (skipped_examination path), undermining auditability.
+- Optional collateral assessment timing is inconsistent; potential decisions without a completed visit for cases that likely require it.
+- Data quality: Typos in activity names and missing explicit resubmission events hinder traceability of rework cycles.
+- Resource load balancing unclear among front-office staff (Loan Officers 1–5) and generic Resources (1–5), creating potential bottlenecks around intake and collateral visits.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A controlled, auditable, and efficient credit application process that applies consistent criteria, ensures necessary checks are completed, and minimizes unnecessary rework while preserving all legitimate decision paths.
+- Improvement priorities: Standardize decisioning, enforce gating controls, streamline intake, and formalize conditional handling for co-signers and collateral.
+
+Key stakeholders and roles involved (unchanged, but with clarified responsibilities)
+- Online System: Executes and records initial request and verification activities where possible.
+- Hotline: Handles phone-based requests and communicates screening outcomes.
+- Loan Officers 1–5: Own intake verification, appointment management, and application completeness checks.
+- Resource 1–5: Perform operational tasks including collateral visits and file preparation.
+- Underwriters: Chill UW1–UW3, Strict UW1–UW3, MostChillUW; allocation policy clarified to ensure consistent criteria and auditability.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Borrower initiates a Request Appointment via Online System or Hotline.
+- Start activity: Request Appointment.
+
+Stage 1: Pre-appointment screening (tightened sequencing)
+- Verify Borrowers Information must complete before any appointment is confirmed.
+  - Decision: Appointment eligibility
+    - If Not Eligible: Appointment Denied → End.
+    - If Eligible: Proceed to appointment scheduling.
+
+Stage 2: Appointment logistics and application intake
+- Set Appointment: Schedule only after verification passes to reduce avoidable denials.
+- Hand In Credit Appliaction: Collect complete documentation at or immediately after the appointment.
+- Decision: Intake completeness/eligibility
+  - If Not Complete/Not Eligible: Application Rejected → End.
+  - If Complete/Eligible: Proceed to underwriting preparation.
+
+Stage 3: Underwriting preparation and conditional checks
+- Inclusive decision: Collateral needed?
+  - If Yes: Make Visit to Assess Colatteral must be performed and recorded before underwriting decisioning.
+  - If No: Skip this activity explicitly by rule (no implicit auto-skip events).
+- Synchronization point: All required intake artifacts (application and, if required, collateral visit) must be complete before the underwriting handoff.
+
+Stage 4: Underwriting handoff and decisioning (standardized and fully logged)
+- Mandatory handoff event: Submit File to Underwriter recorded for every case that reaches decisioning. The skipped_examination path is removed.
+- Underwriter allocation policy:
+  - Apply consistent criteria across underwriter labels (Chill/Strict/MostChillUW). Use assignment rules by risk segment while enforcing a single, consistent decision standard to reduce variability.
+- Underwriting outcomes:
+  - Conditional requirement: Request Co-Signer On Loan (at most one iteration)
+    - Upon obtaining co-signer, continue within the same underwriting decision episode to a final outcome. The handoff remains auditable under the original Submit File to Underwriter instance.
+  - Final negative: Loan Denied → End.
+  - Final positive: Sign Loan Agreement → End.
+
+Parallel activities and synchronization points
+- Intake tasks remain primarily sequential for control clarity (Verify → Set Appointment → Hand In Credit Appliaction).
+- Collateral assessment is an optional branch that must be completed and synchronized before underwriting decisioning when triggered.
+
+Exception handling and error paths
+- Appointment Denied: Used only when pre-appointment verification fails; accompanied by recorded verification outcome to support audit.
+- Application Rejected: Used only for incomplete or ineligible applications after intake; requires documented reason codes.
+- All underwriting decisions must be traceable to an explicit Submit File to Underwriter event; the skipped_examination activity is retired.
+- Co-signer path is explicitly controlled:
+  - One conditional iteration. If still insufficient, proceed to Loan Denied to avoid prolonged cycling.
+
+Rework loops and escalation procedures
+- Co-signer loop limited to one cycle to contain rework and speed resolution.
+- If collateral reassessment is needed due to quality issues, it must be recorded as Make Visit to Assess Colatteral again (same activity), followed by updated underwriting assessment, maintaining a clear audit trail.
+- Underwriter consistency is maintained by applying the same decision criteria regardless of the underwriter label; escalation to a second reviewer can occur within the underwriter role set but must not bypass the Submit File to Underwriter control.
+
+End conditions and outcomes
+- Positive end: Sign Loan Agreement after a completed and logged underwriting episode.
+- Negative ends:
+  - Appointment Denied (pre-appointment).
+  - Application Rejected (post-intake).
+  - Loan Denied (post-underwriting).
+
+Process metrics and performance characteristics (targets and monitoring)
+- Control compliance:
+  - 100% of decisioned cases have a recorded Submit File to Underwriter event (eliminate skipped_examination).
+  - 100% completion and recording of Make Visit to Assess Colatteral when collateral is required.
+- Funnel performance (targets relative to current baseline):
+  - Reduce Appointment Denied rate by confirming verification before scheduling (target < 5%).
+  - Reduce Application Rejected at intake via completeness checks at verification (target < 10% of intake).
+  - Improve approval conversion from ~26% to ≥30% without compromising risk controls by reducing preventable rework and inconsistent decisions.
+- Rework containment:
+  - Co-signer loop capped at one iteration; monitor proportion of cases invoking Request Co-Signer On Loan (target ≤ 12%).
+- Timeliness:
+  - Define SLA from Request Appointment to Sign Loan Agreement/Loan Denied; monitor median and 90th percentile. Aim to reduce end-to-end duration by streamlining sequencing and eliminating skipped paths that create audit remediation later.
+
+Improvements made (summary)
+- Enforced sequencing: Verify Borrowers Information precedes Set Appointment to minimize early denials.
+- Mandatory, fully logged underwriting handoff: Submit File to Underwriter is required for all decisioned cases; skipped_examination removed.
+- Conditional controls: Make Visit to Assess Colatteral required and recorded when applicable; no implicit bypass.
+- Co-signer handling standardized: Request Co-Signer On Loan becomes a controlled, single-iteration conditional outcome before final decision.
+- Underwriter consistency: Allocation rules clarified and a uniform decision standard applied across Chill/Strict labels to reduce variability and rework.
+- Auditability and data quality: All key gates produce explicit, consistently named events, improving traceability and compliance reporting.
+")

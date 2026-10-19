@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "dataset": "hiring_log_high",
+    "start_time": "2026-04-03T14:33:04.051711",
+    "config": {
+      "model_name": "openai:gpt-5-mini",
+      "validator_model": "gpt-5-mini",
+      "k_valid": 30,
+      "k_invalid": 30,
+      "evaluate_isolated": false
+    },
+    "end_time": "2026-04-03T14:44:26.136429",
+    "status": "completed"
+  },
+  "roles": {
+    "detected_roles": [
+      "Intake (Front Desk & Online System)",
+      "HR Screener (HR-dummy, HR-pro, Senior Partner)",
+      "Technical Interviewer (Coding Interviewer)",
+      "Behavioral Decision Makers (HR-pro and Senior Partner / HR-pro and Senior Partner)",
+      "External Background Checker (deepResearch Inc.)"
+    ],
+    "num_roles": 5,
+    "role_model_lengths": {
+      "Intake (Front Desk & Online System)": 4256,
+      "HR Screener (HR-dummy, HR-pro, Senior Partner)": 6183,
+      "Technical Interviewer (Coding Interviewer)": 5143,
+      "Behavioral Decision Makers (HR-pro and Senior Partner / HR-pro and Senior Partner)": 4394,
+      "External Background Checker (deepResearch Inc.)": 4772
+    }
+  },
+  "concatenated_model": {
+    "path": "dev_automation/role_benchmark_runs/run_hiring_log_high_20260403_143304/concatenated_textual_model.txt",
+    "length_chars": 25852
+  },
+  "concatenated_benchmark": {
+    "precision": 0.6976744186046512,
+    "recall": 1.0,
+    "f1": 0.8219178082191781,
+    "TP": 30,
+    "TN": 17,
+    "FP": 13,
+    "FN": 0,
+    "total_compute_time_seconds": 417.3325057029724,
+    "total_tokens": 349086
+  }
+}

@@ -1,0 +1,518 @@
+
+============================================================
+REPRESENTATION 1: PROCESS_TREE
+============================================================
+
+
+=== PROCESS TREE INTERPRETATION GUIDE ===
+
+A Process Tree is a hierarchical representation of process behavior.
+
+OUTPUT FORMAT:
+--------------
+"->( 'Activity A', X( tau, ->( 'Activity B', *( 'Activity C', tau ) ) ), +( 'Activity D', 'Activity E' ) )"
+
+OPERATORS (prefix notation):
+- ->(...): SEQUENCE - Execute children left-to-right in order
+- X(...): EXCLUSIVE CHOICE - Execute exactly one child
+- +(...): PARALLEL - Execute all children concurrently (interleaved)
+- *(...): LOOP - First child is body, second is exit condition
+- tau: SILENT activity (invisible, used for optional/skip paths)
+
+READING THE OUTPUT:
+- Operators are written as: OPERATOR( child1, child2, ... )
+- Activity names are in single quotes: 'Activity Name'
+- tau (without quotes) represents silent/skip transitions
+- Nesting shows hierarchical structure
+
+EXAMPLE INTERPRETATIONS:
+- ->( 'A', 'B', 'C' ): Do A, then B, then C (sequence)
+- X( 'A', 'B' ): Do either A or B (exclusive choice)
+- +( 'A', 'B' ): Do A and B in parallel (any interleaving)
+- *( 'A', tau ): Repeat A zero or more times (loop with silent exit)
+- X( tau, 'A' ): Optionally do A (can skip)
+- ->( 'A', X( tau, 'B' ), 'C' ): Do A, optionally B, then C
+
+COMPLEX EXAMPLE:
+"->( 'Start', X( tau, *( 'Review', tau ) ), +( 'Approve', 'Notify' ), 'End' )"
+Means: Start, then optionally review (repeatable), then approve AND notify in parallel, then End
+
+INDUCTIVE MINER PROPERTIES:
+- Always produces sound (properly completing) models
+- May introduce tau for fitness to observed behavior
+- Block-structured (properly nested, no arbitrary jumps)
+
+
+--- DISCOVERED MODEL ---
+->( 'Apply for Viewing Appointment', X( tau, ->( 'Set Appointment', 'View The Property', X( tau, ->( 'Hand In The Paperwork', 'Check Paperwork', 'Screen Prospective Tenant', X( tau, 'Extensive Screening' ) ) ) ) ), X( 'Reject Prospective Tenant', ->( 'Sign Contract', 'Move In', *( ->( X( tau, *( ->( 'Miss Rent Payment', 'Issue Warning', X( tau, 'Accept Late Payment' ) ), tau ) ), X( tau, 'Pay Rent' ) ), tau ), X( 'Evict Tenant', 'Tenant Cancels Appartment' ) ) ) )
+
+
+============================================================
+REPRESENTATION 2: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Pay Rent -> Pay Rent ( frequency = 14819  performance = 81120.304 )
+Set Appointment -> View The Property ( frequency = 9151  performance = 82730.336 )
+Apply for Viewing Appointment -> Set Appointment ( frequency = 9151  performance = 82731.269 )
+View The Property -> Hand In The Paperwork ( frequency = 7441  performance = 81965.052 )
+Hand In The Paperwork -> Check Paperwork ( frequency = 7441  performance = 44106.173 )
+Check Paperwork -> Screen Prospective Tenant ( frequency = 7441  performance = 37860.048 )
+Screen Prospective Tenant -> Reject Prospective Tenant ( frequency = 2856  performance = 81282.616 )
+Screen Prospective Tenant -> Extensive Screening ( frequency = 2793  performance = 83611.339 )
+Sign Contract -> Move In ( frequency = 2770  performance = 81092.792 )
+Pay Rent -> Tenant Cancels Appartment ( frequency = 2680  performance = 80984.401 )
+Move In -> Pay Rent ( frequency = 2656  performance = 81081.306 )
+Extensive Screening -> Reject Prospective Tenant ( frequency = 1815  performance = 84370.975 )
+Screen Prospective Tenant -> Sign Contract ( frequency = 1792  performance = 80492.460 )
+View The Property -> Reject Prospective Tenant ( frequency = 1710  performance = 86058.492 )
+Extensive Screening -> Sign Contract ( frequency = 978  performance = 82199.929 )
+Miss Rent Payment -> Issue Warning ( frequency = 945  performance = 81027.157 )
+Issue Warning -> Accept Late Payment ( frequency = 855  performance = 80663.524 )
+Apply for Viewing Appointment -> Reject Prospective Tenant ( frequency = 849  performance = 85701.584 )
+Accept Late Payment -> Pay Rent ( frequency = 794  performance = 80642.586 )
+Pay Rent -> Miss Rent Payment ( frequency = 770  performance = 80977.261 )
+Move In -> Miss Rent Payment ( frequency = 114  performance = 81409.456 )
+Issue Warning -> Evict Tenant ( frequency = 90  performance = 84447.367 )
+Accept Late Payment -> Miss Rent Payment ( frequency = 61  performance = 80994.246 )
+
+
+
+
+
+============================================================
+REPRESENTATION 3: ABSTRACT_VARIANTS
+============================================================
+
+
+=== ABSTRACT VARIANTS INTERPRETATION GUIDE ===
+
+Process variants show the distinct execution paths observed in the event log.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 1391  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 1201  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 990  performance = 229938.161 )
+..."
+
+READING THE OUTPUT:
+- Each line: " Activity1 -> Activity2 -> ... -> ActivityN ( frequency = N  performance = T )"
+- The arrow (->) sequence shows the exact order of activities in that variant
+- frequency: Number of cases (process instances) that followed this exact path
+- performance: Average total duration of cases following this path (in seconds)
+- Variants are sorted by frequency (most common first)
+
+INTERPRETATION:
+1. HIGH FREQUENCY VARIANTS (>20% of cases): Main "happy path" - optimize for efficiency
+2. MEDIUM FREQUENCY (5-20%): Common alternative paths - monitor regularly
+3. LOW FREQUENCY (<5%): Exceptions or edge cases - investigate if problematic
+4. PERFORMANCE COMPARISON:
+   - Compare performance across variants to identify slow paths
+   - High performance value = longer duration (potential bottleneck)
+
+VARIANT ANALYSIS:
+- Count unique activities: More activities = longer/complex variant
+- Identify common prefixes: Shows where processes diverge
+- Look for unexpected paths: May indicate process deviations
+
+USE FOR:
+- Understanding main vs alternative process paths
+- Identifying which paths are most/least efficient
+- Detecting process deviations or exceptions
+- Simplifying complex processes by focusing on high-frequency variants
+
+
+
+
+# === ABSTRACT VARIANTS INTERPRETATION GUIDE (pm4py.llm) ===
+
+## WHAT THIS OUTPUT REPRESENTS
+
+This output describes the **distinct execution paths (process variants)** observed in an event log.
+Each variant corresponds to a unique ordered sequence of activities executed by cases in the process.
+
+The variants shown are the **most frequent ones**, listed in descending order of frequency, and truncated if needed to respect the maximum output length (`max_len`).
+
+---
+
+## OUTPUT FORMAT (TYPICAL)
+
+```
+If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 32.5%  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 28.1%  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 21.4%  performance = 229938.161 )
+ ...
+```
+
+The initial sentence may be present if `response_header=True`.
+
+---
+
+## HOW TO READ EACH LINE
+
+Each line has the form:
+
+```
+Activity1 -> Activity2 -> ... -> ActivityN ( frequency = F  performance = P )
+```
+
+Meaning:
+
+• `Activity1 -> Activity2 -> ... -> ActivityN`
+= the exact ordered sequence of activities executed in that variant (control-flow path)
+
+• `frequency = F`
+= the **relative frequency** (proportion or percentage of cases) that follow this exact path
+(because `relative_frequency=True`)
+
+• `performance = P`
+= the **aggregated case duration** (throughput time) of cases that follow this variant
+computed using the selected aggregation method
+(default: mean of case durations)
+
+Units depend on the timestamp resolution in the log (e.g., seconds, minutes, milliseconds).
+
+If a secondary aggregation is configured, performance may appear as:
+
+```
+performance = P (secondary = Q)
+```
+
+---
+
+## IMPORTANT BEHAVIORAL DETAILS
+
+• Variants are sorted by decreasing frequency
+• Only the most frequent variants fitting within `max_len` are shown
+• Rare variants may be omitted
+• Performance refers to **whole-case duration**, not individual activity durations
+• Performance is computed only if `include_performance=True`
+• Frequencies are **relative proportions**, not absolute counts
+• Header text may be present if `response_header=True`
+
+---
+
+## INTERPRETATION PRINCIPLES
+
+### 1. CONTROL-FLOW ANALYSIS
+
+* Variants with the highest frequency represent the dominant execution paths (“happy paths”)
+* Shared prefixes across variants indicate where the process diverges
+* Unusual or rare paths indicate exceptions or deviations
+
+### 2. FREQUENCY ANALYSIS
+
+Using relative frequency:
+
+* High frequency variants (e.g., >20%) → core process behavior
+* Medium frequency (5–20%) → common alternatives
+* Low frequency (<5%) → edge cases or exceptional behavior
+
+These thresholds are heuristic and should be interpreted relative to the domain.
+
+### 3. PERFORMANCE ANALYSIS
+
+* Compare performance values across variants
+* Higher performance value = longer average case duration
+* Variants with both:
+
+  * high frequency
+  * high performance
+    are prime candidates for optimization
+
+### 4. STRUCTURAL COMPLEXITY
+
+* More activities in a variant generally imply higher structural complexity
+* Long variants with high performance may indicate rework or loops
+* Short variants with low performance often represent fast completion paths
+
+---
+
+## WHAT THIS OUTPUT IS SUITABLE FOR
+
+This abstraction is designed for **human or LLM reasoning**, not for direct machine parsing.
+
+It is suitable for:
+
+• Identifying main vs alternative process paths
+• Explaining process behavior in natural language
+• Detecting deviations or exceptional flows
+• Comparing efficiency of different execution paths
+• Summarizing complex event logs
+• Serving as structured input for LLM-based process analysis
+
+---
+
+## WHAT THIS OUTPUT IS NOT
+
+• It is not a complete list of all variants (due to truncation)
+• It is not a formal process model (Petri net, BPMN)
+• It is not a structured dataset
+• It does not include resource, data, or organizational perspectives
+• It does not show intra-activity waiting times
+
+---
+
+## SUMMARY
+
+This output encodes:
+
+```
+Variant = (Activity Sequence, Relative Frequency, Aggregated Case Duration)
+```
+
+Serialized as natural language for LLM-based interpretation.
+
+
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Reject Prospective Tenant ( frequency = 28\%  performance = 406411.319 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Reject Prospective Tenant ( frequency = 18\%  performance = 506227.728 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Reject Prospective Tenant ( frequency = 17\%  performance = 258175.985 )
+ Apply for Viewing Appointment -> Reject Prospective Tenant ( frequency = 8\%  performance = 85701.584 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 2\%  performance = 723107.203 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Tenant Cancels Appartment ( frequency = 2\%  performance = 642883.410 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 6159769.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 5119918.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4800150.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4799648.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Evict Tenant ( frequency = 1\%  performance = 4770372.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4499679.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4479954.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4399843.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4240069.000 )
+ Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> Pay Rent -> Pay Rent -> Tenant Cancels Appartment ( frequency = 1\%  performance = 4239963.000 )
+
+
+
+
+
+============================================================
+REPRESENTATION 4: DECLARE
+============================================================
+
+
+=== DECLARE INTERPRETATION GUIDE ===
+
+DECLARE is a declarative process modeling language based on temporal logic constraints.
+
+OUTPUT FORMAT:
+--------------
+The output starts with constraint explanations, then lists discovered constraints:
+"I have a DECLARE declarative process model containing the following constraints:
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given (A, B), if A occurs then B also occurs.
+Co-Existence: given (A, B), if A occurs then B also occurs.
+Response: given (A, B), if A occurs then B also occurs in the future.
+Precedence: given (A, B), if B occurs then A occurs in the past.
+Succession: both response and precedence are satisfied.
+...
+
+These are the constraints of the model:
+Existence: Activity1, Activity2, ...
+Responded Existence: ('A', 'B'), ('C', 'D'), ...
+Response: ('A', 'B'), ...
+Initialization: Activity1
+Exactly 1: Activity1, Activity2, ..."
+
+CONSTRAINT CATEGORIES:
+
+EXISTENCE CONSTRAINTS:
+- Existence: Activity must occur at least once
+- Absence: Activity must not occur
+- Exactly 1: Activity occurs exactly once
+- Initialization: Trace must start with this activity
+
+RELATION CONSTRAINTS:
+- Responded Existence: If A occurs, B must occur (anywhere)
+- Co-Existence: A and B always occur together or both absent
+- Response: If A occurs, B must occur afterwards
+- Precedence: B can only occur if A occurred before
+- Succession: Both response and precedence
+
+CHAIN CONSTRAINTS (immediate succession):
+- Chain Response: B must immediately follow A
+- Chain Precedence: A must immediately precede B
+- Chain Succession: Both chain response and precedence
+
+NEGATIVE CONSTRAINTS:
+- Non Co-Existence: A and B cannot both occur
+- Non Succession: B cannot follow A
+- Non Chain Succession: B cannot immediately follow A
+
+PHILOSOPHY:
+- "Everything not forbidden is allowed"
+- Specifies constraints that must hold
+- Any execution path satisfying constraints is valid
+
+USE FOR:
+- Knowledge-intensive processes
+- Compliance requirements
+- Flexible workflow modeling
+- Understanding what MUST happen vs what CAN happen
+
+
+--- DISCOVERED MODEL ---
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Responded Existence: ('Set Appointment', 'View The Property'), ('View The Property', 'Apply for Viewing Appointment'), ('Set Appointment', 'Hand In The Paperwork'), ('Apply for Viewing Appointment', 'Set Appointment'), ('View The Property', 'Hand In The Paperwork'), ('View The Property', 'Set Appointment'), ('Set Appointment', 'Check Paperwork'), ('View The Property', 'Screen Prospective Tenant'), ('View The Property', 'Check Paperwork'), ('Apply for Viewing Appointment', 'View The Property'), ('Set Appointment', 'Screen Prospective Tenant'), ('Set Appointment', 'Apply for Viewing Appointment')
+Alternate response: ('Set Appointment', 'View The Property'), ('Apply for Viewing Appointment', 'Set Appointment'), ('View The Property', 'Hand In The Paperwork'), ('Set Appointment', 'Hand In The Paperwork'), ('Set Appointment', 'Check Paperwork'), ('View The Property', 'Screen Prospective Tenant'), ('View The Property', 'Check Paperwork'), ('Apply for Viewing Appointment', 'View The Property'), ('Set Appointment', 'Screen Prospective Tenant')
+Precedence: ('Apply for Viewing Appointment', 'Set Appointment'), ('Apply for Viewing Appointment', 'View The Property'), ('Set Appointment', 'View The Property')
+Exactly 1: View The Property, Set Appointment, Apply for Viewing Appointment
+Response: ('Apply for Viewing Appointment', 'View The Property'), ('Set Appointment', 'Hand In The Paperwork'), ('Set Appointment', 'Check Paperwork'), ('View The Property', 'Hand In The Paperwork'), ('Set Appointment', 'Screen Prospective Tenant'), ('Set Appointment', 'View The Property'), ('Apply for Viewing Appointment', 'Set Appointment'), ('View The Property', 'Screen Prospective Tenant'), ('View The Property', 'Check Paperwork')
+Chain precedence: ('Apply for Viewing Appointment', 'Set Appointment'), ('Set Appointment', 'View The Property')
+Chain response: ('Apply for Viewing Appointment', 'Set Appointment'), ('View The Property', 'Hand In The Paperwork'), ('Set Appointment', 'View The Property')
+Alternate precedence: ('Apply for Viewing Appointment', 'Set Appointment'), ('Apply for Viewing Appointment', 'View The Property'), ('Set Appointment', 'View The Property')
+Existence: Set Appointment, Apply for Viewing Appointment, View The Property
+Initialization: Apply for Viewing Appointment
+Absence: Miss Rent Payment, Accept Late Payment, Issue Warning, Evict Tenant
+Succession: ('View The Property', 'Check Paperwork'), ('View The Property', 'Hand In The Paperwork'), ('View The Property', 'Screen Prospective Tenant'), ('Apply for Viewing Appointment', 'View The Property'), ('Apply for Viewing Appointment', 'Set Appointment'), ('Set Appointment', 'Check Paperwork'), ('Set Appointment', 'Hand In The Paperwork'), ('Set Appointment', 'View The Property'), ('Set Appointment', 'Screen Prospective Tenant')
+Alternate succession: ('View The Property', 'Check Paperwork'), ('View The Property', 'Hand In The Paperwork'), ('View The Property', 'Screen Prospective Tenant'), ('Apply for Viewing Appointment', 'View The Property'), ('Apply for Viewing Appointment', 'Set Appointment'), ('Set Appointment', 'Check Paperwork'), ('Set Appointment', 'Hand In The Paperwork'), ('Set Appointment', 'View The Property'), ('Set Appointment', 'Screen Prospective Tenant')
+Chain succession: ('View The Property', 'Hand In The Paperwork'), ('Apply for Viewing Appointment', 'Set Appointment'), ('Set Appointment', 'View The Property')
+Co-Existence: ('Check Paperwork', 'View The Property'), ('Check Paperwork', 'Set Appointment'), ('Hand In The Paperwork', 'View The Property'), ('Hand In The Paperwork', 'Set Appointment'), ('View The Property', 'Check Paperwork'), ('View The Property', 'Hand In The Paperwork'), ('View The Property', 'Apply for Viewing Appointment'), ('View The Property', 'Set Appointment'), ('View The Property', 'Screen Prospective Tenant'), ('Apply for Viewing Appointment', 'View The Property'), ('Apply for Viewing Appointment', 'Set Appointment'), ('Set Appointment', 'Check Paperwork'), ('Set Appointment', 'Hand In The Paperwork'), ('Set Appointment', 'View The Property'), ('Set Appointment', 'Apply for Viewing Appointment'), ('Set Appointment', 'Screen Prospective Tenant'), ('Screen Prospective Tenant', 'View The Property'), ('Screen Prospective Tenant', 'Set Appointment')
+
+
+
+============================================================
+REPRESENTATION 5: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Pay Rent; freq. 18269) (Apply for Viewing Appointment; freq. 10000) (View The Property; freq. 9151) (Set Appointment; freq. 9151) (Screen Prospective Tenant; freq. 7441) (Hand In The Paperwork; freq. 7441) (Check Paperwork; freq. 7441) (Reject Prospective Tenant; freq. 7230) (Extensive Screening; freq. 2793) (Sign Contract; freq. 2770) (Move In; freq. 2770) (Tenant Cancels Appartment; freq. 2680) (Miss Rent Payment; freq. 945) (Issue Warning; freq. 945) (Accept Late Payment; freq. 855) (Evict Tenant; freq. 90)
+case:citizen  empty: 0 values: (False; freq. 44989) (True; freq. 44983)
+case:gender  empty: 0 values: (True; freq. 55329) (False; freq. 34643)
+case:german speaking  empty: 0 values: (False; freq. 45322) (True; freq. 44650)
+case:married  empty: 0 values: (True; freq. 45078) (False; freq. 44894)
+case:protected  empty: 0 values: (False; freq. 70765) (True; freq. 19207)
+concept:name  empty: 0 values: (Pay Rent; freq. 18269) (Apply for Viewing Appointment; freq. 10000) (View The Property; freq. 9151) (Set Appointment; freq. 9151) (Screen Prospective Tenant; freq. 7441) (Hand In The Paperwork; freq. 7441) (Check Paperwork; freq. 7441) (Reject Prospective Tenant; freq. 7230) (Extensive Screening; freq. 2793) (Sign Contract; freq. 2770) (Move In; freq. 2770) (Tenant Cancels Appartment; freq. 2680) (Miss Rent Payment; freq. 945) (Issue Warning; freq. 945) (Accept Late Payment; freq. 855) (Evict Tenant; freq. 90)
+resource  empty: 0 values: (Tenant; freq. 21894) (Real Estate Agent 2; freq. 17996) (Real Estate Agent 1; freq. 17967) (Real Estate Agent 5; freq. 8953) (Real Estate Agent 4; freq. 4562) (Real Estate Agent 3; freq. 4479) (Hotline; freq. 3910) (Lawyer 3; freq. 2509) (Lawyer 1; freq. 2469) (Lawyer 2; freq. 2463) (Landlord 1; freq. 1139) (Landlord 4; freq. 572) (Landlord 5; freq. 511) (Landlord 3; freq. 283) (Landlord 2; freq. 265)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-06 20:27:10+0000', tz='UTC'), 0.5: Timestamp('2015-01-08 08:36:38+0000', tz='UTC'), 0.75: Timestamp('2015-01-11 11:37:29.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-03-17 07:03:04+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-06 20:27:10+0000', tz='UTC'), 0.5: Timestamp('2015-01-08 08:36:38+0000', tz='UTC'), 0.75: Timestamp('2015-01-11 11:37:29.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-03-17 07:03:04+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-06 20:27:10+0000', tz='UTC'), 0.5: Timestamp('2015-01-08 08:36:38+0000', tz='UTC'), 0.75: Timestamp('2015-01-11 11:37:29.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-03-17 07:03:04+0000', tz='UTC')}

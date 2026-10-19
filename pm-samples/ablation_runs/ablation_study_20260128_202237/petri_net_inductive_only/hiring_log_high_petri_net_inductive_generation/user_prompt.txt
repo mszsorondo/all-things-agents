@@ -1,0 +1,71 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (118e9cda-5629-44e3-adfe-8965e9dc44e5, 'Coding Interview'), (1cad3fda-8bda-48b4-8d79-8e068337f5f5, 'Behavioral Interview'), (5c53739e-c48b-4ba8-bf27-a832a3d55288, 'Background Check'), (9c959fb2-fcfb-4ec4-b3ec-95f377d25280, 'Telephonic Screening'), (a2b66f7a-ef2a-4b9c-84f0-38cca42457ea, 'Frontend Interview'), (b4cb1562-04c5-4a53-b274-f2285dfec603, 'Backend Interview'), (b60d9336-6fa2-49e7-98c9-bfc5d65655aa, 'Extensive Background Check'), (c000bcee-2509-42e0-9192-4c6589a97914, 'Hand In Job Application'), (cdf43891-b778-4ea7-b97a-47c779cda9aa, 'ML Interview'), (e0a965cb-65fa-4a7b-b5c8-c842c99036ff, 'Screening Interview'), (eb1ecb6a-680d-4cf4-85e4-4bee4120b047, 'Application Rejected'), (faa15f94-bcc7-4537-b36e-78cf3b01e281, 'Make Job Offer'), (init_loop_17, None), (init_loop_22, None), (init_loop_27, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_16, None), (skip_19, None), (skip_2, None), (skip_20, None), (skip_21, None), (skip_24, None), (skip_25, None), (skip_26, None), (skip_29, None), (skip_3, None), (skip_30, None), (skip_6, None), (skip_7, None), (skip_8, None), (tauJoin_10, None), (tauJoin_15, None), (tauJoin_5, None), (tauSplit_14, None), (tauSplit_4, None), (tauSplit_9, None) ]
+arcs: [ (118e9cda-5629-44e3-adfe-8965e9dc44e5, 'Coding Interview')->p_13, (1cad3fda-8bda-48b4-8d79-8e068337f5f5, 'Behavioral Interview')->p_29, (5c53739e-c48b-4ba8-bf27-a832a3d55288, 'Background Check')->p_9, (9c959fb2-fcfb-4ec4-b3ec-95f377d25280, 'Telephonic Screening')->p_6, (a2b66f7a-ef2a-4b9c-84f0-38cca42457ea, 'Frontend Interview')->p_19, (b4cb1562-04c5-4a53-b274-f2285dfec603, 'Backend Interview')->p_17, (b60d9336-6fa2-49e7-98c9-bfc5d65655aa, 'Extensive Background Check')->p_12, (c000bcee-2509-42e0-9192-4c6589a97914, 'Hand In Job Application')->p_4, (cdf43891-b778-4ea7-b97a-47c779cda9aa, 'ML Interview')->p_15, (e0a965cb-65fa-4a7b-b5c8-c842c99036ff, 'Screening Interview')->p_11, (eb1ecb6a-680d-4cf4-85e4-4bee4120b047, 'Application Rejected')->p_23, (faa15f94-bcc7-4537-b36e-78cf3b01e281, 'Make Job Offer')->p_32, (init_loop_17, None)->p_22, (init_loop_22, None)->p_28, (init_loop_27, None)->p_31, (skip_11, None)->p_15, (skip_12, None)->p_17, (skip_13, None)->p_19, (skip_16, None)->p_21, (skip_19, None)->p_22, (skip_2, None)->p_5, (skip_20, None)->p_21, (skip_21, None)->p_26, (skip_24, None)->p_28, (skip_25, None)->p_27, (skip_26, None)->p_26, (skip_29, None)->p_31, (skip_3, None)->p_5, (skip_30, None)->p_26, (skip_6, None)->p_12, (skip_7, None)->p_5, (skip_8, None)->p_5, (tauJoin_10, None)->p_5, (tauJoin_15, None)->sink, (tauJoin_5, None)->p_7, (tauSplit_14, None)->p_20, (tauSplit_14, None)->p_25, (tauSplit_4, None)->p_10, (tauSplit_4, None)->p_8, (tauSplit_9, None)->p_14, (tauSplit_9, None)->p_16, (tauSplit_9, None)->p_18, p_10->(e0a965cb-65fa-4a7b-b5c8-c842c99036ff, 'Screening Interview'), p_11->(tauJoin_5, None), p_12->(118e9cda-5629-44e3-adfe-8965e9dc44e5, 'Coding Interview'), p_12->(skip_7, None), p_13->(skip_8, None), p_13->(tauSplit_9, None), p_14->(cdf43891-b778-4ea7-b97a-47c779cda9aa, 'ML Interview'), p_14->(skip_11, None), p_15->(tauJoin_10, None), p_16->(b4cb1562-04c5-4a53-b274-f2285dfec603, 'Backend Interview'), p_16->(skip_12, None), p_17->(tauJoin_10, None), p_18->(a2b66f7a-ef2a-4b9c-84f0-38cca42457ea, 'Frontend Interview'), p_18->(skip_13, None), p_19->(tauJoin_10, None), p_20->(init_loop_17, None), p_20->(skip_16, None), p_21->(tauJoin_15, None), p_22->(eb1ecb6a-680d-4cf4-85e4-4bee4120b047, 'Application Rejected'), p_23->(skip_19, None), p_23->(skip_20, None), p_25->(init_loop_22, None), p_25->(skip_21, None), p_26->(tauJoin_15, None), p_27->(init_loop_27, None), p_27->(skip_26, None), p_28->(1cad3fda-8bda-48b4-8d79-8e068337f5f5, 'Behavioral Interview'), p_29->(skip_24, None), p_29->(skip_25, None), p_31->(faa15f94-bcc7-4537-b36e-78cf3b01e281, 'Make Job Offer'), p_32->(skip_29, None), p_32->(skip_30, None), p_4->(9c959fb2-fcfb-4ec4-b3ec-95f377d25280, 'Telephonic Screening'), p_4->(skip_2, None), p_5->(tauSplit_14, None), p_6->(skip_3, None), p_6->(tauSplit_4, None), p_7->(b60d9336-6fa2-49e7-98c9-bfc5d65655aa, 'Extensive Background Check'), p_7->(skip_6, None), p_8->(5c53739e-c48b-4ba8-bf27-a832a3d55288, 'Background Check'), p_9->(tauJoin_5, None), source->(c000bcee-2509-42e0-9192-4c6589a97914, 'Hand In Job Application') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

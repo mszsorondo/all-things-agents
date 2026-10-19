@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.signavio.com/bpmn20" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath">
+	<bpmn:process id="IdealProcess" isClosed="false" isExecutable="false" processType="None">
+		<bpmn:startEvent id="startEvent" name="Start">
+			<bpmn:outgoing>flow1</bpmn:outgoing>
+		</bpmn:startEvent>
+		<bpmn:task id="task1" name="Hand In Job Application">
+			<bpmn:incoming>flow1</bpmn:incoming>
+			<bpmn:outgoing>flow2</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task2" name="Telephonic Screening">
+			<bpmn:incoming>flow2</bpmn:incoming>
+			<bpmn:outgoing>flow3</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task3" name="Background Check">
+			<bpmn:incoming>flow3</bpmn:incoming>
+			<bpmn:outgoing>flow4</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task4" name="Screening Interview">
+			<bpmn:incoming>flow4</bpmn:incoming>
+			<bpmn:outgoing>flow5</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task5" name="Behavioral Interview">
+			<bpmn:incoming>flow5</bpmn:incoming>
+			<bpmn:outgoing>flow6</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task6" name="Make Job Offer">
+			<bpmn:incoming>flow6</bpmn:incoming>
+			<bpmn:outgoing>flowEnd</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task7" name="Application Rejected">
+			<bpmn:incoming>flowEnd</bpmn:incoming>
+			<bpmn:outgoing>flowEnd</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:endEvent id="endEvent" name="End">
+			<bpmn:incoming>flowEnd</bpmn:incoming>
+		</bpmn:endEvent>
+		<bpmn:sequenceFlow id="flow1" sourceRef="startEvent" targetRef="task1"/>
+		<bpmn:sequenceFlow id="flow2" sourceRef="task1" targetRef="task2"/>
+		<bpmn:sequenceFlow id="flow3" sourceRef="task2" targetRef="task3"/>
+		<bpmn:sequenceFlow id="flow4" sourceRef="task3" targetRef="task4"/>
+		<bpmn:sequenceFlow id="flow5" sourceRef="task4" targetRef="task5"/>
+		<bpmn:sequenceFlow id="flow6" sourceRef="task5" targetRef="task6"/>
+		<bpmn:sequenceFlow id="flowEnd" sourceRef="task6" targetRef="task7"/>
+	</bpmn:process>
+	<bpmndi:BPMNDiagram id="id1">
+		<bpmndi:BPMNPlane bpmnElement="IdealProcess" id="id2">
+			<bpmndi:BPMNShape bpmnElement="startEvent" id="shapeStart">
+				<omgdc:Bounds x="50" y="50" width="50" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task1" id="shapeTask1">
+				<omgdc:Bounds x="150" y="50" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task2" id="shapeTask2">
+				<omgdc:Bounds x="50" y="150" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task3" id="shapeTask3">
+				<omgdc:Bounds x="250" y="150" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task4" id="shapeTask4">
+				<omgdc:Bounds x="450" y="150" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task5" id="shapeTask5">
+				<omgdc:Bounds x="650" y="150" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task6" id="shapeTask6">
+				<omgdc:Bounds x="850" y="150" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="task7" id="shapeTask7">
+				<omgdc:Bounds x="1050" y="150" width="150" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape bpmnElement="endEvent" id="shapeEnd">
+				<omgdc:Bounds x="1250" y="50" width="50" height="50"/>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNEdge bpmnElement="flow1" id="edge1">
+				<omgdi:waypoint x="100" y="75"/>
+				<omgdi:waypoint x="150" y="75"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="flow2" id="edge2">
+				<omgdi:waypoint x="300" y="75"/>
+				<omgdi:waypoint x="250" y="75"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="flow3" id="edge3">
+				<omgdi:waypoint x="400" y="75"/>
+				<omgdi:waypoint x="450" y="75"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="flow4" id="edge4">
+				<omgdi:waypoint x="600" y="75"/>
+				<omgdi:waypoint x="650" y="75"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="flow5" id="edge5">
+				<omgdi:waypoint x="800" y="75"/>
+				<omgdi:waypoint x="850" y="75"/>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge bpmnElement="flowEnd" id="edgeEnd">
+				<omgdi:waypoint x="1000" y="75"/>
+				<omgdi:waypoint x="1050" y="75"/>
+			</bpmndi:BPMNEdge>
+		</bpmndi:BPMNPlane>
+	</bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,145 @@
+IDEAL Process Model
+
+1. Process overview and purpose
+- Purpose: provide a standardized, efficient patient clinical pathway from registration to discharge that ensures consistent assessment, reduces diagnostic and treatment rework, shortens case duration, and improves outcome traceability.
+- High-level improvement goals:
+  - Standardize assessment routing after registration.
+  - Ensure every treatment outcome is explicitly recorded (Treatment successful or Treatment unsuccessful).
+  - Eliminate repeated unmanaged rework loops by enforcing escalation to expert assessment before a re-treatment attempt.
+  - Improve predictability of resource use and reduce time-to-discharge.
+
+2. Key stakeholders and responsibilities (inferred from activities)
+- Registration points: Register at ER, Register at FD — responsible for case intake and initial triage triggers.
+- Clinical assessors: Examination, Expert Examination, Thorough Examination — responsible for clinical assessment and diagnostic input.
+- Diagnostic decision-maker: Diagnosis — responsible for establishing the working diagnosis and ordering treatment plan.
+- Treatment team: Treatment, Treatment successful, Treatment unsuccessful — responsible for administering therapy and recording outcomes.
+- Discharge processor: Discharge — responsible for formal case closure.
+(Note: these are mappings of activities to the natural accountable groups implied by the AS-IS activities; specific person-role titles/organizational units should be assigned locally.)
+
+3. Start and end conditions (formalized)
+- Start: Case begins when patient is recorded at either:
+  - Register at ER OR Register at FD.
+  - Immediately at registration an initial triage decision must be recorded (see Section 4).
+- End: Case is completed only when Discharge is recorded. Discharge must be preceded by an explicit Treatment successful event except in formally approved exception cases (see Section 6).
+
+4. Front-door triage and standardized assessment routing (new governance)
+- At registration, a mandatory triage decision is performed and recorded as a single routing choice (this reuses no new activities — it simply enforces a documented decision immediately after Register at ER/FD). Based on triage, exactly one of the following assessment paths is selected:
+  A. Standard assessment path (most cases, low-to-moderate complexity)
+     - Examination → (if indicated by examination) Thorough Examination → Diagnosis
+  B. Specialist-expert path (complex or uncertain cases)
+     - Expert Examination → (if indicated by expert) Thorough Examination → Diagnosis
+  C. Direct Thorough Examination path (selected when triage signals need for detailed diagnostic study immediately)
+     - Thorough Examination → Diagnosis
+  D. Restricted direct-to-Diagnosis path (only for simple, protocol-driven cases)
+     - Diagnosis (bypassing examination steps), permitted under clearly defined triage criteria (e.g., protocol-validated minor conditions).
+- Governance rules:
+  - Only one assessment path is chosen at triage. Examination and Expert Examination are not done in sequence in the same case unless specifically escalated later.
+  - Thorough Examination is performed only when either Examination or Expert Examination indicates need, or triage selected direct Thorough Examination.
+
+5. Optimized sequence from Diagnosis to Treatment (strict sequencing and recording)
+- After Diagnosis, the Treatment activity is executed.
+- Outcomes from Treatment must be explicitly recorded as one of:
+  - Treatment successful (preferred normal closure)
+  - Treatment unsuccessful
+- Discharge must follow Treatment successful. Direct Treatment → Discharge without a recorded Treatment successful is allowed only under tightly controlled, documented exceptions (e.g., administrative closure) and must be logged as an exception event to avoid ambiguity.
+
+6. Streamlined exception handling and controlled rework
+- Rework policy (enforced):
+  - If Treatment unsuccessful occurs, the case must be escalated to the Expert Examination path before another Treatment attempt is scheduled. The required sequence on first unsuccessful outcome:
+    Treatment unsuccessful → Expert Examination → Thorough Examination (if indicated) → Diagnosis → Treatment (single retry).
+  - The system permits at most one controlled re-treatment cycle under normal governance (i.e., one Treatment unsuccessful → re-assessment → re-treatment). This reduces repeated uncontrolled cycles seen in AS-IS.
+  - If the re-treatment after Expert re-evaluation is again unsuccessful (i.e., second Treatment unsuccessful), the case is flagged for mandated case-review (outside the modeled activities) and an approved alternative care plan must be decided before further treatment attempts. Operationally, this means no further automatic loops back to Diagnosis/Treatment without documented review and explicit authorization.
+- Rationale: Using Expert Examination as the required escalation step consolidates specialist input early, reducing repeated re-diagnosis attempts by generalists and lowering the probability of multiple treatment failures.
+
+7. Decision points with explicit criteria and outcomes
+- Triage decision at registration:
+  - Criteria examples (to be formally defined by clinical governance): severity, stability, presenting complaint complexity, prior history, protocol match.
+  - Outcomes:
+    - Route to Examination (standard)
+    - Route to Expert Examination (complex/unstable)
+    - Route to Thorough Examination (direct advanced assessment)
+    - Route to Diagnosis (protocol-based direct)
+- Post-assessment decision (after Examination / Expert / Thorough):
+  - If assessment yields sufficient information → proceed to Diagnosis.
+  - If more information is required → conduct Thorough Examination (if not already done) before Diagnosis.
+- Post-treatment decision:
+  - If Treatment successful → proceed to Discharge.
+  - If Treatment unsuccessful → escalate to Expert Examination and follow rework policy (one controlled retry only).
+
+8. Parallel activities and synchronization
+- Maintain sequential, single-threaded clinical flow for assessments and treatments to ensure clear accountability and avoid duplicate assessments.
+- Optional: where laboratory or imaging results (not explicitly part of the AS-IS activities) are retrieved asynchronously, the model enforces synchronization at the Diagnosis step — diagnosis is only finalized once required assessment results are available. (This uses existing activities: Thorough Examination can represent the state where all required test results and detailed assessments are consolidated prior to Diagnosis.)
+
+9. Explicit logging and data quality enforcement
+- Mandatory logging points:
+  - Triage decision (at registration)
+  - Assessment chosen and whether Thorough Examination was performed
+  - Diagnosis timestamp and summary code
+  - Treatment start and finish timestamps
+  - Treatment outcome: Treatment successful or Treatment unsuccessful (mandatory)
+  - Any exception allowing direct Treatment → Discharge must be explicitly logged with justification
+- Expected effect: better traceability and elimination of ambiguous traces (e.g., Treatment → Discharge without success marker).
+
+10. End conditions and allowable outcomes
+- Normal end: Treatment successful → Discharge.
+- Controlled exception end: Treatment → Discharge only with documented exception justification.
+- Cases with one re-treatment that becomes successful: follow normal end.
+- Cases with second Treatment unsuccessful: require case-review and an approved plan before further activities (this prevents unlimited uncontrolled loops).
+
+11. Expected process metrics and performance improvements (targets)
+- Reduction in rework loops:
+  - Target: reduce frequency of Treatment → Treatment unsuccessful transitions by 60–80% relative to AS-IS (from the observed 1,746 transitions down to a fraction), by enforcing expert escalation prior to re-treatment.
+- Case duration:
+  - Target: reduce average case duration for typical (no-rework) paths by 15–30% through standardized routing and fewer redundant assessments.
+  - Cases with one controlled re-treatment expected to have moderate increase in duration but significantly less than AS-IS repeated cycles.
+- Treatment success traceability:
+  - Target: 95–100% of discharges associated with an explicit Treatment successful event (versus significant inconsistency in AS-IS).
+- Predictability and variability:
+  - Target: narrower variance in pathways — majority of cases should follow the standardized assessment → diagnosis → treatment → successful discharge pattern.
+- Resource utilization:
+  - Target: reduce diagnostic/treatment repeat resource load (physician/reassessment time) by enforcing expert review on first failure, improving overall throughput.
+
+12. Key improvements made compared to the AS-IS model
+- Standardized assessment routing:
+  - Eliminates ad-hoc mixes of Examination/Expert/Thorough steps by enforcing triage-based routing.
+- Forced outcome recording:
+  - Removes ambiguity by requiring explicit Treatment successful or Treatment unsuccessful logging before Discharge.
+- Controlled and limited rework:
+  - Rework is not eliminated but is controlled — one mandated expert-backed retry replaces unlimited uncontrolled loops, substantially reducing repeat cycles.
+- Escalation protocol:
+  - Unsuccessful treatments must be escalated to Expert Examination (an existing activity) prior to re-diagnosis, improving diagnostic quality before re-treatment.
+- Clear exception governance:
+  - Direct Treatment → Discharge remains possible only with explicit documented justification, improving data quality.
+- Improved predictability and performance:
+  - Fewer repeated diagnosis/treatment cycles will shorten average case length and free clinician capacity.
+
+13. Example canonical IDEAL execution path (allowed traces)
+- Typical path (targeted majority):
+  1. Register at ER | Register at FD
+  2. Triage decision → Examination
+  3. Examination → (if indicated) Thorough Examination
+  4. Diagnosis
+  5. Treatment
+  6. Treatment successful → Discharge
+- Specialist-escalted path (complex cases):
+  1. Register at ER | Register at FD
+  2. Triage decision → Expert Examination
+  3. Expert Examination → (if indicated) Thorough Examination
+  4. Diagnosis
+  5. Treatment
+  6. Treatment successful → Discharge
+- Controlled rework path (single retry):
+  1. Register at ER | Register at FD
+  2. Triage decision → Examination or Expert Examination
+  3. Diagnosis
+  4. Treatment
+  5. Treatment unsuccessful → Expert Examination → Thorough Examination (if indicated) → Diagnosis → Treatment
+  6. If Treatment successful → Discharge; if Treatment unsuccessful again → case-review and authorized next steps (no automatic loop).
+
+14. Implementation considerations
+- Update registration systems to capture triage routing and to enforce required fields.
+- Instrument electronic records / workflow engine to block a second automatic Treatment retry unless expert review is recorded.
+- Train staff on the triage rules, escalation to Expert Examination, and mandatory recording of treatment outcomes.
+- Monitor compliance and performance against the metrics targets; iterate triage thresholds and escalation triggers based on measured outcomes.
+
+End of IDEAL Process Model.

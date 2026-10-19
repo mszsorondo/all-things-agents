@@ -1,0 +1,51 @@
+AS-IS Process Model — Appointment Agent (Hotline / Front Desk)
+============================================================
+
+Title: AS-IS Process Model — Appointment Agent (Hotline / Front Desk)
+
+Section 1: Role Overview (purpose, responsibilities)
+This role covers the human-facing intake channels that schedule appointments or deny them: the Hotline and the five frontline resources (Resource 1..5). Collectively they perform customer contact and appointment management. Their primary responsibility is to receive customer requests for an appointment, decide whether to accept or deny the appointment request, and—when accepted—create/set the appointment so the case can continue (the Online System then records the hand-in of the credit application). They are a process entry point in the majority of traces.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Request Appointment: Receive or create an appointment request from a customer (this is the observed trace start activity).
+- Set Appointment: Confirm and record the appointment (creates the condition for the applicant to hand in the credit application later, typically recorded by the Online System).
+- Appointment Denied: Deny the appointment request (terminal path for a subset of cases).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated when a customer initiates contact (observed as the trace start: Request Appointment). In the log, Request Appointment is the initialization activity.
+
+Typical sequence(s) observed:
+- Typical (majority): Request Appointment -> Set Appointment -> handover to Online System (the Online System then records Hand In Credit Appliaction). This sequence is the dominant entry path in the log.
+- Alternative (minor): Request Appointment -> Appointment Denied (terminal). This occurs without Set Appointment or later processing.
+
+Decision points and criteria handled by this role:
+- After Request Appointment the agent chooses between Set Appointment and Appointment Denied. The dataset shows both outcomes; about ~9% of traces end with Appointment Denied while the rest proceed to Set Appointment. The log does not contain a business-rule field for the decision; only observed outcomes.
+
+Ordering and optionality rules (AS-IS):
+- Request Appointment always occurs before either Set Appointment or Appointment Denied (initialization constraint in the log). 
+- Set Appointment is required for the majority of cases that continue; Appointment Denied is an alternative terminal branch.
+- There is no observed instance where Set Appointment occurs without a preceding Request Appointment.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO this role:
+- Not observed as receiving work from internal resources (these resources are the intake). Some small internal handover edges exist between Hotline and Resource X (internal transfers), but in the behavioral logs the role mainly starts the case.
+
+Who this role hands work TO:
+- Online System: after Set Appointment the agent’s activity is followed by Hand In Credit Appliaction recorded by the Online System. The handover edges in the organizational network show strong transfers from Hotline/Resource 1..5 -> Online System (observed weights ~0.029–0.037). This is the normal routing.
+
+Section 5: Variants and Exceptions (all observed paths)
+Observed variants involving this role (from the variant list / DFG):
+- Request Appointment -> Set Appointment -> ... (most cases). This is the main path and leads to the downstream activities recorded by Online System and Loan Officer.
+- Request Appointment -> Appointment Denied (≈9% of cases). Terminal; no further processing observed.
+
+Observed exceptions and rework:
+- Occasional internal reassignments among Hotline/Resource staff (small handover weights Hotline->Resource X and Resource X -> Hotline). These represent transfers or callbacks but do not change the high-level control flow.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Appointment Denied is a non-negligible terminal branch (~9%). If that share is unintended, it is worthy of investigation.
+- A strong, consistent handover to the Online System exists after Set Appointment—this is stable and predictable (few alternate handoffs).
+- There are small internal reassignments/transfers (Hotline <-> Resources) that add complexity to workload distribution.
+
+Notes for someone assuming this role
+- You will generally start cases with Request Appointment and must either Set Appointment or mark Appointment Denied. When you Set Appointment, the case continues automatically (the Online System records the Hand In Credit Appliaction and the Loan Officer takes over). There is no observed additional mandatory activity after Set Appointment from this role.

@@ -1,0 +1,160 @@
+Executive summary
+- Purpose and scope: This is the end-to-end residential leasing process from first contact (viewing application) through viewing, paperwork, screening, contracting, move-in, monthly rent cycles, and termination (tenant cancellation or eviction). The model includes the main path and every observed deviation, loop, and exception.
+- Conversion and outcomes: Roughly 10,000 applications start the process; 27.7% sign and move in; 72.3% are rejected before contract. Once moved in, 96.7% of leases end via tenant cancellation and 3.3% via eviction.
+- Operational hotspots: High attrition after viewing and during screening (particularly after extensive screening) drives wasted capacity. Monthly delinquency loops (late payment acceptance) create recurring rework. Appointment, viewing, and contract-to-move-in handoffs show long wait times.
+- Risks: The process technically permits skipping required steps (application → contract) via automatic routing, even if rarely observed, creating governance exposure. Cancellations are allowed after paid cycles without an explicit balance check.
+
+Stakeholders and roles (as seen in the data; titles may vary)
+- Prospective Tenant: applies, views, submits paperwork, signs, moves in, pays rent, may cancel.
+- Property Management/Leasing Team: sets appointments, checks paperwork, screens, accepts/rejects, issues warnings, accepts late payments, performs evictions.
+
+Start condition
+- Trigger: A prospective tenant submits “Apply for Viewing Appointment” (process start).
+
+Phase 1 — Pre-leasing pipeline (from application to decision)
+1) Apply for Viewing Appointment (start)
+- Outcomes:
+  - Proceed to Set Appointment: 9,151 cases (≈91.5% of starts).
+  - Early rejection (Reject Prospective Tenant) without appointment: 849 cases (≈8.5% of starts).
+  - Note: This early exit reflects pre-appointment eligibility checks at a decision point requiring a choice.
+
+2) Set Appointment → 3) View The Property
+- Flow: Set Appointment → View The Property occurs in 9,151 cases (≈100% of those scheduled).
+
+4) Post-viewing decision (decision point requiring a choice)
+- Stop path: Reject Prospective Tenant after viewing: 1,710 cases (≈18.7% of viewers; ≈17.1% of all applicants).
+- Continue path: proceed to documentation:
+  - View → Hand In The Paperwork: 7,441 cases (≈81.4% of viewers; ≈74.4% of all applicants).
+
+5) Hand In The Paperwork → 6) Check Paperwork → 7) Screen Prospective Tenant
+- Hand In → Check: 7,441 (≈100% of those who handed in).
+- Check → Screen: 7,441 (≈100% of those checked).
+
+8) Screening decision (decision point requiring a choice; base = 7,441 screened)
+- Option 1: Reject Prospective Tenant right after screening: 2,856 (≈38.4% of screened; ≈28.6% of all applicants).
+- Option 2: Extensive Screening: 2,793 (≈37.5% of screened), then:
+  - Extensive Screening → Reject Prospective Tenant: 1,815 (≈65.0% of those extensively screened; ≈24.4% of screened; ≈18.15% of all applicants).
+  - Extensive Screening → Sign Contract: 978 (≈35.0% of those extensively screened; ≈13.1% of screened).
+- Option 3: Screen Prospective Tenant → Sign Contract (without extensive screening): 1,792 (≈24.1% of screened).
+- Structural allowance: The process includes automatic routing that can bypass intermediate steps to reach a signing decision (for example, directly from application to contract). This path is permitted but rarely observed in logs and represents a governance risk.
+
+Phase 2 — Decision and contracting
+9) Sign Contract → 10) Move In
+- Sign Contract → Move In: 2,770 cases (≈27.7% of all applicants; ≈100% of those who signed).
+
+Phase 3 — Post-leasing monthly rent cycle (repeats until termination)
+11) Recurring month-to-month cycle (loop)
+- From Move In (first cycle):
+  - Move In → Pay Rent: 2,656 cases (≈95.9% of moved-in).
+  - Move In → Miss Rent Payment: 114 cases (≈4.1% of moved-in).
+- Regular recurring payments:
+  - Pay Rent → Pay Rent (repeat month): 14,819 occurrences. Across all Pay Rent outcomes:
+    - Continue paying next month: 14,819 of 18,269 outcomes (≈81.1%).
+    - Tenant Cancels Apartment (terminal state): 2,680 of 18,269 (≈14.7%).
+    - Miss Rent Payment next cycle: 770 of 18,269 (≈4.2%).
+  - Note: After each paid cycle, the process branches to alternative paths—continue paying, cancel, or miss next payment—via automatic system routing.
+- Delinquency handling (missed payments and rework loop):
+  - Miss Rent Payment → Issue Warning: 945 (aggregated across cycles).
+  - Issue Warning (decision point requiring a choice):
+    - Accept Late Payment: 855 (≈90.5% of warnings), then:
+      - Accept Late Payment → Pay Rent: 794 (≈92.9% of late acceptances).
+      - Accept Late Payment → Miss Rent Payment: 61 (≈7.1%), creating a rework loop for repeat delinquency.
+    - Evict Tenant (terminal state): 90 (≈9.5% of warnings).
+  - Structural note: After Accept Late Payment, automatic routing allows either returning to regular payment or re-entering the missed-payment branch, enabling repeated late cycles.
+
+Termination outcomes (end conditions)
+- Reject Prospective Tenant (terminal): may occur at:
+  - After Apply (≈8.5% of starts; 849 cases),
+  - After View (≈17.1% of starts; 1,710 cases),
+  - After Screening (≈28.6% of starts; 2,856 cases),
+  - After Extensive Screening (≈18.15% of starts; 1,815 cases).
+  - Total pre-contract rejections: ≈7,230 (≈72.3% of starts).
+- Tenant Cancels Apartment (terminal; common post-move-in outcome): 2,680 cases. Among moved-in tenants, ≈96.7% end via cancellation (2,680 of 2,770).
+- Evict Tenant (terminal; rare): 90 cases. Among moved-in tenants, ≈3.3% end via eviction (90 of 2,770), typically after an unresolved warning.
+
+Performance and timing (per edge; units not specified in source; treat as elapsed-time comparators)
+- Apply → Set Appointment: ≈82,731
+- Set Appointment → View The Property: ≈82,730
+- View The Property → Hand In The Paperwork: ≈81,965
+- Hand In The Paperwork → Check Paperwork: ≈44,106
+- Check Paperwork → Screen Prospective Tenant: ≈37,860
+- Screen Prospective Tenant → Sign Contract: ≈80,492
+- Sign Contract → Move In: ≈81,093
+- Late-payment handling edges: ≈80,000–84,000
+Implications:
+- Long waits around appointment, viewing, and contract-to-move-in handoffs (≈80k) are cycle-time hotspots.
+- Paperwork-to-screening appears faster (≈38k–44k) relative to earlier steps.
+
+KPI summary by phase
+- Funnel volume and conversion (approximate):
+  - Starts (applications): ≈10,000.
+  - Set Appointment: 9,151 (≈91.5% of starts) → View The Property: 9,151 (≈100% of scheduled).
+  - View → Hand In Paperwork: 7,441 (≈81.4% of viewers; ≈74.4% of starts).
+  - Screening mix (of 7,441):
+    - Extensive Screening: 2,793 (≈37.5%).
+    - Acceptances: 1,792 direct (≈24.1%) + 978 after extensive (≈13.1%) = 2,770 (≈37.2% of screened).
+    - Rejections: 2,856 after screening (≈38.4%) + 1,815 after extensive (≈24.4%) = 4,671 (≈62.8% of screened).
+- Post-move-in lifecycle:
+  - Move In: 2,770 (≈27.7% of starts).
+  - Initial Move In → Pay Rent: 2,656 (≈95.9% of moved-in).
+  - Ongoing Pay Rent outcomes per month:
+    - Continue paying: ≈81.1%
+    - Cancel: ≈14.7%
+    - Miss next payment: ≈4.2%
+  - Delinquency management:
+    - Miss → Warning: 945 (100% of recorded misses escalate).
+    - Warning → Accept Late Payment: 855 (≈90.5%); Warning → Evict: 90 (≈9.5%).
+    - After late acceptance: return to Pay Rent 794 (≈92.9%); fall back to Miss 61 (≈7.1%).
+  - End states for moved-in tenants: Tenant Cancels Apartment 2,680 (≈96.7%); Evict Tenant 90 (≈3.3%).
+
+Complete activity list and ordering constraints (preserved)
+- Activities (exact names preserved): Apply for Viewing Appointment → Set Appointment → View The Property → (either Reject Prospective Tenant or Hand In The Paperwork) → Check Paperwork → Screen Prospective Tenant → (either Reject Prospective Tenant, or Extensive Screening → [Reject Prospective Tenant or Sign Contract], or Sign Contract) → Move In → (Pay Rent with monthly repeat; or Miss Rent Payment → Issue Warning → [Accept Late Payment → Pay Rent or Miss Rent Payment; or Evict Tenant]) → From Pay Rent in any cycle: (continue Pay Rent; or Tenant Cancels Apartment; or Miss Rent Payment next cycle).
+- Decision points requiring a choice:
+  - Pre-appointment screening/eligibility (application to either appointment or rejection).
+  - Post-viewing (continue vs. rejection).
+  - Screening (reject, proceed to extensive, or sign).
+  - Extensive screening (reject vs. sign).
+  - Delinquency after warning (accept late vs. evict).
+  - Monthly post-payment routing (continue, cancel, or miss next payment).
+- Process branches to alternative paths are enabled by automatic system routing; parallel activities converge is not observed in this process scope.
+- Structural allowances:
+  - The process model permits bypassing some steps (e.g., direct application → contract). Rare in logs but allowed.
+  - After late payment acceptance, automatic routing returns either to normal payments or back into delinquency.
+  - After each paid cycle, automatic routing can lead to continued payment, cancellation, or a missed payment in the next cycle.
+
+Business insights: bottlenecks, cost drivers, and impact
+- High attrition pre-contract (≈72.3% of starts rejected): Significant capacity spend on viewings (100% of scheduled attend), paperwork checks (100%), and screening (100%), much of which does not convert. This is a major cost center and opportunity to improve early qualification.
+- Screening is the primary filter:
+  - Only ≈37.2% of screened applicants are accepted; extensive screening accepts ≈35.0% of those it touches but consumes added cycle time and resources.
+- Monthly delinquency loop:
+  - Warnings often result in late acceptance (≈90.5%), with ≈7.1% falling back into delinquency—creating recurring rework and revenue risk.
+  - Eviction occurs in ≈9.5% of warnings (rare), suggesting a lenient posture that may encourage repeat lateness for some tenants.
+- Cycle-time hotspots:
+  - Appointment scheduling and viewing handoffs (≈82k) and contract-to-move-in (≈81k) are long waits and likely drivers of applicant drop-off and dissatisfaction.
+  - Faster paperwork-to-screening (≈38k–44k) is a relative bright spot.
+- Termination pattern:
+  - Among moved-in tenants, ≈96.7% end via Tenant Cancels Apartment and ≈3.3% via eviction. Cancellations follow paid cycles; the process does not explicitly enforce a balance check at cancellation.
+
+Risks and controls
+- Governance risk: The process allows rare step-skipping (e.g., signing without documented viewing/paperwork/screening) via automatic routing. This could breach policy or regulatory expectations.
+- Revenue leakage risk: Cancellations can occur after paid cycles without an explicit control to ensure full balance settlement. Repeat delinquency (late-acceptance loop) also indicates potential leakage or moral hazard.
+- Compliance and auditability: High reliance on automatic routing and silent decisions reduces traceability unless controls and logs are enforced.
+
+Strategic recommendations
+- Tighten front-end qualification:
+  - Introduce or strengthen pre-appointment eligibility checks and automated scoring to reduce low-probability viewings. Target reduction in post-viewing rejections (currently ≈18.7% of viewers).
+- Rebalance screening strategy:
+  - Calibrate criteria for Extensive Screening to focus on applicants with a meaningful conversion uplift. Monitor acceptance rate (35% post-extensive) vs. time/cost to set thresholds.
+- Strengthen governance:
+  - Enforce mandatory step completion for signing (no contract if viewing/paperwork/screening not complete). Implement system hard stops to remove the step-skip allowance.
+  - Add a cancellation clearance control requiring balance verification before Tenant Cancels Apartment is processed.
+- Optimize cycle time:
+  - Commit SLA targets for Appointment → Viewing and Sign → Move In (the ≈80k segments). Use digital scheduling, reminders, and pre-move readiness checklists.
+- Delinquency policy and collections:
+  - Define a clear escalation matrix: number of late acceptances before escalation; incentives for on-time payment; late-fee and payment-plan policies. Aim to reduce the 7.1% relapse post-late acceptance and the 4.2% miss-after-pay rate.
+- KPI governance:
+  - Track conversion by stage, screening path yields, delinquency loop rate, eviction rate, and time-to-milestone. Use monthly dashboards to validate improvements and ensure compliance.
+
+Notes on data and measurement
+- Volumes and rates are derived from event logs; where counts are provided, percentages are computed against the relevant base (e.g., viewers, screened population, all starts, or total Pay Rent outcomes).
+- Performance times are reported as provided (≈37k–84k units) with units unspecified; use these as relative indicators of slower vs. faster steps until units are confirmed.

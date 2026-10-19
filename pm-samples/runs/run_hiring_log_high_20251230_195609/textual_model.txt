@@ -1,0 +1,105 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage end-to-end candidate evaluation from application through interviews, background checks, decisioning (rejection or offer), and finalization.
+- Source models: Inductive-miner Petri net with start at Hand In Job Application and end at a join to sink; DFG and abstract variants show concurrency, optional steps, rework, and loops.
+
+Key stakeholders and roles involved
+- The source models do not assign roles. Activities suggest categories (e.g., screening/interviewing staff, background-check service, decision/offer management), but no definitive role mapping is provided. Therefore, responsibilities are left unassigned in this description.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Trigger: Candidate submits “Hand In Job Application”. This marks the start.
+
+Core activities and control flow
+1) Initial screening (optional)
+   - Telephonic Screening may occur or be skipped. The Petri net includes a silent skip path allowing direct progression without this step.
+
+2) Parallel assessment: Screening Interview and Background Check
+   - After (or skipping) Telephonic Screening, the process AND-splits into two concurrent activities:
+     - Screening Interview.
+     - Background Check.
+   - Execution order is unconstrained; either can occur first. Both must complete, then an invisible join synchronizes the flow.
+
+3) Post-screening background diligence and technical gate
+   - Extensive Background Check may occur or be skipped. Whether executed or not, the process proceeds to the technical evaluation stage.
+   - Coding Interview is optional. If performed, it may lead into specialized technical interviews; otherwise the flow can skip straight past this bundle.
+
+4) Specialized technical interviews (optional, parallel-capable, each at most once)
+   - Following Coding Interview (when executed), the model creates three parallel-optional branches:
+     - ML Interview (may execute or be skipped).
+     - Backend Interview (may execute or be skipped).
+     - Frontend Interview (may execute or be skipped).
+   - These branches can occur in any order (observed DFG contains zero-duration directly-follows between pairs, indicative of concurrency) and are synchronized by an invisible join before moving on.
+
+5) Divergence into two high-level outcome branches that run in parallel but are individually skippable
+   - The model AND-splits into:
+     A) Rejection branch
+        - Application Rejected can occur zero or more times (explicit loop present). After any rejection, the branch can either repeat another rejection or signal completion of the branch without further action.
+     B) Behavioral/Offer branch
+        - Behavioral Interview can occur zero or more times (explicit self-loop present).
+        - Make Job Offer can occur zero or more times (explicit self-loop present). Offers can be repeated.
+        - This branch can be entirely skipped as well.
+   - Both branches (A and B) deposit a completion token either by performing their activities or by taking embedded skip transitions. A final invisible join waits for both branches to complete, then the process ends.
+
+Decision points with criteria and outcomes
+- Optionality decisions:
+  - Telephonic Screening: optional.
+  - Extensive Background Check: optional.
+  - Coding Interview: optional.
+  - ML/Backend/Frontend Interviews: each optional and can run concurrently.
+  - Behavioral Interview and Make Job Offer: each optional and may repeat.
+- Outcome choices are not exclusive in this model: the Rejection branch and the Behavioral/Offer branch can both execute within the same case due to the parallel split with skippable sub-branches.
+
+Parallel activities and synchronization points
+- Parallel split 1: Screening Interview and Background Check run concurrently and are synchronized by a join before proceeding.
+- Parallel split 2: Optional, parallel-capable ML, Backend, Frontend interviews with a join afterward.
+- Parallel split 3: Rejection branch and Behavioral/Offer branch proceed in parallel, each with internal loops and independent skip/complete options; a join ends the process.
+
+Exception handling and error paths observed (from models and DFG)
+- Contradictory sequences occur because branches run in parallel:
+  - Make Job Offer followed by Application Rejected (frequency 110 observed).
+  - Application Rejected followed by Behavioral Interview or even Make Job Offer (frequencies 740 and 690, respectively).
+- Multiple successive rejections can occur (Application Rejected -> Application Rejected, frequency 654).
+- Repeated Behavioral Interview loops (Behavioral -> Behavioral, frequency 1032) and repeated offers (Make Job Offer -> Make Job Offer, frequency 861).
+- Technical-interview pairs appear in both orders with near-zero measured lag, indicating concurrency rather than rework (e.g., ML <-> Frontend, Frontend <-> Backend, Backend <-> ML).
+
+Rework loops and escalation
+- Behavioral Interview: unbounded loop; may repeat many times before progressing or ending.
+- Make Job Offer: unbounded loop; offers can be re-issued multiple times.
+- Application Rejected: unbounded loop; multiple rejections possible within a single case.
+- No explicit escalation activities are modeled; loops implicitly allow extended cycling.
+
+End conditions and outcomes
+- The process ends when both high-level branches (Rejection and Behavioral/Offer) have either completed their actions (possibly multiple times) or have been skipped, and the final join fires. There is no distinct terminal label such as “Hired”.
+
+Process metrics and performance characteristics (from DFG and variants)
+- High-frequency paths (examples):
+  - Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected (freq 1391).
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected (freq 1389).
+  - Direct early rejection: Hand In Job Application -> Application Rejected (freq 1201).
+  - Telephonic Screening -> Application Rejected (freq 990).
+- Progressions to offer often traverse long durations; example composite paths to Make Job Offer show total performance around ~530,000 time units.
+- Notable segment durations (performance values from DFG; illustrative samples):
+  - Telephonic Screening -> Background Check: ~81,906.
+  - Screening Interview <-> Background Check: 0 (bidirectional), consistent with concurrency.
+  - Screening Interview -> Coding Interview: ~129,892.
+  - Coding Interview -> ML/Frontend/Backend interviews: ~80,000 each.
+  - Background Check -> Application Rejected: ~155,320.
+  - Extensive Background Check -> Application Rejected: ~171,097.
+- Loop indicators:
+  - Behavioral Interview -> Behavioral Interview: freq 1032.
+  - Make Job Offer -> Make Job Offer: freq 861.
+  - Application Rejected -> Application Rejected: freq 654.
+
+Key challenges and pain points
+- Governance inconsistency at the end of the process:
+  - Rejection and offer activities can co-occur or alternate due to a parallel split, creating contradictory candidate communications (e.g., offer after rejection, rejection after offer).
+- Unbounded rework loops:
+  - Repeated Behavioral Interviews and Offers extend cycle time and create variability; multiple rejection notices per case are also possible.
+- Early and repeated background checks:
+  - Background Check and Extensive Background Check are positioned before and after technical steps and may contribute significant delay (e.g., ~155k–171k time units before rejection), potentially performing costly diligence on non-finalists.
+- High variance and optionality:
+  - Many optional branches (telephonic, coding, specialized interviews) without explicit gating criteria increase variant spread and unpredictability.
+- Ambiguous end-state semantics:
+  - No explicit “hired/accepted” terminal event; completion is a technical join, not a business outcome, complicating reporting and control.

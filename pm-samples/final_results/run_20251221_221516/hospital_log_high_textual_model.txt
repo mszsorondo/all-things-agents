@@ -1,0 +1,98 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: This process captures the observed patient pathway from registration (at either a Family Doctor (FD) or Emergency Room (ER)) through clinical assessment(s), diagnosis, treatment, and discharge. The mined artifacts (an inductive Petri net, a Directly-Follows Graph, and discovered variants) show the actual operational behavior, including optional assessment steps, specialist referrals, repeated treatment cycles after unsuccessful outcomes, and occasional direct discharges.
+- Scope: From patient registration (start) to patient discharge (end). The model reflects observed deviations, skips, rework loops, and multiple variants of the same logical care pathway.
+
+Key stakeholders and roles (inferred from activities)
+- Patient: initiates the flow by presenting for care.
+- Registration/front desk (implicit): records patient arrival at FD or ER (Register at FD / Register at ER).
+- Assessment clinicians: perform Examination, Expert Examination, Thorough Examination, and Diagnosis (roles are aggregated as assessment staff since specific role names are not provided by the source).
+- Treatment team: carries out Treatment and records whether Treatment successful or Treatment unsuccessful.
+- Discharge administrator / clinician: finalizes Discharge.
+(Note: the source models do not explicitly name organizational roles or departments; these roles are inferred from activity names and kept at a functional level.)
+
+Detailed step-by-step process flow
+Start conditions and triggers
+1. Start: A patient arrives and is registered at either the Family Doctor (Register at FD) or at the Emergency Room (Register at ER). These two registration activities are the explicit start points (the Petri net source connects to both).
+
+Main sequence and alternative branches
+2. Post-registration branching (high variability): After registration the patient may follow one of several observed branches:
+   - Register at FD -> Expert Examination
+   - Register at FD -> Examination
+   - Register at FD -> (skip) -> (directly to Examination/Diagnosis or other later assessments)
+   - Register at ER -> Expert Examination
+   - Register at ER -> Examination
+   - Register at ER -> (skip) -> Thorough Examination / Diagnosis
+   Observed frequencies in the Directly-Follows Graph (DFG) show both Register at FD and Register at ER frequently lead to Expert Examination and to Examination (e.g., Register at FD -> Expert Examination freq = 2888; Register at ER -> Expert Examination freq = 2866; Register at ER -> Examination freq = 1826; Register at FD -> Examination freq = 1783).
+
+3. Expert vs. Examination vs Thorough Examination (assessment fragment): The mined process reveals a multi-stage assessment structure with optional skips:
+   - Expert Examination often precedes Thorough Examination (Expert Examination -> Thorough Examination freq = 3637) and sometimes feeds directly into Diagnosis (Expert Examination -> Diagnosis freq = 2117).
+   - Examination can go to Thorough Examination (Examination -> Thorough Examination freq = 1968) or directly to Diagnosis (Examination -> Diagnosis freq = 1641).
+   - Thorough Examination then leads to Diagnosis (Thorough Examination -> Diagnosis freq = 5922).
+   - Skip transitions exist in the Petri net (skip_1, skip_2, skip_5) which indicate that some patients bypass certain activities. This contributes to multiple variants where Examination or Expert Examination are omitted or interchanged.
+
+4. Diagnosis -> Treatment
+   - Once a diagnosis is reached, the dominant next step is Treatment (Diagnosis -> Treatment freq = 11746). This is the main gateway toward clinical intervention.
+
+5. Treatment outcomes and branching
+   - After Treatment, three observed outcomes are recorded:
+     a) Treatment -> Treatment successful (Treatment -> Treatment successful freq = 9005). When this occurs, the patient is routed toward Discharge (Treatment successful -> Discharge freq = 9005).
+     b) Treatment -> Treatment unsuccessful (Treatment -> Treatment unsuccessful freq = 1746). This outcome leads back to Diagnosis (Treatment unsuccessful -> Diagnosis freq = 1746) and triggers a rework loop: Diagnosis -> Treatment again. The variants show repeated cycles of unsuccessful treatments followed by re-diagnosis and re-treatment (there are many variants with one or more unsuccessful loops — frequencies include 241,197,124,119,120,116 and more for sequences containing unsuccessful->diagnosis->treatment repetitions).
+     c) Treatment -> Discharge direct (Treatment -> Discharge freq = 995). This is an observed shortcut where the patient is discharged after Treatment without an explicit recorded 'Treatment successful' activity. This inconsistency is a notable deviation in the observed data.
+
+6. Rework loops and escalation
+   - The most visible rework pattern is: Treatment unsuccessful -> Diagnosis -> Treatment (possibly repeating multiple times). The variant data indicates cases with one unsuccessful cycle, two cycles, and in rare cases multiple cycles (some variants show up to three or more unsuccessful cycles before final success and discharge).
+   - There is no rigid maximum number of retries recorded in the mined model; some cases show repeated unsuccessful attempts before success; others may end in discharge after unsuccessful attempts.
+
+7. End conditions and outcomes
+   - Successful completion: Treatment successful -> Discharge (the most common end behavior).
+   - Alternative end: Some traces end with a direct Treatment -> Discharge without explicit Treatment successful recorded.
+   - There are also rare long traces that include multiple unsuccessful cycles before a final Treatment successful -> Discharge.
+
+Decision points with criteria and possible outcomes (inferred)
+- Triage at registration: implicit decision whether case requires Expert Examination or a standard Examination (criteria not available in the data).
+- At assessment: decision whether to proceed to Thorough Examination vs. straight to Diagnosis (criteria: clinical need; not recorded explicitly).
+- Post-treatment outcome decision: Treatment successful vs Treatment unsuccessful vs (observed) direct Discharge. Criteria for successful vs unsuccessful are clinical outcomes recorded in events.
+
+Parallel activities and synchronization
+- The mined model does not exhibit explicit parallel splits or synchronizations. The observed behavior is largely sequential with optional branches and loops (the Petri net does have places and invisible transitions for skipping steps, but no parallel AND-splits are shown).
+
+Exception handling and error paths
+- Skip/invisible transitions: Several skip transitions (skip_1, skip_2, skip_5, skip_6) indicate that certain assessment activities can be bypassed — effectively exceptions to the canonical assessment sequence.
+- Direct discharge after Treatment without documented Treatment successful represents a documentation or process exception.
+- Repeated unsuccessful treatments represent clinical exceptions requiring escalation; no explicit escalation to senior specialists or other care pathways is recorded in the mined models.
+
+Process metrics and performance characteristics (as reported in the mining output)
+- Key frequencies (DFG):
+  - Diagnosis -> Treatment: frequency = 11,746 (performance = 60000.515)
+  - Treatment -> Treatment successful: frequency = 9,005 (performance = 60000.920)
+  - Treatment successful -> Discharge: frequency = 9,005 (performance = 40000.809)
+  - Treatment -> Treatment unsuccessful: frequency = 1,746 (performance = 60001.635)
+  - Treatment unsuccessful -> Diagnosis: frequency = 1,746 (performance = 40000.741)
+  - Treatment -> Discharge (direct): frequency = 995 (performance = 100002.807)
+  - Thorough Examination -> Diagnosis: frequency = 5,922 (performance = 60000.484)
+  - Expert Examination -> Thorough Examination: frequency = 3,637 (performance = 60000.837)
+  - Register at FD -> Expert Examination: frequency = 2,888 (performance = 40000.311)
+  - Register at ER -> Expert Examination: frequency = 2,866 (performance = 39999.839)
+  - Examination -> Thorough Examination: frequency = 1,968 (performance = 60001.727)
+  - Register at ER -> Examination: frequency = 1,826 (performance = 39999.967)
+  - Register at FD -> Examination: frequency = 1,783 (performance = 40000.349)
+- Variant-level frequency (top variants):
+  - Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge: freq = 1,539
+  - Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge: freq = 1,496
+  - Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge: freq = 832
+  (Many additional variants exist; several variants document 1 or more unsuccessful treatment loops before final success.)
+- Note on performance values: The process-mining output reports 'performance' numbers (units unspecified) for each directly-follows relation. These can be interpreted as average time/delay between the two activities in the mined log; comparison between relations highlights bottlenecks (e.g., some Treatment->Discharge direct paths show much larger performance values than Treatment successful->Discharge).
+
+Key challenges and pain points (AS-IS)
+- High variability: Multiple assessment routes (Examination, Expert Examination, Thorough Examination) and many variants produce inconsistent care pathways and make standardization difficult.
+- Unclear triage: Registration at FD vs ER leads to different mixes of assessment steps; inconsistent triage criteria are implicit and not captured in the log.
+- Skipped assessments: Invisible skip arcs indicate that assessment steps are frequently bypassed which risks missed steps or inconsistent documentation.
+- Rework loops: Treatment unsuccessful -> Diagnosis -> Treatment loops (observed with non-trivial frequency) increase lead time, resource consumption, and patient inconvenience.
+- Documentation inconsistencies: Occurrences of Treatment -> Discharge without Treatment successful suggest either missing events or ad-hoc discharge behavior.
+- No formal escalation: Repeated unsuccessful treatments lack a recorded escalation policy (senior review / specialist referral), producing potentially prolonged cycles.
+- Bottlenecks: Expert Examination and Thorough Examination are common upstream steps and appear in high-frequency traces; they may be capacity-constrained and contribute to delays.
+
+Summary (AS-IS)
+The mined model describes a flexible but inconsistent patient care flow from registration through assessment, diagnosis, treatment, and discharge. The dominant path is diagnosis followed by treatment and, in most cases, successful treatment leading to discharge. Important issues include skipped assessments, repeated unsuccessful treatment loops without recorded escalation, direct discharges without outcome coding, and high variability across registration sites (FD vs ER). These behaviors suggest opportunities for standardization, better triage rules, improved documentation, and an explicit rework/escalation policy to reduce repeated unsuccessful treatment cycles.

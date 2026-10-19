@@ -1,0 +1,71 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model refines the AS-IS rental management process into an efficient, compliant, and streamlined version. It enforces full sequential screening before acceptance to reduce premature rejections, eliminates unnecessary skips and redundant loops, limits late payment tolerances to prevent abuse, and promotes on-time payments with clear escalation. The purpose remains tenant acquisition and management, but optimized for higher acceptance rates of qualified tenants, minimal rework, faster issue resolution, and better revenue collection. Wasteful paths (e.g., late rejects post-viewing/paperwork) are prevented, screening is structured, and tenancy ends cleanly.
+
+#### Key Stakeholders and Roles Involved
+No specific roles defined; same implied actors as AS-IS: property managers for administrative tasks, tenants for applications and payments.
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers**: Prospective tenant 'Apply for Viewing Appointment'.
+
+1. **Apply for Viewing Appointment** → **Set Appointment** → **View The Property** (mandatory prefix; no early skips/rejects).
+
+2. **View The Property** → **Hand In The Paperwork** → **Check Paperwork** → **Screen Prospective Tenant** (enforced; no skips).
+
+3. **Screen Prospective Tenant** → Decision: 
+   - If basic screen fails → **Reject Prospective Tenant** → End.
+   - Else → **Extensive Screening** (now mandatory for proceeders).
+
+4. **Extensive Screening** → Decision:
+   - Fail → **Reject Prospective Tenant** → End.
+   - Pass → **Sign Contract** → **Move In**.
+
+**Post-Move-In Ongoing Management (Structured Loop)**:
+- **Move In** → Entry to monthly cycle: **Pay Rent**.
+- If **Pay Rent** on time → Loop back to next **Pay Rent** (expected norm).
+- Decision after Pay/Move In:
+  - If miss → **Miss Rent Payment** → **Issue Warning** → Decision:
+    - Tenant pays late → **Accept Late Payment** (limited to ONCE per tenancy) → Back to **Pay Rent**.
+    - No payment → **Evict Tenant** → End.
+- After warning/accept, monitor strictly: Second miss → Direct **Evict Tenant** (no repeat accepts).
+
+**Lease End**:
+- Voluntary: **Tenant Cancels Appartment** → End (after any payment cycle).
+- No unstructured skips; all paths converge.
+
+**Decision Points** (with Criteria):
+- Post-Screen: Reject if basic checks fail (e.g., credit/income); else extensive (deep background).
+- Post-Extensive: Reject if risks found; else accept.
+- Post-Move-In: Miss? → Warning once; repeat → Evict. Cancel allowed anytime post-move-in.
+- Outcomes: Reject (early, consolidated), Accept→Tenancy→Cancel/Evict.
+
+**Parallel Activities and Synchronization**: None; fully sequential with clear joins after decisions.
+
+**Exception Handling and Error Paths**:
+- Rejects only after screening (no post-view/paperwork waste).
+- Late payment: Single grace → Evict on repeat.
+
+**Rework Loops and Escalation Procedures**:
+- Rent payment: Repeating monthly loop until cancel/evict.
+- Late handling: Strict one-warning policy, no infinite accepts/loops.
+
+**End Conditions and Outcomes**:
+- Reject Prospective Tenant (post-screening only).
+- Tenant Cancels Appartment (voluntary end).
+- Evict Tenant (after payment failures).
+
+#### Process Metrics and Performance Characteristics (Targeted)
+- Reduced variants: ~5 main paths (reject early/late, accept→cancel short/long, accept→evict early/late).
+- Expected: 80%+ on-time pays, <10% late accepts, evict chronic defaulters promptly.
+- Performance: Shorten cycles (e.g., screening <100k ms total prefix), tenancy avg 12-24 months.
+- Higher throughput: Fewer drop-offs, streamlined to qualified tenants.
+
+#### Key Improvements Made
+- Consolidated rejections to post-screening, saving resources on unqualified early (reduced ~50% reject waste).
+- Eliminated skips: Mandatory full vetting before contract.
+- Structured screening: Basic → Extensive → Decide (no optional/direct rejects).
+- Strict payment policy: Single late acceptance, then evict → Reduced loops/abuse, faster revenue recovery.
+- Removed fragmentation: Predictable paths, no silent transitions.
+- Proactive: Minimize long low-value tenancies ending in cancel; enforce compliance.
+- Overall: Higher efficiency, lower pain points (bottlenecks, non-compliance), better governance.

@@ -1,0 +1,76 @@
+
+============================================================
+REPRESENTATION 1: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Treatment; freq. 11746) (Diagnosis; freq. 11746) (Discharge; freq. 10000) (Treatment successful; freq. 9005) (Thorough Examination; freq. 5922) (Expert Examination; freq. 5754) (Register at ER; freq. 5008) (Register at FD; freq. 4992) (Examination; freq. 3609) (Treatment unsuccessful; freq. 1746)
+case:citizen  empty: 0 values: (True; freq. 40477) (False; freq. 29051)
+case:gender  empty: 0 values: (True; freq. 40738) (False; freq. 28790)
+case:german speaking  empty: 0 values: (False; freq. 35062) (True; freq. 34466)
+case:private_insurance  empty: 0 values: (False; freq. 35036) (True; freq. 34492)
+case:underlying_condition  empty: 0 values: (True; freq. 35270) (False; freq. 34258)
+concept:name  empty: 0 values: (Treatment; freq. 11746) (Diagnosis; freq. 11746) (Discharge; freq. 10000) (Treatment successful; freq. 9005) (Thorough Examination; freq. 5922) (Expert Examination; freq. 5754) (Register at ER; freq. 5008) (Register at FD; freq. 4992) (Examination; freq. 3609) (Treatment unsuccessful; freq. 1746)
+protected  empty: 0 values: (False; freq. 52458) (True; freq. 17070)
+resource  empty: 0 values: (Doc. Low; freq. 27075) (Doc. Pro; freq. 20707) (Nurse 3; freq. 7310) (Nurse 2; freq. 4957) (Nurse 1; freq. 4797) (Nurse 4; freq. 2356) (Nurse 5; freq. 2326)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}

@@ -1,0 +1,392 @@
+AS-IS PROCESS MODEL
+
+============================================
+PROPERTY RENTAL AND TENANT MANAGEMENT PROCESS - AS-IS MODEL
+============================================
+
+1. PROCESS OVERVIEW AND PURPOSE
+============================================
+
+This process describes the actual observed behavior of a property rental and tenant management system. The process covers the complete lifecycle from initial tenant application through viewing appointments, screening, contract signing, move-in, ongoing rent payments, and eventual termination (either voluntary cancellation or eviction). 
+
+The AS-IS model reveals significant quality issues including:
+- Multiple rejection points with inconsistent screening criteria
+- Extensive rent payment issues with repeated missed payments
+- Ineffective warning and late payment acceptance cycles that perpetuate non-compliance
+- Long cycle times (average performance times ranging from 80,000 to 1,680,000+ seconds)
+- High rejection rates (over 60% of applicants are rejected at various stages)
+- Rework loops in the rent payment cycle indicating chronic payment problems
+
+2. KEY STAKEHOLDERS AND ROLES
+============================================
+
+Based on the observed activities, the following roles are involved (though not explicitly specified in source data):
+
+- **Prospective Tenants/Applicants**: Individuals seeking to rent property
+- **Property Management Office**: Responsible for appointment scheduling, paperwork processing
+- **Screening Personnel**: Conduct initial and extensive screening of applicants
+- **Underwriting/Approval Authority**: Make final accept/reject decisions on applications
+- **Leasing Agents**: Conduct property viewings, handle contract signing
+- **Property Manager/Landlord**: Monitor rent payments, issue warnings, make eviction decisions
+- **Accounting/Finance**: Process rent payments and late payment acceptances
+
+3. DETAILED STEP-BY-STEP PROCESS FLOW
+============================================
+
+3.1 PROCESS START AND INITIAL APPLICATION
+-------------------------------------------
+
+**Start Event**: Process begins when a prospective tenant initiates interest in a rental property.
+
+**Step 1: Apply for Viewing Appointment**
+- Trigger: Prospective tenant submits application to view property
+- All cases (9,151 with subsequent appointments + 849 immediate rejections = 10,000 total cases observed)
+- A significant portion (849 cases, ~8.5%) are rejected immediately without any appointment, suggesting pre-screening based on basic eligibility criteria not captured in the process
+- Average time to next step: ~82,731 seconds (23 hours)
+
+**Decision Point 1: Initial Screening (Implicit)**
+After applying for viewing appointment, the process branches:
+
+- **Path A**: Set Appointment (9,151 cases, 91.5%)
+- **Path B**: Immediate Rejection without appointment (849 cases, 8.5%) → Process ends
+
+3.2 PROPERTY VIEWING PHASE
+-------------------------------------------
+
+**Step 2: Set Appointment** (for Path A only)
+- Frequency: 9,151 cases
+- Scheduling of property viewing time
+- Average time to viewing: ~82,730 seconds (23 hours)
+
+**Step 3: View The Property**
+- Frequency: 9,151 cases attend viewing
+- Leasing agent shows property to prospective tenant
+- Prospective tenant inspects property
+
+**Decision Point 2: Post-Viewing Assessment**
+After viewing, three paths emerge:
+
+- **Path C**: Hand In The Paperwork (7,441 cases, 81.3%) - Tenant proceeds with application
+- **Path D**: Reject Prospective Tenant (1,710 cases, 18.7%) - Either tenant withdraws or management rejects after viewing → Process ends
+
+This early rejection after viewing (18.7%) suggests significant dropoff due to property condition, terms discussion, or mutual unsuitability.
+
+3.3 PAPERWORK AND SCREENING PHASE
+-------------------------------------------
+
+**Step 4: Hand In The Paperwork** (Path C)
+- Frequency: 7,441 cases
+- Prospective tenant submits required documentation (income verification, references, ID, rental history, etc.)
+- Average time to next step: ~81,965 seconds (22.8 hours)
+
+**Step 5: Check Paperwork**
+- Frequency: 7,441 cases
+- Administrative review of submitted documents for completeness and basic validity
+- Average time to next step: ~44,106 seconds (12.3 hours)
+
+**Step 6: Screen Prospective Tenant**
+- Frequency: 7,441 cases
+- Initial screening assessment (credit check, background check, reference verification)
+- Average time to decision: ~37,860 to ~84,370 seconds depending on outcome path
+- This is a critical decision point with multiple possible outcomes
+
+**Decision Point 3: Initial Screening Outcome**
+After initial screening, four paths emerge:
+
+- **Path E**: Reject Prospective Tenant (2,856 cases, 38.4%) → Process ends
+  * Average time: ~81,283 seconds (22.6 hours)
+  * Highest frequency rejection point in the process
+  
+- **Path F**: Extensive Screening required (2,793 cases, 37.5%)
+  * Average time to extensive screening: ~83,611 seconds (23.2 hours)
+  * Indicates borderline cases requiring deeper investigation
+  
+- **Path G**: Approve and Sign Contract directly (1,792 cases, 24.1%)
+  * Average time to contract: ~80,492 seconds (22.4 hours)
+  * Best-case scenario: immediate approval after initial screening
+
+3.4 EXTENSIVE SCREENING SUB-PROCESS
+-------------------------------------------
+
+**Step 7: Extensive Screening** (Path F only)
+- Frequency: 2,793 cases
+- Deeper investigation: additional reference checks, employment verification, prior landlord contact, financial analysis
+- This sub-process indicates uncertainty or risk factors identified in initial screening
+
+**Decision Point 4: Extensive Screening Outcome**
+After extensive screening, two paths emerge:
+
+- **Path H**: Reject Prospective Tenant (1,815 cases, 65% of those extensively screened) → Process ends
+  * Average time: ~84,371 seconds (23.4 hours)
+  * High rejection rate indicates extensive screening is often a "last check" before rejection
+  
+- **Path I**: Approve and Sign Contract (978 cases, 35% of those extensively screened)
+  * Average time to contract: ~82,200 seconds (22.8 hours)
+  * These tenants passed additional scrutiny
+
+**Cumulative Rejection Analysis**:
+Total rejections across all paths: 849 + 1,710 + 2,856 + 1,815 = 7,230 rejections out of ~10,000 applications (72.3% rejection rate)
+
+3.5 CONTRACT SIGNING AND MOVE-IN
+-------------------------------------------
+
+**Step 8: Sign Contract** (Paths G + I merge)
+- Frequency: 1,792 + 978 = 2,770 contracts signed
+- Only 27.7% of initial applicants reach this stage
+- Lease agreement is executed between landlord and approved tenant
+- Terms, conditions, rent amount, duration, and obligations are formalized
+
+**Step 9: Move In**
+- Frequency: 2,770 cases
+- Tenant takes possession of property
+- Keys are handed over
+- Move-in inspection typically conducted
+- Average time to first rent event: ~81,081 seconds (22.5 hours)
+- Security deposit and first month's rent typically collected at or before this point
+
+3.6 ONGOING TENANCY AND RENT PAYMENT CYCLE
+-------------------------------------------
+
+This is where the AS-IS process reveals significant operational problems.
+
+**Step 10: Initial Rent Payment Scenario**
+
+After Move In, tenants enter the monthly rent payment cycle with two possible paths:
+
+**Path J: Successful Rent Payment**
+- **Pay Rent** activity
+- Frequency: 2,656 cases pay rent after move-in (95.9% initial compliance)
+- 114 cases (4.1%) miss rent payment immediately after move-in
+
+**PROBLEM AREA: Rent Payment Loop and Non-Compliance Cycle**
+
+The process mining data reveals a significant recurring pattern:
+
+**Loop Structure**: Pay Rent → Pay Rent (14,819 self-loop occurrences)
+- This indicates ongoing monthly rent payments by compliant tenants
+- Average time between payments: ~81,120 seconds (22.5 hours, likely representing monthly intervals compressed in timestamp)
+- Tenants may pay rent multiple times (1 to 23+ consecutive payments observed in variants)
+
+**Step 11: Miss Rent Payment**
+- Frequency: 770 cases miss payment during ongoing tenancy (from Pay Rent state)
+- Plus 114 cases miss payment immediately after Move In
+- Plus 61 cases miss payment even after being accepted for late payment (recidivism)
+- Total observed: 945 "Miss Rent Payment" events
+- Average time to next step: ~81,027 seconds (22.5 hours)
+
+**Step 12: Issue Warning**
+- Frequency: 945 cases (every missed payment triggers a warning)
+- Property manager issues formal warning to tenant about missed payment
+- Average time to tenant response: ~80,664 seconds (22.4 hours)
+
+**Decision Point 5: Response to Warning**
+After warning is issued, two paths emerge:
+
+- **Path K**: Accept Late Payment (855 cases, 90.5%)
+  * Tenant pays late and landlord accepts payment
+  * Average time to return to payment cycle: ~80,643 seconds (22.4 hours)
+  * Problem: This creates moral hazard - tenants learn they can pay late without consequence
+  
+- **Path L**: Evict Tenant (90 cases, 9.5%)
+  * Landlord proceeds with eviction process
+  * Average time: ~84,447 seconds (23.5 hours)
+  * → Process ends
+
+**CRITICAL ISSUE: Late Payment Recidivism Loop**
+After "Accept Late Payment" (855 cases):
+- 794 cases (92.9%) return to "Pay Rent" and continue paying (at least temporarily)
+- 61 cases (7.1%) immediately "Miss Rent Payment" again, restarting the warning cycle
+
+This creates a vicious cycle where chronic late payers are repeatedly forgiven, consuming management resources and creating cash flow problems.
+
+3.7 TENANCY TERMINATION
+-------------------------------------------
+
+**Decision Point 6: Normal Termination Path**
+
+Tenants who maintain payment (from Pay Rent state) eventually terminate tenancy:
+
+**Path M: Tenant Cancels Apartment** (Voluntary termination)
+- Frequency: 2,680 cases from Pay Rent state
+- This represents normal end of lease or voluntary move-out
+- Average time: ~80,984 seconds (22.5 hours) from last payment to cancellation
+- → Process ends successfully
+
+**Termination Timing Analysis** (from variants):
+- Tenants cancel after 1 to 23+ consecutive rent payments
+- Median appears to be around 3-6 rent payment cycles
+- Longer tenancies (15-23 payments) are relatively rare (only 15-24 cases each)
+
+**Path N: Eviction** (Involuntary termination)
+- Frequency: 90 cases
+- Forced removal after non-payment and warning
+- Legal process initiated
+- → Process ends unsuccessfully
+
+**Path O: Tenant Cancels After Move In**
+- Some cases show termination paths directly from "Move In" state through skip transitions, though these are implicit in the Petri net structure
+- Represents immediate cancellation after taking possession (rare)
+
+3.8 PROCESS END STATES
+-------------------------------------------
+
+The process has multiple end states:
+
+1. **Rejected Before Viewing**: 849 cases (8.5%)
+2. **Rejected After Viewing**: 1,710 cases (17.1%)
+3. **Rejected After Initial Screening**: 2,856 cases (28.6%)
+4. **Rejected After Extensive Screening**: 1,815 cases (18.2%)
+5. **Voluntary Cancellation (Normal)**: 2,680 cases (26.8%)
+6. **Eviction**: 90 cases (0.9%)
+
+Total cases reaching sink (process end): ~10,000
+
+4. PROCESS METRICS AND PERFORMANCE CHARACTERISTICS
+============================================
+
+4.1 CONVERSION METRICS
+-------------------------------------------
+- **Application to Contract Rate**: 27.7% (2,770 contracts / ~10,000 applications)
+- **Application to Rejection Rate**: 72.3% (7,230 rejections / ~10,000 applications)
+- **Contract to Completion Rate**: 96.8% (2,680 normal cancellations / 2,770 contracts)
+- **Eviction Rate**: 3.2% (90 evictions / 2,770 contracts)
+
+4.2 SCREENING EFFECTIVENESS
+-------------------------------------------
+- **Pre-viewing Rejection**: 8.5% of applicants
+- **Post-viewing Rejection**: 18.7% of those who viewed
+- **Post-initial-screening Rejection**: 38.4% of those who submitted paperwork
+- **Post-extensive-screening Rejection**: 65% of those extensively screened
+- **Extensive Screening Trigger Rate**: 37.5% of screened applicants require extensive screening
+
+The high rejection rates at later stages indicate:
+- Screening criteria may not be clear upfront
+- Significant wasted effort processing unqualified applicants
+- Poor pre-qualification process
+
+4.3 RENT PAYMENT COMPLIANCE
+-------------------------------------------
+- **Initial Payment Compliance**: 95.9% (2,656/2,770 pay first rent)
+- **Missed Payment Rate**: Approximately 945 missed payment events across active tenancies
+- **Warning Issuance**: 100% of missed payments trigger warnings
+- **Late Payment Acceptance Rate**: 90.5% (855/945 warnings result in accepted late payment)
+- **Eviction Rate from Warnings**: 9.5% (90/945 warnings result in eviction)
+- **Recidivism Rate**: 7.1% (61/855 accepted late payers immediately miss payment again)
+
+4.4 CYCLE TIME PERFORMANCE
+-------------------------------------------
+- **Application to Viewing**: ~165,461 seconds (46 hours / 1.9 days)
+- **Viewing to Paperwork Submission**: ~81,965 seconds (22.8 hours)
+- **Paperwork to Screening**: ~44,106 seconds (12.3 hours)
+- **Screening to Decision**: ~37,860-84,371 seconds (10.5-23.4 hours)
+- **Contract to Move-in**: ~81,093 seconds (22.5 hours)
+- **Complete Process (shortest path to contract)**: ~406,411 seconds (112.9 hours / 4.7 days)
+- **Complete Process (with extensive screening)**: ~506,228 seconds (140.6 hours / 5.9 days)
+- **Complete Process (rejection after viewing)**: ~258,176 seconds (71.7 hours / 3 days)
+- **Full Tenancy (multiple rent cycles)**: Can extend to 1,680,000+ seconds (19+ days of processing time across 23+ payment cycles)
+
+These long cycle times indicate:
+- Significant delays between process steps
+- Possible manual handoffs and waiting times
+- Batch processing rather than continuous flow
+
+4.5 PROCESS BOTTLENECKS
+-------------------------------------------
+1. **Initial Screening Decision**: 38.4% rejection rate indicates this is a major filtering point
+2. **Extensive Screening**: 37.5% of applicants require this, adding ~100,000 seconds (27.8 hours) to cycle time
+3. **Late Payment Handling**: 945 warning cycles consuming management time and resources
+4. **Post-Viewing Dropout**: 18.7% rejection/withdrawal after viewing indicates mismatch between expectations and reality
+
+5. KEY CHALLENGES AND PAIN POINTS
+============================================
+
+5.1 INEFFICIENT SCREENING FUNNEL
+-------------------------------------------
+- **Late-stage rejections dominate**: 67% of rejections occur after paperwork submission (4,671 out of 7,230)
+- **Wasted effort**: Significant time invested in processing, viewing, and screening applicants who are ultimately rejected
+- **Unclear qualification criteria**: High rejection rates suggest applicants don't understand requirements upfront
+- **Inconsistent process**: Some applicants approved after initial screening, others require extensive screening with same outcome
+
+5.2 RENT PAYMENT COMPLIANCE CRISIS
+-------------------------------------------
+- **High missed payment frequency**: 945 missed payments across 2,770 tenancies (34% of tenants miss at least one payment)
+- **Lenient enforcement**: 90.5% of warnings result in accepted late payment rather than consequences
+- **Recidivism enabled**: 7.1% of forgiven late payers immediately default again
+- **Resource drain**: Each warning cycle consumes ~161,000+ seconds (44.7 hours) of management time
+- **Cash flow impact**: Unpredictable rent collection creates financial planning difficulties
+- **Moral hazard**: Tenants learn that missing payments has minimal consequences
+
+5.3 INADEQUATE SCREENING PREDICTING PAYMENT BEHAVIOR
+-------------------------------------------
+- Despite extensive screening (2,793 cases), one-third of tenants still experience payment issues
+- Screening focuses on qualification but fails to predict payment reliability
+- No apparent correlation between extensive screening and payment compliance
+- 65% of extensively screened applicants are rejected, yet those approved still default
+
+5.4 LONG CYCLE TIMES AND DELAYS
+-------------------------------------------
+- **Multi-day processing**: Even simple rejection paths take 3+ days
+- **Appointment scheduling delays**: ~23 hours average wait for viewing
+- **Paperwork processing bottleneck**: ~22.8 hours to process submitted documents
+- **Decision delays**: Screening decisions take 10.5-23.4 hours
+- **Cumulative customer experience**: Applicants wait 5-6 days for approval decision
+
+5.5 HIGH REJECTION RATE IMPACTS
+-------------------------------------------
+- **Market reputation risk**: 72.3% rejection rate may damage property reputation
+- **Lost revenue**: Empty properties while processing unqualified applicants
+- **Applicant dissatisfaction**: High rejection rates after significant time investment creates negative reviews
+- **Operational waste**: Staff time spent on 7,230 rejected applications with no revenue
+
+5.6 EVICTION PROCESS UNDERUTILIZATION
+-------------------------------------------
+- **Too lenient**: Only 9.5% of warnings lead to eviction
+- **Chronic non-payers protected**: Recidivism loop allows repeated violations
+- **Inconsistent enforcement**: No clear policy on when warnings become evictions
+- **Legal/financial risk**: Continued occupancy by non-paying tenants increases loss exposure
+
+5.7 PROCESS TRANSPARENCY AND TRACKING
+-------------------------------------------
+- **Multiple silent transitions**: Petri net shows 14 skip transitions, indicating optional paths not well documented
+- **Unclear decision criteria**: What triggers extensive screening vs. immediate approval?
+- **No intermediate states**: Missing payment goes directly to warning with no grace period or reminder
+- **Lack of automation**: Long cycle times suggest manual processing throughout
+
+5.8 DATA QUALITY AND MONITORING
+-------------------------------------------
+- **Performance times inconsistent**: Wide variation in similar activities suggests measurement or execution inconsistency
+- **Loop counting complexity**: Self-loop structure makes it difficult to track true tenant lifecycle
+- **No early warning indicators**: System waits for complete payment miss rather than monitoring for warning signs
+- **Limited process variants**: Only 30 significant variants suggests process is rigid and cannot adapt to special cases
+
+6. PROCESS FLOW SUMMARY
+============================================
+
+**HIGH-LEVEL AS-IS FLOW**:
+
+START → Apply for Viewing Appointment 
+  ├→ [8.5%] Immediate Reject → END
+  └→ [91.5%] Set Appointment → View Property
+      ├→ [18.7%] Reject → END
+      └→ [81.3%] Hand In Paperwork → Check Paperwork → Screen Tenant
+          ├→ [38.4%] Reject → END
+          ├→ [37.5%] Extensive Screening
+          │   ├→ [65%] Reject → END
+          │   └→ [35%] Sign Contract
+          └→ [24.1%] Sign Contract
+              → Move In → Rent Payment Cycle
+                  ├→ [~96%] Pay Rent (recurring monthly loop)
+                  │   ├→ Continue Paying (14,819 loop instances)
+                  │   ├→ Miss Payment → Issue Warning
+                  │   │   ├→ [90.5%] Accept Late Payment → Pay Rent (or Miss Again)
+                  │   │   └→ [9.5%] Evict Tenant → END
+                  │   └→ Tenant Cancels Apartment → END
+                  └→ [~4%] Miss Payment immediately → Issue Warning → ...
+
+**KEY INSIGHT**: The AS-IS process is characterized by:
+1. A highly selective but inefficient screening funnel (72.3% rejection)
+2. A lenient rent enforcement culture that enables chronic late payment (90.5% forgiveness rate)
+3. Long cycle times throughout (3-6 days for decisions)
+4. Weak connection between screening rigor and payment compliance outcomes
+
+This process requires significant redesign to improve efficiency, reduce waste, enforce compliance, and improve both landlord and tenant experience.

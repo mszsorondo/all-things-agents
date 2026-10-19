@@ -1,0 +1,82 @@
+
+        ============================================================================
+        ABSTRACT VARIANTS INTERPRETATION GUIDE
+        ============================================================================
+        
+        The abstract variants representation shows simplified process execution patterns
+        with their frequency and performance metrics.
+        
+        FORMAT STRUCTURE:
+        -----------------
+        Each line represents one variant pattern in the format:
+        
+        [Header] Activity1 -> Activity2 -> ... -> ActivityN: [Metrics]
+        
+        COMPONENTS:
+        -----------
+        1. HEADER (if response_header=True):
+        - Shows variant rank or identifier
+        - Example: "Variant 1:" or "1."
+        
+        2. ACTIVITY SEQUENCE:
+        - Activities separated by " -> " arrows
+        - Represents the order of execution
+        - Example: "Register -> Analyze -> Decide -> Reject"
+        
+        3. METRICS (after the colon):
+        
+        a) FREQUENCY METRICS:
+            - Absolute: Number in parentheses, e.g., "(42)"
+                Meaning: This variant occurred 42 times
+            
+            - Relative: Percentage value, e.g., "15.3%"
+                Meaning: This variant represents 15.3% of all cases
+        
+        b) PERFORMANCE METRICS (if include_performance=True):
+            - Format: [aggregation_method: value unit]
+            - Common aggregations:
+                • mean: Average duration
+                • median: Middle value (50th percentile)
+                • min: Fastest execution
+                • max: Slowest execution
+                • stdev: Standard deviation (variability)
+            
+            - Time units vary by scale:
+                • seconds, minutes, hours, days
+            
+            - Example: "mean: 3.5 days, stdev: 1.2 days"
+        
+        READING EXAMPLES:
+        -----------------
+        Example 1 (Simple):
+        "A -> B -> C: (150) 25.5%"
+        → Pattern A→B→C occurred 150 times, representing 25.5% of all cases
+        
+        Example 2 (With Performance):
+        "Register -> Check -> Approve: (89) 18.2%, mean: 2.3 hours, max: 8.1 hours"
+        → This pattern occurred 89 times (18.2% of cases)
+        → On average takes 2.3 hours, longest instance took 8.1 hours
+        
+        Example 3 (With Secondary Aggregation):
+        "Start -> Process -> End: (200) 40%, mean: 1.5 days (median: 1.2 days)"
+        → Main metric is mean (1.5 days), secondary metric is median (1.2 days)
+        → If median < mean, indicates positive skew (some very long cases)
+        
+        INTERPRETATION TIPS:
+        --------------------
+        • HIGH FREQUENCY (>20%): Main process flow, optimize for efficiency
+        • MEDIUM FREQUENCY (5-20%): Common variations, monitor regularly  
+        • LOW FREQUENCY (<5%): Exceptions or edge cases, check if needed
+        • HIGH VARIABILITY (stdev > 50% of mean): Unstable process, investigate
+        • OUTLIERS (max >> mean): Bottlenecks or problems in specific cases
+        
+        ACTIVITY/CASE IDENTIFIERS:
+        --------------------------
+        • activity_key: Specifies which column represents activities
+        • case_id_key: Specifies which column identifies cases
+        • timestamp_key: Specifies which column contains timestamps
+        
+        These determine how activities and cases are extracted from your data.
+        
+        ============================================================================
+        

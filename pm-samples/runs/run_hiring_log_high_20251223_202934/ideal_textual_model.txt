@@ -1,0 +1,111 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Overview: This IDEAL (to-be) process defines a streamlined, auditable, and deterministic hiring pipeline derived from the AS-IS observations. It preserves all required visible activities from the source models but imposes clear sequencing, removes redundant and inconsistent behaviors, eliminates decision reversals, collapses redundant checks, and enforces SLAs for responsiveness.
+- Purpose: Provide the recommended target process that improves fairness, predictability, compliance, and throughput while minimizing candidate rework, duplicate assessments, and long idle times.
+
+Key stakeholders and roles involved
+- Roles are not enumerated in the source models and therefore are not rigidly assigned here. The IDEAL model focuses on structural governance and sequencing. Implementers should map activities to appropriate parties (e.g., Recruiter, Technical Interviewer, Background-Check Team, Hiring Manager, HR) during deployment; those assignments are out of scope of this translation.
+
+High-level principles applied
+- Deterministic gating: Introduce clear gates (binary decisions) that determine whether a candidate proceeds, moves to an extensive check, or is rejected. No backward transitions from 'Rejected' to 'Offer' are allowed without a formal reinstatement procedure.
+- Single source of truth for decision states: Decision updates must be atomic and recorded in one canonical system to avoid conflicting records.
+- Minimal redundancy: Consolidate Background Check and Extensive Background Check into a two-tier check with explicit criteria; avoid performing both unless triggered by objective criteria.
+- Bounded retries: Limit interviews or re-assessments to a maximum allowed number with explicit reasons (e.g., reschedule, candidate withdraws, or serious concerns warrant re-test).
+- SLAs: Establish maximum waiting times between steps to reduce excessive delays observed in AS-IS.
+
+Detailed step-by-step IDEAL flow
+Start conditions and triggers
+1. Start: Hand In Job Application (candidate submits application). This is the canonical process start.
+
+Stage 1 — Initial triage (single gate)
+2. Telephonic Screening (mandatory first gate)
+- Trigger: Application received.
+- Purpose: Quick triage for minimum qualifications, culture fit, and interest.
+- Decision outcomes:
+  - Proceed to Stage 2 (Screening Interview) if candidate passes triage.
+  - Reject (Final) if fails minimum criteria.
+- SLA: Telephonic screening completed within 3 business days of submission.
+- Note: Telephonic Screening is the unique path from application; no bypass to technical interviews or background checks without passing the triage.
+
+Stage 2 — Screening Interview (technical & behavioral triage)
+3. Screening Interview (in-person / structured video)
+- Purpose: Assess core competencies, basic technical aptitude, and behavioral fit in a single structured session.
+- Decision outcomes:
+  - Proceed to Stage 3 (Background Check and Technical Assessment) if screening passed.
+  - Reject (Final) if screening failed. Reinstatement requires documented re-application and a new application record.
+- SLA: Scheduled within 7 business days of passing telephonic screening.
+
+Stage 3 — Background check (tiered) and technical assessment (parallel, bounded)
+4. Tiered Background Check
+- Background Check (standard): performed for all candidates who pass Screening Interview.
+- Extensive Background Check: only triggered by objective flags (e.g., role requires security clearance, anomalies in records). Do not perform both by default.
+- Decision outcomes:
+  - Clear -> Proceed to Stage 4.
+  - Fail -> Reject (Final).
+- SLA: Standard background check completed within 5 business days; Extensive check has a documented maximum (e.g., 15 business days) and must be flagged as exceptional.
+
+5. Technical Assessment (structured, limited parallelism)
+- A canonical ordered sequence is defined for technical interviews to ensure fairness and measurable progression. The IDEAL model uses a single technical track with optional specialist rounds as needed:
+  - Coding Interview (core technical assessment) — required for technical roles.
+  - Follow-up specialist interview(s) — choose at most one of {Frontend, Backend, ML} depending on role profile; these are conditional and executed after Coding Interview.
+- Concurrency: Coding Interview and Background Check can run in parallel, but specialist interviews only begin after Coding Interview completes.
+- Retries: Only one allowed re-assessment (e.g., in case of scheduling failure or appeal), with justification and documented approval.
+- SLA: Coding Interview scheduled within 10 business days after background check initiation; specialist interview scheduled within 7 business days after coding.
+
+Stage 4 — Behavioral Interview (single structured instance)
+6. Behavioral Interview
+- One structured behavioral interview after technical sequence (or combined into screening for non-technical roles). No unlimited behavioral re-looping.
+- Decision outcomes:
+  - Proceed to Final Decision (Offer) if passes.
+  - Reject (Final) if fails.
+- SLA: Completed within 5 business days after last technical interview.
+
+Final decision and offer issuance
+7. Final Decision (atomic and auditable)
+- Decision criteria: combine structured screening notes, background check result, technical and behavioral interview scores, and hiring manager approval.
+- Outcomes:
+  - Make Job Offer (final) — recorded once and optionally followed by a single confirmed offer event. Rescinding an offer must be rare and requires formal approval with a required comment.
+  - Reject (final).
+- No transitions allowed from Rejected -> Offer or from Offer -> Rejected without documented reinstatement/rescission procedures. Offer can be withdrawn only by formal rescind action and must be captured as an administrative state distinct from routine application rejection.
+- SLA: Final decision within 3 business days after the last required stage completes.
+
+Exception handling, rework loops and escalation procedures (controlled)
+- Reinstatement: If a rejected candidate needs re-evaluation due to new information, create a new application instance or use a documented reinstatement workflow that captures who authorized the re-evaluation and why.
+- Offer rescind: Must be done through a formal HR approval process; record reasons and notify candidate promptly.
+- Failed background checks: If a standard background check returns flags, escalate to hiring manager/HR to decide if Extensive Background Check is warranted. Do not proceed to technical interviews until standard checks are cleared unless explicitly authorized.
+- Schedule failures / candidate no-shows: allow one reschedule; second no-show => withdraw candidacy (Reject).
+
+End conditions and outcomes (IDEAL)
+- Successful hire: Make Job Offer (single canonical event) and candidate acceptance flows into onboarding (out of scope).
+- Unsuccessful: Application Rejected (single canonical terminal state). All rejected states are final unless through documented reinstatement.
+
+Process metrics and performance targets (IDEAL)
+- Throughput and SLA targets (suggested):
+  - Telephonic Screening: <= 3 business days from application.
+  - Screening Interview: <= 7 business days after telephonic.
+  - Background Check (standard): <= 5 business days.
+  - Coding Interview: <= 10 business days from background check start (can be parallelized to reduce wall-clock time).
+  - Specialist technical interview: <= 7 business days after coding.
+  - Behavioral Interview: <= 5 business days after last technical.
+  - Final decision: <= 3 business days after last required stage.
+- Quality metrics:
+  - Variability reduction: target >90% of cases follow the main linear variant (Application -> Telephonic -> Screening -> Background Check -> Coding -> Specialist(if needed) -> Behavioral -> Decision).
+  - Decision stability: target <1% of cases where a rejected candidate later receives an offer; track and investigate any exception.
+  - Rework: limit to <5% of candidates requiring re-assessment or additional interviews beyond the allowed single retry.
+
+Improvements made relative to AS-IS
+- Single deterministic path for the majority of candidates reduces variability and candidate confusion.
+- Eliminates ad-hoc reversal of decisions (no implicit Application Rejected -> Offer), closing a major data integrity issue spotted in AS-IS.
+- Consolidated background-check policy avoids redundant checks and reduces total elapsed time for most candidates.
+- Bounded retries and explicit criteria reduce repeated behavioral/technical interviews and prevent interview fatigue.
+- Explicit SLAs dramatically reduce the long waiting times observed in AS-IS and make performance measurable.
+- Clear escalation and reinstatement procedures remove hidden ad-hoc loops and make exceptions auditable.
+
+Risks and considerations for rollout
+- Implementation requires a single authoritative case record in the ATS/HRIS to prevent contradictory states.
+- Automation to schedule interviews and to block certain transitions (e.g., prevent re-activation of rejected cases) will reduce human errors but requires policy and tool changes.
+- Careful change management needed to apply the consolidated background-check policy so that role-specific legal/security requirements are still met.
+
+Summary (IDEAL)
+- The IDEAL model converts the highly variable observed process into a structured, auditable pipeline that preserves the same visible activities but enforces ordering, reduces redundancy, bounds retries, and establishes measurable SLAs. This reduces lead times, stabilizes decisions, and improves candidate experience without removing legitimate evaluation steps.

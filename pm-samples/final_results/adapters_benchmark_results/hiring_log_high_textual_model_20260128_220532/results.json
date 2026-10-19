@@ -1,0 +1,109 @@
+{
+  "baseline": {
+    "metrics": {
+      "precision": 0.7751937984496124,
+      "recall": 1.0,
+      "f1": 0.8733624454148472,
+      "TP": 100,
+      "TN": 71,
+      "FP": 29,
+      "FN": 0,
+      "total_compute_time_seconds": 2210.7175953388214,
+      "total_tokens": 684369,
+      "prompt_tokens": 550464,
+      "completion_tokens": 133905
+    },
+    "num_false_negatives": 0,
+    "num_false_positives": 29
+  },
+  "audiences": {
+    "executives": {
+      "metrics": {
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.888888888888889,
+        "TP": 100,
+        "TN": 75,
+        "FP": 25,
+        "FN": 0,
+        "total_compute_time_seconds": 2199.5058958530426,
+        "total_tokens": 933074,
+        "prompt_tokens": 796864,
+        "completion_tokens": 136210
+      },
+      "adapted_model_length": 16383,
+      "num_false_negatives": 0,
+      "num_false_positives": 25
+    },
+    "children": {
+      "metrics": {
+        "precision": 0.8928571428571429,
+        "recall": 1.0,
+        "f1": 0.9433962264150945,
+        "TP": 100,
+        "TN": 88,
+        "FP": 12,
+        "FN": 0,
+        "total_compute_time_seconds": 2381.007707118988,
+        "total_tokens": 886610,
+        "prompt_tokens": 747264,
+        "completion_tokens": 139346
+      },
+      "adapted_model_length": 12635,
+      "num_false_negatives": 0,
+      "num_false_positives": 12
+    }
+  },
+  "comparison": {
+    "baseline_f1": 0.8733624454148472,
+    "audiences": {
+      "executives": {
+        "f1": 0.888888888888889,
+        "f1_delta": 0.015526443474041751,
+        "precision": 0.8,
+        "recall": 1.0,
+        "TP": 100,
+        "FP": 25,
+        "TN": 75,
+        "FN": 0
+      },
+      "children": {
+        "f1": 0.9433962264150945,
+        "f1_delta": 0.07003378100024726,
+        "precision": 0.8928571428571429,
+        "recall": 1.0,
+        "TP": 100,
+        "FP": 12,
+        "TN": 88,
+        "FN": 0
+      }
+    },
+    "ranking": [
+      "executives",
+      "children"
+    ]
+  },
+  "config": {
+    "experiment_identifier": "hiring_log_high_textual_model_20260128_220532",
+    "model_identifier": "hiring_log_high_textual_model",
+    "timestamp": "20260128_220532",
+    "datetime": "2026-01-28T22:05:38.843164",
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "xes_filename": "hiring_log_high.xes",
+    "textual_model_path": "benchmark_runs/run_20251222_004259/hiring_log_high_textual_model.txt",
+    "textual_model_filename": "hiring_log_high_textual_model.txt",
+    "adapter_llm": "openai:gpt-5",
+    "validator_llm": "gpt-5-mini",
+    "k_valid": 100,
+    "k_invalid": 100,
+    "audiences_tested": [
+      "executives",
+      "children"
+    ],
+    "skip_adaptation": false,
+    "adapted_models_dir": null,
+    "skip_baseline": false,
+    "baseline_last": true,
+    "output_dir": "/home/marco/Escritorio/austral/all-things-agents/pm-samples/downstream/adapters_benchmark_results/hiring_log_high_textual_model_20260128_220532"
+  }
+}

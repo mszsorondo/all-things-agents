@@ -1,0 +1,191 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage the lifecycle of residential tenancy from initial interest through screening, contracting, move-in, recurring rent collection, delinquency handling, and termination (by tenant cancellation or eviction).
+- Scope covered by the observed behavior:
+  - Pre-lease funnel: application, (optional) appointment and viewing, (optional) paperwork and screening, decision to reject or contract.
+  - Post-lease operations: move-in and an ongoing rent cycle with timely payments, missed payments, warnings, late payment acceptance, repeated delinquency, tenant-initiated cancellation, and eviction escalation.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source data. Activity names imply interactions between a prospective tenant/tenant (e.g., Apply for Viewing Appointment, Hand In The Paperwork, Pay Rent) and a property/landlord function (e.g., Check Paperwork, Screen Prospective Tenant, Issue Warning, Accept Late Payment, Evict Tenant). Because explicit role assignments are not provided, this model does not prescribe swimlane ownership.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start event: A prospective tenant initiates the process by performing Apply for Viewing Appointment.
+
+Pre-lease funnel (application to decision)
+1) Apply for Viewing Appointment (start)
+   - Immediately followed by one of the following orderings:
+     - Apply -> Set Appointment -> View The Property
+     - Apply -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant
+     - Apply -> Set Appointment -> View The Property -> Reject Prospective Tenant (appointment/viewing but no paperwork/screening recorded)
+     - Apply -> Reject Prospective Tenant (direct rejection without appointment/viewing/paperwork/screening)
+
+2) Set Appointment (optional)
+   - May be performed after Apply for Viewing Appointment.
+   - May be skipped entirely; in that case the process can proceed directly to the decision point (reject/contract) without viewing or paperwork/screening.
+
+3) View The Property (optional)
+   - Common after Set Appointment.
+   - May be followed by:
+     - Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant
+     - Direct rejection (View The Property -> Reject Prospective Tenant)
+     - Direct decision without paperwork/screening (i.e., proceeding to contract decision stage)
+
+4) Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant (optional group)
+   - If paperwork is handed in, it is followed by Check Paperwork and then Screen Prospective Tenant.
+   - This entire paperwork/screening group can be skipped; decisions (reject or sign) may be taken directly after Apply or after viewing.
+   - After Screen Prospective Tenant:
+     - Either proceed directly to decision (reject/sign), or
+     - Perform Extensive Screening (optional additional check) before the decision.
+
+5) Extensive Screening (optional, after initial screening only)
+   - May or may not occur.
+   - Leads to the same decision point as regular screening (reject or sign).
+
+Decision point: Prospective tenant outcome
+- Exclusive outcomes:
+  - Reject Prospective Tenant (end state for the application; the case terminates).
+  - Sign Contract -> Move In (proceed to occupancy and rent cycle).
+
+Observed valid decision paths (non-exhaustive but covering all observed categories):
+- Apply -> Reject Prospective Tenant.
+- Apply -> Set Appointment -> View The Property -> Reject Prospective Tenant.
+- Apply -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Reject Prospective Tenant.
+- Apply -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Reject Prospective Tenant.
+- Apply -> [optional Set Appointment, optional View, optional paperwork/screening/extensive] -> Sign Contract -> Move In.
+
+Post-lease operations (rent cycle after move-in)
+6) Move In
+   - After signing, the tenant moves in.
+   - First cycle ordering is non-deterministic; either of the following can occur first:
+     - Move In -> Pay Rent (normal case)
+     - Move In -> Miss Rent Payment (delinquency occurs before any successful payment)
+
+7) Rent cycle core activities and branching
+   - Pay Rent (repeatable):
+     - Pay Rent can occur repeatedly in sequence (Pay Rent -> Pay Rent), allowing an unlimited number of consecutive on-time payments.
+     - After any Pay Rent, an internal decision occurs:
+       - Continue tenancy (loop back to another Pay Rent in the next cycle), or
+       - Terminate tenancy via Tenant Cancels Appartment (tenant-initiated termination).
+       - Infrequently, termination by Evict Tenant is also observed in proximity to delinquency handling; eviction is discussed under the missed payment branch below.
+
+   - Miss Rent Payment (repeatable):
+     - If a payment is missed, Issue Warning occurs.
+     - After Issue Warning, the following behaviors are observed:
+       - Accept Late Payment (optional) -> Pay Rent (late payment is accepted and recorded as a subsequent Pay Rent).
+         - After Accept Late Payment, either:
+           - The next cycle proceeds with Pay Rent, or
+           - The case may still encounter another Miss Rent Payment in a subsequent cycle (Accept Late Payment -> Miss Rent Payment is observed).
+       - Do not accept late payment (implied by the absence of Accept Late Payment):
+         - The process can cycle back to Miss Rent Payment again, resulting in consecutive missed cycles with repeated warnings.
+       - Escalate to Evict Tenant:
+         - A minority of cases escalate from Issue Warning to Evict Tenant without an intervening successful payment.
+
+8) Tenancy termination (end states)
+- Tenant Cancels Appartment:
+  - Observed after one or more Pay Rent occurrences; cancellation can happen soon after move-in or after many payment cycles.
+  - This ends the case.
+- Evict Tenant:
+  - Observed after delinquency escalation, typically following Issue Warning.
+  - This ends the case.
+
+Additional ordering and loop rules to preserve all observed behaviors
+- Pre-lease optionality:
+  - Set Appointment and View The Property are optional as a pair; both may be skipped, or only paperwork and screening may be performed (rare), or decisions can be taken immediately after Apply or after View without paperwork/screening.
+  - If paperwork is undertaken, the observed order is: Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant; Extensive Screening, if it occurs, follows Screen Prospective Tenant and precedes the decision.
+- Decision alternatives:
+  - From the decision point, exactly one of the following occurs: Reject Prospective Tenant (end) or Sign Contract (continue).
+- Post-lease loop and interleavings:
+  - After Move In, either Pay Rent or Miss Rent Payment may occur first.
+  - Pay Rent can self-repeat any number of times.
+  - Miss Rent Payment can repeat (consecutive delinquent cycles with multiple warnings).
+  - Accept Late Payment is optional after a warning and, even when accepted, does not guarantee the next cycle is a successful Pay Rent; a subsequent Miss Rent Payment is permissible.
+  - Evict Tenant may occur after a warning (with or without a subsequent accepted late payment); Tenant Cancels Appartment may occur after any successful Pay Rent cycle.
+
+Exception handling and error paths
+- Direct early rejections:
+  - Applications may be rejected immediately after Apply for Viewing Appointment (no appointment, viewing, or screening).
+  - Rejection can also follow viewing but before any paperwork/screening.
+- Skipped due diligence steps:
+  - It is possible to reach a reject/contract decision without documented paperwork, checks, or screenings. This reflects either true bypasses or incomplete recording; the AS-IS model permits it because it is observed/allowed by the discovered control-flow.
+- Delinquency escalation:
+  - Repeated Miss Rent Payment events with Issue Warning and optional Accept Late Payment cycles are supported.
+  - Eviction is a terminal escalation, observed after Issue Warning.
+- Tenant termination:
+  - Tenant Cancels Appartment can be triggered after any Pay Rent cycle.
+
+End conditions and outcomes
+- The process ends in one of:
+  - Reject Prospective Tenant (pre-lease).
+  - Tenant Cancels Appartment (post-lease, tenant-initiated).
+  - Evict Tenant (post-lease, landlord-initiated).
+
+Process metrics and performance characteristics
+- Directly-follows (count) highlights:
+  - Set Appointment -> View The Property: 9,151
+  - Apply for Viewing Appointment -> Set Appointment: 9,151
+  - View The Property -> Hand In The Paperwork: 7,441
+  - Hand In The Paperwork -> Check Paperwork: 7,441
+  - Check Paperwork -> Screen Prospective Tenant: 7,441
+  - Screen Prospective Tenant -> Reject Prospective Tenant: 2,856
+  - Screen Prospective Tenant -> Extensive Screening: 2,793
+  - Extensive Screening -> Reject Prospective Tenant: 1,815
+  - Screen Prospective Tenant -> Sign Contract: 1,792
+  - Extensive Screening -> Sign Contract: 978
+  - Sign Contract -> Move In: 2,770
+  - Move In -> Pay Rent: 2,656; Pay Rent -> Pay Rent: 14,819 (strong self-loop)
+  - Pay Rent -> Tenant Cancels Appartment: 2,680
+  - Pay Rent -> Miss Rent Payment: 770; Move In -> Miss Rent Payment: 114
+  - Miss Rent Payment -> Issue Warning: 945; Issue Warning -> Accept Late Payment: 855
+  - Issue Warning -> Evict Tenant: 90; Accept Late Payment -> Pay Rent: 794; Accept Late Payment -> Miss Rent Payment: 61
+
+- Variant-level proportions (most frequent observed exact paths):
+  - Rejections dominate the pre-lease funnel:
+    - 28%: Apply -> Set -> View -> Hand In -> Check -> Screen -> Reject
+    - 18%: Apply -> Set -> View -> Hand In -> Check -> Screen -> Extensive -> Reject
+    - 17%: Apply -> Set -> View -> Reject
+    - 8%: Apply -> Reject
+    - Combined, approximately 71% of cases terminate with rejection before contracting.
+  - Contracting and tenancy (selected examples):
+    - 2%: Apply -> … -> Sign -> Move In -> Pay Rent (repeats) -> Tenant Cancels Appartment
+    - Several long-running tenancy variants (each ~1%) show many Pay Rent cycles interspersed with periodic Miss Rent Payment -> Issue Warning -> Accept Late Payment subloops, eventually ending by Tenant Cancels Appartment or, rarely, Evict Tenant.
+
+- Performance (average time between steps, in seconds):
+  - Apply -> Set Appointment: ~82,731; Set Appointment -> View: ~82,730
+  - View -> Hand In The Paperwork: ~81,965; Hand In -> Check: ~44,106; Check -> Screen: ~37,860
+  - Screen -> Sign Contract: ~80,492; Extensive Screening -> Sign Contract: ~82,200
+  - Sign Contract -> Move In: ~81,093; Move In -> Pay Rent: ~81,081; Pay Rent -> Pay Rent: ~81,120
+  - Miss Rent Payment -> Issue Warning: ~81,027; Issue Warning -> Accept Late Payment: ~80,664; Issue Warning -> Evict Tenant: ~84,447
+  - Note: Case-level durations for long tenancy variants range from ~4.2M to ~6.2M seconds (roughly 49–71 days), driven by many repeated rent cycles and delinquency loops.
+
+Key challenges and pain points observed in the current process
+- High attrition in the pre-lease funnel:
+  - Approximately 71% of cases end in rejection, frequently after performing time-consuming steps (appointment, viewing, paperwork, screening). This creates wasted effort upstream.
+- Inconsistent gating and optionality:
+  - Decisions to reject or contract can occur without recorded paperwork/screening, and sometimes even without viewing. While observed, this weakens control and compliance and risks inconsistent decisions.
+- Rework and operational load in delinquency handling:
+  - The rent cycle permits unlimited repetitions of late/missed payments, warnings, and late payment acceptances. Accept Late Payment does not guarantee improved behavior; subsequent misses are common, sustaining administrative overhead.
+- Eviction is rare but costly:
+  - Although Issue Warning -> Evict Tenant occurs infrequently, it introduces legal and operational risk. Escalation paths exist with little evidence of intervening remediation steps besides Accept Late Payment.
+- Tenant churn after move-in:
+  - Tenant Cancels Appartment frequently follows one or more Pay Rent cycles, including shortly after move-in in some traces, indicating potential early dissatisfaction or mobility.
+- Throughput time accumulates in multi-step pre-lease flows:
+  - Appointment-to-viewing and viewing-to-paperwork transitions average ~10–23 hours between steps; when combined across multiple steps and variants, overall pre-lease lead times may be material.
+- Data/recording variability:
+  - Optional/skipped steps suggest either true bypasses or incomplete recording. Either way, the AS-IS control-flow must permit these paths to remain behaviorally faithful.
+
+End conditions and outcomes
+- Reject Prospective Tenant (application closed without lease).
+- Tenant Cancels Appartment (tenancy terminated by tenant).
+- Evict Tenant (tenancy terminated by landlord escalation).
+
+This AS-IS model captures all observed variants by allowing:
+- Optional appointment, viewing, paperwork, screening, and extensive screening prior to decision.
+- Exclusive decision between rejection and contracting.
+- Post-move-in rent cycles with:
+  - Unlimited Pay Rent repetitions.
+  - Miss Rent Payment loops with Issue Warning and optional Accept Late Payment, including consecutive misses and accept-then-miss patterns.
+  - Termination via tenant cancellation after any successful payment cycle.
+  - Eviction following warning escalation (with or without subsequent accepted late payment).

@@ -1,0 +1,202 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage end-to-end hiring from application submission through interviews, screening, background checks, and either job offer issuance or rejection.
+- Model basis: A Petri net discovered by an ILP miner with perfect fitness. It reproduces all observed behaviors and therefore exhibits high variability, optionality, and rework loops. Silent (tau) transitions represent implicit case closure points.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. Responsibilities are inferred from activity names only:
+  - Recruiting/Screening staff: Telephonic Screening, Screening Interview, Make Job Offer, recording Application Rejected.
+  - Technical interviewers: Coding Interview, Frontend Interview, Backend Interview, ML Interview.
+  - Compliance/Background-check function: Background Check, Extensive Background Check.
+
+Detailed step-by-step process flow
+1) Start conditions and triggers
+   - Trigger: Candidate performs Hand In Job Application (explicit start event).
+   - Immediately after submission, the process enables a wide set of subsequent activities. The model allows many next steps with flexible ordering, including screenings, multiple interview types, background checks, and even early termination.
+
+2) Core activities and flexible sequencing (inclusive decisions with rework)
+   - Telephonic Screening
+     - May occur soon after application or later.
+     - Can repeat (re-screen/re-contact) based on the model’s loops.
+     - Outcomes in practice: proceed to further screenings or interviews, continue with checks, or record Application Rejected.
+   - Screening Interview
+     - May occur with or without prior Telephonic Screening.
+     - Can repeat in some cases (re-screens).
+     - After this step, the model again opens many options: technical interviews, behavioral interview, background checks, rejection, or—occasionally—Make Job Offer.
+   - Coding Interview
+     - May occur before or after screening steps; can repeat (multiple coding rounds).
+     - Often precedes track-specific interviews but is not strictly enforced by the model (some traces enable specialty interviews first).
+   - Specialty technical interviews (role-dependent but not enforced by the model)
+     - Frontend Interview
+     - Backend Interview
+     - ML Interview
+     - The model permits any combination and ordering: e.g., Backend followed by Frontend, ML without Coding first, or mixes of two or three specializations in the same case. Re-interviews are possible.
+   - Behavioral Interview
+     - Can occur before, between, or after technical interviews; can repeat.
+   - Background Check
+     - Can be performed at multiple points (before or after interviews), and can repeat.
+   - Extensive Background Check
+     - May be triggered in addition to or instead of Background Check. The model does not enforce mutual exclusivity; both can appear in the same case, in either order, possibly more than once.
+
+3) Decision points with criteria and outcomes (exclusive decisions)
+   - Pass/fail decisions at each screening/interview:
+     - If a screening/interview is assessed as failed, Application Rejected may be recorded at various states (the model allows rejection after several different steps).
+   - Background screening decisions:
+     - If background findings are clean, the case may continue toward offer or closure.
+     - If issues are detected, Extensive Background Check may be performed; otherwise, Application Rejected may be recorded.
+   - Offer decisions:
+     - Make Job Offer can occur from certain states that are reachable after early screenings or interviews (e.g., post-Screening Interview or post-Behavioral Interview), even if background checks are incomplete and some interviews have not been done.
+
+4) Parallel activities and synchronization points
+   - The discovered net primarily reflects flexible/inclusive routing and rework rather than strict AND-parallelism. Activities are scheduled and executed in varied orders; no explicit synchronization points are required before many next steps.
+   - Multiple potential next actions can be enabled at once; actual performance is typically sequential due to scheduling.
+
+5) Exception handling and error paths
+   - Rework loops: Telephonic Screening and Screening Interview can repeat for clarification or rescheduling. Coding and specialty interviews can also repeat.
+   - Background checks: Background Check and Extensive Background Check can both occur in the same case, sometimes redundantly.
+   - Early closure: The model permits implicit termination (via silent transitions) from many intermediate states, allowing cases to end without a visible terminal event.
+   - Inconsistent terminal behavior: Application Rejected is visible but not always the last event; some traces continue steps or end implicitly after a rejection stamp.
+
+6) Rework loops and escalation procedures
+   - Re-interview loops are common and unconstrained (no maximum number enforced).
+   - Escalation to Extensive Background Check can happen at multiple points, even after offer issuance in some cases.
+   - There is no enforced check that blocks offer issuance until all required interviews or screenings are complete.
+
+7) End conditions and outcomes
+   - Visible end-type outcomes:
+     - Application Rejected: may occur after many different steps; not guaranteed to be final in the log (case can still end implicitly afterward).
+     - Make Job Offer: may occur before or after background checks and before completing all interviews.
+   - Implicit end:
+     - Silent (tau) transitions allow the case to terminate from numerous intermediate places (e.g., after certain screenings, interviews, or even without explicit rejection/offer).
+
+Process metrics and performance characteristics
+- Very high process variability (perfect-fitness ILP result): numerous possible paths, repetitions, and early exits.
+- Rework incidence: The model permits repeated screenings and interviews; background checks can be duplicated (basic and extensive both).
+- Sequencing inconsistency: Offers sometimes precede completion of interviews and/or background checks.
+- Termination ambiguity: Cases often close via implicit end events, reducing traceability of final outcomes.
+- Potential compliance risk: Issuing Make Job Offer prior to completing background checks or the full assessment path.
+
+Key challenges and pain points
+- Lack of enforced sequencing and gating: No hard requirement to complete specific interviews before offer; background checks can be late or redundant.
+- Duplicate/overlapping assessments: Multiple rounds without clear caps increase cycle time and candidate fatigue.
+- Role-track confusion: Frontend, Backend, and ML interviews can appear in the same case, suggesting poor track assignment and scheduling discipline.
+- Inconsistent terminal recording: Implicit endings and rejections that are not final degrade reporting quality.
+- Increased cycle time and cost of hiring due to rework and unchecked variability.
+")
+
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Standardize and control the hiring process to minimize rework, ensure compliance, and improve candidate experience while retaining necessary assessment depth.
+- Design principle: Preserve legitimate behaviors from the AS-IS (e.g., optional early telephonic triage, track-specific interviews, background screening with possible escalation) while removing wasteful loops, enforcing proper sequencing, and clarifying end states.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. Responsibilities inferred from activity names only:
+  - Recruiting/Screening staff: Telephonic Screening, Screening Interview, Make Job Offer, recording Application Rejected.
+  - Technical interviewers: Coding Interview, Frontend Interview, Backend Interview, ML Interview.
+  - Compliance/Background-check function: Background Check, Extensive Background Check.
+
+Detailed step-by-step process flow
+1) Start conditions and triggers
+   - Trigger: Hand In Job Application (start event).
+   - Case record is created; candidate track is determined by requisition (Frontend, Backend, or ML).
+
+2) Initial triage and screening (controlled optionality)
+   - Telephonic Screening (optional, inclusive decision)
+     - Performed if initial application requires clarification or basic qualification check.
+     - Decision (exclusive):
+       - Fail → Application Rejected → End.
+       - Pass or Not Needed → proceed.
+   - Screening Interview (mandatory)
+     - Structured screening to confirm role fit.
+     - Decision (exclusive):
+       - Fail → Application Rejected → End.
+       - Pass → proceed.
+
+3) Technical assessment (track-based, enforced sequencing)
+   - Coding Interview (mandatory for all technical tracks)
+     - Decision (exclusive):
+       - Fail → Application Rejected → End.
+       - Pass → proceed to track-specific interview.
+   - Track-specific interview (exclusive choice by track)
+     - Frontend Interview OR Backend Interview OR ML Interview (choose exactly one per requisition).
+     - Decision (exclusive):
+       - Fail → Application Rejected → End.
+       - Pass → proceed.
+   - Behavioral Interview (mandatory, once)
+     - Decision (exclusive):
+       - Fail → Application Rejected → End.
+       - Pass → proceed.
+
+   Notes on rework control:
+   - At most one additional Coding Interview is allowed for calibration in edge cases; additional repeats are disallowed.
+   - Track-specific interview may be repeated once only if there is a scheduling/assessment defect; cross-track mixing (e.g., both Frontend and Backend in one case) is disallowed unless the requisition genuinely covers multiple tracks (requires prior role clarification before interviews).
+
+4) Background screening (compliance-gated)
+   - Background Check (standard)
+     - Decision (exclusive):
+       - Clean → proceed.
+       - Issues found → escalate.
+   - Extensive Background Check (conditional escalation)
+     - Performed only when the standard Background Check flags issues.
+     - Decision (exclusive):
+       - Pass → proceed.
+       - Fail → Application Rejected → End.
+
+   Control rule:
+   - Background Check and Extensive Background Check are mutually exclusive unless escalation occurs (no parallel or redundant checks).
+
+5) Offer decision and issuance (properly gated)
+   - Decision gateway (exclusive), inputs:
+     - Passed Screening Interview, Coding Interview, track-specific interview, Behavioral Interview, and required background screening results.
+   - Outcomes:
+     - All required steps passed → Make Job Offer.
+     - Any required step failed → Application Rejected → End.
+
+6) Parallel activities and synchronization points
+   - No hard parallel execution is required; interviews are typically scheduled sequentially.
+   - Synchronization point: Before Make Job Offer, ensure completion and pass of all required assessments plus background screening (join).
+
+7) Exception handling and escalation procedures
+   - Missed or inconclusive interview:
+     - Allow one controlled re-interview (same activity) with rationale; otherwise decide to reject.
+   - Background screening:
+     - Immediate escalation to Extensive Background Check upon flags; if extensive check fails → reject without further interviews.
+   - Early exit:
+     - If at any point a fail is recorded on a mandatory step, record Application Rejected and end the case—no further silent/implicit closures.
+
+8) End conditions and outcomes
+   - Application Rejected (visible, terminal).
+   - Make Job Offer (visible, terminal).
+   - No implicit endings: silent/τ-based closures are eliminated; every case ends with an explicit terminal event.
+
+Process metrics and performance characteristics
+- Reduced variability and rework:
+  - Sequencing constraints remove unnecessary loops and cross-track mixes.
+  - Caps on re-interviews reduce cycle time and interviewer load.
+- Compliance improvement:
+  - No Make Job Offer before required screenings and checks are completed and passed.
+  - Background Check → conditional Extensive Background Check (exclusive and purposeful).
+- Transparency and reporting:
+  - Explicit terminal events only (Application Rejected or Make Job Offer); no implicit closures.
+- Expected outcomes:
+  - Shorter and more predictable time-to-decision.
+  - Fewer candidate touchpoints with higher signal per interview.
+  - Lower cost and risk via elimination of redundant background checks and premature offers.
+
+Improvements made vs. AS-IS
+- Enforced order: Application → (optional) Telephonic Screening → Screening Interview → Coding Interview → Track-specific Interview (Frontend or Backend or ML) → Behavioral Interview → Background Check (→ Extensive if needed) → Offer/Reject.
+- Clarified gateways:
+  - Exclusive track selection; inclusive optional telephonic screening.
+  - Exclusive pass/fail decisions after each assessment step.
+- Controlled rework:
+  - At most one re-interview where justified; otherwise decide promptly.
+- Compliance gating:
+  - Offer only after all required interviews and background screening are completed and passed.
+- Clean termination:
+  - All cases end with a visible terminal event; silent endings removed.
+")

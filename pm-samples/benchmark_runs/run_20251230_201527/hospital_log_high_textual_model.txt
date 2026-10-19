@@ -1,0 +1,95 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This model captures the patient flow discovered via process mining for encounters that start with registration, proceed through one or more examinations, diagnosis, treatment, and end with discharge. The model reflects what actually happens, including optional/skipped assessments, looping treatment attempts, and occasional missing outcome labels.
+
+Key stakeholders and roles involved
+- The source models do not specify explicit role ownership. Activities imply involvement by the ER or Front Desk (FD) registration, clinical examination (general or expert), diagnostic decision-making, treatment delivery, and discharge administration. Exact role assignments are therefore not listed.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start: A case is created when a patient registers either at ER or at FD (exclusive choice). In the Petri net, the source place enables both transitions "Register at ER" and "Register at FD".
+
+Main activities and control flow
+1) Registration (exclusive start)
+   - Activity: Register at ER OR Register at FD.
+   - Observed behavior: Both are common entry points. Variants show substantial volume from both ER and FD.
+
+2) Initial assessment stage (exclusive branching with optional skipping)
+   - From registration, the process enters an assessment phase with three alternative immediate behaviors (exclusive choice):
+     a) Examination (a general examination)
+     b) Expert Examination (a specialized examination)
+     c) Skip to the next stage (silent transition), effectively bypassing the initial examination step
+   - After this, there is a second decision at the assessment stage:
+     - Thorough Examination may be performed, or it may be skipped via a silent transition. Thus, assessment consists of up to two tiers:
+       • Tier 1: Examination OR Expert Examination OR skip
+       • Tier 2: Thorough Examination OR skip
+   - Mined low-frequency shortcuts are also present (consistent with the Petri net’s skip transitions):
+     - Registration → Diagnosis directly (i.e., both assessment tiers skipped)
+     - Registration → Thorough Examination directly (i.e., Tier 1 skipped but Tier 2 performed)
+
+3) Diagnosis
+   - Single, mandatory clinical decision point that follows the assessment stage (even if all assessments were skipped). In the Petri net, this is always reached via the place sequence after the assessment stage (with silent transitions modeling the merges).
+
+4) Treatment
+   - Performed after Diagnosis in all cases (DFG shows Diagnosis → Treatment frequency 11,746).
+
+5) Post-treatment outcome decision (exclusive)
+   - Exactly one of the following is observed after each Treatment (sums match Diagnosis → Treatment frequency):
+     a) Treatment unsuccessful (frequency ≈ 1,746 ≈ 14.9%) → returns to Diagnosis (rework loop). This loop can occur multiple times before a successful outcome or discharge, as evidenced by multi-loop variants.
+     b) Treatment successful (frequency ≈ 9,005 ≈ 76.6%) → proceeds toward Discharge.
+     c) Direct Discharge without a recorded "Treatment successful" event (frequency ≈ 995 ≈ 8.5%). In the Petri net this is modeled by a skip transition that leads directly to the discharge stage; in the event log this appears as Treatment → Discharge.
+
+6) Discharge (end)
+   - Discharge is the final step. In most cases it is preceded by "Treatment successful"; in some, it occurs directly after Treatment without an explicit success record.
+
+Decision points and observed routing
+- Registration choice: ER vs FD (exclusive). No concurrency is present.
+- Assessment choices:
+  • Tier 1 (exclusive): Examination vs Expert Examination vs skip. DFG examples suggest Expert Examination is slightly more common than Examination (Register → Expert Examination ~2,888 from FD and ~2,866 from ER vs Register → Examination ~1,783 from FD and ~1,826 from ER). Low-frequency direct jumps to Diagnosis also occur (FD→Diagnosis ~163; ER→Diagnosis ~157).
+  • Tier 2 (exclusive): Thorough Examination vs skip. There are also low-frequency direct paths from registration to Thorough Examination (FD→Thorough Examination ~158; ER→Thorough Examination ~159) consistent with skipping Tier 1.
+- Post-treatment outcomes (exclusive): Treatment unsuccessful (loop back to Diagnosis) vs Treatment successful (to Discharge) vs direct Discharge (skip of success record).
+
+Parallel activities and synchronization points
+- No parallelism is observed. The process is single-threaded with merges represented by silent (τ) transitions in the Petri net.
+
+Exception handling and error paths
+- Missing outcome label before discharge: A non-trivial portion of cases go from Treatment directly to Discharge without a "Treatment successful" event (≈8.5%). This is likely a documentation/compliance gap rather than intended clinical logic.
+- Skipped assessments: The presence of skip transitions allows both assessment tiers to be bypassed, producing variants such as Register → Diagnosis and Register → Thorough Examination. While allowed by the discovered model, these may reflect exceptional or expedited handling.
+
+Rework loops and escalation procedures
+- Rework loop: Treatment unsuccessful → Diagnosis → Treatment can repeat multiple times. Variants show up to multiple unsuccessful cycles before eventual success and discharge.
+- No explicit escalation or stopping conditions are encoded; the loop is unbounded in the discovered behavior.
+
+End conditions and outcomes
+- Normal completion: Discharge after Treatment successful → Discharge.
+- Alternate completion: Discharge directly after Treatment (no success label recorded).
+
+Process metrics and performance characteristics (from DFG abstractions)
+- Volumes (selected directly-follows counts):
+  • Diagnosis → Treatment: 11,746 (baseline count for each treatment cycle)
+  • Post-treatment outcomes per treatment cycle:
+    - Treatment → Treatment successful: 9,005 (~76.6%)
+    - Treatment → Treatment unsuccessful: 1,746 (~14.9%)
+    - Treatment → Discharge: 995 (~8.5%)
+- Pre-diagnosis routing examples:
+  • Register at FD → Expert Examination: 2,888; → Examination: 1,783; → Diagnosis: 163; → Thorough Examination: 158
+  • Register at ER → Expert Examination: 2,866; → Examination: 1,826; → Diagnosis: 157; → Thorough Examination: 159
+- Relative performance between key steps (indicative, unit not specified):
+  • Register → Examination or Expert Examination: ~40k
+  • Examination/Expert Examination → Thorough Examination: ~60k
+  • Examination/Expert Examination → Diagnosis: ~60k
+  • Diagnosis → Treatment: ~60k
+  • Treatment → Treatment successful: ~60k; Treatment successful → Discharge: ~40k
+  • Treatment → Discharge (direct): ~100k (longer than via explicit success)
+- Variant mix (top patterns by frequency illustrate typical flow):
+  • Register (FD/ER) → Expert Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge (most common)
+  • Similar variants that skip Thorough Examination or use general Examination occur often.
+  • Variants with one or more Treatment unsuccessful loops are present but less frequent.
+
+Key challenges and pain points
+- Inconsistent assessment sequencing: Optional skipping leads to heterogeneity (e.g., direct-to-Diagnosis cases) that may increase risk of rework.
+- Documentation gaps: Direct Treatment → Discharge without "Treatment successful" suggests missing outcome capture and audit trail issues.
+- Rework and prolonged cycles: The absence of explicit escalation or limits allows multiple unsuccessful loops, increasing cycle time.
+- Variable entry channels (ER vs FD) without visible routing criteria contribute to inconsistent upstream paths.
+- Potential bottlenecks in assessment: Expert/Thorough Examination stages add time (~60k) and may be over- or under-utilized due to lack of encoded criteria.

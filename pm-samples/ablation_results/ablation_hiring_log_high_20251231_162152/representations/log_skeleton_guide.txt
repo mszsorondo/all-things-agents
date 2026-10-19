@@ -1,0 +1,73 @@
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model that captures behavioral constraints observed in an event log.
+
+1. CORE CONCEPT:
+   - Describes WHAT constraints must hold, not HOW to execute
+   - Based on activity occurrence and ordering relationships
+   - Captures necessary conditions for valid traces
+
+2. CONSTRAINT TYPES:
+
+   a) EQUIVALENCE:
+      - Activities that always occur together (same number of times)
+      - If A occurs n times, B also occurs n times
+      - Example: "Create Order" EQUIV "Send Invoice"
+
+   b) ALWAYS BEFORE:
+      - Activity A must occur before B (if B occurs)
+      - A is a prerequisite for B
+      - Example: "Receive Application" ALWAYS_BEFORE "Process Application"
+
+   c) ALWAYS AFTER:
+      - Activity B must occur after A (if A occurs)
+      - B is a consequence of A
+      - Example: "Submit" ALWAYS_AFTER "Fill Form"
+
+   d) NEVER TOGETHER:
+      - Activities A and B never co-occur in same trace
+      - Mutually exclusive activities
+      - Example: "Approve" NEVER_TOGETHER "Reject"
+
+   e) DIRECTLY FOLLOWS:
+      - B immediately follows A (no activities between)
+      - Strict sequential constraint
+      - Example: "Enter PIN" DIRECTLY_FOLLOWS "Insert Card"
+
+   f) ACTIVITY OCCURRENCES:
+      - Bounds on how many times an activity can occur
+      - Format: activity: {min, max} or {exact_count}
+      - Example: "Validate": {1, 3} means 1 to 3 times
+
+3. READING LOG SKELETON OUTPUT:
+   - Each constraint type listed separately
+   - Activities mentioned by name
+   - Confidence/support values may be included
+
+4. CONFORMANCE CHECKING:
+   - A trace is valid if ALL constraints are satisfied
+   - Violations indicate deviations from expected behavior
+   - Can be used for anomaly detection
+
+5. ADVANTAGES:
+   - Declarative: Focus on constraints, not sequences
+   - Compact: Captures essence without full model
+   - Flexible: Allows any sequence satisfying constraints
+   - Interpretable: Easy to understand individual rules
+
+6. LIMITATIONS:
+   - May not capture all behavioral patterns
+   - Requires complete log for accurate constraints
+   - Some constraints may be coincidental
+
+7. USE FOR:
+   - Compliance checking
+   - Process auditing
+   - Anomaly detection
+   - Understanding mandatory relationships
+   - Validating process instances
+
+8. COMPARISON:
+   - vs Petri Net: Declarative vs procedural
+   - vs DECLARE: Log skeleton is simpler subset
+   - vs DFG: Log skeleton captures more than direct follows

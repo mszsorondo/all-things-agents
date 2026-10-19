@@ -1,0 +1,157 @@
+## 1) WHAT THIS REPRESENTATION DESCRIBES
+
+This textual output is an **abstraction of a Directly-Follows Graph (DFG)** computed from an event log.
+
+It describes **which activity is observed immediately after which other activity within the same case**, and summarizes each such direct succession (arc) with:
+
+* **Frequency**: how often that direct succession is observed in the log (or, optionally, how widespread it is across cases as a percentage).
+* **Performance** (if enabled): an aggregated **time difference between the two activities’ events** when they occur consecutively in a case.
+
+Each listed line corresponds to **one directed arc**: `Source activity -> Target activity`.
+
+---
+
+## 2) TYPICAL OUTPUT FORM (conceptual)
+
+With header enabled (default):
+
+```
+If I have a process with flow:
+
+A -> B ( frequency = …  performance = … )
+C -> D ( frequency = …  performance = … )
+...
+```
+
+Without header (if configured), the list appears without the introductory sentence.
+
+Each arc may additionally show a **secondary performance statistic** if configured (e.g., `stdev = …`).
+
+---
+
+## 3) HOW TO READ EACH LINE
+
+### 3.1 Meaning of the sequence (the “A -> B” part)
+
+`A -> B` means:
+
+* In the event log, there exist cases where an event of activity **A** is **immediately followed** by an event of activity **B** (i.e., **B occurs next**, with no other recorded activity event in between for that case).
+
+It does **not** mean that:
+
+* A always leads to B,
+* B cannot also follow other activities,
+* A and B are causally related,
+* A and B are necessarily adjacent in real life (only adjacent in the recorded event sequence).
+
+### 3.2 Meaning of each reported metric
+
+#### **frequency = N**
+
+By default (`relative_frequency = False`):
+
+* **N is an absolute count**: the number of times the log contains an **immediate A→B** step across all cases (counting every occurrence).
+
+If `relative_frequency = True` (optional mode):
+
+* **N represents an integer percentage of cases** in which the arc A→B occurs **at least once**, expressed as a percent sign in the text.
+* It is **not** the percentage of all transitions; it is **case coverage** of that relation.
+* It is **integer-approximated** (rounded down) and **clipped to be at least 1%** when present.
+
+So, in relative mode, a line like:
+
+* `frequency = 12%`
+  means: *about 12% of cases contain at least one immediate A→B occurrence* (with floor/rounding effects).
+
+#### **performance = T**
+
+When performance is included (default: included):
+
+* **T is an aggregated time difference between A and B** over all occurrences where B directly follows A in a case.
+* The default aggregation is **mean** (unless configured otherwise).
+* Units are the same as the underlying performance DFG convention: **seconds** (e.g., `86400` corresponds to one day).
+
+Important nuances:
+
+* This performance is about the **elapsed time between the A-event timestamp and the subsequent B-event timestamp**, not the duration of A or B themselves.
+* `0.000` means the aggregated time difference is zero (to three decimals). It can indicate equal timestamps or very small differences; it is **not guaranteed** to mean “truly instantaneous in reality.”
+
+#### Optional: `SECONDARY_METRIC = S`
+
+If a secondary performance aggregation is configured (e.g., `stdev`, `median`, `min`, `max`, `sum`) **and available**, the line may include:
+
+* `stdev = …` (or another metric name), representing the corresponding aggregated statistic of the same A→B time differences.
+
+### 3.3 Ordering and truncation signals
+
+**Ordering (always relevant):**
+
+* Lines are ordered primarily by **frequency descending** (highest frequency first).
+* Ties are broken by the activity-pair ordering (a deterministic, consistent ordering of the arc label).
+
+**Truncation / summarization (when it happens):**
+
+* The output may stop early when a maximum text length threshold is reached.
+* When truncated, **lower-frequency arcs are simply omitted**; there is **no explicit “…” marker** indicating omission.
+* Therefore, absence of an arc from the list does **not** imply the arc does not exist in the log—only that it may not have been included in the printed portion.
+
+---
+
+## 4) GLOBAL SEMANTIC MEANING
+
+Taken together, the lines encode a **ranked summary of the log’s directly-follow relations**, where each relation is described by:
+
+* **How prevalent it is** (frequency or case-coverage percentage), and
+* **How long it tends to take to move from the first activity to the next** (aggregated time between consecutive events).
+
+This is a **local adjacency view** of behavior: it summarizes immediate steps, not full paths.
+
+---
+
+## 5) HOW TO INTERPRET THE LIST AS A WHOLE
+
+Use the list as a compact map of the process’ **most common “next-step” transitions**:
+
+* **Top lines** represent the most commonly observed immediate successions (dominant local flow).
+* **Mid/low lines** represent less common immediate successions (variants, exceptions, or infrequent behaviors).
+
+Performance values help interpret **temporal characteristics** of those immediate successions:
+
+* Higher performance values indicate that, when A is followed by B, **the waiting/elapsed time between them tends to be larger** (under the chosen aggregation).
+* Secondary metrics (if present) tell you about **spread/variability** (e.g., standard deviation) or alternative summaries (e.g., median).
+
+Crucially, interpret each line independently as “A can be followed by B,” not as a claim about global routing, exclusivity, or completion.
+
+---
+
+## 6) WHAT THIS REPRESENTATION IS FOR
+
+* **Quick, human/LLM-friendly overview** of the process’ most frequent directly-follow steps.
+* **Prompting input** for tasks like:
+
+  * summarizing main flow vs variants,
+  * spotting candidate bottleneck transitions (high time-between),
+  * identifying rework loops (self-loops like `A -> A`),
+  * forming hypotheses for deeper process analysis.
+
+---
+
+## 7) WHAT THIS REPRESENTATION IS NOT
+
+This representation does **not** encode (and cannot directly answer):
+
+* **Parallelism / AND-splits vs XOR choices** (no concurrency semantics).
+* **Full trace variants** or end-to-end path probabilities.
+* **Start/end activities**, case outcomes, or completion guarantees.
+* **Causality** (it shows observed adjacency, not cause).
+* **Activity durations** (only time between consecutive events, not how long an activity took).
+* **Counts per case** (unless using relative frequency, and even then it becomes case-coverage %, not counts).
+* Any explicit signal that the list is truncated (omitted arcs may still exist).
+
+Also, the “high/medium/low frequency thresholds” (e.g., >1000) are **not part of the semantics**—they are analyst-chosen heuristics that depend entirely on log size.
+
+---
+
+## 8) ONE-SENTENCE CORE SUMMARY
+
+A ranked list of **directly-following activity pairs** from the log, each annotated with how often the pair occurs (or how many cases contain it) and the aggregated **time elapsed** between the two consecutive events.

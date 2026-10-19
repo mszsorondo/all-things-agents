@@ -1,0 +1,118 @@
+# AS-IS Process Model
+
+Process scope and intent
+- This model describes only the behavior actually observed in the event log abstractions (DFG, abstract variants). It is intended for strict trace validation: a trace is valid only if it follows an observed ordering and dependency. Unobserved shortcuts and reorderings are disallowed.
+
+Activities (alphabet)
+- Apply for Viewing Appointment (Apply)
+- Set Appointment
+- View The Property (View)
+- Hand In The Paperwork (Hand In)
+- Check Paperwork (Check)
+- Screen Prospective Tenant (Screen)
+- Extensive Screening (Extensive) [conditional]
+- Reject Prospective Tenant (Reject) [terminal]
+- Sign Contract (Sign)
+- Move In
+- Pay Rent
+- Miss Rent Payment (Miss)
+- Issue Warning (Warning)
+- Accept Late Payment (Accept Late)
+- Evict Tenant (Evict) [terminal]
+- Tenant Cancels Appartment (Cancel) [terminal]
+
+Start and terminal conditions
+- Start: Apply is the unique start activity.
+- Terminal outcomes: Reject, Cancel, Evict. No events may follow a terminal outcome.
+
+Core control-flow and strict order constraints
+
+A. Application to viewing
+- Apply must be followed by exactly one of:
+  1) Set Appointment, or
+  2) Reject (early rejection).
+- Set Appointment must be immediately followed by View.
+- The following order is mandatory and cannot be interchanged or interleaved:
+  View -> Hand In -> Check -> Screen.
+  Any deviation from this order is invalid (e.g., Hand In before View; Check before Hand In; Screen before Check).
+
+B. Screening and decision
+- From Screen, exactly one of the following occurs:
+  1) Reject (terminal), or
+  2) Sign (acceptance), or
+  3) Extensive (additional checks), after which exactly one of:
+     a) Reject (terminal), or
+     b) Sign (acceptance).
+- Extensive only occurs after Screen; it never occurs before Screen.
+- Sign is permitted only after Screen (either directly or via Extensive).
+- After Sign, Move In must occur next (immediately). No other activity may occur between Sign and Move In.
+- After Sign/Move In, no further occurrences of View/Hand In/Check/Screen/Extensive are permitted.
+
+C. Post–move-in lifecycle (rent cycles)
+- Immediately after Move In, the next event must be either:
+  1) Pay Rent (regular cycle), or
+  2) Miss (delinquency cycle).
+
+- Regular cycle
+  - Pay Rent may repeat consecutively any number of times (unbounded self-loop).
+  - Pay Rent cannot directly follow Miss; delinquency must be resolved first (see below).
+
+- Delinquency cycle
+  - Miss must be immediately followed by Warning.
+  - After Warning, exactly one of:
+    • Accept Late, which must be immediately followed by either Pay Rent (most commonly observed) or Miss (rarely observed, i.e., an immediate relapse); or
+    • Evict (terminal).
+  - Evict is permitted only immediately after Warning. No additional restrictions on prior history apply.
+
+- Cancellation (tenant termination)
+  - Cancel is only allowed immediately after a Pay Rent.
+  - Cancel is observed only in cases that experienced at least one prior delinquency episode (i.e., at least one occurrence of Miss -> Warning -> Accept Late earlier in the same case). Traces that end with Cancel but contain no Miss/Warning/Accept Late at any time in the case are invalid.
+  - The Pay Rent that immediately precedes Cancel occurs after the most recent Accept Late (i.e., Cancel does not occur directly after Accept Late).
+
+D. Early-terminals
+- Reject may occur at exactly one of these points only:
+  1) Directly after Apply (pre-appointment screening),
+  2) Directly after View,
+  3) Directly after Screen, or
+  4) Directly after Extensive.
+- No other placement of Reject is valid.
+
+Explicitly invalid orderings (non-exhaustive but enforced)
+- Any activity before Apply.
+- Any activity between Apply and Set Appointment, except Reject.
+- Any deviation from the mandatory chain View -> Hand In -> Check -> Screen:
+  • Hand In before View (invalid).
+  • Check before Hand In (invalid).
+  • Screen before Check (invalid).
+  • Extensive before Screen (invalid).
+- Sign before completion of View, Hand In, Check, and Screen (invalid).
+- Any occurrence of View/Hand In/Check/Screen/Extensive after Sign (invalid).
+- Move In not immediately following Sign (invalid).
+- Any activity directly after Move In other than Pay Rent or Miss (invalid).
+- Warning not immediately following Miss (invalid).
+- Accept Late not immediately following Warning (invalid).
+- Evict not immediately following Warning (invalid).
+- Pay Rent directly after Miss without Warning and Accept Late in between (invalid).
+- Cancel not immediately following a Pay Rent (invalid).
+- Cancel in cases with no prior Miss/Warning/Accept Late earlier in the case history (invalid).
+- Any activity after a terminal (Reject, Cancel, Evict) (invalid).
+
+Optionality and conditions
+- Extensive is optional and only reachable from Screen; it never precedes Screen.
+- Early Reject at Apply and at View are optional branches observed.
+- The delinquency path (Miss -> Warning -> Accept Late/Evict) is conditional; otherwise the process remains in the regular Pay Rent loop.
+- Multiple alternating paid and delinquency cycles are permitted; Accept Late may be followed by Pay Rent (typical) or by Miss (immediate relapse), which again triggers Warning.
+
+Observed repetition bounds
+- No upper bound is enforced on the number of consecutive Pay Rent occurrences per case; long paid sequences between delinquency episodes are observed and valid under the rules above.
+
+Summary of permitted high-level paths (abbreviated)
+- Apply -> Reject.
+- Apply -> Set Appointment -> View -> Reject.
+- Apply -> Set Appointment -> View -> Hand In -> Check -> Screen -> Reject.
+- Apply -> Set Appointment -> View -> Hand In -> Check -> Screen -> Extensive -> Reject.
+- Apply -> Set Appointment -> View -> Hand In -> Check -> Screen -> Sign -> Move In -> (Pay Rent and/or Miss -> Warning -> Accept Late -> Pay Rent/Miss)* -> Pay Rent -> Cancel
+  • subject to: at least one Miss -> Warning -> Accept Late occurred earlier in the case; Cancel is immediately after a Pay Rent.
+- Apply -> Set Appointment -> View -> Hand In -> Check -> Screen -> Extensive -> Sign -> Move In -> (Pay Rent and/or Miss -> Warning -> Accept Late -> Pay Rent/Miss)* -> Pay Rent -> Cancel
+  • same conditions as above.
+- Apply -> Set Appointment -> View -> Hand In -> Check -> Screen -> (Extensive)? -> Sign -> Move In -> (Pay Rent and/or Miss -> Warning -> Accept Late -> Pay Rent/Miss)* -> Miss -> Warning -> Evict.

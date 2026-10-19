@@ -1,0 +1,224 @@
+write_AS_IS_comprehensive_textual_description(content: "AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Deliver patient care from first registration through diagnosis, treatment, and discharge.
+- Scope captured by the event-log variants: Two entry points (Register at FD or Register at ER), one or more clinical examinations (Examination, Expert Examination, and/or Thorough Examination), Diagnosis, Treatment, outcome assessment (Treatment successful or Treatment unsuccessful), possible re-diagnosis and re-treatment loops, and Discharge.
+- Nature of control flow: Entirely sequential in the observed data (no explicit parallelism). The process allows rework loops between Treatment outcome and Diagnosis, sometimes multiple times.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. To aid readability, neutral actor labels are used without creating new activities:
+  - Registration (FD or ER)
+  - Clinical staff conducting Examination
+  - Clinical specialist(s) conducting Expert Examination
+  - Diagnostic services performing Thorough Examination
+  - Clinician(s) establishing Diagnosis and providing Treatment
+  - Discharge/administrative staff completing Discharge
+- Patient is the subject of the process.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Patient presents for care and is registered at exactly one of:
+  - Register at FD
+  - Register at ER
+- These are mutually exclusive entry points for a given case.
+
+Core activity set (in observed orderings)
+- Examination: A general clinical examination.
+- Expert Examination: A specialist clinical assessment.
+- Thorough Examination: A more in-depth diagnostic step.
+- Diagnosis: Clinical diagnosis step before treatment.
+- Treatment: Therapeutic intervention.
+- Treatment successful / Treatment unsuccessful: Outcome assessment of the immediately preceding Treatment.
+- Discharge: Case completion.
+
+Observed control logic and sequence flow
+1) Entry (exclusive)
+   - Path 1: Register at FD
+   - Path 2: Register at ER
+
+2) Initial clinical assessment (exclusive or sequential alternatives; no parallelism observed)
+   - Common sequences:
+     - Register -> Expert Examination -> Thorough Examination -> Diagnosis
+     - Register -> Expert Examination -> Diagnosis (skips Thorough Examination)
+     - Register -> Examination -> Thorough Examination -> Diagnosis
+     - Register -> Examination -> Diagnosis (skips Thorough Examination)
+     - Less frequent but present: Register -> Thorough Examination -> Diagnosis (no prior Examination/Expert Examination)
+   - Implication: The set {Examination, Expert Examination, Thorough Examination} behaves as a flexible, sequentially ordered assessment bundle. Thorough Examination is optional but frequently follows an initial Examination or Expert Examination. In rare cases, Thorough Examination occurs directly after registration.
+
+3) Treatment cycle
+   - After Diagnosis, Treatment is administered.
+   - An exclusive decision follows each Treatment:
+     - If Treatment successful → proceed to Discharge.
+     - If Treatment unsuccessful → loop back to Diagnosis, then Treatment again.
+   - The log shows this loop repeating multiple times for some cases (up to at least five unsuccessful cycles before success in rare variants).
+
+4) Discharge (end)
+   - Normal end: Discharge following Treatment successful.
+   - Exception end: Discharge occurs without a recorded Treatment successful outcome in some low-frequency variants (e.g., variants ending with ...Treatment -> Discharge or ...Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge without an explicit success). This indicates occasional discharge without confirmed successful treatment.
+
+Decision points with criteria and observed outcomes
+- Entry decision (exclusive): Patient arrives at FD vs ER.
+- Assessment path selection (exclusive/ordered alternatives, not parallel):
+  - Choose Examination or Expert Examination; optionally escalate to Thorough Examination. Infrequent cases start with Thorough Examination directly.
+- Post-treatment decision (exclusive):
+  - Treatment successful → Discharge (happy-path end).
+  - Treatment unsuccessful → Re-diagnosis and re-treatment loop; may repeat multiple times.
+
+Parallel activities and synchronization points
+- No parallel branches observed. All assessments precede Diagnosis, which precedes each Treatment cycle. The implicit synchronization point is before Diagnosis, where whichever assessment steps have been performed are complete.
+
+Exception handling and error paths
+- Rework loop: Treatment unsuccessful triggers a return to Diagnosis followed by another Treatment. The log shows up to 5 rework cycles in rare cases.
+- Discharge without explicit success: Rare but present; suggests discharge with unresolved outcome, referral outside the captured model, or other nonstandard completion. This is not governed by a visible gate in the log.
+
+Rework loops and escalation procedures
+- Rework loops are permitted without an explicit cap. There is no visible mandatory escalation to Expert Examination or Thorough Examination after repeated failures; some cases do perform them, others do not.
+- No explicit escalation or case-review activity is recorded in the log.
+
+End conditions and outcomes
+- Primary end: Discharge after Treatment successful.
+- Secondary/exception end: Discharge without a recorded successful treatment outcome.
+
+Process metrics and performance characteristics (from the provided variants)
+- High-frequency \"happy path\" variants (single-pass, no rework):
+  - Register at FD → Expert Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge
+    - Frequency ≈ 15%, average duration ≈ 320,005 seconds (~3.70 days).
+  - Register at ER → Expert Examination → Thorough Examination → Diagnosis → Treatment → Treatment successful → Discharge
+    - Frequency ≈ 14%, average duration ≈ 320,000 seconds (~3.70 days).
+  - Register at FD → Expert Examination → Diagnosis → Treatment → Treatment successful → Discharge
+    - Frequency ≈ 8%, average duration ≈ 260,003 seconds (~3.01 days).
+  - Register at FD/ER → Examination → (± Thorough Examination) → Diagnosis → Treatment → Treatment successful → Discharge
+    - Several variants at ≈ 5–7% each; durations ≈ 260,000–320,000 seconds (~3.0–3.7 days).
+- Rework variants (≥1 Treatment unsuccessful loop):
+  - Aggregate share: approximately one-third of cases include at least one \"Treatment unsuccessful\" step (sum of 2% and many 1% variants).
+  - Cycle times for rework cases span ≈ 580,000 to 1,120,042 seconds (~6.7–13.0 days), depending on the number of loops.
+  - Deep-rework examples show multiple consecutive Treatment unsuccessful → Diagnosis → Treatment cycles before success.
+- Discharge without confirmed success:
+  - Present in multiple low-frequency (≈1% each) variants; combined share is small but non-negligible.
+- Comparative performance signal:
+  - Paths that include Thorough Examination tend to be longer (≈ 320k sec) than those that skip it (≈ 260k sec).
+  - Each added rework cycle materially increases total case duration.
+
+Key challenges and pain points
+- High rework rate and long tails: Roughly one-third of cases require at least one re-treatment, with some outliers experiencing many loops and very long cycle times (up to ~13 days on average).
+- Inconsistent assessment sequencing: Cases sometimes skip Thorough Examination and sometimes jump directly to it; selection criteria are not visible, leading to variability in outcomes and cycle time.
+- Quality risk: Discharge without \"Treatment successful\" exists in the recorded behavior, indicating unresolved outcomes or incomplete documentation.
+- Lack of explicit escalation or stop-loss: No visible governance gate forces Expert/Thorough Examination after repeated failures; no explicit cap on rework loops.
+- Potential bottleneck at in-depth assessment: Variants including Thorough Examination consistently show longer durations, suggesting capacity or scheduling constraints.
+- Fragmented entry pathways: FD and ER start points converge later but exhibit similar downstream patterns, creating duplicated configurations to manage without clear differentiation in the log.
+
+")
+
+write_IDEAL_comprehensive_textual_description(content: "IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Standardize clinical decision-making, reduce unwarranted variation, minimize rework, and ensure safe, consistent completion only after a confirmed successful treatment outcome.
+- Design principles:
+  - Use a consistent assessment funnel that minimizes unnecessary Thorough Examination while ensuring complex cases are properly escalated.
+  - Enforce a governed rework loop with clear preconditions for additional treatment attempts.
+  - Remove discharge without confirmed success from the standard flow (allow only as an external, documented exception outside the modeled process).
+
+Key stakeholders and roles involved
+- Source models do not specify roles. For clarity, neutral labels are used:
+  - Registration at FD/ER
+  - Clinical staff for Examination
+  - Specialist(s) for Expert Examination
+  - Diagnostic services for Thorough Examination
+  - Clinician(s) for Diagnosis and Treatment
+  - Discharge administration
+- The same actors as the AS-IS, now working to a standardized sequence and decision policy.
+
+Detailed step-by-step process flow (to-be)
+
+Start conditions and triggers
+- Trigger: Patient registers at one of:
+  - Register at FD
+  - Register at ER
+- These are mutually exclusive starts. Immediately upon registration, both streams converge to a unified standardized assessment funnel.
+
+Standardized assessment funnel (sequential; no parallel branches)
+1) Examination (mandatory for all cases)
+   - Rationale: Ensures a uniform baseline assessment and reduces unnecessary use of deeper diagnostics.
+
+2) Decision: Need for Expert Examination? (exclusive)
+   - Criteria: Clinical complexity or risk identified during Examination.
+   - Outcomes:
+     - Yes → Expert Examination (perform once per episode; avoid repeats).
+     - No → Skip to Thorough Examination decision.
+
+3) Decision: Need for Thorough Examination? (exclusive)
+   - Criteria: Findings from Examination and/or Expert Examination suggest need for in-depth diagnostics.
+   - Outcomes:
+     - Yes → Thorough Examination (perform once per episode; avoid repeats).
+     - No → Proceed to Diagnosis.
+
+4) Diagnosis (single, consolidated)
+   - Occurs after all necessary assessment steps are complete. Avoids premature Diagnosis prior to completing needed assessments.
+
+Treatment and governed rework loop
+5) Treatment
+   - Delivered after the consolidated Diagnosis.
+
+6) Decision: Treatment outcome (exclusive)
+   - Treatment successful → Discharge (standard end).
+   - Treatment unsuccessful → Governed rework loop:
+     - Mandatory return to Diagnosis.
+     - Re-diagnosis must consider results from Expert Examination and/or Thorough Examination if not yet performed:
+       - Policy rule A: If the first treatment attempt is unsuccessful and Expert Examination has not yet occurred, perform Expert Examination before the next Treatment (unless already contraindicated).
+       - Policy rule B: If the first treatment attempt is unsuccessful and Thorough Examination has not yet occurred, perform Thorough Examination before the next Treatment when indicated by criteria.
+     - Limit repeated blind retries:
+       - After a second unsuccessful treatment, confirm that Expert Examination and Thorough Examination (if indicated) have been completed before proceeding to another Treatment.
+     - Continue until Treatment successful, minimizing loops through better-informed re-diagnosis.
+
+Discharge (end)
+- Standard end: Discharge only after Treatment successful.
+- Nonstandard exception (outside normal model): Discharge without a confirmed successful outcome is not part of the to-be flow. If unavoidable due to external constraints, it should follow an exception governance path outside this model (not adding any new activities to the core process).
+
+Decision points with criteria and outcomes (summary)
+- Post-Examination: Exclusive gateway to Expert Examination based on complexity.
+- Post-(Examination/Expert): Exclusive gateway to Thorough Examination based on diagnostic need.
+- Post-Treatment: Exclusive gateway routed by outcome (successful vs unsuccessful), with governed requirements before subsequent attempts.
+
+Parallel activities and synchronization points
+- No parallelism modeled; all assessments complete before Diagnosis.
+- Implicit synchronization point before Diagnosis ensures consistency and avoids premature treatment.
+
+Exception handling and error paths
+- Early direct Thorough Examination allowed only when clinically required (e.g., when Examination reveals red flags). Still passes through the standardized funnel and does not bypass Diagnosis.
+- Discharge without success removed from the normal flow; managed as an external exception policy, not a standard path.
+
+Rework loops and escalation procedures (to-be governance)
+- Rework loop remains possible but is regulated:
+  - No indefinite looping without additional insight; additional Treatment attempts require completing Expert Examination/Thorough Examination when indicated.
+  - Implicit escalation is implemented via the mandatory assessment completion before subsequent Treatment attempts.
+  - This preserves the observed activity set while eliminating wasteful retries.
+
+End conditions and outcomes
+- Single intended outcome: Discharge after Treatment successful.
+- Exception outcomes handled outside the standard process (not modeled here).
+
+Process metrics and performance targets (based on observed baselines)
+- Baseline signals:
+  - Single-pass cycle time: ≈ 260k–320k seconds (~3.0–3.7 days).
+  - Rework cases: ≈ 580k–1,120k seconds (~6.7–13 days).
+  - Rework prevalence: roughly one-third of cases show at least one unsuccessful treatment.
+- To-be targets (directional):
+  - Reduce rework prevalence substantially by enforcing assessment-before-retry (e.g., toward ≤10–15%).
+  - Reduce single-pass variation by standardizing the assessment funnel; aim to keep most single-pass cases closer to the lower end of ≈ 260k seconds.
+  - Cap deep-tail durations by preventing repeated treatment without additional assessment.
+
+Improvements made vs AS-IS
+- Standardized assessment funnel:
+  - Mandatory Examination for all.
+  - Expert Examination and Thorough Examination are conditional, single-use steps triggered by clear criteria rather than ad hoc sequencing.
+- Removal of non-success discharge from the standard flow:
+  - Eliminates unresolved outcomes within the modeled process and supports better quality and traceability.
+- Governed rework:
+  - Forces additional assessment before subsequent treatments when the first attempt fails, reducing trial-and-error loops.
+- Reduced variability and waste:
+  - Avoids unnecessary Thorough Examination in straightforward cases and ensures it occurs when truly indicated, improving first-pass yield.
+- Clear synchronization before Diagnosis:
+  - Prevents premature Diagnosis and Treatment, cutting down on rework and improving cycle time consistency.
+
+")

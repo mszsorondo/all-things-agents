@@ -1,0 +1,73 @@
+AS-IS Process Model — Nurse
+============================================================
+
+AS-IS Process Model — Nurse
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Nurses (clustered from Nurse 1..5) perform patient registration (Register at ER or Register at FD), record Treatment unsuccessful outcomes, and execute Discharge. They act as the primary interface for patient intake and case closure, and they also log unsuccessful treatment outcomes that trigger re-evaluation by doctors.
+- Responsibilities (as observed): register patients at ER or FD, record Treatment unsuccessful events, perform Discharge, and hand over cases to doctors for examinations/diagnosis and to other roles as needed.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Register at ER: Log patient registration at Emergency Room. This activity frequently initiates cases and is performed by nurses (primarily Nurse 1 and Nurse 2 in the raw resources).
+- Register at FD: Log patient registration at the Family Doctor (FD) front desk. Performed by nurses (primarily Nurse 3 in the raw resources).
+- Treatment unsuccessful: Record that a treatment attempt failed and the case requires further Diagnosis/Treatment cycles. Observed to be often recorded by nurses after Treatment events.
+- Discharge: Finalize/close the case, handing the patient out of the process. Discharge is performed by nurses.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation (when nurses get involved):
+  - Nurses are typically the first actors in a case: a patient is registered at ER or FD by a nurse. This registration activates the flow and hands the case to a doctor for examination/diagnosis.
+  - Nurses are also activated after doctors complete clinical work when cases move to discharge or when a treatment attempt is marked unsuccessful.
+
+- Observed sequences involving nurses (all valid as observed):
+  - Nurse registers patient (Register at ER or Register at FD) -> hands to Doctor for Examination/Expert Examination.
+  - After Treatment, nurses record Treatment unsuccessful when the treatment fails; this event is followed by a handover back to doctors (Diagnosis).
+  - After Treatment successful or final treatment, nurses perform Discharge.
+
+- Decision points and criteria nurses handle (observed):
+  - Decide whether to record Treatment unsuccessful after observing treatment outcomes (this activity appears in logs as performed by nurses). There is no explicit recorded clinical criterion in the log; it's an observed activity label.
+  - Initiate Discharge when the process reaches a final state (either triggered after Treatment successful or in some variants directly after Treatment).
+
+Section 4: Interactions (who hands work TO this role, who receives work FROM this role)
+- Who hands work TO Nurses (observed):
+  - Doctors: Doctors hand work to nurses for Discharge and in some cases after treatments when nurses record Treatment unsuccessful. Doctor→Nurse handovers are well represented in the handover network (Doc. Low and Doc. Pro both hand cases to multiple nurses).
+  - Other Nurses: Some handovers among nurses exist implicitly via registration shifts, but the primary handovers are Doctor→Nurse.
+
+- Who receives work FROM Nurses (observed):
+  - Doctors: After registration or when Treatment unsuccessful is recorded, nurses hand cases to doctors for Examination/Diagnosis/Treatment. The handover network shows Nurse 3, Nurse 1, Nurse 2 edges toward doctors.
+  - Occasionally nurses hand off to other nurse colleagues for Discharge processing or registration in different units (ER vs FD), but major handovers are to doctors.
+
+Section 5: Variants and Exceptions (all observed paths involving nurses)
+- Main observed variants involving nurse activities:
+  - Register at FD -> Doctor (Expert Examination/Examination) -> ...
+  - Register at ER -> Doctor (Expert Examination/Examination) -> ...
+  - Treatment -> Treatment unsuccessful (logged by Nurse) -> Doctor (Diagnosis) -> Treatment -> ...
+  - Treatment successful (often recorded by Doctor) -> Discharge (Nurse performs Discharge)
+  - Treatment -> Discharge (some cases show Discharge after Treatment without explicit Treatment successful; nurses perform Discharge in these variants)
+- Ordering variability:
+  - Registration (Register at FD or Register at ER) always occurs at case start in the majority of traces, but rare traces show registration absent or registration occurred earlier and not recorded immediately before doctor activities.
+  - Treatment unsuccessful is observed after Treatment and before returning to Diagnosis. It can occur multiple times (1..5+ repetitions) in loops.
+  - Discharge always occurs once per case in observed logs and is typically the last activity.
+
+Section 6: Rework loops, exceptions, escalations involving nurses
+- Rework loops:
+  - Nurses primarily participate when they record Treatment unsuccessful, which triggers rework loops: (Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment). This loop can repeat multiple times.
+- Exceptions/rare behavior:
+  - Some traces show registration at FD/ER not present or registration followed by Diagnosis directly (bypassing Examination) — nurses may not be involved in these rare paths except for Discharge.
+  - Discharge sometimes follows Treatment directly without an explicit Treatment successful event.
+- Escalations:
+  - The data shows handovers from nurses to senior doctors (Doc. Pro) and to Doc. Low; however these are normal handovers rather than formal escalations. Nurse→Doctor handover frequencies suggest Nurse 3 frequently hands to Doc. Pro and Doc. Low.
+
+Section 7: Self-contained instructions for someone assuming the Nurse role (what they must do given AS-IS behavior)
+- At intake: record registration at the correct location (ER or FD). After registration, hand the case to a doctor (expect Expert Examination or Examination).
+- After treatments: observe outcomes and record Treatment unsuccessful when appropriate. This action will send the case back to the doctor for re-diagnosis and further treatment.
+- Close the case by performing Discharge once the case reaches a final state (commonly after Treatment successful). If Discharge is required directly after Treatment (skipping Treatment successful), perform Discharge as observed in some traces.
+- Coordinate with doctors for handovers; be aware nurses often pass cases to Doc. Pro and Doc. Low and receive handovers from these doctors.
+
+Section 8: Key Observations (pain points, inefficiencies observed in the data)
+- Recording of Treatment unsuccessful by nurses is a frequent trigger of rework loops that prolong case durations — the handoff back to doctors introduces repeated cycles.
+- Registration variability (ER vs FD) produces branching early in the process. Both kinds of registration are common and roughly balanced in frequency.
+- Discharge is always performed by nurses and is a single-point closure; any delay in nurse availability could delay finalization.
+- Nurses 3,1,2 perform the majority of registration and treatment unsuccessful events, indicating workload concentration among a few nurse staff.
+- Coordination overhead: frequent handovers from nurses to doctors and back (after unsuccessful treatments) likely introduce waiting and coordination delays.
+
+(End of AS-IS model for Nurse)

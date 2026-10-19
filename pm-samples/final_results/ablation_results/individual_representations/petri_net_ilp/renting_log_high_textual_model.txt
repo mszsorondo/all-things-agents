@@ -1,0 +1,221 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage the lifecycle of residential tenancy from first contact (applying for a viewing) through pre-lease evaluation, contract signing and move-in, and ongoing rent collection, including late-payment handling and possible termination (tenant cancellation or eviction).
+- Scope reflected by the discovered model: All behavior observed in the event data is allowed, including optional viewings, iterative screening/paperwork cycles, the ability to sign even when other steps may not be completed, repeated late-payment acceptance, and termination paths.
+
+Key stakeholders and roles involved
+- Prospective Tenant / Tenant: Initiates application, may view the property, submits paperwork, signs, moves in, pays rent, or cancels.
+- Property Management / Landlord (implied by activity names): Schedules viewings, checks paperwork, screens applicants (including extensive screening), issues warnings, accepts late payments, rejects prospects, or evicts tenants.
+Note: Roles are inferred from activity names; the source model does not explicitly define swimlanes.
+
+Detailed step-by-step process flow
+
+Start conditions and trigger
+- Trigger: Prospective tenant applies for a viewing.
+- Start event: Apply for Viewing Appointment.
+
+Pre-lease phase (application to decision)
+- After Apply for Viewing Appointment, the process enables two internal preconditions in parallel. Certain activities (Set Appointment, Hand In The Paperwork, Reject Prospective Tenant, Sign Contract) require both preconditions to be simultaneously satisfied (implicit synchronization), while others operate within one track and return the process to a synchronized state.
+
+1) Optional appointment and viewing path
+- Set Appointment (requires both preconditions). Outcome: Appointment scheduled.
+- View The Property (follows Set Appointment). Outcome: Returns the process to the synchronized ready state for further decisions.
+- Decision/flow characteristics:
+  - Viewing is optional in the model. Sign Contract can occur without ever scheduling/viewing.
+  - Viewing can be interleaved with paperwork/screening cycles, but because of the implicit synchronization, some tasks that need both preconditions cannot overlap.
+
+2) Paperwork and screening path with rework loop
+- Hand In The Paperwork (requires both preconditions). Outcome: Moves case to paperwork review.
+- Check Paperwork (follows Hand In). Outcome: Moves case to screening.
+- Screen Prospective Tenant (follows Check Paperwork). Outcome: Returns the process to the synchronized ready state.
+- Extensive Screening (optional, may repeat): Can occur while the case is in the screening track; it loops without a forced exit and returns the case to the same screening state. There is no explicit limit or termination criterion for this loop in the model.
+- Decision/flow characteristics:
+  - The paperwork > check > screen path can be executed multiple times (rework), because Screen Prospective Tenant brings the case back to the synchronized ready state, from which Hand In The Paperwork can be initiated again.
+  - Extensive Screening can be repeated indefinitely before proceeding to any outcome.
+
+3) Decision to accept or reject; ability to sign without prerequisites
+- Reject Prospective Tenant (requires both preconditions). Outcome: Immediate termination of the case.
+- Sign Contract (requires both preconditions). Outcome: Proceeds to contract finalization.
+- Observed flexibility:
+  - The model permits Sign Contract even if the viewing and screening steps have not been performed or completed. There is no enforced prerequisite sequencing.
+
+Contract finalization and move-in
+- Sign Contract → Move In (sequential).
+- Move In: Establishes the tenancy state and a recurring rent cycle.
+
+Tenancy management (recurring)
+- Normal payment loop:
+  - Pay Rent: Repeatable activity. Performing Pay Rent returns the process to the same rent-due state for future cycles.
+- Late payment path:
+  - Miss Rent Payment (requires the tenancy to be active and in a rent-due state). Outcome: Escalation path.
+  - Issue Warning (after a missed payment).
+  - From the warning state, two outcomes:
+    - Accept Late Payment: Returns the tenancy to the active/rent-due state; cycles continue.
+    - Evict Tenant: Terminates the tenancy.
+- Tenant-initiated termination:
+  - Tenant Cancels Appartment: Allowed while tenancy is active and in a rent-due state. Outcome: Termination.
+
+Exception handling and error paths
+- Rejection during pre-lease: Reject Prospective Tenant ends the case.
+- Viewing not required: The case can skip Set Appointment / View The Property entirely.
+- Screening/paperwork rework: Hand In → Check → Screen may loop; Extensive Screening can repeat indefinitely without a hard stop.
+- Late-payment handling is centralized through Issue Warning, after which either Accept Late Payment (return to normal) or Evict Tenant (terminate) occurs.
+- Process termination paths converge to an internal completion step and end.
+
+Rework loops and escalation procedures
+- Rework loops:
+  - Paperwork/screening loop: Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant → (back to synchronized ready state) → Hand In The Paperwork again (possible).
+  - Extensive Screening: repeatable without explicit limit.
+  - Rent cycle: Pay Rent repeats for each period.
+  - Late payment loop: Miss Rent Payment → Issue Warning → Accept Late Payment → back to active cycle; can recur across periods.
+- Escalation:
+  - From a missed payment, the only modeled escalation is Issue Warning, followed by a binary decision: Accept Late Payment or Evict Tenant. The model does not constrain repeated late-payment acceptances.
+
+End conditions and outcomes
+- End states:
+  - Prospect rejected (pre-lease).
+  - Tenant cancels (post-move-in).
+  - Eviction (post-move-in).
+- There is no modeled natural lease-end; tenancy ends only by cancellation or eviction in the observed behavior.
+
+Process metrics and performance characteristics (what is observable/measurable from this behavior)
+- Lead time from Apply for Viewing Appointment to Sign Contract.
+- Number of cycles/repetitions in the paperwork/screening loop before a decision.
+- Frequency and duration of Extensive Screening loops.
+- Conversion rate: application → signed contract → move-in.
+- Post-move-in metrics:
+  - On-time payment rate vs. Miss Rent Payment rate.
+  - Warning-to-resolution split: proportion of Accept Late Payment vs. Evict Tenant after Issue Warning.
+  - Average tenancy duration until Tenant Cancels Appartment or Evict Tenant.
+- Flow characteristics:
+  - Optionality and weak sequencing allow considerable variation in traces.
+  - Implicit synchronizations require certain steps (Set Appointment, Hand In, Reject, Sign) to be taken only when both preconditions are met.
+  - Perfect fitness to the observed data, but with minimal structural constraints.
+
+Key challenges and pain points
+- Lack of enforced prerequisites:
+  - Sign Contract can occur without completing viewing or screening/paperwork steps, risking compliance and quality issues.
+- Unbounded rework and investigation:
+  - Extensive Screening can repeat indefinitely; no explicit exit criteria or escalation pathway besides eventual Sign or Reject.
+  - Paperwork/screening can loop multiple times without limits, causing delays and unpredictability.
+- Late payment policy is permissive and potentially inconsistent:
+  - Accept Late Payment may be repeated across periods without thresholds; eviction is binary and may be applied inconsistently.
+- Operational blocking due to hidden synchronizations:
+  - Steps that require both internal preconditions can block or serialize work unpredictably, causing wait times if one track lags.
+- Limited termination clarity:
+  - No modeled natural lease completion; only cancellation or eviction ends the tenancy in the observed behavior.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a controlled, compliant, and efficient leasing process from first contact through tenancy, enforcing necessary prerequisites before contract signing and applying clear, fair late-payment handling with predictable termination paths.
+- Design principles:
+  - Enforce critical prerequisites (screening/paperwork and viewing) before Sign Contract.
+  - Allow parallelism where appropriate, but synchronize before irreversible commitments.
+  - Constrain rework/loops with explicit exit criteria and decisions.
+  - Keep post-move-in rent-handling consistent, time-bound, and fair using existing activities.
+
+Key stakeholders and roles involved
+- Prospective Tenant / Tenant.
+- Property Management / Landlord (implied).
+Note: Roles remain inferred; the model retains the original activity set without introducing new tasks.
+
+Detailed step-by-step process flow
+
+Start conditions and trigger
+- Trigger: Prospective tenant applies for a viewing.
+- Start event: Apply for Viewing Appointment.
+
+Pre-lease phase with parallelization and explicit synchronization
+
+A) Parallel sub-process 1: Appointment and viewing
+- Set Appointment: Schedule viewing with the prospect.
+- View The Property: Conduct the viewing.
+- Completion criterion: Viewing completed.
+
+B) Parallel sub-process 2: Paperwork, check, and screening (with controlled rework)
+- Hand In The Paperwork: Prospect submits the required documents.
+- Check Paperwork: Property management verifies completeness and correctness.
+- Screen Prospective Tenant: Standard screening is performed.
+- Extensive Screening (conditional loop): Only if triggered by the screening outcome (e.g., borderline cases). Limit repetitions to the minimum necessary; after each iteration, return to Screen Prospective Tenant for a definitive pass/fail.
+- Completion criterion: Screening passed OR determination to reject.
+
+Synchronization and decision (AND-join)
+- Gateway: Proceed only when BOTH sub-processes complete:
+  - Viewing completed, AND
+  - Screening path yields a decision (pass or reject).
+- Decision:
+  - If screening fails or is unacceptable: Reject Prospective Tenant → End (pre-lease termination).
+  - If screening passes and viewing is done: Proceed to Sign Contract.
+
+Contract finalization and move-in
+- Sign Contract: Execute the agreement only after the AND-join criteria are met.
+- Move In: Tenant takes possession; the tenancy becomes active and the rent cycle starts.
+
+Tenancy management (recurring, with clear decision criteria)
+
+Normal cycle
+- Pay Rent: Repeats each rent period.
+
+Late payment exception handling (single, time-bound escalation path)
+- Miss Rent Payment: Triggered when rent is not received by due/grace period.
+- Issue Warning: Formal notice issued.
+- Decision after warning:
+  - Accept Late Payment: Allowed if within policy (e.g., within grace and within allowable frequency). On acceptance, return to normal cycle.
+  - Evict Tenant: If acceptance criteria are not met (e.g., repeated or severe delinquency), proceed to termination.
+Notes:
+- The activity set remains the same; the IDEAL model introduces governance criteria for when Accept Late Payment vs. Evict Tenant applies, preventing indefinite tolerance of late payments.
+
+Tenant-initiated termination
+- Tenant Cancels Appartment: May occur at any time while tenancy is active (and before eviction concludes). This path directly ends the tenancy.
+
+Exception handling and rework controls
+- Paperwork/screening rework:
+  - Rework of Hand In → Check → Screen is allowed only to resolve specific deficiencies; Extensive Screening is a controlled loop with explicit pass/fail decision after each iteration to avoid endless cycling.
+- Viewing contingency:
+  - If viewing cannot be completed, the case does not proceed to Sign Contract; reschedule or reject if the prospect declines viewing altogether.
+- Late payment:
+  - Each Miss Rent Payment undergoes a single Issue Warning step, followed by a governed decision. Repeated acceptance across periods is possible only within policy limits; otherwise Evict Tenant applies.
+- Synchronization:
+  - The AND-join before Sign Contract ensures no signing occurs without both viewing completion and a positive screening decision.
+
+End conditions and outcomes
+- Pre-lease termination: Reject Prospective Tenant.
+- Post-move-in termination:
+  - Tenant Cancels Appartment.
+  - Evict Tenant.
+- All termination paths exit cleanly to process end.
+
+Process metrics and performance characteristics
+- Lead-time metrics:
+  - Application-to-viewing-completed.
+  - Application-to-screening-decision.
+  - Application-to-signing (should decrease variation; median may improve due to reduced rework).
+- Quality/compliance metrics:
+  - Percentage of signings with completed viewing and passed screening (target: 100%).
+  - Rework rate in paperwork/screening; number of Extensive Screening iterations per approved case (target: limited).
+- Throughput/conversion:
+  - Application-to-move-in conversion rate; rejection rate with reasons.
+- Tenancy health:
+  - On-time payment rate.
+  - Warning outcome split: Accept Late Payment vs. Evict Tenant, within policy thresholds.
+  - Average tenancy duration to termination (by cancellation vs. eviction).
+- Predictability:
+  - Reduced variance in pre-lease cycle times due to enforced synchronization and bounded loops.
+
+Improvements made (vs. AS-IS)
+- Enforced prerequisites:
+  - Viewing and screening must be completed before Sign Contract; eliminates premature signing risk.
+- Bounded rework and loops:
+  - Extensive Screening limited to explicit, criteria-driven iterations; paperwork/screening rework permitted only to resolve defined deficiencies.
+- Structured parallelism with a clear join:
+  - Appointment/viewing and paperwork/screening can proceed in parallel, but the AND-join ensures completeness and compliance before commitment.
+- Clear late-payment governance:
+  - Accept Late Payment vs. Evict Tenant decision guided by explicit criteria, avoiding endless cycles of acceptance.
+- Cleaner termination handling:
+  - All end states are explicit and reached via controlled decisions, improving auditability and predictability.
+")

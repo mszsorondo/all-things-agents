@@ -1,0 +1,96 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL model defines a streamlined, controlled loan origination process that preserves necessary checks (borrower verification, collateral assessment, co-signer acquisition) while eliminating redundant rework, preventing policy bypass (skipped verification), and reducing lead times. The goal is to increase approval throughput, reduce cycle time and rework, and improve risk compliance and customer experience.
+
+Key stakeholders and roles
+- Borrower / Applicant: initiates the loan request and provides required documents.
+- Front-office / Appointment Scheduler: validates basic completeness at intake, schedules appointment or provides immediate remote intake when possible.
+- Loan Officer / Credit Officer: responsible for full borrower verification and intake completeness checks; acts as gateway owner deciding whether co-signer or collateral assessment is required.
+- Field Assessor / Valuer: performs collateral visits only when triggered by clear, rule-based criteria; provides standardized, timestamped valuation reports.
+- Underwriter: receives a standardized submission package (all required documents and verification results) and issues final decisions per SLAs.
+- Risk & Compliance Officer: enforces anti-skipping controls and monitors skipped_examination exceptions.
+
+Detailed step-by-step IDEAL process flow (recommended)
+Start conditions and triggers
+1. Start: Borrower initiates request via Request Appointment (in-person or online). The front-office performs a first-line completeness check immediately at intake.
+
+1. Intake and scheduling (Front-office)
+- If critical documents are missing at request time, the front-office returns a list of outstanding items and allows the borrower to supply them via a secure digital channel. Appointment Denied remains possible only for clearly ineligible applicants (fraud, immediate disqualification) and is recorded with a reason code.
+- SLA: Front-office responds to Request Appointment within 24 business hours.
+
+2. Appointment and application hand-in
+- Set Appointment occurs once front-office confirms minimal completeness. At appointment or via secure upload, the borrower completes Hand In Credit Application.
+- Strong recommendation: enable remote upload to reduce physical visit requirement where possible.
+
+3. Structured verification (Loan Officer)
+- Immediately upon receipt of the application, Loan Officer runs an automated pre-check (identity, basic credit score, automated document validation).
+- Decision gateway (automated):
+  - If automated pre-check fails critical thresholds => Application Rejected (record reason, inform borrower).
+  - If pass => Proceed to full verification.
+- Full verification includes credit checks, income verification, and collateral flags.
+- Policy: skipped_examination is disallowed except for preapproved low-risk products; any bypass must be explicitly approved by Risk & Compliance with a logged exception and strict SLA.
+
+4. Rule-based branching for further actions
+- Decision: Is collateral assessment required?
+  - Criteria: collateral value uncertainty, loan-to-value thresholds, inconsistent collateral documentation, or loan amount exceeds threshold.
+  - If yes: trigger Make Visit to Assess Collateral (Field Assessor).
+  - If no: skip collateral assessment and proceed to document consolidation.
+- Decision: Is co-signer required?
+  - Criteria: credit score below threshold, debt-to-income ratio too high, or other credit policy triggers.
+  - If yes: Request Co-Signer On Loan and collect co-signer documentation in parallel with any required collateral visit.
+
+5. Collateral assessment (Field Assessor)
+- Make Visit should be executed once and produce a standardized report. If the first visit identifies a need for remediation or additional evidence, the field assessor must specify concrete remediation steps; subsequent visits are allowed only with manager approval and logged as an exception to limit rework.
+- Use remote valuation tools (photos, video calls) to reduce in-person visits where policy permits.
+
+6. Package consolidation and pre-underwriter QA (Loan Officer)
+- Once verification, co-signer documentation and collateral report are ready, the Loan Officer uses a checklist to consolidate a standardized submission package to Underwriter.
+- Pre-underwriter automated checks validate completeness; incomplete packages are returned to Loan Officer for correction (tracked and measured).
+- SLA: Pre-underwriter QA turnaround within 48 hours.
+
+7. Underwriting and decisioning (Underwriter)
+- Underwriter evaluates the standardized package and applies deterministic rules where possible (automated declines/approvals for clear-cut cases) and manual review for borderline cases.
+- Possible outcomes:
+  - Sign Loan Agreement (approve) — proceed to sign with digital-first signing options.
+  - Loan Denied — provide clear explanation and requirement for resubmission if applicable.
+  - Escalate to Senior Underwriter or Risk if unusual risk indicators exist.
+- SLA: Underwriter decision within X business days (target 3-5) depending on complexity; automated decisions within minutes/hours.
+
+8. End states
+- Approved and signed: loan moves to disbursement workflow.
+- Denied or rejected: borrower receives standardized rejection explanation and remediation options (e.g., reapply with co-signer).
+- All cases are logged for audit; skipped_examination exceptional approvals require Risk sign-off and are subject to retrospective audit.
+
+Parallel activities and synchronization
+- In IDEAL, parallel activities are intentionally bounded and synchronized at the Submission Consolidation step. Co-signer documentation can be collected in parallel with collateral assessment, but both must be present (or appropriately waived with documented justification) before submission to Underwriter.
+- Invisible (tau) routing is eliminated in favor of explicit gateways and documented skip reasons.
+
+Exception handling, rework limits and escalation
+- Limit repeated collateral visits: allow at most one additional visit without manager approval. Any further visits require documented justification and escalation.
+- If submission is returned by Underwriter, Loan Officer has a defined rework loop with SLA for resubmission (e.g., 5 business days) and a maximum number of resubmissions (two attempts) before escalation to a senior decision-maker.
+- Automatic alerts for cases stalled beyond SLA for any activity; Risk & Operations receive escalations for breaches.
+
+Process metrics and SLA targets (recommended)
+- Target reduction in average end-to-end cycle time by 50% within 6 months.
+- Target decrease in repeated Make Visit events by 80% using remote valuation and stricter visit authorization.
+- Reduce skipped_examination policy deviations to near 0% (allow only documented, rare exceptions with Risk approval).
+- Improve ratio of Submit File -> Sign Loan Agreement: aim to increase approvals by 30% through pre-underwriter QA and completeness checks.
+- SLA examples:
+  - Intake response (Request -> Set): within 24 business hours.
+  - Pre-underwriter QA: 48 hours.
+  - Underwriter decision: automated decisions within 24 hours; manual within 3 business days.
+
+Improvements made vs AS-IS
+- Removes invisible/tau routing and ad-hoc skips by introducing explicit gateways and documented skip/exception handling.
+- Reduces rework by limiting repeat collateral visits and requiring clear remediation actions when additional evidence is needed.
+- Improves submission quality through mandatory pre-underwriter automated checks and standardized submission packages.
+- Enforces verification controls (no silent skipped_examination) and formalizes escalation paths so that high-risk bypasses require Risk sign-off.
+- Introduces SLAs and measurable KPIs to reduce delays at front-office, loan officer and underwriting handoffs.
+
+Implementation considerations
+- Invest in digital intake and document capture to reduce visits.
+- Introduce automated validation rules for basic verification and completeness checks.
+- Provide training and a checklist for Loan Officers and Field Assessors to standardize decisions about co-signers and collateral visits.
+- Instrument monitoring dashboards for the KPIs and set up automatic alerts when SLAs are violated.
+

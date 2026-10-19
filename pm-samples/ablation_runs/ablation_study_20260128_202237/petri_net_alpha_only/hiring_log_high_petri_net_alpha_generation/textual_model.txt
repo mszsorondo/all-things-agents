@@ -1,0 +1,239 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Handle job applications from submission through screening, checks, interviews, and final outcome (offer or rejection).
+- Source: Alpha Miner Petri net discovered from event logs. The model includes only visible activities and shows causal relations as places between transitions. Some activities are disconnected due to Alpha Miner limitations.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. Activities are presented without lane assignments.
+
+Start conditions and triggers
+- Trigger: Candidate submits the application.
+- Start event (inferred): Receipt of a new job application.
+
+Detailed step-by-step process flow
+1) Hand In Job Application
+   - Entry point for all cases.
+   - Output enables: Telephonic Screening.
+
+2) Telephonic Screening
+   - Immediately followed by two downstream activities, enabled in parallel:
+     - Background Check
+     - Screening Interview
+   - The discovered model does not encode a decision to stop after this step; both subsequent activities are triggered.
+
+3) Parallel activities after Telephonic Screening
+   - Background Check
+     - Upon completion, two outcomes are enabled in the model:
+       - Enables Coding Interview (via place {Background Check}→{Coding Interview}).
+       - Enables Extensive Background Check (via place {Background Check}→{Extensive Background Check}).
+   - Screening Interview
+     - Upon completion, two outcomes are enabled:
+       - Enables Coding Interview (via place {Screening Interview}→{Coding Interview}).
+       - Enables Extensive Background Check (via place {Screening Interview}→{Extensive Background Check}).
+
+4) Synchronization implied before Extensive Background Check
+   - Extensive Background Check has two separate prerequisite places (from Background Check and from Screening Interview). In Petri net semantics, this implies Extensive Background Check becomes enabled only after both Background Check and Screening Interview complete.
+   - Note: The model therefore implies an AND-join before Extensive Background Check.
+
+5) Synchronization implied before Coding Interview
+   - Coding Interview has three incoming places in the discovered net:
+     - From Background Check
+     - From Screening Interview
+     - From Extensive Background Check
+   - Interpreted strictly, Coding Interview requires completion of all three upstream markings. That is, Coding Interview is effectively gated by completion of:
+     - Background Check,
+     - Screening Interview, and
+     - Extensive Background Check (if token produced).
+   - Given the structure, Extensive Background Check appears to be on the critical path for Coding Interview in most traces captured by this net.
+
+6) Post-Coding Interview branches
+   - Coding Interview produces tokens for three technical interview variants simultaneously:
+     - Backend Interview
+     - Frontend Interview
+     - ML Interview
+   - These three can occur independently and in any order (no join specified). The model does not constrain selection; all three are enabled.
+
+7) Behavioral Interview (disconnected)
+   - The transition 'Behavioral Interview' exists in the model but has no connecting arcs. This indicates it occurred in the log but with no learnable ordering relations. Operationally, it behaves like an ad-hoc, unsynchronized step with unspecified position.
+
+8) Process termination activities (disconnected)
+   - Make Job Offer → end
+   - Application Rejected → end
+   - Both are represented as terminal events without defined preconditions in the discovered net. As modeled, they are structurally floating and could be interpreted as triggerable at any time, which reflects discovery limitations rather than intended policy.
+
+Decision points and criteria
+- After Telephonic Screening:
+  - Model implies an AND-split: both Background Check and Screening Interview are initiated.
+- Before Extensive Background Check:
+  - Model implies an AND-join: requires tokens from both Background Check and Screening Interview.
+- Before Coding Interview:
+  - Model implies an AND-join across Background Check, Screening Interview, and Extensive Background Check.
+- After Coding Interview:
+  - Model implies an AND-split enabling Backend, Frontend, and ML interviews concurrently (no selection criteria encoded).
+- Offer vs. Rejection:
+  - Not connected; no explicit criteria encoded in the net.
+
+Parallel activities and synchronization points
+- Parallelization:
+  - Background Check and Screening Interview run in parallel post-telephonic screening.
+  - Post-coding, three technical tracks (Backend, Frontend, ML) can proceed concurrently.
+- Synchronization:
+  - AND-join before Extensive Background Check (requires both prior activities).
+  - AND-join before Coding Interview (requires prior checks/interview, and extensive background check).
+
+Exception handling and error paths
+- Not explicitly modeled. The presence of 'Application Rejected' without incoming arcs suggests rejections may occur at variable points, but the model does not encode the reasons or checkpoints.
+
+Rework loops and escalation procedures
+- None explicitly present in the discovered Petri net (no loops modeled).
+
+End conditions and outcomes
+- End states:
+  - Make Job Offer (terminal)
+  - Application Rejected (terminal)
+- The exact routing to these end states is not defined in the net.
+
+Process metrics and performance characteristics (as implied)
+- Lead time drivers:
+  - Mandatory parallel completion of Background Check and Screening Interview, followed by Extensive Background Check, delays Coding Interview.
+  - Post-coding, enabling three technical interviews increases scheduling load.
+- Variability:
+  - Disconnected Behavioral Interview and terminal states indicate inconsistent sequencing across cases.
+- Throughput risk:
+  - The model may cause long cycle times due to serial dependencies (gated AND-joins) and over-processing (multiple technical tracks).
+
+Key challenges and pain points
+- Missing governance on outcome routing: Offer/Reject are unattached to evaluation gates.
+- Over-constrained gating: Coding Interview blocked until all checks (including extensive) are done.
+- Over-processing: All three technical tracks are enabled regardless of role fit; no selection rule.
+- Incomplete modeling: Behavioral Interview placement unknown; terminal transitions floating.
+- Scheduling complexity: Concurrent activation of multiple interviews increases coordination effort.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A controlled, efficient hiring workflow that screens applicants, conducts appropriate level checks, evaluates technical and behavioral fit, and ends with a governed decision (offer or rejection).
+- Design principles applied:
+  - Early, well-defined decision gates.
+  - Role-aligned interview selection (avoid unnecessary tracks).
+  - Conditional, risk-based background checks.
+  - Parallelization where safe (to reduce lead time), with clear synchronization before decision.
+  - Clear, single termination gateway to Offer or Rejection.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source; activities are defined without lane assignments.
+
+Start conditions and triggers
+- Trigger: Candidate submits application (start event).
+- Precondition: A requisition exists and is open for hiring (implicit business context).
+
+Detailed step-by-step process flow
+1) Hand In Job Application (Start)
+   - Capture applicant data and desired role/track.
+
+2) Telephonic Screening
+   - Purpose: Verify basic qualifications, communication, and role alignment.
+   - Decision (exclusive):
+     - Fail: Route to Application Rejected (End).
+     - Pass: Proceed to next steps.
+
+3) Screening Interview and Standard Background Check (parallel)
+   - Parallel split:
+     - Screening Interview: Deeper initial assessment.
+     - Background Check (standard scope): Identity/employment/education verification at a baseline level.
+   - Rationale: Parallelization shortens cycle time without compromising decision quality.
+
+4) Conditional Extensive Background Check (inclusive/conditional)
+   - Decision based on risk triggers from standard check or screening outcomes (e.g., discrepancies):
+     - If triggered: Perform Extensive Background Check (after standard check completes).
+     - If not triggered: Skip this step.
+   - Synchronization point:
+     - Proceed to final decision only after all required checks (standard and, if applicable, extensive) are complete.
+   - Note: Coding Interview scheduling can proceed in parallel, but offer decision must await completion of required checks.
+
+5) Coding Interview
+   - Conduct standardized coding assessment aligned to the target role.
+
+6) Technical track selection (exclusive gateway)
+   - Choose exactly one role-appropriate track based on requisition:
+     - Backend Interview
+     - Frontend Interview
+     - ML Interview
+   - Optionally, allow more than one track only when the requisition expressly spans multiple tracks; otherwise default to a single selected track to avoid over-processing.
+
+7) Behavioral Interview
+   - Conduct behavioral/cultural fit interview after technical assessment.
+   - This step was present but unordered in the AS-IS; in the IDEAL model, it is placed explicitly after technical evaluation to standardize sequencing.
+
+8) Consolidated evaluation and decision (single decision gateway)
+   - Inputs required:
+     - Results of Coding Interview
+     - Results of selected technical track
+     - Behavioral Interview outcome
+     - Background Check results (standard, and extensive if triggered)
+   - Decision outcomes (exclusive):
+     - Make Job Offer (End): If all required evaluations meet defined thresholds and background checks are clear.
+     - Application Rejected (End): If thresholds are not met or checks fail.
+
+Parallel activities and synchronization points
+- Parallel:
+  - Screening Interview and Standard Background Check run in parallel (Step 3).
+  - Coding Interview and technical track scheduling can begin while Extensive Background Check (if any) is in progress, provided no offer is issued until checks clear.
+- Synchronization:
+  - Before final decision, join on completion of:
+    - Coding Interview
+    - Selected technical track
+    - Behavioral Interview
+    - All required background checks (standard and, if triggered, extensive)
+
+Exception handling and error paths
+- No-show or scheduling failure:
+  - Attempt reschedule up to a defined limit; if exceeded, route to Application Rejected.
+- Background check discrepancies:
+  - If minor/clarifiable: pause decision, request clarification, then resume.
+  - If material: route to Application Rejected.
+- Technical interview inconclusive:
+  - Allow a single re-interview in the same track; if still inconclusive or below threshold, reject.
+
+Rework loops and escalation procedures
+- Limited rework allowed:
+  - One re-interview maximum for a single technical track.
+- Escalation:
+  - Any exception beyond defined limits escalated to hiring authority for final disposition (offer hold or rejection).
+
+End conditions and outcomes
+- End states:
+  - Make Job Offer (successful completion of all required assessments and checks).
+  - Application Rejected (failure at a gate, candidate withdrawal, or exception beyond limits).
+- All cases terminate through a single governed decision gateway.
+
+Process metrics and performance characteristics (targets)
+- Lead time:
+  - Target end-to-end time: reduced by parallelizing screening and standard checks.
+- Touch time:
+  - Decrease interviewer load by selecting a single technical track except when multi-track is justified.
+- First-pass yield:
+  - Increase by enforcing clear thresholds and a standard sequence (technical → behavioral → decision).
+- SLA examples (illustrative):
+  - Telephonic Screening within 2 business days of application receipt.
+  - Screening Interview and standard background check within 5 business days.
+  - Decision within 2 business days after final interview and check completion.
+
+Improvements made (vs. AS-IS)
+- Clear decision routing:
+  - Early rejection possible at Telephonic Screening; single final decision gateway controls Offer/Reject.
+- Right-sizing interviews:
+  - Exclusive selection of a single technical track by default; no automatic activation of all three tracks.
+- Risk-based checks:
+  - Extensive Background Check performed only when triggered; no blanket gating of Coding Interview by extensive checks.
+- Reduced waiting:
+  - Parallelization of Screening Interview and standard background check; ability to continue interviews while checks complete (with final decision held).
+- Sequencing clarity:
+  - Behavioral Interview explicitly positioned; all required steps synchronized before decision.
+- Removal of ambiguity and floating transitions:
+  - All activities connected into a coherent, governed flow with defined joins and splits.
+")

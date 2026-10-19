@@ -1,0 +1,74 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model represents an improved, streamlined version of the emergency medical treatment process. It eliminates variability, excessive skips, and unlimited rework by standardizing registration, mandating key examinations with clear decisions, limiting treatment retries to prevent endless loops, and enforcing successful treatment confirmation before discharge. This "to-be" model rationalizes the AS-IS behaviors into an efficient, compliant flow under good governance, preserving core activities while removing waste.
+
+**Purpose**: To deliver standardized, high-quality emergency care—registration, examination, diagnosis, controlled treatment, and discharge—minimizing delays and ensuring patient safety.
+
+#### Key Stakeholders and Roles Involved
+Roles not specified in source; assumed medical staff (reception for registration, clinicians for exams/treatment). In implementation, assign: Receptionist (Register), Nurse (Examination/Thorough), Specialist (Expert if needed), Doctor (Diagnosis/Treatment/Discharge).
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers**: Patient arrival at ER or FD (FD redirects to ER registration).
+
+1. **Standardized Registration (Single Path with Sub-Option)**:
+   - **Register at ER** (primary; FD patients register here immediately).
+   - Performance target: <40,000 time units.
+
+2. **Initial Examination Phase (Sequential with Decisions)**:
+   - **Examination** (mandatory initial triage).
+   - Decision (XOR): Requires Expert? (e.g., high severity from FD/trauma)
+     - Yes → **Expert Examination** → merge.
+     - No → proceed.
+   - Decision (XOR): Requires Thorough?
+     - Yes → **Thorough Examination**.
+     - No → proceed.
+   - Synchronization: All paths converge post-examinations.
+
+3. **Diagnosis**:
+   - **Diagnosis** (mandatory after examinations).
+
+4. **Treatment with Limited Rework Loop (Structured Loop, Max 2 Iterations)**:
+   - **Treatment**.
+   - Decision (XOR):
+     - Successful → proceed.
+     - Unsuccessful → Loop back to Diagnosis (Counter: if <2 retries, repeat; else escalate).
+   - **Escalation** (after 2 failures): Expert review or transfer (new activity inferred from loop limits).
+
+5. **Finalization**:
+   - **Treatment successful** (mandatory confirmation).
+   - **Discharge**.
+
+**Decision Points**:
+- Expert Exam: Yes (severity score > threshold), No.
+- Thorough Exam: Yes (initial findings abnormal), No.
+- Treatment Outcome: Success (discharge path), Unsuccessful (retry or escalate). Criteria: Clinical metrics.
+- Loop Limit: Retry count <2.
+
+**Parallel Activities and Synchronization**: None; fully sequential for simplicity.
+
+**Exception Handling and Error Paths**:
+- Unsuccessful treatment: Limited retry (max 2), then escalate to senior review.
+- No skips allowed; all paths enforced.
+
+**Rework Loops and Escalation Procedures**:
+- Controlled loop: Max 2x Unsuccessful → Diagnosis/Treatment.
+- Escalation after limit: Mandatory senior intervention (prevents endless loops).
+
+**End Conditions and Outcomes**:
+- Only one end: Confirmed **Treatment successful** → **Discharge**.
+- No direct Treatment → Discharge.
+
+#### Process Metrics and Performance Characteristics
+- Expected cycle time: 240,000-320,000 time units (straight paths); max 420,000 with 2 retries.
+- Reduced variants: <10 paths vs. 30+ AS-IS.
+- Bottlenecks addressed: No unlimited loops; standardized exams.
+- Throughput: Higher due to predictability; 95% cases <320,000 time.
+
+#### Key Improvements Made
+- **Streamlined Variability**: Single registration; mandatory exams with binary decisions (removed skips, dual experts).
+- **Controlled Rework**: Limited to 2 retries (cuts tail times from 800,000+ to <420,000; eliminates 10%+ of AS-IS loop cases).
+- **Compliance Enforcement**: Mandatory success confirmation before Discharge (fixes ~995 direct discharges).
+- **Efficiency Gains**: Shorter paths by collapsing redundant exams; clear criteria reduce decision time.
+- **Quality/Risk Reduction**: No unchecked skips; escalation prevents prolonged failures.
+- **Bottleneck Fixes**: Fewer exam options; loop limits improve flow time by 30-50% in rework cases.

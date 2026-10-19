@@ -1,0 +1,22 @@
+{
+  "llm_model": "openai:gpt-5",
+  "validator_model": "gpt-5-mini",
+  "k_valid": 100,
+  "k_invalid_per_type": 50,
+  "perturbation_types": [
+    "A1_random_swap",
+    "A3_dependency_aware_swap",
+    "B1_insert_out_of_alphabet",
+    "B2_insert_misplaced_existing",
+    "B3_insert_duplicate_unique",
+    "C1_delete_mandatory",
+    "C2_delete_start_or_end",
+    "D1_cross_role",
+    "E1_two_swaps",
+    "E2_swap_and_insert"
+  ],
+  "seed": 42,
+  "datasets": [
+    "benchmark/renting/renting_log_high.xes"
+  ]
+}

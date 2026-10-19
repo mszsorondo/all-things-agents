@@ -1,0 +1,240 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end loan intake and decisioning as observed from the discovered Petri net (Inductive Miner). It covers appointment handling, application submission, verification, optional co-signer and collateral handling, underwriter submission, an optional signing step, and multiple denial/rejection exits.
+- Scope: From initial “Request Appointment” through either early termination (“Appointment Denied”, “Application Rejected”) or process completion after a parallel section and a final join. The model includes optional/bypass behavior and a collateral assessment loop.
+
+Key stakeholders and roles involved
+- Roles are not explicitly defined in the source. The activity labels imply:
+  - Borrower: implied in “Verify Borrowers Information” and “Sign Loan Agreement”.
+  - (Implied) Front-office/branch/loan officer: “Request Appointment”, “Set Appointment”, “Hand In Credit Appliaction”, “Make Visit to Assess Colatteral”.
+  - (Implied) Underwriter function: “Submit File to Underwriter”.
+- Because responsibilities are not specified in the source, the above should be read as implied only.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A case starts when an appointment is requested.
+  1) Request Appointment
+
+Decision point: appointment outcome (exclusive)
+- From Request Appointment:
+  2a) Set Appointment → continue
+  2b) Appointment Denied → End (case terminates immediately)
+
+Core intake and verification sequence
+- If appointment is set:
+  3) Hand In Credit Appliaction (as labeled in source)
+  4) Verify Borrowers Information
+
+Decision point after verification (exclusive)
+- From Verify Borrowers Information:
+  5a) Application Rejected → End (case terminates)
+  5b) Proceed to a parallel split (silent transition) that creates two concurrent branches which must both complete before the process can end.
+
+Parallel split and branches (AND-split; both branches must complete)
+
+Branch A: Denial-record branch (as modeled)
+- This branch represents a binary choice that completes the branch regardless of outcome:
+  A1) Either:
+      - Loan Denied (visible activity), then branch reaches its completion state
+      - OR silently skip to the same branch-completion state
+- Note: This branch’s semantics are unusual: it either records a denial or silently completes with no explicit “approval” alternative. Regardless, it must complete in parallel with Branch B before the process can end.
+
+Branch B: Documentation/examination branch (choice among three patterns, with an internal AND-parallel sub-pattern)
+- From the branch entry, one of the following alternatives occurs (exclusive choice):
+
+  B-Alt 1) Skip examination path:
+    B1) skipped_examination (visible label) → jump directly to the pre-signing area
+    B2) Optionally Sign Loan Agreement OR silently skip signing:
+        - Sign Loan Agreement → branch completes
+        - OR silently skip signing → branch completes
+
+  B-Alt 2) Minimal underwriter path:
+    B1) Silent jump to pre-underwriter area
+    B2) Submit File to Underwriter → reach pre-signing area
+    B3) Optionally Sign Loan Agreement OR silently skip signing:
+        - Sign Loan Agreement → branch completes
+        - OR silently skip signing → branch completes
+
+  B-Alt 3) Concurrent preparation path (internal AND-split with synchronization)
+    Parallel workstreams launched concurrently:
+      - Co-signer workstream (exclusive inside the stream):
+        C1) Request Co-Signer On Loan OR silently skip it
+        C2) Stream completes (tokens move to join)
+      - Collateral assessment workstream with loop:
+        D1) Optionally initialize the loop or skip directly to completion
+        D2) Make Visit to Assess Colatteral (as labeled)
+        D3) After each visit: either loop back and repeat the visit, or exit the loop to stream completion
+    Synchronization:
+      - Both workstreams synchronize (AND-join) before moving forward.
+    Post-synchronization:
+      - Submit File to Underwriter → reach pre-signing area
+      - Optionally Sign Loan Agreement OR silently skip signing:
+        • Sign Loan Agreement → branch completes
+        • OR silently skip signing → branch completes
+
+Parallel synchronization and process completion
+- After Branch A has reached its completion state and Branch B has reached its completion state:
+  - A final AND-join fires and the case ends.
+
+Exception handling and error paths
+- Early appointment denial: Appointment Denied → End
+- Post-verification rejection: Application Rejected → End
+- Within the parallel section:
+  - Branch A may record Loan Denied, yet the model still requires Branch B to complete (even allowing optional underwriter submission and optional signing).
+  - Branch B permits bypassing important checks:
+    • skipped_examination lets the process bypass underwriter submission
+    • “Sign Loan Agreement” can be skipped and the branch still completes
+
+Rework loops and escalation procedures
+- Rework:
+  - Collateral assessment loop: Make Visit to Assess Colatteral can repeat multiple times before exiting. There is no explicit cap or termination condition in the source beyond a silent exit.
+- No explicit escalation activities are modeled in the source.
+
+End conditions and outcomes
+- End states:
+  - Appointment Denied (immediate termination)
+  - Application Rejected (after verification)
+  - Normal completion after the parallel AND-join when both Branch A and Branch B have reached their completion states, which may include:
+    • Branch A having recorded Loan Denied or having silently completed
+    • Branch B having optionally skipped examination, optionally skipped submission to underwriter, and optionally skipped signing
+
+Process metrics and performance characteristics (as implied by the model)
+- Throughput/lead time:
+  - Highly variable due to:
+    • Optional skipping of examination and underwriter steps
+    • Optional skipping of signing
+    • Potentially unbounded collateral visit loop
+- Path frequencies to monitor:
+  - Rate of Appointment Denied vs Set Appointment
+  - Rate of Application Rejected after verification
+  - Frequency of Branch A executing Loan Denied vs silent completion
+  - Frequency of skipped_examination path
+  - Frequency of Submit File to Underwriter in each variant
+  - Signing rate vs skip-signing rate
+  - Average number of collateral visits per case (loop count)
+- Concurrency:
+  - Internal parallelism in both the main parallel section (Branch A and Branch B) and the sub-parallel section of Branch B (co-signer vs collateral assessment)
+
+Key challenges and pain points
+- Compliance and control issues:
+  - Signing can be skipped and the case still completes.
+  - Submission to underwriter can be bypassed entirely (skipped_examination).
+  - A Loan Denied event can occur in parallel while the other branch can still progress toward a signing step, creating contradictory semantics.
+- Ambiguity:
+  - Branch A lacks a clear “approved” counterpart; it either logs “Loan Denied” or silently completes.
+- Process variability and unpredictability:
+  - Multiple bypass routes and an unbounded collateral loop create wide variation in lead times and outcomes.
+- Governance gaps:
+  - Critical decision gates (e.g., underwriter review) are not enforced.
+  - Finalization (signing) is not mandatory for non-denied outcomes.
+")
+
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a controlled, compliant loan intake and decisioning flow using only activities present in the source but enforcing sound sequencing and governance.
+- Goals:
+  - Enforce critical decision gates (verification and underwriter review) before finalization.
+  - Remove contradictory and unsafe bypasses (no skipping of underwriter submission where required; no skipping signing upon approval).
+  - Keep useful concurrency (co-signer handling and collateral assessment) with clear synchronization and bounded rework.
+
+Key stakeholders and roles involved
+- Roles remain implied (not explicitly specified in the source):
+  - Borrower: signs agreement; provides information.
+  - Front-office/loan officer: handles appointment, application intake, collateral visit (as implied).
+  - Underwriter function: receives and reviews the file (implied).
+- Responsibility assignments should be confirmed in governance, but are not introduced as new activities.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+1) Request Appointment
+
+Decision point: appointment outcome (exclusive)
+2a) Set Appointment → continue
+2b) Appointment Denied → End
+
+Intake and verification
+3) Hand In Credit Appliaction
+4) Verify Borrowers Information
+
+Decision point after verification (exclusive)
+5a) Application Rejected → End
+5b) Verified OK → continue
+
+Parallel preparation (retain useful concurrency; synchronize before review)
+- Launch two preparation workstreams in parallel; both must complete before underwriter submission:
+  Workstream W1: Co-signer determination
+    - If a co-signer is required: Request Co-Signer On Loan
+    - If not required: skip this request (silent)
+    - W1 completes
+  Workstream W2: Collateral assessment (bounded loop with exit criteria)
+    - Initialize assessment or, if justified, skip directly to completion
+    - Make Visit to Assess Colatteral
+    - Repeat visits only as needed, with explicit exit criteria (e.g., adequate collateral confirmed or deemed insufficient)
+    - W2 completes
+- Synchronization (AND-join): Both W1 and W2 must be complete.
+
+Underwriter submission and decision
+6) Submit File to Underwriter
+7) Decision gateway (exclusive), realized using existing activities:
+   - If not approved: Loan Denied → End
+   - If approved: proceed to contracting
+
+Finalization
+8) Sign Loan Agreement (mandatory for approved cases)
+9) End
+
+Exception handling and error paths
+- Appointment not granted: Appointment Denied → End
+- Verification failure: Application Rejected → End
+- Preparation failures:
+  - If co-signer cannot be obtained or collateral remains insufficient after bounded attempts, route to Application Rejected or Loan Denied as appropriate (using existing end states).
+- Underwriter decision:
+  - Loan Denied terminates the process without signing.
+- No path allows signing without prior successful underwriter review.
+
+Rework loops and escalation procedures
+- Collateral assessment loop:
+  - Retained but bounded with explicit exit criteria; repeat visits are allowed only until a defined limit or until adequate evidence is gathered.
+- No rework after underwriter decision; outcomes are final (either denial or move to signing).
+
+End conditions and outcomes
+- End on:
+  - Appointment Denied
+  - Application Rejected
+  - Loan Denied
+  - Successful completion after Sign Loan Agreement (approval path)
+
+Process metrics and performance characteristics
+- Control and compliance KPIs:
+  - 100% of approved cases must have Submit File to Underwriter before Sign Loan Agreement.
+  - 0% of approved cases skip Sign Loan Agreement.
+  - 0% of cases reach signing after Loan Denied.
+- Efficiency KPIs:
+  - Average collateral visits per case, with a bounded target.
+  - Co-signer request rate and turnaround time when required.
+  - Lead time from verification to underwriter submission and from submission to decision.
+- Quality/outcome KPIs:
+  - Approval vs denial rates post-underwriter review.
+  - Rejection rate at verification.
+- Concurrency utilization:
+  - Parallel preparation completion time (critical path of W1/W2).
+
+Improvements made versus AS-IS
+- Governance and sequencing:
+  - Enforced order: verification → (parallel prep) → underwriter submission → decision → signing.
+  - Removed the possibility to bypass underwriter review (no skipped_examination path leading directly to signing).
+  - Made signing mandatory only after an implicit approval; removed the ability to skip signing on the approved path.
+- Logical consistency:
+  - Loan Denied occurs only after underwriter submission and blocks any signing path.
+  - The prior contradictory parallel branch (where Loan Denied could co-occur with signing) is eliminated; replaced with a single, clear decision point after underwriter review.
+- Leaner variability with retained flexibility:
+  - Collateral assessment loop is kept but bounded; co-signer request remains optional and criteria-based.
+  - Final AND-join is applied only to the preparation workstreams, not to incompatible outcomes.
+")

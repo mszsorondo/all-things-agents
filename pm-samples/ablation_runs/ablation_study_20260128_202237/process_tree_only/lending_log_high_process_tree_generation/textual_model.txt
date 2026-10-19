@@ -1,0 +1,232 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Intake and decisioning of a loan request starting from an appointment request through verification, optional due-diligence activities, possible submission to underwriting, and potential signing. The discovered behavior includes optional and parallel paths, skips, and rework loops.
+- Source structure interpreted from the process tree produced by an Inductive Miner:
+  ->( 'Request Appointment',
+      X( 'Appointment Denied',
+         ->( 'Set Appointment',
+             'Hand In Credit Appliaction',
+             'Verify Borrowers Information',
+             X( 'Application Rejected',
+                +(
+                  X( tau, 'Loan Denied' ),
+                  ->(
+                    X( 'skipped_examination',
+                       ->( X( tau, +(
+                                      X( tau, 'Request Co-Signer On Loan' ),
+                                      X( tau, *( 'Make Visit to Assess Colatteral', tau ) )
+                                    ) ),
+                           'Submit File to Underwriter'
+                       )
+                    ),
+                    X( tau, 'Sign Loan Agreement' )
+                  )
+                )
+             )
+          )
+      )
+    )
+
+Key stakeholders and roles involved
+- Applicant/Borrower: initiates “Request Appointment,” “Hand In Credit Appliaction,” and “Sign Loan Agreement.”
+- Internal processing staff (generic): handle “Set Appointment” and “Verify Borrowers Information.”
+- Underwriting (recipient role implied by “Submit File to Underwriter”): receives files for decisioning. No explicit “underwriter review” activity is logged in the model.
+- Field/assessment personnel (generic): implied by “Make Visit to Assess Colatteral.” Specific roles are not explicitly named in the source and are therefore kept generic.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start event: Case is triggered when the applicant performs “Request Appointment.”
+
+Main flow
+1) Request Appointment (start)
+   - Trigger raised by applicant to initiate the process.
+
+2) Exclusive decision: Appointment outcome
+   - Either:
+     a) Appointment Denied
+        - Process ends immediately after this event.
+     b) Proceed with appointment:
+        - Set Appointment
+        - Hand In Credit Appliaction
+        - Verify Borrowers Information
+
+3) Exclusive decision after verification
+   - Either:
+     a) Application Rejected
+        - Process ends on pre-screen rejection.
+     b) Proceed to a parallel block that combines optional denial and further processing
+
+4) Parallel split (AND) into two branches that run concurrently and must both complete before the process ends:
+   Branch A: Optional denial event
+   - X( tau, 'Loan Denied' )
+     - “Loan Denied” may occur, or it may be skipped entirely.
+     - If it occurs, it does NOT terminate the other branch; both branches continue independently until the parallel join.
+     - This enables cases where “Loan Denied” co-occurs with downstream positive activities (e.g., “Sign Loan Agreement”).
+
+   Branch B: Sequenced processing with an optional skip of examination, optional preparatory tasks, possible underwriting submission, and optional signing
+   - Step B1: Exclusive choice between skipping or performing the preparatory/examination path
+     - Option 1: Perform 'skipped_examination'
+       - A logged activity explicitly stating the examination was skipped.
+       - If chosen, no “Submit File to Underwriter” is performed as part of this option’s sequence. The branch proceeds to Step B2.
+     - Option 2: Perform an internal sequence:
+       - Optional preparatory parallel actions (can be entirely skipped):
+         • X( tau, 'Request Co-Signer On Loan' ) — optionally request a co-signer.
+         • X( tau, *( 'Make Visit to Assess Colatteral', tau ) ) — optionally perform zero or more collateral assessment visits. The loop allows repeated visits with no fixed upper bound.
+       - Submit File to Underwriter — occurs after the optional preparatory actions when Option 2 is selected.
+
+   - Step B2: Optional post-processing/signature
+     - X( tau, 'Sign Loan Agreement' ) — Signature can occur or be skipped.
+     - Notably, due to the earlier skip option, “Sign Loan Agreement” can occur even when “Submit File to Underwriter” did not happen (if 'skipped_examination' was selected).
+
+5) Parallel join and end
+   - The process completes once:
+     - Branch A has either performed or skipped “Loan Denied,” and
+     - Branch B has completed its chosen path and any optional “Sign Loan Agreement.”
+
+Decision points with criteria and outcomes
+- Appointment decision (exclusive): “Appointment Denied” vs. continue to appointment setting and application steps.
+- Post-verification decision (exclusive): “Application Rejected” vs. continue to a parallel region.
+- Within processing branch B (exclusive):
+  - Either log 'skipped_examination' (bypass exam path and underwriter submission), or
+  - Execute optional preparatory tasks (co-signer request and/or collateral visits) then “Submit File to Underwriter.”
+- Optional events (exclusive with tau): “Loan Denied” in parallel branch A; “Sign Loan Agreement” after branch B’s main work.
+
+Parallel activities and synchronization points
+- After verification (if not rejected), a parallel block executes:
+  - Optional “Loan Denied” in one branch.
+  - The examination/underwriter/sign path in the other branch.
+- Synchronization occurs at the end of both branches.
+
+Exception handling and error paths
+- Early termination via “Appointment Denied” or “Application Rejected.”
+- “Loan Denied” can occur mid-process without stopping other work (by model design), creating contradictory outcomes when combined with “Sign Loan Agreement.”
+- 'skipped_examination' represents an explicit bypass of examination activities and underwriter submission in some cases.
+
+Rework loops and escalation procedures
+- Rework loop: “Make Visit to Assess Colatteral” can repeat zero or more times. No policy-based bound or exit criteria are recorded; termination is via a silent (tau) exit.
+- No explicit escalation or approval consolidation steps appear in the model.
+
+End conditions and outcomes
+- Possible end states include:
+  - Appointment Denied (no application processing).
+  - Application Rejected (post-verification).
+  - Loan Denied (possibly co-occurring with other events due to parallelism).
+  - Sign Loan Agreement (possibly without “Submit File to Underwriter” if 'skipped_examination' occurred).
+  - Mixed/conflicting states are possible, such as both “Loan Denied” and “Sign Loan Agreement” in the same case.
+
+Process metrics and performance characteristics (as observed/derivable)
+- Cycle time from “Request Appointment” to end.
+- Early fallout rates: percentage of “Appointment Denied” and “Application Rejected.”
+- Rate of 'skipped_examination' usage.
+- Percentage of cases with “Submit File to Underwriter.”
+- Frequency and average count of “Make Visit to Assess Colatteral” iterations per case.
+- Frequency of “Request Co-Signer On Loan.”
+- Percentage of cases with “Sign Loan Agreement” without prior “Submit File to Underwriter.”
+- Percentage of cases where “Loan Denied” co-occurs with “Sign Loan Agreement.”
+- WIP and synchronization delays within the parallel region.
+
+Key challenges and pain points
+- Contradictory outcomes: The model permits “Loan Denied” to occur in parallel with “Sign Loan Agreement,” producing inconsistent end states.
+- Compliance/control gap: “Sign Loan Agreement” can occur even when 'skipped_examination' was chosen and “Submit File to Underwriter” never occurred.
+- Unbounded rework: Indefinite looping of collateral visits without clear stop criteria increases cost/time variability.
+- Inconsistent due diligence: 'skipped_examination' allows complete bypass of preparatory checks; criteria for usage are not encoded.
+- Ambiguous ownership: Underwriting receives files, but no explicit underwriter review/decision activity is logged; governance points are unclear.
+- Parallel optional denial: The ability to log “Loan Denied” as an optional parallel event complicates state management and downstream actions.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a clean, controlled, and consistent loan intake and decisioning process that eliminates contradictory outcomes, enforces proper sequencing, and bounds rework while retaining all valid business outcomes seen in the source (pre-screen rejection, final denial, and signing).
+- This IDEAL model streamlines the AS-IS by:
+  - Making underwriting submission mandatory before any signing.
+  - Ensuring final outcomes (“Loan Denied” vs. “Sign Loan Agreement”) are mutually exclusive and occur in the correct order.
+  - Replacing the explicit 'skipped_examination' activity with a governed decision to include or omit preparatory checks based on documented criteria (no new tasks are added; the gateway controls existing optional activities).
+  - Keeping optional due-diligence tasks but clarifying when they are used and bounding loops.
+
+Key stakeholders and roles involved
+- Applicant/Borrower: initiates appointment, submits application, signs the agreement.
+- Internal processing staff (generic): set appointment, verify borrower information, conduct or arrange due-diligence tasks.
+- Underwriting (recipient role implied by “Submit File to Underwriter”): receives the case and produces an outcome realized by either “Loan Denied” or “Sign Loan Agreement.”
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start event: Applicant performs “Request Appointment.”
+
+Main flow
+1) Request Appointment (start)
+
+2) Exclusive decision: Appointment outcome
+   - Appointment Denied (end), or
+   - Proceed with appointment setup and intake.
+
+3) Intake and verification
+   - Set Appointment
+   - Hand In Credit Appliaction
+   - Verify Borrowers Information
+
+4) Exclusive decision: Pre-screen outcome
+   - Application Rejected (end), or
+   - Proceed to due diligence and underwriting preparation.
+
+5) Due diligence (governed optionality, no explicit 'skipped_examination' activity)
+   - Conditional, policy-driven inclusion of existing optional checks:
+     • Request Co-Signer On Loan (optional; only when risk rules indicate).
+     • Make Visit to Assess Colatteral (optional, repeat as needed up to a defined maximum or until sufficient evidence is gathered; the loop is bounded by policy to prevent uncontrolled rework).
+   - If none of the above is required by policy, the case proceeds directly to submission (the gateway replaces the explicit 'skipped_examination' event).
+
+6) Submit File to Underwriter (mandatory)
+   - All cases that reach this stage must be submitted before any final outcome.
+
+7) Underwriting outcome (exclusive decision; realized by existing outcome events)
+   - Loan Denied (end), or
+   - Sign Loan Agreement (end).
+   - These outcomes are mutually exclusive and occur only after submission to underwriting; parallel logging with other outcomes is not permitted.
+
+Parallel activities and synchronization points
+- Parallelism is removed around the denial/signing stage to prevent conflicting states.
+- Optional due-diligence tasks (co-signer request and collateral visits) may run in parallel with each other before submission, when both are required, but they must complete (or be skipped by policy) before “Submit File to Underwriter.” Synchronization occurs at submission.
+
+Exception handling and error paths
+- If due-diligence attempts fail (e.g., collateral remains insufficient or no acceptable co-signer is available within policy bounds), the case proceeds to underwriting submission with current evidence; underwriting may then lead to “Loan Denied.”
+- Early termination routes remain:
+  - Appointment Denied (pre-intake).
+  - Application Rejected (post-verification).
+
+Rework loops and escalation procedures
+- Rework is limited to a bounded number of “Make Visit to Assess Colatteral” iterations as defined by policy. Exit occurs upon sufficient evidence or reaching the cap.
+- No signing occurs until after “Submit File to Underwriter” and the exclusive underwriting outcome gateway.
+- Escalations (if organizationally defined) would occur outside the scope of these named activities; the IDEAL control flow does not introduce new activities.
+
+End conditions and outcomes
+- Appointment Denied (early end).
+- Application Rejected (early end).
+- Loan Denied (final end after underwriting).
+- Sign Loan Agreement (final end after underwriting).
+- No case ends with both a denial and a signature.
+
+Process metrics and performance characteristics (targets and controls)
+- Conformance targets:
+  - 100% of signed cases have “Submit File to Underwriter” completed beforehand.
+  - 0% cases with both “Loan Denied” and “Sign Loan Agreement.”
+  - 0% usage of explicit 'skipped_examination' activity (replaced by governed gateway logic).
+- Efficiency/quality metrics:
+  - Average and percentile cycle times from “Request Appointment” to each terminal outcome.
+  - Pre-screen fallout rates: “Appointment Denied” and “Application Rejected.”
+  - Due-diligence utilization rates: percentage with “Request Co-Signer On Loan,” distribution of collateral visit counts, and bounded rework compliance.
+  - Underwriter submission rate: 100% for all cases that pass pre-screen.
+  - First-pass underwriting outcome rate; denial rate post-submission.
+- Control metrics:
+  - SLA adherence for completion of due-diligence tasks before submission.
+  - Exceptions where due-diligence required by policy was skipped (should be 0 with proper governance).
+
+Improvements made relative to AS-IS
+- Removed contradictory parallel denial/signing behavior; outcomes are exclusive and sequenced post-underwriting.
+- Enforced mandatory “Submit File to Underwriter” before any signing.
+- Replaced the explicit 'skipped_examination' event with policy-driven gatewaying (no new tasks added), ensuring traceable rationale without logging a “skip” activity as the sole action.
+- Bounded the collateral visit loop to control time/cost variability.
+- Preserved all legitimate outcomes present in the source (pre-screen rejection, final denial, signing) while eliminating noncompliant or ambiguous paths.
+""")

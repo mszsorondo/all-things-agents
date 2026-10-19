@@ -1,0 +1,96 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This process captures the observed life‑cycle of a residential rental application and tenancy as discovered by process mining. It covers how prospective tenants apply to view and rent a property, the screening and decision steps, contract signing and move‑in, ongoing rent payments (including repeated payments and late/missed payments), warnings, late‑payment acceptance, and the small number of eviction or tenant‑cancellation terminations.
+- Purpose: match prospects to available properties, ensure appropriate screening and contracting, collect rent, and manage non‑payment and terminations.
+
+Key stakeholders and roles involved (explicitly implied by activities)
+- Prospective Tenant: initiates Apply for Viewing Appointment, View The Property, Hand In The Paperwork, Sign Contract, Move In, Pay Rent, may Miss Rent Payment or Cancel Apartment.
+- Leasing Agent / Scheduler: performs Set Appointment and coordinates viewings.
+- Screening Team / Underwriter: performs Check Paperwork, Screen Prospective Tenant, and Extensive Screening when needed.
+- Property Manager / Landlord: issues warnings, accepts late payments, and executes eviction actions when necessary.
+- (System/Back‑office): supports automated counting/recording of payments and event logging (implied by high frequency of payment events).
+
+Detailed step‑by‑step process flow (AS‑IS observed behavior)
+Start conditions and trigger
+1. Source event: prospective tenant submits an application or request (Apply for Viewing Appointment).
+
+Primary happy path (most frequent observed variant)
+1. Apply for Viewing Appointment (prospective tenant submits request).
+2. Set Appointment (leasing agent schedules a viewing). Frequency (DFG): Apply->Set = 9,151.
+3. View The Property (prospective tenant attends viewing). Frequency: Set->View = 9,151.
+4. Hand In The Paperwork (tenant submits documentation after viewing). Frequency: View->Hand In = 7,441.
+5. Check Paperwork (initial document check). Frequency: Hand In->Check = 7,441.
+6. Screen Prospective Tenant (background/credit checks). Frequency: Check->Screen = 7,441.
+7. Decision after screening:
+   - Reject Prospective Tenant (screening or paperwork fails). Frequency: Screen->Reject = 2,856 (also some rejections occur immediately after viewing or at application: View->Reject = 1,710; Apply->Reject = 849). This ends the case at a rejection sink.
+   - Extensive Screening (further checks) when standard screening flags concerns. Frequency: Screen->Extensive Screening = 2,793.
+   - Sign Contract (applicant approved). Frequency: Screen->Sign Contract = 1,792.
+8. If Extensive Screening occurs:
+   - Extensive Screening -> Reject Prospective Tenant (1,815) OR
+   - Extensive Screening -> Sign Contract (978).
+9. After Sign Contract -> Move In (2,770).
+10. After Move In -> regular Pay Rent events start (Move In->Pay Rent = 2,656). The observed data show many repeated Pay Rent events (Pay Rent -> Pay Rent = 14,819), indicating ongoing tenancy and periodic payments.
+
+Alternative and observed exceptional flows
+- Early rejection variants:
+  - Apply for Viewing Appointment -> Reject Prospective Tenant (849) — some applications are rejected before scheduling a viewing.
+  - View The Property -> Reject Prospective Tenant (1,710) — immediate rejection after viewing (prospect unsuitable or property no longer available).
+
+- Rework and lengthy tenure patterns:
+  - Tenancies frequently contain many Pay Rent events before termination. Abstract variants show many cases with long chains of Pay Rent events (from 1 up to many repeated payments) before Tenant Cancels Appartment. This indicates long tenancies and repeated payment cycles.
+
+- Missed and late payments / enforcement loop:
+  - Pay Rent -> Miss Rent Payment (770): after a period of rent payments, some months are missed.
+  - Miss Rent Payment -> Issue Warning (945): the organization issues warnings in response to missed payments.
+  - Issue Warning -> Accept Late Payment (855) OR Issue Warning -> Evict Tenant (90): most warnings lead to acceptance of a late payment; a small number escalate to eviction.
+  - Accept Late Payment -> Pay Rent (794): accepted late payment returns the tenant to the normal payment cycle.
+  - Accept Late Payment -> Miss Rent Payment (61): some accepted late payments again lead to missed payments.
+  - Pay Rent -> Tenant Cancels Appartment (2,680): tenants sometimes terminate tenancy after making a rent payment.
+  - Accept Late Payment -> Pay Rent and Pay Rent loops: frequent cycles show partial recovery or repeated late/accepted payments before stable recovery or termination.
+
+- Eviction and termination
+- Evict Tenant and Tenant Cancels Appartment are terminal events (sink). Evictions are relatively rare compared to accepted late payments; DFG shows Issue Warning -> Evict Tenant frequency = 90.
+- Tenant Cancels Appartment occurs across many variants after long payment sequences (2,680 occurrences directly after Pay Rent in DFG, and many variant sequences ending with Tenant Cancels after varying numbers of Pay Rent events).
+
+Control‑flow constructs and inferred gateways
+- Exclusive decisions:
+  - After Screen Prospective Tenant: three mutually exclusive outcomes (Reject, Extensive Screening, Sign Contract). Data show all three are used in practice.
+  - After Extensive Screening: two mutually exclusive outcomes (Reject or Sign Contract).
+  - After Issue Warning: two outcomes (Accept Late Payment or Evict Tenant).
+- Loops:
+  - Recurring Pay Rent events represent a recurrent loop (periodic payments). The loop can be interrupted by Miss Rent Payment and then possibly resumed after Accept Late Payment.
+- Optional/skip transitions (petri net skip_* places): there are many optional paths (skip_x) allowing bypasses in the mined net — these correspond to observed variants where certain activities are not executed for some cases (e.g., skipping extensive screening or skipping some post‑move activities).
+
+Roles / responsibility mapping per activity (as implied)
+- Prospective Tenant: Apply for Viewing Appointment, View The Property, Hand In The Paperwork, Sign Contract, Move In, Pay Rent, Miss Rent Payment, Tenant Cancels Appartment.
+- Leasing Agent / Scheduler: Set Appointment.
+- Screening Team: Check Paperwork, Screen Prospective Tenant, Extensive Screening.
+- Property Manager: Issue Warning, Accept Late Payment, Evict Tenant.
+
+End conditions and outcomes
+- End at Reject Prospective Tenant (application terminated) — early rejection or post‑screen rejection.
+- End at Tenant Cancels Appartment (tenant voluntarily leaves) — common termination after long payment sequences.
+- End at Evict Tenant (rare) — forced termination following enforcement.
+
+Process metrics and performance characteristics (observed)
+- Key frequencies (from DFG):
+  - Pay Rent events are the most frequent (Pay Rent->Pay Rent = 14,819), indicating many periodic payments.
+  - Apply->Set and Set->View each occur 9,151 times: strong adherence to scheduling and viewing activity.
+  - Hand In->Check->Screen chain observed 7,441 times.
+  - Screen->Reject = 2,856; Screen->Extensive Screening = 2,793; Screen->Sign = 1,792: significant proportion of applicants are rejected or routed to extensive screening.
+  - Missed payment handling: Miss->Issue Warning = 945; Issue->Accept Late Payment = 855; Issue->Evict = 90.
+- Performance (as provided in the DFG): large numeric performance measures exist for each direct‑follow relation (e.g., Apply->Set = 82,731.269; Set->View = 82,730.336). The mining output shows high absolute performance values (units not provided in the data). These numbers indicate long durations in parts of the process or that the performance measure is expressed in a raw unit (e.g., seconds or clock ticks). The process exhibits long cycle times in many variants (abstract variants show very high total performance for long payment chains).
+
+Key challenges and pain points (AS‑IS)
+- High rejection and rework rates in screening: a large share of applicants are rejected at different stages (application, post‑view, or after screening), wasting applicant and agent time.
+- Long and variable cycle times: performance numbers are large and variant sequences show long-running cases (especially those with many Pay Rent events before termination) leading to widely variable lead times.
+- Repetitive manual screening & paperwork checks: the Hand In -> Check -> Screen chain is long and frequently repeated; extensive screening triggers additional delay.
+- Payment handling is reactive: missed payments are handled by issuing warnings and then often accepting late payments rather than early automated reminders; this leads to repeated arrears cycles.
+- Low enforcement but high tolerance: the small number of evictions suggests lenient enforcement, but repeated accepted late payments create administrative overhead and potential financial risk.
+- Optional/skipped activities indicate inconsistent execution: skip_* transitions and multiple variants show uneven adherence to the intended process (some steps skipped unpredictably).
+- Lack of explicit SLAs and decision thresholds: the mined model shows many outcomes but no clear decision rules or timelines (e.g., when to escalate to eviction vs accept late payment).
+
+Summary of AS‑IS
+- The mined process is a fairly standard rental application and tenancy lifecycle, with clear phases: application/scheduling, viewing, paperwork, screening, contracting and move‑in, then long recurring rent collection with occasional missed payments and rare evictions.
+- The process in practice contains many branches, rework loops (especially around payments), and inconsistent handling of screening and missed payments, producing long, variable lead times and operational inefficiency.

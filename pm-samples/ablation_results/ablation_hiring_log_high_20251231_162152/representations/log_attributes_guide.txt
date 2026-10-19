@@ -1,0 +1,78 @@
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log, offering a high-level overview before detailed process mining.
+
+1. PURPOSE:
+   - Summarize the event log's characteristics
+   - Provide context for interpreting process models
+   - Identify data quality issues
+   - Understand the scope of the process
+
+2. COMMON ATTRIBUTES:
+
+   CASE-LEVEL STATISTICS:
+   - Number of cases: Total process instances
+   - Case duration: Min, max, mean, median time from start to end
+   - Activities per case: How many events in each trace
+   - Variant count: Number of unique execution paths
+
+   EVENT-LEVEL STATISTICS:
+   - Total events: Total number of recorded events
+   - Event classes: Unique activity types
+   - Resources: People/systems performing activities
+   - Timestamps: Time range of the log
+
+   ACTIVITY STATISTICS:
+   - Activity frequencies: How often each activity occurs
+   - Start activities: Which activities begin traces
+   - End activities: Which activities end traces
+   - Self-loops: Activities that repeat immediately
+
+3. READING THE OUTPUT:
+   - Numeric summaries with distributions
+   - Lists of unique values for categorical attributes
+   - Time-based statistics for temporal analysis
+   - Frequency tables for activity occurrence
+
+4. DATA QUALITY INDICATORS:
+   - Missing values: Incomplete event records
+   - Duplicate events: Potential logging issues
+   - Timestamp anomalies: Events out of order
+   - Unusual case durations: Outliers or errors
+
+5. EXAMPLE OUTPUT FORMAT:
+   ```
+   Cases: 1,000
+   Events: 15,423
+   Activities: 12 unique
+   Variants: 87
+   Timespan: 2024-01-01 to 2024-12-31
+   Mean case duration: 3.5 days
+   Most frequent activity: "Process Application" (2,341 occurrences)
+   Start activities: ["Submit Request", "Create Case"]
+   End activities: ["Close Case", "Archive"]
+   ```
+
+6. USE FOR:
+   - Initial log exploration
+   - Setting expectations for model complexity
+   - Identifying filtering needs
+   - Communicating process scope to stakeholders
+   - Validating log completeness
+
+7. IMPLICATIONS FOR MODELING:
+   - High variant count: Complex process, may need filtering
+   - Few activities: Simpler models expected
+   - Many resources: Consider organizational mining
+   - Long durations: Look for bottlenecks
+
+8. COMPARISON WITH OTHER REPRESENTATIONS:
+   - Attributes: WHAT is in the log (descriptive)
+   - DFG/Petri Net: HOW activities relate (structural)
+   - Variants: WHICH paths are taken (behavioral)
+
+9. PREPROCESSING GUIDANCE:
+   - Filter infrequent variants for cleaner models
+   - Handle missing timestamps appropriately
+   - Consider resource/organizational perspective
+   - Aggregate similar activities if too granular

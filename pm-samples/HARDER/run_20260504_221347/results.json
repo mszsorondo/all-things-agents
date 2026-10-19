@@ -1,0 +1,885 @@
+{
+  "_meta": {
+    "start_time": "2026-05-04T22:13:47.004770",
+    "end_time": "2026-05-04T22:58:47.877875",
+    "config": {
+      "llm_model": "openai:gpt-5",
+      "validator_model": "gpt-5-mini",
+      "k_valid": 100,
+      "k_invalid_per_type": 50,
+      "perturbation_types": [
+        "A1_random_swap",
+        "A3_dependency_aware_swap",
+        "B1_insert_out_of_alphabet",
+        "B2_insert_misplaced_existing",
+        "B3_insert_duplicate_unique",
+        "C1_delete_mandatory",
+        "C2_delete_start_or_end",
+        "D1_cross_role",
+        "E1_two_swaps",
+        "E2_swap_and_insert"
+      ],
+      "seed": 42,
+      "datasets": [
+        "benchmark/hiring/hiring_log_high.xes",
+        "benchmark/hospital/hospital_log_high.xes",
+        "benchmark/lending/lending_log_high.xes",
+        "benchmark/renting/renting_log_high.xes"
+      ]
+    },
+    "run_folder": "HARDER/run_20260504_221347",
+    "status": "completed"
+  },
+  "hiring_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "traces": {
+      "valid_traces_path": "HARDER/run_20260504_221347/traces/hiring_log_high/valid_traces.pkl",
+      "invalid_folder": "HARDER/run_20260504_221347/traces/hiring_log_high/invalid_by_type",
+      "n_valid": 100,
+      "n_invalid_per_type": {
+        "A1_random_swap": 50,
+        "A3_dependency_aware_swap": 50,
+        "B1_insert_out_of_alphabet": 50,
+        "B2_insert_misplaced_existing": 50,
+        "B3_insert_duplicate_unique": 50,
+        "C1_delete_mandatory": 50,
+        "C2_delete_start_or_end": 50,
+        "D1_cross_role": 50,
+        "E1_two_swaps": 50,
+        "E2_swap_and_insert": 50
+      }
+    },
+    "textual_model_path": "HARDER/run_20260504_221347/hiring_log_high_textual_model.txt",
+    "mining_config": {
+      "representations": [
+        "process_tree",
+        "dfg",
+        "abstract_variants",
+        "declare",
+        "log_attributes"
+      ],
+      "model_name": "openai:gpt-5",
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+      "model_folder": "HARDER/run_20260504_221347/model_generation/hiring_log_high"
+    },
+    "valid_evaluation": {
+      "compute_time_seconds": 597.7008969783783,
+      "tokens": {
+        "prompt_tokens": 385851,
+        "completion_tokens": 32424,
+        "total_tokens": 418275
+      },
+      "TP": 100,
+      "FN": 0
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "compute_time_seconds": 631.1559669971466,
+        "tokens": {
+          "prompt_tokens": 192966,
+          "completion_tokens": 41653,
+          "total_tokens": 234619
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 41,
+        "FP": 9,
+        "precision": 0.9174311926605505,
+        "recall": 1.0,
+        "f1": 0.9569377990430622
+      },
+      "A3_dependency_aware_swap": {
+        "compute_time_seconds": 636.4082915782928,
+        "tokens": {
+          "prompt_tokens": 191658,
+          "completion_tokens": 41652,
+          "total_tokens": 233310
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 40,
+        "FP": 10,
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "f1": 0.9523809523809523
+      },
+      "B1_insert_out_of_alphabet": {
+        "compute_time_seconds": 534.9928514957428,
+        "tokens": {
+          "prompt_tokens": 196274,
+          "completion_tokens": 31668,
+          "total_tokens": 227942
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 38,
+        "FP": 12,
+        "precision": 0.8928571428571429,
+        "recall": 1.0,
+        "f1": 0.9433962264150945
+      },
+      "B2_insert_misplaced_existing": {
+        "compute_time_seconds": 785.5111396312714,
+        "tokens": {
+          "prompt_tokens": 198046,
+          "completion_tokens": 50164,
+          "total_tokens": 248210
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 38,
+        "FP": 12,
+        "precision": 0.8928571428571429,
+        "recall": 1.0,
+        "f1": 0.9433962264150945
+      },
+      "B3_insert_duplicate_unique": {
+        "compute_time_seconds": 563.1846084594727,
+        "tokens": {
+          "prompt_tokens": 197866,
+          "completion_tokens": 33973,
+          "total_tokens": 231839
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 39,
+        "FP": 11,
+        "precision": 0.9009009009009009,
+        "recall": 1.0,
+        "f1": 0.947867298578199
+      },
+      "C1_delete_mandatory": {
+        "compute_time_seconds": 235.76018524169922,
+        "tokens": {
+          "prompt_tokens": 188823,
+          "completion_tokens": 12084,
+          "total_tokens": 200907
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "C2_delete_start_or_end": {
+        "compute_time_seconds": 269.31949162483215,
+        "tokens": {
+          "prompt_tokens": 187765,
+          "completion_tokens": 14900,
+          "total_tokens": 202665
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 21,
+        "FP": 29,
+        "precision": 0.7751937984496124,
+        "recall": 1.0,
+        "f1": 0.8733624454148472
+      },
+      "D1_cross_role": {
+        "compute_time_seconds": 313.9302179813385,
+        "tokens": {
+          "prompt_tokens": 194040,
+          "completion_tokens": 18613,
+          "total_tokens": 212653
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 0,
+        "FP": 50,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "E1_two_swaps": {
+        "compute_time_seconds": 625.310852766037,
+        "tokens": {
+          "prompt_tokens": 198296,
+          "completion_tokens": 42868,
+          "total_tokens": 241164
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 47,
+        "FP": 3,
+        "precision": 0.970873786407767,
+        "recall": 1.0,
+        "f1": 0.9852216748768473
+      },
+      "E2_swap_and_insert": {
+        "compute_time_seconds": 695.3233392238617,
+        "tokens": {
+          "prompt_tokens": 198650,
+          "completion_tokens": 44916,
+          "total_tokens": 243566
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 47,
+        "FP": 3,
+        "precision": 0.970873786407767,
+        "recall": 1.0,
+        "f1": 0.9852216748768473
+      }
+    },
+    "aggregate": {
+      "TP": 100,
+      "FN": 0,
+      "TN": 361,
+      "FP": 139,
+      "precision": 0.41841004184100417,
+      "recall": 1.0,
+      "f1": 0.5899705014749262,
+      "compute_time_seconds": 5888.597841978073,
+      "tokens": {
+        "prompt_tokens": 2330235,
+        "completion_tokens": 364915,
+        "total_tokens": 2695150
+      },
+      "n_valid": 100,
+      "n_invalid_total": 500
+    }
+  },
+  "hospital_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/hospital/hospital_log_high.xes",
+    "traces": {
+      "valid_traces_path": "HARDER/run_20260504_221347/traces/hospital_log_high/valid_traces.pkl",
+      "invalid_folder": "HARDER/run_20260504_221347/traces/hospital_log_high/invalid_by_type",
+      "n_valid": 100,
+      "n_invalid_per_type": {
+        "A1_random_swap": 50,
+        "A3_dependency_aware_swap": 50,
+        "B1_insert_out_of_alphabet": 50,
+        "B2_insert_misplaced_existing": 50,
+        "B3_insert_duplicate_unique": 50,
+        "C1_delete_mandatory": 50,
+        "C2_delete_start_or_end": 50,
+        "D1_cross_role": 50,
+        "E1_two_swaps": 50,
+        "E2_swap_and_insert": 50
+      }
+    },
+    "textual_model_path": "HARDER/run_20260504_221347/hospital_log_high_textual_model.txt",
+    "mining_config": {
+      "representations": [
+        "process_tree",
+        "dfg",
+        "abstract_variants",
+        "declare",
+        "log_attributes"
+      ],
+      "model_name": "openai:gpt-5",
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+      "model_folder": "HARDER/run_20260504_221347/model_generation/hospital_log_high"
+    },
+    "valid_evaluation": {
+      "compute_time_seconds": 324.73956418037415,
+      "tokens": {
+        "prompt_tokens": 292819,
+        "completion_tokens": 17192,
+        "total_tokens": 310011
+      },
+      "TP": 100,
+      "FN": 0
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "compute_time_seconds": 218.97744870185852,
+        "tokens": {
+          "prompt_tokens": 146537,
+          "completion_tokens": 15924,
+          "total_tokens": 162461
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "A3_dependency_aware_swap": {
+        "compute_time_seconds": 230.18563771247864,
+        "tokens": {
+          "prompt_tokens": 146418,
+          "completion_tokens": 15156,
+          "total_tokens": 161574
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "B1_insert_out_of_alphabet": {
+        "compute_time_seconds": 304.9535400867462,
+        "tokens": {
+          "prompt_tokens": 151525,
+          "completion_tokens": 22260,
+          "total_tokens": 173785
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "B2_insert_misplaced_existing": {
+        "compute_time_seconds": 405.0860071182251,
+        "tokens": {
+          "prompt_tokens": 150722,
+          "completion_tokens": 32053,
+          "total_tokens": 182775
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 49,
+        "FP": 1,
+        "precision": 0.9900990099009901,
+        "recall": 1.0,
+        "f1": 0.9950248756218906
+      },
+      "B3_insert_duplicate_unique": {
+        "compute_time_seconds": 248.62783932685852,
+        "tokens": {
+          "prompt_tokens": 149850,
+          "completion_tokens": 18868,
+          "total_tokens": 168718
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "C1_delete_mandatory": {
+        "compute_time_seconds": 364.6873047351837,
+        "tokens": {
+          "prompt_tokens": 141894,
+          "completion_tokens": 15732,
+          "total_tokens": 157626
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 32,
+        "FP": 18,
+        "precision": 0.847457627118644,
+        "recall": 1.0,
+        "f1": 0.9174311926605504
+      },
+      "C2_delete_start_or_end": {
+        "compute_time_seconds": 190.92704463005066,
+        "tokens": {
+          "prompt_tokens": 141410,
+          "completion_tokens": 14004,
+          "total_tokens": 155414
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 22,
+        "FP": 28,
+        "precision": 0.78125,
+        "recall": 1.0,
+        "f1": 0.8771929824561403
+      },
+      "D1_cross_role": {
+        "compute_time_seconds": 145.26268815994263,
+        "tokens": {
+          "prompt_tokens": 145897,
+          "completion_tokens": 8692,
+          "total_tokens": 154589
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 0,
+        "FP": 50,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "E1_two_swaps": {
+        "compute_time_seconds": 235.21698927879333,
+        "tokens": {
+          "prompt_tokens": 147981,
+          "completion_tokens": 16180,
+          "total_tokens": 164161
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "E2_swap_and_insert": {
+        "compute_time_seconds": 264.43378019332886,
+        "tokens": {
+          "prompt_tokens": 150253,
+          "completion_tokens": 19508,
+          "total_tokens": 169761
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "aggregate": {
+      "TP": 100,
+      "FN": 0,
+      "TN": 403,
+      "FP": 97,
+      "precision": 0.5076142131979695,
+      "recall": 1.0,
+      "f1": 0.6734006734006733,
+      "compute_time_seconds": 2933.0978441238403,
+      "tokens": {
+        "prompt_tokens": 1765306,
+        "completion_tokens": 195569,
+        "total_tokens": 1960875
+      },
+      "n_valid": 100,
+      "n_invalid_total": 500
+    }
+  },
+  "lending_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/lending/lending_log_high.xes",
+    "traces": {
+      "valid_traces_path": "HARDER/run_20260504_221347/traces/lending_log_high/valid_traces.pkl",
+      "invalid_folder": "HARDER/run_20260504_221347/traces/lending_log_high/invalid_by_type",
+      "n_valid": 100,
+      "n_invalid_per_type": {
+        "A1_random_swap": 50,
+        "A3_dependency_aware_swap": 50,
+        "B1_insert_out_of_alphabet": 50,
+        "B2_insert_misplaced_existing": 50,
+        "B3_insert_duplicate_unique": 50,
+        "C1_delete_mandatory": 50,
+        "C2_delete_start_or_end": 50,
+        "D1_cross_role": 50,
+        "E1_two_swaps": 50,
+        "E2_swap_and_insert": 50
+      }
+    },
+    "textual_model_path": "HARDER/run_20260504_221347/lending_log_high_textual_model.txt",
+    "mining_config": {
+      "representations": [
+        "process_tree",
+        "dfg",
+        "abstract_variants",
+        "declare",
+        "log_attributes"
+      ],
+      "model_name": "openai:gpt-5",
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+      "model_folder": "HARDER/run_20260504_221347/model_generation/lending_log_high"
+    },
+    "valid_evaluation": {
+      "compute_time_seconds": 252.58478617668152,
+      "tokens": {
+        "prompt_tokens": 334943,
+        "completion_tokens": 17896,
+        "total_tokens": 352839
+      },
+      "TP": 100,
+      "FN": 0
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "compute_time_seconds": 176.68852543830872,
+        "tokens": {
+          "prompt_tokens": 168294,
+          "completion_tokens": 14516,
+          "total_tokens": 182810
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "A3_dependency_aware_swap": {
+        "compute_time_seconds": 185.6669979095459,
+        "tokens": {
+          "prompt_tokens": 167341,
+          "completion_tokens": 14772,
+          "total_tokens": 182113
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "B1_insert_out_of_alphabet": {
+        "compute_time_seconds": 226.70038199424744,
+        "tokens": {
+          "prompt_tokens": 173361,
+          "completion_tokens": 19828,
+          "total_tokens": 193189
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "B2_insert_misplaced_existing": {
+        "compute_time_seconds": 325.3843126296997,
+        "tokens": {
+          "prompt_tokens": 172467,
+          "completion_tokens": 30004,
+          "total_tokens": 202471
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "B3_insert_duplicate_unique": {
+        "compute_time_seconds": 213.41088795661926,
+        "tokens": {
+          "prompt_tokens": 172363,
+          "completion_tokens": 18228,
+          "total_tokens": 190591
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "C1_delete_mandatory": {
+        "compute_time_seconds": 168.48740005493164,
+        "tokens": {
+          "prompt_tokens": 164376,
+          "completion_tokens": 12980,
+          "total_tokens": 177356
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "C2_delete_start_or_end": {
+        "compute_time_seconds": 183.53015422821045,
+        "tokens": {
+          "prompt_tokens": 163873,
+          "completion_tokens": 14132,
+          "total_tokens": 178005
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "D1_cross_role": {
+        "compute_time_seconds": 138.1920564174652,
+        "tokens": {
+          "prompt_tokens": 166491,
+          "completion_tokens": 9396,
+          "total_tokens": 175887
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 0,
+        "FP": 50,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "E1_two_swaps": {
+        "compute_time_seconds": 199.05987787246704,
+        "tokens": {
+          "prompt_tokens": 169248,
+          "completion_tokens": 16564,
+          "total_tokens": 185812
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "E2_swap_and_insert": {
+        "compute_time_seconds": 290.5737154483795,
+        "tokens": {
+          "prompt_tokens": 172959,
+          "completion_tokens": 24756,
+          "total_tokens": 197715
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "aggregate": {
+      "TP": 100,
+      "FN": 0,
+      "TN": 450,
+      "FP": 50,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8,
+      "compute_time_seconds": 2360.2790961265564,
+      "tokens": {
+        "prompt_tokens": 2025716,
+        "completion_tokens": 193072,
+        "total_tokens": 2218788
+      },
+      "n_valid": 100,
+      "n_invalid_total": 500
+    }
+  },
+  "renting_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/renting/renting_log_high.xes",
+    "traces": {
+      "valid_traces_path": "HARDER/run_20260504_221347/traces/renting_log_high/valid_traces.pkl",
+      "invalid_folder": "HARDER/run_20260504_221347/traces/renting_log_high/invalid_by_type",
+      "n_valid": 100,
+      "n_invalid_per_type": {
+        "A1_random_swap": 50,
+        "A3_dependency_aware_swap": 50,
+        "B1_insert_out_of_alphabet": 50,
+        "B2_insert_misplaced_existing": 50,
+        "B3_insert_duplicate_unique": 50,
+        "C1_delete_mandatory": 50,
+        "C2_delete_start_or_end": 50,
+        "D1_cross_role": 50,
+        "E1_two_swaps": 50,
+        "E2_swap_and_insert": 50
+      }
+    },
+    "textual_model_path": "HARDER/run_20260504_221347/renting_log_high_textual_model.txt",
+    "mining_config": {
+      "representations": [
+        "process_tree",
+        "dfg",
+        "abstract_variants",
+        "declare",
+        "log_attributes"
+      ],
+      "model_name": "openai:gpt-5",
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+      "model_folder": "HARDER/run_20260504_221347/model_generation/renting_log_high"
+    },
+    "valid_evaluation": {
+      "compute_time_seconds": 1952.2291123867035,
+      "tokens": {
+        "prompt_tokens": 374301,
+        "completion_tokens": 16360,
+        "total_tokens": 390661
+      },
+      "TP": 100,
+      "FN": 0
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "compute_time_seconds": 320.60597109794617,
+        "tokens": {
+          "prompt_tokens": 179156,
+          "completion_tokens": 14964,
+          "total_tokens": 194120
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "A3_dependency_aware_swap": {
+        "compute_time_seconds": 305.40815138816833,
+        "tokens": {
+          "prompt_tokens": 189541,
+          "completion_tokens": 15349,
+          "total_tokens": 204890
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "B1_insert_out_of_alphabet": {
+        "compute_time_seconds": 382.4081575870514,
+        "tokens": {
+          "prompt_tokens": 188923,
+          "completion_tokens": 21172,
+          "total_tokens": 210095
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 48,
+        "FP": 2,
+        "precision": 0.9803921568627451,
+        "recall": 1.0,
+        "f1": 0.99009900990099
+      },
+      "B2_insert_misplaced_existing": {
+        "compute_time_seconds": 476.16641998291016,
+        "tokens": {
+          "prompt_tokens": 189967,
+          "completion_tokens": 26932,
+          "total_tokens": 216899
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 48,
+        "FP": 2,
+        "precision": 0.9803921568627451,
+        "recall": 1.0,
+        "f1": 0.99009900990099
+      },
+      "B3_insert_duplicate_unique": {
+        "compute_time_seconds": 307.9035165309906,
+        "tokens": {
+          "prompt_tokens": 189120,
+          "completion_tokens": 16372,
+          "total_tokens": 205492
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 49,
+        "FP": 1,
+        "precision": 0.9900990099009901,
+        "recall": 1.0,
+        "f1": 0.9950248756218906
+      },
+      "C1_delete_mandatory": {
+        "compute_time_seconds": 469.3394157886505,
+        "tokens": {
+          "prompt_tokens": 180676,
+          "completion_tokens": 25076,
+          "total_tokens": 205752
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 49,
+        "FP": 1,
+        "precision": 0.9900990099009901,
+        "recall": 1.0,
+        "f1": 0.9950248756218906
+      },
+      "C2_delete_start_or_end": {
+        "compute_time_seconds": 419.97413659095764,
+        "tokens": {
+          "prompt_tokens": 182759,
+          "completion_tokens": 24372,
+          "total_tokens": 207131
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 42,
+        "FP": 8,
+        "precision": 0.9259259259259259,
+        "recall": 1.0,
+        "f1": 0.9615384615384615
+      },
+      "D1_cross_role": {
+        "compute_time_seconds": 227.96768307685852,
+        "tokens": {
+          "prompt_tokens": 186144,
+          "completion_tokens": 8692,
+          "total_tokens": 194836
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 0,
+        "FP": 50,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "E1_two_swaps": {
+        "compute_time_seconds": 334.88779759407043,
+        "tokens": {
+          "prompt_tokens": 190837,
+          "completion_tokens": 17460,
+          "total_tokens": 208297
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "E2_swap_and_insert": {
+        "compute_time_seconds": 372.2038984298706,
+        "tokens": {
+          "prompt_tokens": 196316,
+          "completion_tokens": 21684,
+          "total_tokens": 218000
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "aggregate": {
+      "TP": 100,
+      "FN": 0,
+      "TN": 436,
+      "FP": 64,
+      "precision": 0.6097560975609756,
+      "recall": 1.0,
+      "f1": 0.7575757575757575,
+      "compute_time_seconds": 5569.094260454178,
+      "tokens": {
+        "prompt_tokens": 2247740,
+        "completion_tokens": 208433,
+        "total_tokens": 2456173
+      },
+      "n_valid": 100,
+      "n_invalid_total": 500
+    }
+  }
+}

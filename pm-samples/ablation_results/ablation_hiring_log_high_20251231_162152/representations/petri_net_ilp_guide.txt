@@ -1,0 +1,56 @@
+=== PETRI NET (ILP MINER) INTERPRETATION GUIDE ===
+
+The ILP (Integer Linear Programming) Miner constructs Petri nets that perfectly fit the observed behavior by solving an optimization problem.
+
+1. CORE CONCEPT:
+   - Formulates process discovery as a mathematical optimization problem
+   - Uses Integer Linear Programming to find a Petri net
+   - Guarantees the net can replay ALL observed traces perfectly
+   - Produces the simplest net that fits the log (minimal places/arcs)
+
+2. OPTIMIZATION OBJECTIVE:
+   - Minimize structural complexity (number of places and arcs)
+   - Subject to: All traces in the log must be replayable
+   - Each transition firing must respect token flow constraints
+
+3. CONSTRAINTS:
+   - Token flow conservation at each step
+   - Initial marking enables first activities
+   - Final marking reached after last activities
+   - Non-negative token counts throughout execution
+
+4. ADVANTAGES:
+   - Perfect fitness by construction (all traces replay)
+   - Finds minimal structure that explains behavior
+   - Mathematically rigorous approach
+   - No heuristic parameters to tune
+
+5. LIMITATIONS:
+   - Computationally expensive for large logs
+   - May overfit to observed behavior (poor generalization)
+   - Does not handle noise well
+   - May produce complex nets for simple processes
+   - Scalability issues with many activities/traces
+
+6. INTERPRETING ILP OUTPUT:
+   - Every place and arc has a purpose for some trace
+   - No redundant structure (minimal representation)
+   - May have many places connecting same activities
+   - Complex routing structures for varied behavior
+
+7. COMPARISON WITH OTHER MINERS:
+   - vs Alpha: ILP handles more patterns but slower
+   - vs Heuristics: ILP is exact, Heuristics approximates
+   - vs Inductive: ILP optimizes fit, Inductive guarantees soundness
+
+8. WHEN TO USE:
+   - Small to medium-sized event logs
+   - When perfect fitness is required
+   - Clean logs without noise
+   - Understanding exact behavioral boundaries
+   - Academic/research contexts
+
+9. READING THE NET:
+   - Dense connectivity: Many behavioral variants
+   - Simple structure: Regular process behavior
+   - Many silent transitions: Complex control flow patterns

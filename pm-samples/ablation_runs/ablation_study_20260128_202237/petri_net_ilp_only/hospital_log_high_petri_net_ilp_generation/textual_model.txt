@@ -1,0 +1,196 @@
+AS-IS Process Model
+write_AS_IS_comprehensive_textual_description(content: "
+Process overview and purpose
+- Purpose: Describe the observed care-delivery flow around registration, examinations, diagnosis, treatment, and discharge as discovered by an ILP-mined Petri net that perfectly fits the event log.
+- Scope: From initial registration through potential (re-)examinations and diagnosis to treatment, possible rework if treatment is unsuccessful, and eventual discharge.
+- Note on fidelity: This AS-IS reflects exactly the behaviors permitted by the discovered model, including repetitions and non-intuitive paths that result from the miner’s minimal structural objective.
+
+Key stakeholders and roles involved
+- Stakeholders are not explicitly specified in the source. The process involves patients and unspecified clinical/administrative staff. Role-level swimlanes are omitted due to lack of explicit role assignments in the source.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: A patient encounter is initiated (unspecified type in the source).
+- A silent routing step initializes the case (τ transition), leading to the first decision.
+
+Activities and sequence
+1) Registration (exclusive variant)
+   - Decision: Exactly one of the following is performed:
+     a) Register at ER
+     b) Register at FD
+   - Behavioral note: The model does not constrain which one is selected; it is a choice at the start.
+   - Effect of either registration: It enables a set of examination-related preconditions simultaneously. After registration, the process is in a state that allows multiple examination activities to occur in any order and to be repeated.
+
+2) Examination phase (highly flexible, repetitive)
+   - The following activities are enabled, and each can repeat; they can occur in any order:
+     a) Examination
+        - Repeats allowed. Its execution does not prevent further examinations.
+        - Technical semantics: It requires certain examination preconditions and then restores them, acting as a self-loop (no net progression toward completion).
+     b) Expert Examination
+        - Repeats allowed; also modeled as a self-loop (consumes and restores its enabling conditions).
+     c) Thorough Examination
+        - Repeats allowed; also modeled as a self-loop.
+   - Critical observation: Because registration initially provides all required enabling conditions, the model allows proceeding directly to Diagnosis without performing any of the above examinations (zero-examination path is possible).
+
+3) Diagnosis
+   - Occurs once the process decides to leave the examination phase.
+   - Synchronization point: Diagnosis requires the combined set of examination-related preconditions (which are present immediately after registration and remain present despite optional exam repetitions). When Diagnosis fires, it consumes these preconditions, thereby closing the examination phase.
+   - Output: Enables Treatment.
+
+4) Treatment
+   - Performed after Diagnosis.
+   - Output marking: Treatment produces a post-treatment state that simultaneously enables Discharge and the possibility to declare Treatment unsuccessful. It also enables an optional, repeatable “Treatment successful” indication.
+
+5) Post-treatment decisioning and completion options (competing consumers of the same post-treatment state)
+   - The following transitions become enabled together after Treatment:
+     a) Discharge
+        - Acts as a completion step.
+        - Semantics: Requires the full post-treatment state (an AND-join of the two post-treatment conditions produced by Treatment). On firing, it ends the case.
+        - Consequence: If Discharge fires first, the case ends even if no explicit success/unsuccessful outcome was recorded.
+     b) Treatment unsuccessful
+        - Loop-back: Requires the same full post-treatment state as Discharge. If it fires, it consumes the post-treatment state and re-injects the case into the examination phase by re-enabling examination preconditions.
+        - This creates a rework loop: Examination(s) (optional/repetitive) → Diagnosis → Treatment → (again post-treatment decisions).
+     c) Treatment successful
+        - Optional, repeatable indication with no gating effect: It consumes and immediately reproduces part of the post-treatment state (self-loop on the success marker). It does not by itself complete the case or prevent Discharge or Treatement unsuccessful.
+        - Because it can repeat arbitrarily and has no effect on the ability to Discharge, the process can be discharged without ever recording success, or can record “success” multiple times before discharge.
+
+Decision points with criteria and outcomes
+- Start decision (exclusive): Register at ER vs. Register at FD (unconstrained choice).
+- Post-treatment decisioning (implicit competition for the same post-treatment state):
+  - Discharge or Treatment unsuccessful each requires the same combined post-treatment conditions; whichever fires first determines the path.
+  - Treatment successful is an optional annotation step that may occur zero or many times before Discharge but does not constrain Discharge.
+
+Parallel activities and synchronization points
+- Examination options are mutually enabled and can be performed in any order; behaviorally, they function as optional self-loops, not strict prerequisites.
+- Diagnosis is a synchronization point that consumes the examination preconditions (created at registration and perpetuated by the self-looping exam tasks).
+- Discharge and Treatment unsuccessful are modeled as AND-joins on the same set of post-treatment conditions created by Treatment; they are mutually exclusive in practice since they compete for the same tokens.
+
+Exception handling and error paths
+- No explicit exception or error-handling activities are modeled beyond the “Treatment unsuccessful” rework path.
+
+Rework loops and escalation procedures
+- Rework loop: Treatment unsuccessful → return to Examination phase (Examination/Expert Examination/Thorough Examination in any order and number) → Diagnosis → Treatment → post-treatment decisioning.
+- There is no explicit limit on rework iterations; loops can continue indefinitely.
+
+End conditions and outcomes
+- The only terminal step is Discharge. Once Discharge occurs, the case reaches the sink (end).
+- The model allows Discharge with or without having recorded Treatment successful; Discharge is mutually exclusive with Treatment unsuccessful in a given iteration.
+
+Process metrics and performance characteristics
+- Cycle time: From registration to discharge; unbounded due to potentially infinite rework loops and optional, repeated examinations.
+- Throughput/first-time-right: Measure proportion of cases that reach Discharge without taking the Treatment unsuccessful loop.
+- Rework rate: Number of Treatment unsuccessful loops per case.
+- Diagnostic lead time: Time from registration to Diagnosis (can be very short since Diagnosis need not be preceded by any exam activity).
+- Post-treatment lag: Time from Treatment to Discharge or Treatment unsuccessful.
+- Data quality metric: Frequency of Discharge without any Treatment successful record; frequency of multiple, redundant Treatment successful occurrences.
+
+Key challenges and pain points
+- Exams not enforced: The model permits skipping all examinations and proceeding directly from registration to Diagnosis, which is likely clinically unsafe and noncompliant.
+- Unlimited, unguided repetition: Examination, Expert Examination, and Thorough Examination can repeat arbitrarily without advancing the case, creating potential waste, delays, and variability.
+- Ambiguous outcome recording: Treatment successful is a no-op self-loop; it can occur zero or many times and does not gate Discharge, risking inconsistent outcome documentation.
+- Competing post-treatment actions: Discharge and Treatment unsuccessful draw from the same post-treatment state. If Discharge occurs first, cases can close without any explicit outcome classification.
+- Unstandardized intake: Two registration variants exist (ER or FD) with no harmonization or policy on when to use which, potentially complicating reporting and handoffs.
+- Unbounded rework: No explicit limit or escalation on repeated unsuccessful treatments, allowing prolonged cycling without governance cues.
+")
+
+IDEAL Process Model
+write_IDEAL_comprehensive_textual_description(content: "
+Process overview and purpose
+- Purpose: Define a streamlined, governed care-delivery flow that ensures clinically sound sequencing, clear outcome capture, and controlled rework while remaining faithful to the original activity set.
+- Scope: Same activities as AS-IS (Register at ER/Register at FD, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge), reorganized for correctness and efficiency.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source. This IDEAL model assumes the same unspecified clinical/administrative involvement without introducing new roles. Assignments are omitted.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Patient encounter begins.
+- Intake variants are harmonized at a logical level (policy), while preserving the two observed tasks.
+
+Activities and sequence (governed flow)
+1) Registration (standardized intake with two operational variants)
+   - Exactly one of the following is performed:
+     a) Register at ER
+     b) Register at FD
+   - Governance: Both represent the same logical intake; selection is based on operational context (e.g., urgency), but for process control they are treated as equivalent entry points. Capture location/channel in data; do not allow parallel double-registration.
+
+2) Examination phase (purposeful, bounded, and evidence-based)
+   - Default: Perform Examination once to gather initial clinical information.
+   - Decision: Based on findings and clinical criteria (e.g., complexity, risk), optionally add:
+     a) Expert Examination (as escalation)
+     b) Thorough Examination (for comprehensive assessment)
+   - Control logic:
+     - Inclusive decision: One or both of Expert Examination and Thorough Examination may be performed in parallel or sequence, but only if indicated.
+     - Repetition: Allow a single repeat of any examination type only if new information is expected; otherwise avoid loops.
+   - Exit criterion to Diagnosis: All planned/triggered examinations for this iteration are completed and documented. This criterion prevents skipping examinations entirely.
+
+3) Diagnosis
+   - Performed once per iteration after the examination phase exit criterion is met.
+   - Serves as the formal consolidation of findings before treatment.
+
+4) Treatment
+   - Executed once per diagnostic iteration.
+   - Immediately followed by a mandatory outcome classification.
+
+5) Post-treatment outcome decision (exclusive and mandatory)
+   - Exactly one of the following must be recorded per treatment:
+     a) Treatment successful
+        - Occurs once per treatment. No repetition allowed.
+        - Next step: Proceed directly to Discharge.
+     b) Treatment unsuccessful
+        - Occurs once per treatment when applicable.
+        - Next step: Rework cycle (bounded and purposeful).
+
+6) Rework cycle (bounded, with targeted examinations)
+   - If Treatment unsuccessful:
+     - Return to the Examination phase.
+     - Require at least one targeted escalation exam in the rework cycle (Expert Examination and/or Thorough Examination) to address the cause of failure. Examination may be combined with another standard Examination as needed.
+     - After the rework examinations, proceed to Diagnosis and then Treatment again.
+   - Governance: Limit the number of unsuccessful loops (e.g., policy threshold) before mandatory case review or alternative care plan. While the model does not add new activities, this governance prevents indefinite cycling.
+
+7) Discharge (single, gated exit)
+   - Allowed only after Treatment successful is recorded in the current iteration.
+   - There is no discharge path immediately after Treatment without outcome classification.
+
+Decision points with criteria and outcomes
+- Intake decision (ER vs. FD): Operational choice; both satisfy the same process requirement (exactly one registration).
+- Post-examination decision: Whether to include Expert Examination and/or Thorough Examination based on clinical criteria; inclusive (0–2 of them), but at least one Examination must occur per iteration.
+- Post-treatment outcome classification: Exclusive decision; exactly one of Treatment successful or Treatment unsuccessful per treatment.
+
+Parallel activities and synchronization points
+- Expert Examination and Thorough Examination can be performed in parallel if both are indicated; both must complete before Diagnosis.
+- Diagnosis synchronizes the completion of all planned examinations in the iteration.
+- Discharge is sequenced strictly after Treatment successful; there is no AND-join on hidden post-treatment markers.
+
+Exception handling and error paths
+- If during the examination phase a planned exam cannot be completed, defer Diagnosis and reschedule that exam or choose the appropriate alternative (using Expert/Thorough Examination) before proceeding.
+- If the patient must leave urgently (not in source), the process would require policy exception handling; since new activities cannot be introduced per constraints, such exceptions are managed outside this model via governance.
+
+Rework loops and escalation procedures
+- Rework occurs only after Treatment unsuccessful.
+- Each rework cycle must include targeted examinations (Expert Examination and/or Thorough Examination) rather than arbitrary repetition.
+- Limit the number of rework iterations by policy; if exceeded, perform a structured review before further treatment (governance rule without adding new tasks).
+
+End conditions and outcomes
+- The only end state is Discharge.
+- Discharge can only occur after Treatment successful (one-to-one pairing with the most recent Treatment).
+- Treatment unsuccessful must always lead back to further examinations and a new Diagnosis before another Treatment.
+
+Process metrics and performance characteristics
+- Intake consistency: % of cases correctly registered via exactly one of the two registration variants.
+- Examination completeness (per iteration): % of cases with at least one Examination before Diagnosis; % where indicated Expert/Thorough Examination were completed before Diagnosis.
+- Time to Diagnosis: From registration to Diagnosis, with SLA targets based on case complexity.
+- First-treatment success rate: % of treatments followed by Treatment successful without rework.
+- Rework rate and depth: % of cases with Treatment unsuccessful; average number of rework cycles; % exceeding governance threshold.
+- Time from Treatment to outcome classification: Should be near-real-time; zero discharges without outcome classification.
+- Discharge-without-outcome rate: Target 0%.
+- Redundancy index: Average number of times Treatment successful recorded per treatment (target exactly once).
+
+Improvements made (summary)
+- Enforced examination-before-diagnosis: Prevents skipping all examinations.
+- Purposeful, bounded examinations: Removes infinite self-loops; limits repetition to cases with expected value and allows parallelization of escalations when indicated.
+- Mandatory, exclusive outcome classification: Exactly one of Treatment successful or Treatment unsuccessful recorded per treatment; no repeated success markers.
+- Gated discharge: Prohibits discharge without an explicit success outcome.
+- Harmonized intake: ER and FD registrations treated as equivalent variants of a single intake step, preventing duplicate or conflicting registrations.
+- Controlled rework: Requires targeted escalations and limits iterative loops to avoid endless cycling and reduce waste while preserving necessary clinical flexibility.
+")

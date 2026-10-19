@@ -1,0 +1,124 @@
+# AS-IS Process Model
+
+Process scope and purpose
+- Scope: End-to-end hiring pipeline from candidate application through evaluation to a single business outcome per case.
+- Purpose: Precisely describe observed ordering constraints, optionality, and concurrency to support trace conformance checking with high precision.
+
+Start and case trigger
+- Start: Hand In Job Application (mandatory first activity).
+
+Phase overview and mandatory gateways
+- The process consists of the following phases with hard gating between them:
+  1) Telephonic qualification
+  2) Pre-technical evaluations (Screening Interview, Background Check)
+  3) Optional extensive vetting (Extensive Background Check)
+  4) Technical assessment (Coding Interview, then optional ML/Backend/Frontend interviews)
+  5) Final decision phase (Application Rejected OR Behavioral-and-Offer branch)
+- Once the case enters the Final decision phase (first occurrence of Application Rejected or Behavioral Interview or Make Job Offer), no activities from phases 1–4 may occur afterward in the same case.
+
+Detailed flow and constraints
+
+1) Telephonic qualification
+- After Hand In Job Application, the process either:
+  a) Performs Telephonic Screening, then proceeds, or
+  b) Skips Telephonic Screening entirely.
+- Constraint: Screening Interview and Background Check are only reachable if Telephonic Screening occurred in the case. If Telephonic Screening is skipped, phases 2–4 (pre-technical, extensive vetting, and technical) cannot be executed.
+
+2) Pre-technical evaluations (parallel, Telephonic required)
+- If Telephonic Screening occurred, an AND-split enables:
+  - Screening Interview
+  - Background Check
+- These two can occur in any order and even overlap.
+- AND-join waits for both to complete before continuing.
+- Constraint: Both Screening Interview and Background Check must finish before any of the following can occur:
+  - Extensive Background Check
+  - Coding Interview
+  - Skipping to the post-pre-technical routing
+- Prohibited: Starting Extensive Background Check or Coding Interview before both Screening Interview and Background Check have completed.
+
+3) Optional extensive vetting (after both pre-technical activities)
+- After the pre-technical AND-join, the process may:
+  - Execute Extensive Background Check, or
+  - Skip it.
+- Constraint: Extensive Background Check can occur only immediately after the pre-technical join and before any Coding Interview. It cannot occur:
+  - Before both Screening Interview and Background Check have finished,
+  - After Coding Interview has started or any technical interview has occurred,
+  - After any final decision phase activity has occurred.
+
+4) Technical assessment
+- Entry: Occurs only after the pre-technical join (and after any optional Extensive Background Check).
+- Coding Interview (optional):
+  - After pre-technical join, the case may either execute Coding Interview or skip it.
+- Technical interviews (optional, concurrent, conditional on Coding):
+  - If Coding Interview is executed, an AND-split enables up to three tracks: ML Interview, Backend Interview, Frontend Interview.
+  - Each of the three tracks is individually optional (can be executed or explicitly skipped), and can occur in any order. An AND-join waits for all three tracks to complete (by execution or skip) before leaving the technical phase.
+- Constraints:
+  - No ML/Backend/Frontend Interview may occur before Coding Interview.
+  - No Screening Interview, Background Check, or Extensive Background Check may occur after Coding Interview has started.
+  - No pre-technical or technical activities may occur after any final decision phase activity.
+
+5) Final decision phase (single-outcome policy)
+- Entry: After completing phase 4, or by skipping earlier phases:
+  - Rejection may occur at various points (including early), as observed:
+    • Immediately after application, or
+    • After Telephonic Screening, or
+    • After pre-technical and/or technical phases.
+  - Behavioral-and-offer branch is available only after technical assessment has been concluded (i.e., Coding Interview executed and the technical split has been closed by joining all three tracks, with execution or skip per track).
+- Branch structure and constraints:
+  - Single-outcome policy (mutual exclusivity):
+    • A case must not contain both Application Rejected and Make Job Offer. Exactly one of these outcomes is allowed across the entire case.
+  - Rejection branch:
+    • Application Rejected may occur one or more times; each occurrence is terminal with respect to earlier phases, and no activities from phases 1–4 are allowed after the first rejection.
+  - Behavioral-and-offer branch:
+    • Behavioral Interview may occur one or multiple times.
+    • Make Job Offer may occur one or multiple times.
+    • Offer readiness rule: The first Make Job Offer must be preceded by at least one Behavioral Interview in the case.
+- Global final-phase gating:
+  - Once the first final-phase activity (Application Rejected, Behavioral Interview, Make Job Offer) occurs, no subsequent activities from phases 1–4 (Telephonic Screening, Screening Interview, Background Check, Extensive Background Check, Coding Interview, ML/Backend/Frontend Interview) may occur.
+
+Optionality summary
+- Telephonic Screening: optional. If skipped, phases 2–4 cannot be executed; only Final decision phase (with possible early rejection) remains available. Offers are not permitted in telephonic-skipped cases because Behavioral Interview (and thus Make Job Offer) requires completion of the technical phase.
+- Pre-technical: both Screening Interview and Background Check are mandatory if the case enters phase 2; they can run in parallel and in any order.
+- Extensive Background Check: optional, only after pre-technical join and before any Coding Interview.
+- Coding Interview: optional, only after pre-technical join (and after any EBC).
+- Technical interviews (ML/Backend/Frontend): each optional and re-orderable, but only after Coding Interview.
+- Final decision outcomes: mutually exclusive; either Application Rejected or Make Job Offer (with prior Behavioral Interview) may occur in a case, not both.
+
+Explicitly valid orderings (illustrative, not exhaustive)
+- Hand In Job Application -> Application Rejected.
+- Hand In Job Application -> Telephonic Screening -> Application Rejected.
+- Hand In Job Application -> Telephonic Screening -> Screening Interview || Background Check (any order) -> Application Rejected.
+- Hand In Job Application -> Telephonic Screening -> Screening Interview || Background Check (any order) -> [Optional: Extensive Background Check] -> [Optional: Coding Interview -> optional ML/Backend/Frontend in any order] -> Behavioral Interview (one or more) -> Make Job Offer (one or more).
+
+Explicitly invalid orderings (reject the trace if any occur)
+- Any pre-technical activity without prior Telephonic Screening:
+  • Screening Interview before Telephonic Screening.
+  • Background Check before Telephonic Screening.
+- Violating the pre-technical AND-join:
+  • Extensive Background Check before both Screening Interview and Background Check are complete.
+  • Coding Interview before both Screening Interview and Background Check are complete.
+- Violating technical prerequisites:
+  • ML/Backend/Frontend Interview before Coding Interview.
+  • Extensive Background Check after Coding Interview or after any technical interview.
+- Returning to earlier phases after final-phase activities:
+  • Any Screening Interview, Background Check, Extensive Background Check, Coding Interview, ML/Backend/Frontend Interview occurring after Application Rejected, Behavioral Interview, or Make Job Offer has occurred.
+- Offer without prior behavioral:
+  • Any Make Job Offer that is not preceded by at least one Behavioral Interview.
+- Contradictory outcomes:
+  • Any trace containing both Application Rejected and Make Job Offer (in any order).
+- Examples of sequences that must be rejected (each violates one or more rules above):
+  • Hand In Job Application -> Telephonic Screening -> Make Job Offer -> Screening Interview -> ... (offer before behavioral and return to pre-technical after final phase began)
+  • Hand In Job Application -> Telephonic Screening -> Application Rejected -> Background Check -> ... (pre-technical after final-phase start)
+  • Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected -> Extensive Background Check (EBC after final-phase start)
+  • Hand In Job Application -> Screening Interview -> Telephonic Screening -> ... (Screening before Telephonic)
+  • ... -> Background Check -> ML Interview -> ... (technical before Coding)
+  • ... -> Coding Interview -> Frontend Interview -> Screening Interview -> ... (pre-technical after Coding)
+  • ... -> Coding Interview -> ML/Frontend/Backend -> Application Rejected -> Behavioral Interview -> Make Job Offer (contains both rejection and offer)
+  • Hand In Job Application -> Background Check -> Telephonic Screening -> ... (Background before Telephonic)
+  • Any occurrence of Make Job Offer before any Behavioral Interview.
+
+End conditions
+- Business-visible end states:
+  - Application Rejected (terminal outcome), or
+  - Make Job Offer (terminal outcome) after at least one Behavioral Interview.
+- Formal end: The case completes after the selected final-phase branch reaches its end state; the other outcome branch must not appear in the same case due to mutual exclusivity.

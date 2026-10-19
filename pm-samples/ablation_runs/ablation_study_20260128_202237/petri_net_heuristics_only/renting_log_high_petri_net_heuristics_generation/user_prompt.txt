@@ -1,0 +1,69 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_HEURISTICS
+============================================================
+
+
+=== PETRI NET (HEURISTICS MINER) INTERPRETATION GUIDE ===
+
+The Heuristics Miner produces Petri nets using frequency-based dependency measures,
+making it more robust to noise than Alpha Miner.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ intplace_Activity, pre_Activity, splace_in_A_B_0, ... ]
+transitions: [ (Activity, 'Activity'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']"
+
+PLACE NAMING CONVENTIONS:
+- intplace_X: Internal place for activity X
+- pre_X: Pre-condition place for activity X
+- splace_in_A_B_N: Split place connecting A to B (N is index)
+- source0, sink0: Start and end places
+
+DEPENDENCY MEASURE:
+- Calculated as: (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1
+- Values close to 1: Strong causal dependency A->B
+- Values close to 0: No clear dependency
+- Used with thresholds to filter noise
+
+ADVANTAGES:
+- Handles noisy event logs
+- Detects loops of length 1 and 2
+- Identifies long-distance dependencies
+- Produces cleaner models than Alpha miner
+
+READING THE OUTPUT:
+- More places than Alpha miner (intermediary routing places)
+- All visible activities become transitions
+- Complex routing structures for varied behavior
+- Split places (splace) indicate choice or parallel patterns
+
+WHEN TO USE:
+- Real-world event logs with noise
+- When Alpha miner produces poor results
+- Complex processes with loops
+- When you need to filter infrequent behavior
+
+
+--- DISCOVERED MODEL ---
+[Heuristics Miner]
+
+
+If I have a Petri net:
+
+places: [ intplace_Apply for Viewing Appointment, intplace_Extensive Screening, intplace_Issue Warning, intplace_Move In, intplace_Pay Rent, intplace_Screen Prospective Tenant, intplace_View The Property, pre_Check Paperwork, pre_Issue Warning, pre_Miss Rent Payment, pre_Move In, pre_Pay Rent, pre_Reject Prospective Tenant, pre_Screen Prospective Tenant, pre_View The Property, sink0, source0, splace_in_Miss Rent Payment_Accept Late Payment_0, splace_in_Miss Rent Payment_Pay Rent_0 ]
+transitions: [ (Accept Late Payment, 'Accept Late Payment'), (Apply for Viewing Appointment, 'Apply for Viewing Appointment'), (Check Paperwork, 'Check Paperwork'), (Evict Tenant, 'Evict Tenant'), (Extensive Screening, 'Extensive Screening'), (Hand In The Paperwork, 'Hand In The Paperwork'), (Issue Warning, 'Issue Warning'), (Miss Rent Payment, 'Miss Rent Payment'), (Move In, 'Move In'), (Pay Rent, 'Pay Rent'), (Reject Prospective Tenant, 'Reject Prospective Tenant'), (Screen Prospective Tenant, 'Screen Prospective Tenant'), (Set Appointment, 'Set Appointment'), (Sign Contract, 'Sign Contract'), (Tenant Cancels Appartment, 'Tenant Cancels Appartment'), (View The Property, 'View The Property'), (hid_1, None), (hid_13, None), (hid_14, None), (hid_18, None), (hid_2, None), (hid_21, None), (hid_23, None), (hid_25, None), (hid_28, None) ]
+arcs: [ (Accept Late Payment, 'Accept Late Payment')->pre_Pay Rent, (Accept Late Payment, 'Accept Late Payment')->splace_in_Miss Rent Payment_Accept Late Payment_0, (Apply for Viewing Appointment, 'Apply for Viewing Appointment')->intplace_Apply for Viewing Appointment, (Check Paperwork, 'Check Paperwork')->pre_Screen Prospective Tenant, (Evict Tenant, 'Evict Tenant')->sink0, (Extensive Screening, 'Extensive Screening')->intplace_Extensive Screening, (Hand In The Paperwork, 'Hand In The Paperwork')->pre_Check Paperwork, (Issue Warning, 'Issue Warning')->intplace_Issue Warning, (Miss Rent Payment, 'Miss Rent Payment')->pre_Issue Warning, (Move In, 'Move In')->intplace_Move In, (Pay Rent, 'Pay Rent')->intplace_Pay Rent, (Reject Prospective Tenant, 'Reject Prospective Tenant')->sink0, (Screen Prospective Tenant, 'Screen Prospective Tenant')->intplace_Screen Prospective Tenant, (Set Appointment, 'Set Appointment')->pre_View The Property, (Sign Contract, 'Sign Contract')->pre_Move In, (Tenant Cancels Appartment, 'Tenant Cancels Appartment')->sink0, (View The Property, 'View The Property')->intplace_View The Property, (hid_1, None)->pre_Miss Rent Payment, (hid_13, None)->splace_in_Miss Rent Payment_Pay Rent_0, (hid_14, None)->pre_Pay Rent, (hid_18, None)->pre_Reject Prospective Tenant, (hid_2, None)->pre_Miss Rent Payment, (hid_21, None)->pre_Reject Prospective Tenant, (hid_23, None)->pre_Reject Prospective Tenant, (hid_25, None)->pre_Reject Prospective Tenant, (hid_28, None)->pre_Pay Rent, intplace_Apply for Viewing Appointment->(Set Appointment, 'Set Appointment'), intplace_Apply for Viewing Appointment->(hid_18, None), intplace_Extensive Screening->(Sign Contract, 'Sign Contract'), intplace_Extensive Screening->(hid_25, None), intplace_Issue Warning->(Accept Late Payment, 'Accept Late Payment'), intplace_Issue Warning->(Evict Tenant, 'Evict Tenant'), intplace_Move In->(hid_2, None), intplace_Move In->(hid_28, None), intplace_Pay Rent->(Tenant Cancels Appartment, 'Tenant Cancels Appartment'), intplace_Pay Rent->(hid_13, None), intplace_Pay Rent->(hid_14, None), intplace_Screen Prospective Tenant->(Extensive Screening, 'Extensive Screening'), intplace_Screen Prospective Tenant->(Sign Contract, 'Sign Contract'), intplace_Screen Prospective Tenant->(hid_23, None), intplace_View The Property->(Hand In The Paperwork, 'Hand In The Paperwork'), intplace_View The Property->(hid_21, None), pre_Check Paperwork->(Check Paperwork, 'Check Paperwork'), pre_Issue Warning->(Issue Warning, 'Issue Warning'), pre_Miss Rent Payment->(Miss Rent Payment, 'Miss Rent Payment'), pre_Move In->(Move In, 'Move In'), pre_Pay Rent->(Pay Rent, 'Pay Rent'), pre_Reject Prospective Tenant->(Reject Prospective Tenant, 'Reject Prospective Tenant'), pre_Screen Prospective Tenant->(Screen Prospective Tenant, 'Screen Prospective Tenant'), pre_View The Property->(View The Property, 'View The Property'), source0->(Apply for Viewing Appointment, 'Apply for Viewing Appointment'), splace_in_Miss Rent Payment_Accept Late Payment_0->(hid_1, None), splace_in_Miss Rent Payment_Pay Rent_0->(hid_1, None), splace_in_Miss Rent Payment_Pay Rent_0->(hid_2, None) ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']
+
+

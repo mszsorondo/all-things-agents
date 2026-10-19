@@ -1,0 +1,69 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_HEURISTICS
+============================================================
+
+
+=== PETRI NET (HEURISTICS MINER) INTERPRETATION GUIDE ===
+
+The Heuristics Miner produces Petri nets using frequency-based dependency measures,
+making it more robust to noise than Alpha Miner.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ intplace_Activity, pre_Activity, splace_in_A_B_0, ... ]
+transitions: [ (Activity, 'Activity'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']"
+
+PLACE NAMING CONVENTIONS:
+- intplace_X: Internal place for activity X
+- pre_X: Pre-condition place for activity X
+- splace_in_A_B_N: Split place connecting A to B (N is index)
+- source0, sink0: Start and end places
+
+DEPENDENCY MEASURE:
+- Calculated as: (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1
+- Values close to 1: Strong causal dependency A->B
+- Values close to 0: No clear dependency
+- Used with thresholds to filter noise
+
+ADVANTAGES:
+- Handles noisy event logs
+- Detects loops of length 1 and 2
+- Identifies long-distance dependencies
+- Produces cleaner models than Alpha miner
+
+READING THE OUTPUT:
+- More places than Alpha miner (intermediary routing places)
+- All visible activities become transitions
+- Complex routing structures for varied behavior
+- Split places (splace) indicate choice or parallel patterns
+
+WHEN TO USE:
+- Real-world event logs with noise
+- When Alpha miner produces poor results
+- Complex processes with loops
+- When you need to filter infrequent behavior
+
+
+--- DISCOVERED MODEL ---
+[Heuristics Miner]
+
+
+If I have a Petri net:
+
+places: [ intplace_Make Visit to Assess Colatteral, intplace_Request Appointment, intplace_Request Co-Signer On Loan, intplace_Submit File to Underwriter, intplace_Verify Borrowers Information, pre_Hand In Credit Appliaction, pre_Make Visit to Assess Colatteral, pre_Request Co-Signer On Loan, pre_Sign Loan Agreement, pre_Submit File to Underwriter, pre_Verify Borrowers Information, sink0, source0, splace_in_Make Visit to Assess Colatteral_Make Visit to Assess Colatteral_0 ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Appointment Denied, 'Appointment Denied'), (Hand In Credit Appliaction, 'Hand In Credit Appliaction'), (Loan Denied, 'Loan Denied'), (Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral'), (Request Appointment, 'Request Appointment'), (Request Co-Signer On Loan, 'Request Co-Signer On Loan'), (Set Appointment, 'Set Appointment'), (Sign Loan Agreement, 'Sign Loan Agreement'), (Submit File to Underwriter, 'Submit File to Underwriter'), (Verify Borrowers Information, 'Verify Borrowers Information'), (hid_1, None), (hid_12, None), (hid_13, None), (hid_15, None), (hid_16, None), (hid_18, None), (hid_19, None), (hid_21, None), (skipped_examination, 'skipped_examination') ]
+arcs: [ (Application Rejected, 'Application Rejected')->sink0, (Appointment Denied, 'Appointment Denied')->sink0, (Hand In Credit Appliaction, 'Hand In Credit Appliaction')->pre_Verify Borrowers Information, (Loan Denied, 'Loan Denied')->sink0, (Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral')->intplace_Make Visit to Assess Colatteral, (Request Appointment, 'Request Appointment')->intplace_Request Appointment, (Request Co-Signer On Loan, 'Request Co-Signer On Loan')->intplace_Request Co-Signer On Loan, (Set Appointment, 'Set Appointment')->pre_Hand In Credit Appliaction, (Sign Loan Agreement, 'Sign Loan Agreement')->sink0, (Submit File to Underwriter, 'Submit File to Underwriter')->intplace_Submit File to Underwriter, (Verify Borrowers Information, 'Verify Borrowers Information')->intplace_Verify Borrowers Information, (hid_1, None)->pre_Make Visit to Assess Colatteral, (hid_12, None)->pre_Request Co-Signer On Loan, (hid_13, None)->pre_Submit File to Underwriter, (hid_15, None)->pre_Submit File to Underwriter, (hid_15, None)->splace_in_Make Visit to Assess Colatteral_Make Visit to Assess Colatteral_0, (hid_16, None)->pre_Request Co-Signer On Loan, (hid_18, None)->pre_Make Visit to Assess Colatteral, (hid_19, None)->pre_Submit File to Underwriter, (hid_21, None)->pre_Sign Loan Agreement, (skipped_examination, 'skipped_examination')->pre_Sign Loan Agreement, intplace_Make Visit to Assess Colatteral->(hid_15, None), intplace_Make Visit to Assess Colatteral->(hid_16, None), intplace_Request Appointment->(Appointment Denied, 'Appointment Denied'), intplace_Request Appointment->(Set Appointment, 'Set Appointment'), intplace_Request Co-Signer On Loan->(hid_18, None), intplace_Request Co-Signer On Loan->(hid_19, None), intplace_Submit File to Underwriter->(Loan Denied, 'Loan Denied'), intplace_Submit File to Underwriter->(hid_21, None), intplace_Verify Borrowers Information->(Application Rejected, 'Application Rejected'), intplace_Verify Borrowers Information->(hid_1, None), intplace_Verify Borrowers Information->(hid_12, None), intplace_Verify Borrowers Information->(hid_13, None), intplace_Verify Borrowers Information->(skipped_examination, 'skipped_examination'), pre_Hand In Credit Appliaction->(Hand In Credit Appliaction, 'Hand In Credit Appliaction'), pre_Make Visit to Assess Colatteral->(Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral'), pre_Request Co-Signer On Loan->(Request Co-Signer On Loan, 'Request Co-Signer On Loan'), pre_Sign Loan Agreement->(Sign Loan Agreement, 'Sign Loan Agreement'), pre_Submit File to Underwriter->(Submit File to Underwriter, 'Submit File to Underwriter'), pre_Verify Borrowers Information->(Verify Borrowers Information, 'Verify Borrowers Information'), source0->(Request Appointment, 'Request Appointment'), splace_in_Make Visit to Assess Colatteral_Make Visit to Assess Colatteral_0->(hid_1, None) ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']
+
+

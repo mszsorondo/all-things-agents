@@ -1,0 +1,163 @@
+## 1. WHAT THIS REPRESENTATION DESCRIBES
+
+This representation describes a **Petri net process model** discovered from an event log using the **Alpha Miner**.
+It encodes:
+
+• the set of **activities** as transitions
+• the set of **control-flow conditions** as places
+• the **flow relations** between them as arcs
+• the **process start state** as an initial marking
+• the **process end state** as a final marking
+
+It represents the **ordering relations** between activities that can be inferred from the log (causal, parallel, or exclusive relations), expressed as a formal workflow net.
+
+---
+
+## 2. TYPICAL OUTPUT FORM (conceptual)
+
+Conceptually, the output has the form:
+
+```
+places: [ p1, p2, p3, ... ]
+transitions: [ (t1, "A"), (t2, "B"), ... ]
+arcs: [ x -> y, ... ]
+
+initial marking: [ p_start : 1 ]
+final marking:   [ p_end   : 1 ]
+```
+
+Where:
+
+• places represent control conditions
+• transitions represent activities
+• arcs represent allowed flow
+• markings indicate where a token initially exists and where it must end
+
+---
+
+## 3. HOW TO READ EACH LINE
+
+### Meaning of the sequence
+
+The model defines **which activities can follow which others**, and under what conditions, using places as synchronization and branching points.
+
+---
+
+### Meaning of each reported element
+
+**Transitions**
+Each transition corresponds to a **visible activity label** from the log.
+There are **no invisible (tau) transitions** in this model.
+
+**Places**
+Each place represents a **control condition** connecting:
+• a set of predecessor activities
+• to a set of successor activities
+
+Places are often named as tuples like:
+
+```
+({'A'}, {'B'})
+```
+
+Meaning:
+“after A and before B”.
+
+They encode:
+• causal dependencies
+• synchronization points
+• choices
+• parallel splits/joins
+
+**Arcs**
+Each arc defines allowed movement of a token:
+• transition → place
+• place → transition
+
+They define the **legal execution paths**.
+
+**Initial marking**
+Indicates which place initially contains one token.
+This represents the **process start point**.
+
+**Final marking**
+Indicates which place must contain one token when the process finishes.
+This represents the **process end point**.
+
+---
+
+## 4. GLOBAL SEMANTIC MEANING
+
+The Petri net represents the **behavioral structure** implied by the log:
+
+• what must happen before what
+• what may happen in parallel
+• what alternatives exist
+• where execution can start
+• where it must end
+
+It encodes the **partial order** of activities observed in traces, not individual trace frequencies or performance values.
+
+---
+
+## 5. HOW TO INTERPRET THE LIST AS A WHOLE
+
+The full model must be read as a **single behavioral system**:
+
+• Tokens flow from the initial place to the final place
+• Each transition consumes tokens from its input places
+• Places enforce ordering, synchronization, or choice
+• Any firing sequence consistent with the net is a valid process execution
+
+The model may allow:
+• multiple execution paths
+• parallel executions
+• alternative branches
+
+but only those consistent with the discovered relations.
+
+---
+
+## 6. WHAT THIS REPRESENTATION IS FOR
+
+It is for:
+
+• discovering a **formal process model** from an event log
+• visualizing and reasoning about control-flow
+• checking conformance of traces
+• understanding dependencies between activities
+• educational or exploratory process mining
+
+It is suited for **simple and structured logs** with clear ordering relations.
+
+---
+
+## 7. WHAT THIS REPRESENTATION IS NOT
+
+It does **not** encode:
+
+• trace frequencies
+• activity durations
+• probabilities
+• timestamps
+• resource usage
+• performance metrics
+• loop frequencies
+• noise tolerance
+
+It does **not**:
+
+• model short loops (length 1 or 2)
+• introduce invisible routing transitions
+• guarantee connectedness
+• guarantee soundness
+• guarantee completeness
+• represent rare or noisy behavior
+
+It is a **structural model**, not a statistical one.
+
+---
+
+## 8. ONE-SENTENCE CORE SUMMARY
+
+**This representation is a Petri net that formally encodes the ordering, parallelism, and choice relations between activities discovered from an event log, with explicit start and end states and visible activity transitions only.**

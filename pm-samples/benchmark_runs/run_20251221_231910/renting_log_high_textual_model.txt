@@ -1,0 +1,63 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The purpose of the process is to manage the rental application and tenancy operations for prospective tenants in a property management context. It includes steps from applying for a viewing appointment to signing the contract, moving in, and managing rental payments, including scenarios of payment issues and tenant cancellations.
+
+## Key Stakeholders and Roles Involved
+- **Prospective Tenant:** Initiates the process by applying for property viewing.
+- **Property Management Staff:** Responsible for screening tenants, handling paperwork, and enforcing lease agreements.
+- **Tenant:** Once approved, manages rental payments and responsibilities associated with tenancy. 
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+The process begins with a prospective tenant initiating an application for viewing a property. Specifically, the start event is signaled by:
+- **Apply for Viewing Appointment**
+
+### Sequence Flow of Activities
+1. **Apply for Viewing Appointment:** A prospective tenant applies to view the property.
+2. **Set Appointment:** Property management staff sets a viewing appointment.
+3. **View The Property:** The prospective tenant views the property.
+4. **Hand In The Paperwork:** After viewing, the tenant submits the necessary applications and documents.
+5. **Check Paperwork:** Property management reviews submitted paperwork for completeness and accuracy.
+6. **Screen Prospective Tenant:** The prospective tenant undergoes screening.
+   - **Decision Point:**
+     - **If screened successfully:** Move to "Sign Contract"
+     - **If rejected:** Move to "Reject Prospective Tenant."
+
+### Decision Points with Criteria and Possible Outcomes
+- **Screening Outcomes:**
+  - **Successful Screening → Sign Contract → Move In**
+  - **Unsuccessful Screening → Reject Prospective Tenant**
+  
+### Exception Handling and Error Paths
+- **Tenant Cancels Apartment:** If at any point during the viewing or after signing, the tenant decides to cancel the apartment, the process is routed to "Tenant Cancels Apartment," leading directly to the end of the process.
+- **Miss Rent Payment:** If the tenant fails to make a rent payment:
+  - Move to "Issue Warning."
+  - Subsequent actions can include accepting late payments or evicting the tenant, depending on compliance actions taken by property management.
+
+### Rework Loops and Escalation Procedures
+- **Payment Issues:**
+  - After issuing a warning for missed payments, the outcomes can entail either accepting a late payment or proceeding toward eviction.
+  - If a late payment is accepted, the flow returns back to "Pay Rent."
+  
+- **Rework Scenario:**
+  - In cases where issues are found in the paperwork, it may lead to redoing the "Hand In The Paperwork" or "Check Paperwork" steps.
+
+### End Conditions and Outcomes
+The process concludes once the tenant either:
+- **Successfully moves in after signing the contract.**
+- **Has their application rejected.**
+- **Cancels their apartment request.**
+- **Faces eviction due to continuous payment issues.**
+
+## Process Metrics and Performance Characteristics
+- High frequency of missed rent payments with performance indicating potential issues in tenant commitment.
+- Variants of the process indicate significant pathways including cancellations, rejections, and multiple re-payment attempts.
+
+## Key Challenges and Pain Points Observed in the Current Process
+- **High Missed Payment Rate:** Frequent instances where tenants fail to pay rent, leading to warnings and potential evictions.
+- **Cancellations:** Regular cancellation incidents which indicate possible dissatisfaction or issues in the property showing or tenant expectations.
+- **Decision Overlap:** The extensive branching from the screening and paperwork checks can lead to delays and inefficiencies.
+
+This AS-IS model comprehensively represents the observed behaviors in the current operational process, capturing all variants and paths as evidenced in the data provided.
