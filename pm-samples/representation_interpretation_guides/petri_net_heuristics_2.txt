@@ -1,0 +1,197 @@
+## 1. WHAT THIS REPRESENTATION DESCRIBES
+
+This representation describes a **process model in the form of a Petri net** discovered from an event log using **frequency-based dependency relations** between activities.
+
+It encodes:
+
+• Which activities exist
+• Which activities can follow which
+• Which activities can occur in parallel or as alternatives
+• Which activities start and end cases
+• The allowed flow structure of the process
+• The initial and final process states
+
+The model reflects **dominant behavioral patterns** observed in the log under dependency and parallelism thresholds, rather than perfectly reproducing all traces.
+
+---
+
+## 2. TYPICAL OUTPUT FORM (conceptual)
+
+A typical output consists of:
+
+**Places:**
+`[ place1, place2, place3, ... ]`
+
+**Transitions:**
+`[ (label, label), (label, label), ... ]`
+
+**Arcs:**
+`[ source -> target, ... ]`
+
+**Initial marking:**
+`[ place:token_count ]`
+
+**Final marking:**
+`[ place:token_count ]`
+
+Where:
+• places represent conditions or routing points
+• transitions represent activities
+• arcs represent allowed flow relations
+• markings indicate where tokens start and must end
+
+---
+
+## 3. HOW TO READ EACH LINE
+
+### Meaning of the sequence
+
+The representation lists the full structural definition of a Petri net:
+
+1. All places
+2. All transitions
+3. All arcs
+4. Initial marking
+5. Final marking
+
+Together, these define the allowed executions of the process.
+
+---
+
+### Meaning of each reported element
+
+#### Places
+
+Each place represents a **state, precondition, or routing point** in the process.
+
+Place names reflect structural roles:
+• some correspond to activity pre- or post-conditions
+• some represent splits or joins
+• some represent start or end of cases
+
+They do **not** correspond to observed events.
+
+---
+
+#### Transitions
+
+Each transition corresponds to an **activity label** from the log.
+
+Transitions are the **only executable actions** in the model.
+
+If a transition is labeled “A”, firing it represents executing activity A.
+
+---
+
+#### Arcs
+
+Each arc represents an **allowed causal flow relation**:
+
+• place → transition means the place is required to fire the activity
+• transition → place means the activity produces that condition
+
+Arcs encode:
+• ordering
+• branching
+• synchronization
+• looping
+
+---
+
+#### Initial marking
+
+The initial marking indicates **where tokens are placed at process start**.
+
+This defines:
+• which activities may occur first
+• the entry structure of the process
+
+---
+
+#### Final marking
+
+The final marking indicates **where tokens must be to consider a case complete**.
+
+This defines:
+• which execution paths are valid endings
+• when a trace is accepted by the model
+
+---
+
+## 4. GLOBAL SEMANTIC MEANING
+
+The Petri net defines the **set of allowed activity sequences** that conform to the dominant causal structure discovered from the log.
+
+Any trace that can be replayed from the initial marking to the final marking without violating arc constraints is considered **behaviorally compatible** with the discovered process model.
+
+The model abstracts from raw traces into:
+• control-flow logic
+• routing structure
+• concurrency
+• looping behavior
+
+---
+
+## 5. HOW TO INTERPRET THE LIST AS A WHOLE
+
+The list of places, transitions, arcs, and markings together defines:
+
+• a **language of valid traces**
+• a **control-flow abstraction** of the log
+• a **noise-filtered behavioral structure**
+
+It should be interpreted as:
+
+> “These are the activity orders and combinations that the model considers structurally valid.”
+
+Not all observed traces must appear explicitly; instead, the model generalizes over them.
+
+---
+
+## 6. WHAT THIS REPRESENTATION IS FOR
+
+This representation is for:
+
+• modeling process behavior
+• checking trace conformance
+• visualizing routing logic
+• reasoning about causality
+• identifying parallelism
+• detecting loops
+• abstracting noisy logs
+• comparing observed behavior to a discovered structure
+
+It is meant to serve as a **formal process model**.
+
+---
+
+## 7. WHAT THIS REPRESENTATION IS NOT
+
+This representation is **not**:
+
+• a list of observed traces
+• a frequency table
+• a probability model
+• a performance model
+• a sequence model
+• a guarantee of completeness
+• a visualization layout
+• a representation of exact execution counts
+
+It does **not** encode:
+
+• how often each path occurred
+• how long activities took
+• which trace variants exist
+• probabilities of choices
+• timestamps
+• case identifiers
+
+It encodes only **control-flow structure**.
+
+---
+
+## 8. ONE-SENTENCE CORE SUMMARY
+
+This representation is a Petri net that encodes the dominant causal and parallel relationships between activities discovered from an event log using frequency-based dependency measures, defining which activity sequences are structurally allowed from start to end.
+

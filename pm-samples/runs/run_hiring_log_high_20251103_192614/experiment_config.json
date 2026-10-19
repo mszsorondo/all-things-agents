@@ -1,0 +1,26 @@
+{
+  "run_timestamp": "2025-11-03T19:26:14.898390",
+  "dataset_name": "hiring_log_high",
+  "xes_path": "benchmark/hiring/hiring_log_high.xes",
+  "model": "anthropic:claude-sonnet-4-5",
+  "representations": [
+    "petri_net",
+    "bpmn",
+    "dfg"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into valid, displayable BPMN 2.0 XML diagrams with layout (DI coordinates).\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or c...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (195732f0-da52-4109-9805-204ae6323c3a, 'Extensive Background Check'), (3222009d-a3e0-4265-b583-96ebfc0d1b71, 'Frontend Interview'), (4d94f2bc-651a-4ddb-ae45-46553d8ced00, 'Application Rejected'), (6d5615b9-2207-48f6-b8de-a252125d8d...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "bpmn",
+      "dfg"
+    ],
+    "model_name": "anthropic:claude-sonnet-4-5",
+    "prompt_file": "new_prompt.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates"
+  }
+}

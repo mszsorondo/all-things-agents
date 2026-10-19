@@ -1,0 +1,186 @@
+AS-IS Process Model
+
+1. Process overview and purpose
+- This process captures the observed patient-flow from registration (arrival at Emergency Room (ER) or Front Desk (FD)) through clinical assessment(s), diagnosis, treatment (including repeated treatment cycles when unsuccessful), and case completion by discharge.
+- Purpose (observed behavior): record and manage the clinical path leading to patient discharge; the data show large variation in which assessments are performed before diagnosis and multiple observed rework loops when treatment is unsuccessful.
+
+2. Key stakeholders and roles
+- The textual models do not explicitly name roles or departments beyond registration locations. No additional roles are created. Where the source implies different organizational touchpoints they are recorded as activities only:
+  - Register at ER
+  - Register at FD
+  - Examination
+  - Expert Examination
+  - Thorough Examination
+  - Diagnosis
+  - Treatment
+  - Treatment successful
+  - Treatment unsuccessful
+  - Discharge
+
+3. Start and end conditions (inferred)
+- Start: Case starts when a patient registers (observed start events):
+  - Register at ER OR Register at FD.
+  These two registration events are the only recorded start events in the data.
+- End: Case ends when the patient is Discharged. Discharge is the only recorded final event.
+
+4. Canonical process structure (high-level)
+- Start: Register at ER | Register at FD
+- Then a clinical assessment path consisting of one of the observed assessment sequences (see Section 5).
+- After assessment → Diagnosis
+- After Diagnosis → Treatment
+- After each Treatment there are three possible observed outcomes:
+  1. Treatment successful → Discharge (most common observed path)
+  2. Treatment unsuccessful → Diagnosis → Treatment (rework loop; may repeat multiple times)
+  3. Treatment → Discharge (observed in a minority of cases — discharge without an explicit Treatment successful event)
+- The rework loop (Treatment unsuccessful → Diagnosis → Treatment) can repeat: multiple consecutive unsuccessful cycles were observed before eventual success or direct Discharge. The maximal number of consecutive unsuccessful cycles observed in the data is three (i.e., up to three repeated Treatment unsuccessful → Diagnosis → Treatment cycles prior to a final Treatment successful → Discharge or Treatment → Discharge in the observed traces).
+
+5. Detailed step-by-step process flow (all observed variants captured)
+
+Start triggers
+- Case begins when a patient is recorded as:
+  - Register at ER OR
+  - Register at FD
+(These two are mutually exclusive starts per case — a case starts with exactly one of them.)
+
+Assessment routing immediately after registration (branching)
+- After registration (ER or FD), the patient is routed to ONE of the following observed assessment patterns. The choice is non-deterministic in the data (no explicit routing criteria recorded); all of the patterns below were observed and are valid.
+  Observed assessment alternatives (all are mutually exclusive in a single trace — a single trace follows one of these assessment alternatives before reaching Diagnosis; however, some variants show that one or more assessment steps may be skipped):
+  A. Expert Examination → (optionally) Thorough Examination → Diagnosis
+     - Two sub-variants observed:
+       A1. Expert Examination → Thorough Examination → Diagnosis (common)
+       A2. Expert Examination → Diagnosis (Thorough Examination skipped)
+  B. Examination → (optionally) Thorough Examination → Diagnosis
+     - Two sub-variants observed:
+       B1. Examination → Thorough Examination → Diagnosis (common)
+       B2. Examination → Diagnosis (Thorough Examination skipped)
+  C. Thorough Examination → Diagnosis (i.e., registration directly to Thorough Examination, then Diagnosis)
+  D. Direct routing: Register at ER/FD → Diagnosis (i.e., no Examination / Expert / Thorough recorded)
+- Frequency notes:
+  - Expert Examination is commonly reached from both Register at ER and Register at FD. Similarly Examination is commonly reached from both registers.
+  - The data include many traces where assessment steps are skipped entirely (Register → Diagnosis) and many where steps are present in the patterns above. Both registers (ER and FD) can lead to any of the assessment alternatives.
+
+Sequence from Diagnosis to Treatment
+- After Diagnosis the process continues to Treatment.
+
+Treatment and outcome branching (including rework)
+- From Treatment there are three observed, valid next steps:
+  1. Treatment → Treatment successful → Discharge
+     - The most common completion: Treatment successful event is recorded between Treatment and Discharge in the majority of cases.
+  2. Treatment → Treatment unsuccessful → Diagnosis → Treatment (rework loop)
+     - Observed behavior: when Treatment is unsuccessful, the case returns to Diagnosis (re-evaluation) and then returns to Treatment for another attempt.
+     - This unsuccessful → re-diagnose → re-treat cycle can repeat multiple times. The maximum number of consecutive unsuccessful cycles observed in the event variants is three (i.e., up to three consecutive Treatment unsuccessful → Diagnosis → Treatment iterations before resolution). After the last iteration the case may reach Treatment successful → Discharge or Treatment → Discharge.
+  3. Treatment → Discharge (no explicit Treatment successful recorded)
+     - A minority of traces end with direct Discharge immediately after Treatment without a separate Treatment successful event. This is an observed valid variant.
+
+Complete allowed execution pattern (formalized)
+- Every observed trace conforms to the following pattern (this pattern captures all observed variants):
+  1. Start: Register ∈ {Register at ER, Register at FD}
+  2. Assessment ∈ {
+       Expert Examination [→ optional Thorough Examination],
+       Examination [→ optional Thorough Examination],
+       Thorough Examination,
+       (no assessment) → direct Diagnosis
+     }
+  3. Diagnosis
+  4. Treatment
+  5. Zero or more repetitions of:
+       (Treatment unsuccessful → Diagnosis → Treatment)
+     (repeat count observed: 0..3 in the data; a trace may have no unsuccessful cycles)
+  6. Then either:
+       a) Treatment successful → Discharge
+       OR
+       b) Discharge directly after Treatment (Treatment → Discharge)
+- This pattern subsumes every concrete variant recorded in the Abstract Variants list supplied.
+
+Explicit example variants (most frequent / illustrative traces with frequencies)
+- The data list many concrete variants. Below are the top observed, concrete sequences (frequency shown as in the input):
+  1. Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 1539)
+  2. Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 1496)
+  3. Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 832)
+  4. Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 768)
+  5. Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 766)
+  6. Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 734)
+  7. Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 563)
+  8. Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 531)
+  9. Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 241)
+  10. Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge (freq = 197)
+  - (Many additional variants exist; the above illustrate the common flows and the pattern of unsuccessful loops. Full variant list is present in the source; all of them are captured by the canonical pattern in Section 5.)
+
+6. Parallelism and synchronization
+- No parallel (concurrent) flows are recorded or required by the observed traces. All observed sequences are strictly sequential (a single thread of activity per case). No synchronization points are required.
+
+7. Exception handling, rework and escalation
+- The primary exception/rework observed is when Treatment is unsuccessful. The observed remedy is:
+  - Treatment unsuccessful → patient is re-evaluated (Diagnosis) → another Treatment attempt.
+- Rework can repeat several times before a successful Treatment or discharge. This behavior implies repeated resource allocation for diagnosis and treatment per case in those instances.
+- There is no separate recorded "escalation" activity; Expert Examination may act as a higher-level assessment in some traces, but the models do not explicitly label it as an escalation event. Routing to Expert Examination vs Examination vs direct Diagnosis is observed but the recorded data do not contain explicit reasons for these choices.
+
+8. Optional/skippable activities (explicit)
+- Expert Examination: optional — some traces include it; others do not.
+- Examination: optional — some traces include it; others do not.
+- Thorough Examination: optional — may follow Expert Examination or Examination, or be the only examination recorded in a case; sometimes it is skipped.
+- Treatment successful: optional in the sense that some traces end with Treatment → Discharge without a separate Treatment successful event.
+- Treatment unsuccessful: optional — occurs only in those traces where rework occurred.
+- The process allows many combinations of these optional steps as observed in the variant list; the canonical pattern in Section 5 enumerates allowed combinations.
+
+9. Observed order variations and interleavings (all recorded orderings)
+- Registrations (ER/FD) are interchangeable as start nodes; both can lead to any assessment path observed.
+- Assessment orders observed are limited to the assessment alternatives listed (Expert Examination and Examination are alternatives; either may be followed by Thorough Examination or bypass it). No variant shows Examination and Expert Examination both executed in series in the same trace.
+- After Diagnosis, Treatment is always executed before resolution attempts (no recorded path returns directly from Diagnosis to Discharge without treatment).
+- After Treatment, the following orders were observed:
+  - Treatment -> Treatment successful -> Discharge
+  - Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> ... -> Treatment successful -> Discharge
+  - Treatment -> Discharge (bypassing Treatment successful)
+- All interleavings in the dataset are sequential (no parallel interleavings).
+
+10. Performance and frequency metrics (observed)
+- Directly-Follows aggregate metrics between pairs (average/observed performance value as recorded in the source — units not specified in the source; values reported as in the DFG):
+  - Diagnosis -> Treatment: frequency 11,746; average inter-event time ≈ 60,000.5 (units as recorded)
+  - Treatment successful -> Discharge: frequency 9,005; average ≈ 40,000.8
+  - Treatment -> Treatment successful: frequency 9,005; average ≈ 60,000.9
+  - Thorough Examination -> Diagnosis: frequency 5,922; avg ≈ 60,000.5
+  - Expert Examination -> Thorough Examination: frequency 3,637; avg ≈ 60,000.8
+  - Register at FD -> Expert Examination: frequency 2,888; avg ≈ 40,000.3
+  - Register at ER -> Expert Examination: frequency 2,866; avg ≈ 39,999.8
+  - Expert Examination -> Diagnosis: frequency 2,117; avg ≈ 60,001.2
+  - Examination -> Thorough Examination: frequency 1,968; avg ≈ 60,001.7
+  - Register at ER -> Examination: frequency 1,826; avg ≈ 39,999.97
+  - Treatment -> Treatment unsuccessful: frequency 1,746; avg ≈ 60,001.6
+  - Treatment -> Discharge (direct): frequency 995; avg ≈ 100,002.8
+  - (Other pairwise frequencies are in the DFG data; the above highlight high-frequency transitions.)
+- Variant-level (case-level) performance:
+  - The top frequency variants (e.g., Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge) have aggregate durations recorded (as in source) — example: top FD variant frequency = 1,539 with performance ≈ 320,005.3 (units as recorded). Many other variants report case durations in the 200k–800k range (units as recorded) depending on path length and rework.
+- Interpretation: cases with rework (one or multiple Treatment unsuccessful loops) show substantially higher overall case durations (e.g., many rework-inclusive variants have reported performance metrics roughly 400k–800k), indicating large time cost for repeated treatment cycles.
+
+11. Key challenges and pain points observed in the AS-IS behavior
+- High variability in care pathways:
+  - Multiple alternative assessment routes (Expert Examination, Examination, Thorough Examination, or direct Diagnosis) create inconsistent patient journeys.
+- Rework cycles (Treatment unsuccessful → Diagnosis → Treatment) are frequent and cause major increases in case duration and resource consumption:
+  - 1,746 recorded transitions Treatment -> Treatment unsuccessful; many variants show one or more unsuccessful cycles; several traces include up to three repeated unsuccessful cycles prior to resolution.
+- Incomplete/ambiguous signaling of resolution:
+  - Some cases end with Treatment -> Discharge, i.e., missing an explicit Treatment successful event; this inconsistency complicates automated monitoring of "treatment success" metric.
+- Unrecorded routing criteria:
+  - The dataset does not include recorded reasons for choosing Expert Examination vs Examination vs direct Diagnosis. This lack of recorded decision data makes it hard to explain or control variability.
+- Bottlenecks and timing:
+  - Many observed pairwise average times are on the order of 40k–100k (units recorded in the data) between events; especially longer durations are associated with Treatment -> Discharge direct and full-case durations with rework.
+- Potential duplication of diagnosis work:
+  - Re-diagnosis after unsuccessful treatment implies repeat diagnostic effort and possible repeated resource allocation (physician time, tests).
+- Lack of explicit escalation activity:
+  - When treatment fails, the observed behavior is to re-diagnose; there is no distinct recorded escalation to a specialist or to another formal process step other than re-running diagnosis and treatment.
+
+12. Practical summary and acceptance criteria for observed traces
+- Any observed trace is valid if and only if it matches the canonical pattern from Section 5:
+  - Start with Register at ER or Register at FD,
+  - optionally perform one of the allowed assessment sequences (Expert/Examination/Thorough/none),
+  - then Diagnosis → Treatment,
+  - zero or more cycles of (Treatment unsuccessful → Diagnosis → Treatment),
+  - and finish with either Treatment successful → Discharge OR Treatment → Discharge.
+- All concrete variants listed in the provided Abstract Variants are included under this canonical pattern. The AS-IS description intentionally permits all observed permutations (skips of assessments, presence/absence of Thorough Examination, repeated unsuccessful-treatment cycles, and final success or direct discharge) so that any trace from the source data is accepted.
+
+13. Recommendations for next steps (actionable, based on observed AS-IS behavior)
+- Instrument decision points: record routing reasons (triage severity, availability of expert, clinical protocol) to explain and control variability between Expert Examination, Examination, and direct Diagnosis.
+- Standardize treatment-success recording: ensure Treatment successful is consistently logged (or define explicit rules for when Treatment → Discharge is acceptable) to make outcome metrics reliable.
+- Investigate rework root causes: cases with Treatment unsuccessful should be analyzed to determine causes (misdiagnosis, treatment selection, resource constraints) and reduce repeat cycles.
+- Monitor resource impact: quantify the extra time and capacity consumed by repeated Diagnosis/Treatment cycles and consider process changes (e.g., earlier specialist involvement) to reduce rework.
+
+End of AS-IS Process Model.

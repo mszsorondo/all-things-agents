@@ -1,0 +1,197 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Origination of a loan from initial appointment request through credit application intake, verification, optional enrichment (co-signer and collateral assessment), underwriting, and final outcome (approval and signing, denial, or rejection).
+- Scope: From the moment a prospective borrower requests an appointment until one of four end states: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement.
+- Note on activity names: The source log uses the labels “Hand In Credit Appliaction” (intended: Application) and “Make Visit to Assess Colatteral” (intended: Collateral). The model retains the source labels.
+
+Key stakeholders and roles involved
+- Roles are not fully specified in the source data.
+- Underwriter is explicitly implied by “Submit File to Underwriter.”
+- Other activities imply front-office loan processing and field assessment functions, but no explicit roles are named in the data; therefore, responsibilities are described at the activity level.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Prospective borrower initiates the process by “Request Appointment.”
+
+End conditions and outcomes (all observed)
+- Appointment Denied (end)
+- Application Rejected (end)
+- Loan Denied (end)
+- Sign Loan Agreement (end - successful completion)
+
+Main sequence and decision points
+1) Request Appointment (start)
+2) Exclusive decision: Appointment outcome
+   - If appointment cannot be granted: Appointment Denied (end). Observed as a direct path “Request Appointment -> Appointment Denied” (9% of cases; avg ~0.998 days).
+   - If appointment granted: proceed to Set Appointment.
+3) Set Appointment
+4) Hand In Credit Appliaction (borrower submits application)
+5) Verify Borrowers Information (check completeness and basic eligibility)
+6) Exclusive decision after verification:
+   - Application Rejected (end) when pre-underwriting rules cause a stop (16% of cases; avg ~2.74 days end-to-end).
+   - Proceed to risk enrichment and/or underwriting preparation.
+
+Conditional enrichment before underwriting (inclusive/iterative behavior)
+7) Optional branches that may occur before underwriting, in various orders and possibly multiple times (inclusive-or behavior with rework):
+   - Request Co-Signer On Loan
+     - May be present for some cases (various low-frequency variants).
+     - Appears in combination with collateral visits in multiple sequences.
+   - Make Visit to Assess Colatteral
+     - Often performed 0, 1, or many times (observed rework loops with 2–8+ repeated “Make Visit” events in rare cases).
+     - Repetition indicates iterative attempts/returns (e.g., scheduling issues, incomplete access, additional documentation), although specific reasons are not captured in the log.
+   - Both actions can co-occur in either order; the log shows no strict sequencing constraint between them.
+
+8) Submit File to Underwriter (gate to formal credit decision)
+   - Common path from verification/enrichment to formal decision.
+   - Not present in the “skipped_examination” variant (see exception below).
+
+9) Exclusive decision by underwriting:
+   - Loan Denied (29% of cases for the straight path without enrichment; plus multiple lower-frequency enriched paths ending in denial). Typical durations for these denial paths range ~3.9–5.4 days depending on added steps and rework.
+   - Sign Loan Agreement (16% for the straight path without enrichment; plus low-frequency enriched paths leading to signing). Typical durations range ~3.9–4.5 days.
+
+Exception handling and error paths (as observed)
+- Skipped underwriting examination path:
+  - Variant: Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement (3%; avg ~3.01 days).
+  - This indicates a bypass of “Submit File to Underwriter” prior to “Sign Loan Agreement.” It is a noncompliant shortcut from a control perspective, as approval precedes signing in standard governance.
+- Extensive rework loops in collateral assessment:
+  - Multiple low-frequency variants show the “Make Visit to Assess Colatteral” repeated many times (up to 7–8+), greatly extending cycle time (up to ~5.44 days average for the longest variant).
+- Mixed enrichment order:
+  - “Request Co-Signer On Loan” and “Make Visit to Assess Colatteral” appear in various orders and quantities, sometimes both present before underwriting, sometimes only one, sometimes none.
+
+Rework loops and synchronization
+- Rework loop: “Make Visit to Assess Colatteral” can repeat multiple times prior to “Submit File to Underwriter.”
+- Inclusive behavior: If both “Request Co-Signer On Loan” and “Make Visit to Assess Colatteral” occur, they are executed in sequence (order varies) and implicitly merge before submitting to underwriting.
+- No parallel execution is evidenced in the log; activities occur sequentially.
+
+Process metrics and performance characteristics (from the provided variants)
+- Coverage of main outcomes by top variants:
+  - Submit to Underwriter -> Loan Denied: 29% (avg ~3.91 days)
+  - Submit to Underwriter -> Sign Loan Agreement: 16% (avg ~3.93 days)
+  - Application Rejected after verification: 16% (avg ~2.74 days)
+  - Appointment Denied early: 9% (avg ~1.00 day)
+  - All others are low-frequency variants (≤4% each), often involving optional enrichment or rework.
+- Impact of optional steps and rework:
+  - Adding “Request Co-Signer” and/or “Make Visit to Assess Colatteral” typically increases total duration into the ~4.0–5.4 day range, with the heaviest rework loops at the upper end (~5.4 days).
+- Noncompliant shortcut:
+  - “skipped_examination -> Sign Loan Agreement” is faster (~3.0 days) but bypasses the underwriting decision, posing elevated risk and compliance concerns.
+
+Key challenges and pain points
+- Governance/compliance risk:
+  - The “skipped_examination” path enables signing without a documented underwriting decision.
+- Unbounded rework:
+  - Repeated “Make Visit to Assess Colatteral” inflates cycle times; there is no clear cap or escalation rule evident in the observed behavior.
+- Process variability:
+  - The order and frequency of “Request Co-Signer” and “Make Visit to Assess Colatteral” vary widely, making lead times unpredictable and coordination cumbersome.
+- Throughput and customer experience:
+  - High rate of negative decisions (Appointment Denied, Application Rejected, Loan Denied across multiple variants) and long tails in duration for cases requiring multiple collateral visits.
+- Lack of explicit synchronization rules:
+  - When both co-signer and collateral are needed, their sequence is ad hoc, with no clear gating prior to underwriting beyond the eventual “Submit File to Underwriter.”
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A governed, efficient loan origination flow that ensures underwriting precedes any signing, constrains rework, and standardizes optional enrichment steps to reduce cycle time and variability.
+- Scope: Same start and end as AS-IS, but with tightened control logic and streamlined enrichment.
+
+Key stakeholders and roles involved
+- Underwriter remains explicitly responsible for the credit decision prior to signing.
+- Other roles are not specified in the data; activities are assigned functionally without adding new actors.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Prospective borrower initiates the process by “Request Appointment.”
+
+End conditions and outcomes
+- Appointment Denied (end)
+- Application Rejected (end)
+- Loan Denied (end)
+- Sign Loan Agreement (approved end)
+
+Core sequence and decision points (streamlined and controlled)
+1) Request Appointment (start)
+2) Exclusive decision: Appointment outcome
+   - If appointment cannot be granted: Appointment Denied (end).
+   - If appointment is granted: proceed to Set Appointment.
+3) Set Appointment
+4) Hand In Credit Appliaction
+5) Verify Borrowers Information
+   - Establishes a formal data completeness and eligibility check before any enrichment.
+   - Outcome-driven routing to enrichment is controlled by defined criteria (e.g., DTI, collateral requirements) without adding new activities.
+
+6) Conditional enrichment sub-process (inclusive, bounded, and optionally parallelizable)
+   - Entry condition: Only when verification indicates a need.
+   - Activities (zero, one, or both may be required):
+     a) Request Co-Signer On Loan
+        - Performed at most once by default.
+        - If the request fails or co-signer is unavailable, route to Application Rejected or continue with underwriting with a documented deficiency only if policy allows.
+     b) Make Visit to Assess Colatteral
+        - Default one visit. Allow at most one re-visit if justified (e.g., access issues) with clear documentation.
+        - If collateral cannot be assessed within the allowed attempts, route to Application Rejected.
+   - Concurrency improvement (when both are needed):
+     - Execute “Request Co-Signer On Loan” and “Make Visit to Assess Colatteral” in parallel to minimize end-to-end time.
+     - Synchronization point: Both required enrichment tasks must be completed (or formally closed) before submitting to underwriting.
+   - Rework control:
+     - Cap the number of collateral visits (1 + 1 re-visit maximum).
+     - No indefinite loops. Any further need triggers a policy-based decision to reject or to proceed with disclosure of limitations per underwriting rules.
+
+7) Submit File to Underwriter (mandatory gate)
+   - All cases must pass through underwriting before any signing can occur.
+   - Completeness checks ensure co-signer and collateral outcomes (if required) are attached.
+
+8) Underwriter decision (exclusive decision)
+   - Loan Denied (end) with documented rationale.
+   - Approved: proceed to Sign Loan Agreement.
+
+9) Sign Loan Agreement (successful end)
+   - Only after recorded approval from underwriting.
+
+Parallel activities and synchronization points
+- When both co-signer and collateral are required, perform them in parallel and synchronize before “Submit File to Underwriter.”
+- If only one enrichment is required, proceed directly after its completion.
+- The synchronization join replaces the previous ad hoc sequence ordering.
+
+Exception handling and error paths
+- Prohibited shortcut:
+  - The “skipped_examination” path is removed. Signing cannot occur without underwriting approval.
+- Enrichment failures:
+  - Co-signer unavailable or non-responsive within policy timeframe: route to Application Rejected.
+  - Collateral assessment not feasible within allowed visit attempts: route to Application Rejected.
+- Incomplete application after verification:
+  - If critical data cannot be obtained, route to Application Rejected with documented reason.
+
+Rework loops and escalation procedures
+- Collateral visits:
+  - One primary visit plus at most one re-visit allowed. If still incomplete, escalate to a decision (reject or proceed with disclosed limitations if policy allows; prefer reject to avoid underwriting delay without adequate information).
+- Co-signer follow-up:
+  - One formal request cycle. If unsuccessful, stop or proceed per policy (default to rejection if mandatory).
+- No uncontrolled repetition; each rework loop has a defined cap and an outcome.
+
+End conditions and outcomes
+- Appointment Denied (end)
+- Application Rejected (end)
+- Loan Denied (end)
+- Sign Loan Agreement (end)
+
+Process metrics and performance characteristics (targeted improvements)
+- Cycle time:
+  - Eliminate the noncompliant shortcut: all approvals flow through underwriting; signing occurs only post-approval.
+  - Parallelize enrichment when both co-signer and collateral are needed, reducing lead time versus sequential handling.
+  - Constrain collateral rework to at most one re-visit, eliminating long-tail cases (~5.4-day averages) and targeting tighter bands (~3.5–4.5 days) for enriched cases.
+- Predictability:
+  - Clear entry/exit criteria for enrichment and hard caps on rework improve variance and throughput predictability.
+- Quality and compliance:
+  - Underwriting decision is documented for every signed case; no bypasses.
+
+Improvements made vs AS-IS
+- Governance: Removed “skipped_examination -> Sign Loan Agreement” path; underwriting is a mandatory gate before signing.
+- Rework control: Introduced hard limits on collateral re-visits and one-cycle co-signer requests to prevent indefinite loops.
+- Flow efficiency: Allowed parallel execution of co-signer request and collateral assessment when both are required, followed by a defined synchronization point.
+- Standardized routing: Enrichment is performed only when indicated by verification outcomes; otherwise, cases proceed directly to underwriting.
+- Documentation and auditability: All enrichment outcomes and exceptions are captured prior to underwriting to support faster, higher-quality credit decisions.
+""")

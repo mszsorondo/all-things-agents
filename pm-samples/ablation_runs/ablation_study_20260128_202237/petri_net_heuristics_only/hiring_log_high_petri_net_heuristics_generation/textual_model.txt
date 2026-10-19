@@ -1,0 +1,238 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage a candidate hiring pipeline from application through screening, interviews, background checks, and, when applicable, issuance of a job offer or rejection.
+- Scope captured by the discovered Petri net (Heuristics Miner): 
+  - Start when a candidate hands in a job application.
+  - Potential early rejection at multiple points.
+  - Telephonic screening, screening interview, background check (with possible escalation to extensive background check), coding interview, one specialization interview (Backend or Frontend or ML), behavioral interview, and offer issuance.
+  - Parallelism between checks, rework loops (behavioral interview and offer), and rare reopenings after a rejection.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source model. No swimlane assignments can be made without inventing actors.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Candidate submits an application (Hand In Job Application).
+- Initial marking: source0 -> Hand In Job Application.
+
+Core activities and control flow
+1) Hand In Job Application
+   - Normal path: proceeds to Telephonic Screening.
+   - Alternate path: immediate rejection without telephonic screening (an observed short-circuit to Application Rejected).
+
+2) Telephonic Screening
+   - Decision point:
+     - Reject: route directly to Application Rejected.
+     - Proceed: enable downstream checks. The model emits tokens that initiate both:
+       - Background Check, and
+       - Screening Interview.
+     - Note on control logic: The model fan-outs to both checks; it does not enforce that both complete before moving on. This creates potential parallel execution with no mandatory synchronization prior to later steps.
+
+3) Background Check (may be in parallel with Screening Interview)
+   - Outcomes:
+     - Proceed: enable Coding Interview (via an internal routing step).
+     - Escalate: trigger Extensive Background Check.
+     - Reject: route to Application Rejected.
+
+4) Screening Interview (may be in parallel with Background Check)
+   - Outcomes:
+     - Proceed: enable Coding Interview (via an internal routing step).
+     - Escalate: trigger Extensive Background Check.
+     - Reject: route to Application Rejected.
+
+5) Extensive Background Check (escalation)
+   - Outcomes:
+     - Proceed: enable Coding Interview.
+     - Reject: route to Application Rejected.
+
+6) Coding Interview
+   - Decision point:
+     - Reject: route to Application Rejected.
+     - Proceed: choose a specialization interview track. The model allows branching to one of:
+       - Backend Interview, or
+       - Frontend Interview, or
+       - ML Interview.
+     - Structural note: The Petri net’s structure (a single pre-place feeding three alternative interview transitions) allows exactly one specialization per firing of Coding Interview; however, because preconditions for Coding Interview can be met multiple times (due to unsynchronized upstream paths), the AS-IS model does not prevent multiple specialization interviews from occurring in the same case.
+
+7) Specialization Interview (one selected path per occurrence)
+   - Backend Interview OR Frontend Interview OR ML Interview
+   - Outcomes:
+     - Proceed: enable Behavioral Interview.
+     - Reject: route to Application Rejected.
+
+8) Behavioral Interview
+   - Outcomes:
+     - Proceed: enable Make Job Offer.
+     - Reject: route to Application Rejected.
+     - Rework loop: may re-enter Behavioral Interview (model explicitly shows a loop-back, allowing repeated behavioral interviews).
+
+9) Make Job Offer
+   - Loop: The model permits repeating Make Job Offer (e.g., renegotiation or corrections).
+   - Completion: Case can complete after Make Job Offer (end state).
+   - There is no modeled “accept/decline” beyond “Make Job Offer”; the discovered model ends upon offer issuance.
+
+Parallel activities and synchronization points
+- After Telephonic Screening, Background Check and Screening Interview can be launched in parallel.
+- There is no enforced synchronization before Coding Interview; either Background Check or Screening Interview completion is sufficient to enable the Coding Interview. Extensive Background Check may also be triggered by either check and, if performed, may lead either to rejection or to Coding Interview. Net effect: Coding Interview can begin while the other check is still pending.
+
+Exception handling and error paths
+- Rejections can occur at many stages: immediately after application, after Telephonic Screening, Screening Interview, Background Check, Extensive Background Check, Coding Interview, any Specialization Interview, and Behavioral Interview.
+- Rare reopenings after rejection:
+  - From the Application Rejected state, the model shows observed paths back to Behavioral Interview and even directly to Make Job Offer. This suggests occasional overrides, appeals, or erroneous status flips that reopen rejected cases.
+- Application Rejected has internal self-reinforcement loops (multiple hidden transitions leading back to Application Rejected), reflecting repeated/duplicate rejection recordings or multi-step systems posting the same status repeatedly.
+
+Rework loops and escalation procedures
+- Behavioral Interview: can repeat multiple times before either rejection or proceeding to offer.
+- Make Job Offer: can loop (e.g., re-issue or adjust) before completion.
+- Background Check/Screening Interview: can escalate to Extensive Background Check.
+
+End conditions and outcomes
+- End: 
+  - Rejection finalized (Application Rejected leads to sink/end).
+  - Offer issued (Make Job Offer leads to sink/end).
+- The model does not record post-offer acceptance; the terminal state after Make Job Offer indicates process closure.
+
+Process metrics and performance characteristics (observable/derivable from structure)
+- Throughput time: from Hand In Job Application to end (either rejection or offer).
+- Conversion rates at each gate: telephonic pass rate; screening pass rate; background check pass rate; extensive background check pass rate; coding-to-specialization pass rate; specialization-to-behavioral pass rate; behavioral-to-offer rate.
+- Early-rejection rate: proportion rejected before any interview versus later stages.
+- Parallelism utilization: frequency of both Background Check and Screening Interview occurring; overlap extent.
+- Rework rates:
+  - Behavioral Interview re-interview rate (number of loops per case).
+  - Offer re-issue rate (number of Make Job Offer loops per case).
+- Reopen rate after rejection: percentage of cases that move from Application Rejected back to Behavioral Interview or Make Job Offer.
+- Escalation rate: percentage moving to Extensive Background Check.
+- Potential concurrency side effects: number of cases where Coding Interview starts while one check is still in progress.
+
+Key challenges and pain points
+- Governance/control issues:
+  - Post-rejection reopenings to Make Job Offer or Behavioral Interview undermine decision finality and auditability.
+  - Multiple hidden loops reinforcing Application Rejected indicate status duplication and possible data quality issues.
+- Unsynchronized parallel checks:
+  - Coding Interview can start after only one check completes; the other may lag, creating compliance risk and rework if the late check later fails.
+- Rework/bottlenecks:
+  - Behavioral Interview loops can accumulate cycle time without explicit cap.
+  - Offer re-issue loops can prolong closure and cause versioning confusion.
+- Ambiguity in specialization interviews:
+  - Structural allowance for multiple specialization interviews within the same case (if preconditions re-enable) may cause redundant assessments.
+- Noise/inconsistency due to miner robustness:
+  - Minor/rare paths (e.g., rejection-to-offer) likely reflect exceptional handling or logging noise but are present in the AS-IS behavior and need governance.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A controlled, stage-gated hiring pipeline that preserves all intended behaviors from the AS-IS while removing noise, ensuring compliance, minimizing rework, and clarifying decision logic.
+- Key improvements:
+  - Clean, single-direction progression with defined end states.
+  - Proper synchronization of parallel checks before technical assessment.
+  - Exactly one specialization interview per case.
+  - Controlled and limited rework loops.
+  - No direct transitions from rejection to offer or interviews.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source; steps are described without assigning actors.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Candidate submits an application (Hand In Job Application).
+
+Core activities and control flow (to-be)
+1) Hand In Job Application
+   - Decision:
+     - Reject immediately (if not meeting minimum criteria).
+     - Proceed to Telephonic Screening.
+
+2) Telephonic Screening
+   - Decision:
+     - Reject (e.g., clear mismatch).
+     - Proceed: launch the initial assessment stage, comprised of:
+       - Background Check, and
+       - Screening Interview.
+   - Parallel split:
+     - Both Background Check and Screening Interview are started in parallel.
+
+3) Parallel assessment: Background Check and Screening Interview
+   - Each path outcomes:
+     - Proceed (pass) or Escalate to Extensive Background Check or Reject.
+   - Extensive Background Check (if triggered) must complete and pass to proceed; otherwise reject.
+   - Synchronization (AND-join):
+     - Coding Interview is enabled only when all required checks in this stage are complete and in pass status.
+     - If Extensive Background Check is triggered by either parallel branch, it becomes part of the stage and must also complete and pass before proceeding.
+   - Decision at stage end:
+     - If any component rejects: move to Application Rejected and end.
+     - If all required components pass: proceed to Coding Interview.
+
+4) Coding Interview
+   - Decision:
+     - Reject: move to Application Rejected and end.
+     - Proceed: select exactly one specialization interview aligned with the target role.
+
+5) Specialization Interview (exclusive choice of one)
+   - Backend Interview OR Frontend Interview OR ML Interview (one per case).
+   - Decision:
+     - Reject: move to Application Rejected and end.
+     - Proceed: Behavioral Interview.
+
+6) Behavioral Interview
+   - Decision:
+     - Reject: move to Application Rejected and end.
+     - Proceed: Make Job Offer.
+   - Controlled rework (limited loop):
+     - Allow at most one re-interview (e.g., to resolve assessment uncertainty). After one re-interview, enforce a final decision: either reject or proceed to Make Job Offer. This removes unbounded cycling.
+
+7) Make Job Offer
+   - Single-pass issuance:
+     - Remove the self-loop. Perform any adjustments prior to issuing the offer to avoid repeated issuing events.
+   - Completion:
+     - Upon issuing the offer, close the hiring case (end state). Post-offer acceptance steps, if any, are outside the current model.
+
+Exception handling
+- Reopenings after rejection are not permitted within the process flow. If extraordinary circumstances require reconsideration, the case should be restarted from an appropriate earlier stage outside of this modeled flow; the process does not include direct transitions from Application Rejected to interviews or offer.
+- If adverse information is discovered late (e.g., during the parallel checks), the synchronization logic ensures rejection occurs before proceeding to Coding Interview, reducing late-stage churn.
+
+Parallel activities and synchronization points
+- Parallel split after Telephonic Screening into Background Check and Screening Interview.
+- AND-join before Coding Interview ensures all required checks (including any Extensive Background Check) are completed and passed before advancing.
+
+End conditions and outcomes
+- End on Application Rejected (at any decision point that results in rejection) or on Make Job Offer issuance.
+- No direct rejection path after Make Job Offer in the to-be model; the process ends upon offer issuance to maintain clarity and governance.
+
+Process metrics and performance characteristics (targets and governance)
+- Lead time by stage:
+  - Application to Telephonic Screening
+  - Telephonic to completion of parallel checks (including any Extensive Background Check)
+  - Coding Interview to Specialization Interview to Behavioral Interview
+  - Behavioral Interview to Offer
+- First-pass yield:
+  - Proportion passing each stage without rework (especially behavioral interview).
+- Rework caps:
+  - Behavioral Interview re-interview rate limited to a maximum of one loop; target rework rate < 5%.
+- Compliance metrics:
+  - 100% of cases have both parallel checks completed (and any escalations resolved) before Coding Interview.
+  - 0% of cases transition from Application Rejected to any downstream activity.
+  - Exactly one specialization interview per case.
+- Escalation metrics:
+  - Extensive Background Check rate and its cycle time; ensure it does not become a bottleneck.
+- Throughput and conversion:
+  - Stage conversion rates and overall application-to-offer conversion.
+- Offer issuance quality:
+  - Single-offer issuance per case; target 0% offer re-issue.
+
+Improvements made (rationale and impact)
+- Removed noisy/erroneous transitions:
+  - Eliminated paths from Application Rejected to Behavioral Interview and Make Job Offer.
+  - Removed self-reinforcing rejection loops and Make Job Offer loops.
+- Introduced synchronization:
+  - AND-join on parallel checks ensures Coding Interview only begins after required checks pass, reducing compliance risk and downstream rework.
+- Clarified specialization:
+  - Enforced exclusive choice of a single specialization interview per case, avoiding duplicated assessments.
+- Bounded rework:
+  - Limited Behavioral Interview to at most one re-interview, curbing cycle-time inflation and uncertainty.
+- Clear end states:
+  - Process ends decisively on either rejection or offer issuance, improving reporting and auditability.
+""")

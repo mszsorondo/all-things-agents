@@ -1,0 +1,109 @@
+## 1) WHAT THIS REPRESENTATION DESCRIBES
+
+This representation is a **Process Tree**: a **hierarchical, block-structured model of allowed control-flow behavior** discovered from an event log (or a derived artifact such as a DFG/UVCL).
+
+It encodes:
+
+* **Which activities can occur** (as labeled leaves)
+* **How they can be combined** using control-flow operators (internal nodes)
+* **Where silent / invisible behavior is allowed** (via the silent leaf)
+
+It does **not** encode “the log” itself; it encodes a **model** (a compact behavioral specification) discovered from it.
+
+---
+
+## 2) TYPICAL OUTPUT FORM (conceptual)
+
+A process tree is printed as a single expression with **nested operators** and **leaf labels**, for example:
+
+* `->( 'A', 'B', 'C' )`
+* `X( 'A', 'B' )`
+* `+( 'A', 'B' )`
+* `*( 'A', 'B', 'C' )` (loop forms may appear with 2 or 3 children depending on the discovered structure)
+* `tau` (silent / invisible leaf)
+
+Nesting creates structure, e.g.:
+
+`->( 'Start', X( tau, 'Review' ), +( 'Approve', 'Notify' ), 'End' )`
+
+---
+
+## 3) HOW TO READ EACH LINE
+
+### Overall shape
+
+* The entire output is **one tree expression**.
+* **Internal nodes** are **operators** written as `OP( child1, child2, ... )`.
+* **Leaves** are either:
+
+  * a **visible activity label** (typically shown in quotes, e.g. `'Activity A'`), or
+  * **`tau`**, meaning a **silent / invisible step** (not a recorded activity label).
+
+### Meaning of the sequence / structure
+
+Read the expression **top-down**:
+
+* Each operator defines the **allowed relationship** among its children (its sub-behaviors).
+* Each child subtree is itself a valid (sub)process description.
+
+### Meaning of each reported metric
+
+There are **no metrics** in this representation.
+The output is **pure structure** (operators + labels + `tau`), without frequencies, probabilities, durations, costs, or conformance values.
+
+---
+
+## 4) GLOBAL SEMANTIC MEANING
+
+The printed tree denotes the **set of possible traces** (activity sequences) that the model allows, under the standard process-tree semantics:
+
+* A trace is valid if it can be produced by the tree by recursively expanding operators into activity sequences, while treating `tau` as “no visible event”.
+* The model can allow **choice**, **parallel interleavings**, **repetition via loops**, and **optional behavior** (typically expressed through choices involving `tau`).
+
+---
+
+## 5) HOW TO INTERPRET THE LIST AS A WHOLE
+
+There is no “list of lines” here: the output is a **single structured object**.
+
+However, you should interpret the **full expression** as:
+
+* **One model**, not multiple variants or multiple rules.
+* A **composition of blocks**, where each operator introduces a control-flow relation among blocks.
+
+Also important for reading:
+
+* Some operators are **order-sensitive** (e.g., sequence), while others are **not** (e.g., parallel, exclusive choice).
+* Because the process tree is **folded and sorted** before being returned, the printed order of children under **commutative operators** (like choice/parallel) should be treated as **presentation/canonicalization**, not as a semantic priority.
+
+---
+
+## 6) WHAT THIS REPRESENTATION IS FOR
+
+Use this representation to:
+
+* Communicate the **discovered control-flow structure** of a process in a compact textual form
+* Provide a **block-structured behavioral specification** that can be:
+
+  * converted to other models (e.g., Petri nets in many workflows),
+  * analyzed for structure (choice/parallel/loops),
+  * used as an interpretable model for explanation, simulation, or downstream reasoning.
+
+---
+
+## 7) WHAT THIS REPRESENTATION IS NOT
+
+It is **not**:
+
+* A list of observed variants (it does not enumerate all trace variants from the log)
+* A statistical summary (no frequencies, probabilities, or performance numbers)
+* A timestamped or case-level description
+* A guarantee that every allowed trace was observed (the model may generalize)
+* A guarantee that every observed trace is allowed (depending on discovery settings and noise handling)
+* A directly “causal” or “resource-aware” model (no resources, roles, data attributes, or decision rules are encoded)
+
+---
+
+## 8) ONE-SENTENCE CORE SUMMARY
+
+A **Process Tree string** is a **nested operator expression** that precisely specifies the **allowed control-flow combinations of activities** (including silent steps via `tau`) in a **block-structured process model** discovered from the input.

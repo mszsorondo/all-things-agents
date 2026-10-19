@@ -1,0 +1,64 @@
+**AS-IS Process Model**
+
+### Process Overview and Purpose
+The AS-IS process model captures the current state of a loan application process as discovered from event logs using the inductive miner (Petri net), directly-follows graph (DFG), and abstract process variants. This process handles customer requests for loan appointments, application submission, information verification, optional and looping collateral assessments and co-signer requests, submission to an underwriter, and final outcomes of loan approval (signing agreement) or various denials. It reflects real-world executions with significant rework loops, multiple denial points, and deviations such as skipped examinations. The purpose is to process credit applications, but it exhibits inefficiencies like repeated assessments and high denial rates.
+
+### Key Stakeholders and Roles Involved
+Roles are not explicitly specified in the input models. Activities are performed by implied bank staff (e.g., appointment coordinators, verifiers, assessors, underwriters) and customers (e.g., handing in applications).
+
+### Detailed Step-by-Step Process Flow
+1. **Start Conditions and Triggers**: The process starts when a customer submits a loan request, triggering the "Request Appointment" activity. Initial marking is at the source place.
+
+2. **Appointment Scheduling**:
+   - From "Request Appointment", an exclusive decision (XOR gateway) determines:
+     - **Appointment Denied** (frequency ~962 cases): Process ends immediately (sink).
+     - **Set Appointment** (frequency ~9038 cases): Proceeds to next step.
+
+3. **Application Submission**:
+   - **Hand In Credit Application**: Customer provides the credit application at the appointment.
+
+4. **Verification**:
+   - **Verify Borrowers Information**: Bank staff checks the borrower's details (frequency ~9038 after application hand-in).
+
+5. **Post-Verification Decision and Branches** (captured via tau splits and loops in Petri net):
+   - Exclusive decision after verification:
+     - **Application Rejected** (frequency ~1624): Process ends (sink).
+     - **Proceed to Underwriting Path** (including optional loops): This branches into complex optional and looping behaviors.
+   - **Optional Rework Loops on Co-Signer and Collateral** (frequent interleaving observed in variants):
+     - **Request Co-Signer On Loan** (frequency ~1233 initially, leads to ~1039 to submit): Requests a co-signer; can loop back.
+     - **Make Visit to Assess Collateral** (frequency ~1226 initially, self-loops ~563, cross-loops with co-signer): Site visit for collateral valuation; repeats multiple times (up to 13+ in rare variants), interleaving with co-signer requests (e.g., visit -> co-signer -> visit).
+     - Loops modeled via init_loop_9, tauSplit_5, tauJoin_6, skips (skip_7, skip_8, etc.), allowing 0+ iterations of these activities in various orders until proceeding.
+   - **Skipped Examination** (rare, frequency ~332): Bypasses further checks directly to signing ("skipped_examination" -> "Sign Loan Agreement").
+   - Early **Loan Denied** path (via p7/skip_3, low frequency as not prominent in DFG/variants): Possible preliminary denial post-verification.
+
+6. **Underwriting Submission**:
+   - **Submit File to Underwriter** (frequency ~4623 direct + from loops ~1420 from visits + ~1039 from co-signers): File is sent for final review (performance ~48k time units direct).
+
+7. **Final Underwriter Decision** (XOR gateway):
+   - **Loan Denied** (frequency ~4787, performance ~82k time units): Process ends (sink).
+   - **Sign Loan Agreement** (frequency ~2295, performance ~80k time units): Loan approved; agreement signed, process ends (via p10/tauJoin_2 to sink).
+
+8. **Parallel Activities and Synchronization Points**: No true parallels; tauSplit_1 and tauSplit_5 model optional branches that implicitly synchronize via joins (tauJoin_2, tauJoin_6). Loops synchronize before submission.
+
+9. **Exception Handling and Error Paths**:
+   - Multiple denial paths: Appointment Denied, Application Rejected, Loan Denied (early or post-underwriter).
+   - Loops handle insufficiencies in co-signer/collateral via rework.
+
+10. **Rework Loops and Escalation Procedures**: Significant loops on "Make Visit to Assess Collateral" (self-loop freq 563) and interleaving with "Request Co-Signer" (up to 13+ repeats in 1 case). No explicit escalations.
+
+11. **End Conditions and Outcomes**:
+    - Sink reached via denials (majority) or signing.
+    - Primary outcomes: Loan Denied (~50% post-submit), Sign Loan Agreement (~25%), early rejections (~20%).
+
+### Process Metrics and Performance Characteristics
+- Total observed frequencies sum to ~10k+ cases (e.g., main variants: 2936 denied post-submit, 1687 signed).
+- Average performance (time): Appointment setup ~82k, verification ~42k, submit-to-decision ~80k; loops add significant time (e.g., multi-visit variants up to 429k).
+- High variability: 10%+ variants have loops; denial rate ~70% overall.
+- Bottlenecks: Loops (563 visit self-loops), verification-to-submit (~48k time).
+
+### Key Challenges and Pain Points
+- Extensive rework loops on collateral visits and co-signer requests, leading to long cycle times (some cases >400k time units).
+- Multiple redundant denial points (appointment, application, early loan, post-underwriter).
+- Rare deviations like "skipped_examination" indicate inconsistent skipping of checks.
+- High denial rates and low throughput; interleaving loops create unstructured behavior.
+- No clear decision criteria; conservative merging shows all paths possible.

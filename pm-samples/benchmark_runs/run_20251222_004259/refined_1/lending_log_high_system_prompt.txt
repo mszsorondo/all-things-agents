@@ -1,0 +1,121 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+# AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Origination of a credit/loan from initial appointment request through assessment and either denial or contract signing.
+- Scope: from Request Appointment to exactly one terminal visible outcome: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement.
+
+Stakeholders
+- Applicant/Requester.
+- Underwriter and internal back-office (submission/verification/collateral staff).
+
+Activities (log labels used verbatim)
+- Request Appointment
+- Set Appointment
+- Hand In Credit Appliaction
+- Verify Borrowers Information
+- Request Co-Signer On Loan
+- Make Visit to Assess Colatteral
+- Submit File to Underwriter
+- skipped_examination
+- Loan Denied
+- Sign Loan Agreement
+- Appointment Denied
+- Application Rejected
+
+Start and early triage (strict)
+- The case starts with Request Appointment.
+- Immediately after Request Appointment, an exclusive decision:
+  • Appointment Denied (terminal; no further visible activity), or
+  • Set Appointment (continue the case).
+- Strict intake order if not denied:
+  1) Set Appointment
+  2) Hand In Credit Appliaction
+  3) Verify Borrowers Information
+- Constraints:
+  • Hand In Credit Appliaction cannot occur before Set Appointment.
+  • Set Appointment cannot occur after Hand In Credit Appliaction.
+  • No other visible activity may appear between Request Appointment and Set Appointment, nor between Set Appointment and Hand In Credit Appliaction, nor between Hand In Credit Appliaction and Verify Borrowers Information.
+
+Post-verification decision
+- After Verify Borrowers Information, an exclusive decision:
+  • Application Rejected (terminal; no further visible activity), or
+  • Continue with one of the following paths.
+
+Post-verification continuation paths (exactly one)
+
+Path A – Fast-track to signing (skipped_examination)
+- skipped_examination occurs directly after Verify Borrowers Information.
+- Then Sign Loan Agreement (terminal; no further visible activity).
+- Constraints:
+  • Submit File to Underwriter does not occur in this path.
+  • Loan Denied does not co-occur with skipped_examination.
+
+Path B – Submission path (with optional pre-submission work)
+- Optional pre-submission sub-work (can be none, one, or both; can interleave):
+  • Request Co-Signer On Loan may occur at most once.
+  • Make Visit to Assess Colatteral may occur zero or more times (loop allowed).
+  • Sub-work may appear in any order relative to each other, but always after Verify Borrowers Information and strictly before Submit File to Underwriter.
+- Submit File to Underwriter occurs exactly once in this path and only after Verify Borrowers Information and any chosen sub-work.
+- Outcome after submission (exclusive and terminal):
+  • Loan Denied, or
+  • Sign Loan Agreement.
+- Constraints:
+  • If Loan Denied occurs, it is strictly after Submit File to Underwriter and is the last visible event in the case.
+  • No visible activity occurs after Loan Denied.
+  • Request Co-Signer On Loan and Make Visit to Assess Colatteral never occur after Submit File to Underwriter.
+  • Sign Loan Agreement (in this path) is strictly after Submit File to Underwriter and is terminal.
+
+Parallelism and interleavings (as observed)
+- Co-signer work and collateral visits can interleave in any order before submission, with collateral visits looping as needed.
+- No other cross-branch reordering is observed beyond the above; in particular, the final decision (Loan Denied or Sign Loan Agreement) follows the chosen path’s rules below.
+
+Terminal events
+- Appointment Denied: only immediately after Request Appointment.
+- Application Rejected: only immediately after Verify Borrowers Information.
+- Loan Denied: only after Submit File to Underwriter (submission path), terminal.
+- Sign Loan Agreement: either after skipped_examination (fast-track) or after Submit File to Underwriter (submission path), terminal.
+
+Cardinality and optionality
+- Request Appointment: exactly once, first.
+- Set Appointment: exactly once, mandatory unless Appointment Denied occurs.
+- Hand In Credit Appliaction: exactly once, mandatory unless Appointment Denied occurs.
+- Verify Borrowers Information: exactly once, mandatory unless Appointment Denied occurs.
+- Request Co-Signer On Loan: optional, at most once, only between Verify Borrowers Information and Submit File to Underwriter.
+- Make Visit to Assess Colatteral: optional, repeatable (zero or more), only between Verify Borrowers Information and Submit File to Underwriter.
+- Submit File to Underwriter: optional overall; occurs exactly once in submission path; never occurs in fast-track path; never occurs before Verify Borrowers Information.
+- skipped_examination: optional; occurs exactly once in fast-track path; never co-occurs with Submit File to Underwriter or Loan Denied.
+- Loan Denied: optional; occurs at most once; only after Submit File to Underwriter; terminal.
+- Sign Loan Agreement: optional; occurs at most once; only after skipped_examination or after Submit File to Underwriter; terminal.
+
+Explicit valid orderings
+- Core intake: Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information.
+- Early terminations:
+  • Request Appointment -> Appointment Denied.
+  • … -> Verify Borrowers Information -> Application Rejected.
+- Fast-track signing:
+  • … -> Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement.
+- Submission path outcomes:
+  • … -> Verify Borrowers Information -> [zero or more interleavings of Request Co-Signer On Loan and Make Visit to Assess Colatteral] -> Submit File to Underwriter -> Loan Denied.
+  • … -> Verify Borrowers Information -> [zero or more interleavings of Request Co-Signer On Loan and Make Visit to Assess Colatteral] -> Submit File to Underwriter -> Sign Loan Agreement.
+
+Explicitly forbidden orderings (to reject anomalous traces)
+- Hand In Credit Appliaction before Set Appointment.
+- Set Appointment after Hand In Credit Appliaction.
+- Any visible activity between Request Appointment and Set Appointment, or between Set Appointment and Hand In Credit Appliaction, or between Hand In Credit Appliaction and Verify Borrowers Information.
+- Submit File to Underwriter before Verify Borrowers Information.
+- Loan Denied before Submit File to Underwriter, or Submit File to Underwriter after Loan Denied.
+- Any visible activity after Loan Denied.
+- Request Co-Signer On Loan or Make Visit to Assess Colatteral after Submit File to Underwriter.
+- skipped_examination together with Submit File to Underwriter or with Loan Denied in the same case.
+
+End conditions
+- Each case ends with exactly one of the following terminal visible events: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement. No visible activity follows a terminal event.
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

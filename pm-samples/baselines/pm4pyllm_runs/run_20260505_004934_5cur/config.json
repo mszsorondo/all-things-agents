@@ -1,0 +1,34 @@
+{
+  "validator_kind": "pm4py_llm_raw",
+  "config": "5cur",
+  "rep_set": [
+    "process_tree",
+    "dfg",
+    "abstract_variants",
+    "declare",
+    "log_attributes"
+  ],
+  "validator_model": "gpt-5-mini",
+  "k_valid": 100,
+  "k_invalid_per_type": 50,
+  "perturbation_types": [
+    "A1_random_swap",
+    "A3_dependency_aware_swap",
+    "B1_insert_out_of_alphabet",
+    "B2_insert_misplaced_existing",
+    "B3_insert_duplicate_unique",
+    "C1_delete_mandatory",
+    "C2_delete_start_or_end",
+    "D1_cross_role",
+    "E1_two_swaps",
+    "E2_swap_and_insert"
+  ],
+  "datasets": [
+    "hiring",
+    "hospital",
+    "lending",
+    "renting"
+  ],
+  "trace_source": "HARDER/run_20260504_221347",
+  "max_workers": 10
+}

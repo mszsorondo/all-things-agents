@@ -1,0 +1,88 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Scope: End-to-end consumer loan intake and decisioning from appointment request through verification, optional risk-enrichment, underwriting decision, and contract signing.
+- Purpose: Convert an applicant’s request into either a signed loan agreement or a denial, with optional co-signer solicitation and collateral assessment.
+- Source models used: Inductive-miner Petri net (with silent splits/joins and skips), DFG edges with frequencies/performance, and abstract variants (most frequent paths and loops).
+
+Key stakeholders and roles involved
+- Applicant/Borrower (explicitly referenced by activity names: Hand In Credit Application, Verify Borrowers Information)
+- Underwriter (explicitly referenced by activity name: Submit File to Underwriter)
+- Other operational roles are not explicitly named in the source; activities such as appointment handling, information verification, co-signer request, and collateral visits are treated as process tasks without assigning additional actors.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Trigger: Applicant submits Request Appointment (start place: source -> Request Appointment).
+
+Core intake and triage
+1) Request Appointment
+   - Decision (exclusive):
+     a) Appointment Denied (end state). Observed: 962 cases (DFG: Request Appointment -> Appointment Denied).
+     b) Set Appointment. Observed: 9038 cases (Request Appointment -> Set Appointment; performance ~82,658 time units).
+2) Set Appointment -> Hand In Credit Application
+   - Observed: 9038 cases; performance ~82,659 (Set Appointment -> Hand In Credit Application).
+3) Hand In Credit Application -> Verify Borrowers Information
+   - Observed: 9038 cases; performance ~42,028 (Hand In -> Verify).
+4) Verify Borrowers Information
+   - Decision 1 (exclusive, early rejection): Application Rejected
+     • Observed: 1,624 cases (Verify -> Application Rejected; performance ~32,266).
+   - Otherwise, proceed to evaluation/enrichment. In the mined Petri net, this is modeled as a parallel split into two technical branches, but the observed behavior aligns with one of the following evaluation paths:
+
+Evaluation and enrichment before underwriting (optional, can be combined)
+5) Option A: Straight-through path via skipped_examination
+   - Activity: skipped_examination (visible activity). Observed: 332 cases (Verify -> skipped_examination; performance ~50,001).
+   - Outcome: Leads directly toward approval and Sign Loan Agreement (skipped_examination -> Sign Loan Agreement; observed 332 cases).
+6) Option B: Risk enrichment prior to submission to underwriter (optional, may occur in any order; can co-occur)
+   - Branch B1: Request Co-Signer On Loan (optional)
+     • Observed transitions: Verify -> Request Co-Signer (1,233); Request Co-Signer -> Submit File to Underwriter (1,039); also Request Co-Signer may lead to Make Visit to Assess Collateral (733), indicating interleaving.
+     • Occurs at most once in the observed DFG (no evidence of Request Co-Signer -> Request Co-Signer self-loop).
+   - Branch B2: Make Visit to Assess Collateral (optional, repeatable)
+     • Observed transitions: Verify -> Make Visit (1,226); Make Visit -> Submit (1,420); Make Visit <-> Request Co-Signer are bi-directionally observed (539 one way; 733 the other), meaning they can alternate.
+     • Rework loop: Make Visit -> Make Visit self-loop is frequent (563), and multi-visit variants show up to 8+ visits before submission in rare cases.
+   - Synchronization before submission: Both optional branches (if present) synchronize before Submit File to Underwriter. In the Petri net this is tauJoin_6 after optional paths and loops.
+7) Submit File to Underwriter
+   - Observed from Verify via enrichment: 4,623 cases (Verify -> Submit) and also from Make Visit or Request Co-Signer as shown above.
+   - Performance from Verify -> Submit ~48,327; Make Visit -> Submit ~33,927; Request Co-Signer -> Submit ~37,792.
+
+Underwriting decision and completion
+8) Underwriting decision (exclusive outcomes)
+   - Loan Denied: Observed most commonly as Submit -> Loan Denied (4,787; performance ~82,666). Note: In the Petri net, Loan Denied is positioned on a parallel technical branch post-Verify; interleavings in the log show Submit preceding Loan Denied, matching business semantics of a denial after submission.
+   - Sign Loan Agreement: Observed as Submit -> Sign Loan Agreement (2,295; performance ~80,725), and also via skipped_examination -> Sign Loan Agreement (332; performance 0 between skip and sign in the DFG abstraction).
+9) End conditions and outcomes
+   - Appointment Denied (early end)
+   - Application Rejected (early end)
+   - Loan Denied (post-underwriter end)
+   - Sign Loan Agreement (approved end)
+
+Parallel activities and synchronization points
+- After Verify, the mined Petri net contains a parallel split (tauSplit_1) with a technical branch that can produce Loan Denied or silently skip, and another branch that performs skipped_examination or the optional enrichment (co-signer, collateral visits) and then Submit. Both branches converge on the end via a silent join. Operationally, this yields the same observed behaviors as the sequential narrative above, with possible event interleavings caused by concurrency in the model.
+- Optional enrichment branches (co-signer and collateral visit) can occur concurrently and are synchronized (tauJoin_6) before Submit File to Underwriter.
+
+Exception handling and error paths
+- Appointment Denied: The process ends immediately without further processing (962 cases).
+- Application Rejected: Early stop after verification due to failing baseline checks (1,624 cases).
+- Rework/loops: Collateral visits may repeat multiple times when information is incomplete or access fails (563 direct repeat edges observed, and rare long chains in variants).
+- Skipped examination: A special fast-track activity that bypasses additional checks and moves straight to signing; used in 332 cases.
+
+Rework loops and escalation procedures (as observed)
+- Collateral assessment rework is unbounded in the model and log (multiple Make Visit repetitions). No explicit escalation or cap is visible in the mined structures.
+- Interleaving between co-signer request and collateral visits indicates back-and-forth adjustments before underwriting; no explicit decision checkpoints are modeled between iterations.
+
+Process metrics and performance characteristics (from DFG/variants)
+- High-frequency backbone: Request -> Set Appointment -> Hand In -> Verify occurs 9,038 times with long wait between request and appointment (~82,658) and between appointment and hand-in (~82,659).
+- Early rejection at Verify: 1,624 cases, faster than underwriter outcomes (~32,266 from Verify to Rejected).
+- Submit -> Denied: 4,787 cases; Submit -> Sign: 2,295 cases. This indicates more denials than approvals after submitting to underwriting.
+- Straight-through approval via skipped_examination: 332 cases.
+- Enrichment options: Request Co-Signer (1,233) and Make Visit (1,226 initial edges), with Make Visit repeat frequency 563.
+- End-to-end performance (examples from Abstract Variants):
+  • Verify -> Submit -> Loan Denied variant totals often in the 346k–377k range.
+  • Verify -> Submit -> Sign variants often in the 360k–386k range; paths with repeated collateral visits can exceed 400k.
+  • The fastest terminal path is Request -> Appointment Denied (~86k from request to denial).
+
+Key challenges and pain points
+- High post-submission denial rate: Many cases proceed through enrichment and submission only to be denied (4,787), causing significant waste.
+- Appointment delays: The time from Request to Set Appointment and then to Hand In is long (~82k between each step), likely driving long cycle times.
+- Unbounded collateral visit loops: Repeated Make Visit cycles (563 repeat edges, and long chains in variants) create rework and unpredictability.
+- Inconsistent enrichment sequencing: Co-signer requests and collateral visits interleave without explicit criteria, leading to back-and-forth and additional delay.
+- Skipped examination path: While fast, it bypasses checks; governance and criteria for its use are unclear.
+- Modeling-induced concurrency: The technical parallel split after Verify leads to interleavings that can obscure the intended business sequence and complicate monitoring.

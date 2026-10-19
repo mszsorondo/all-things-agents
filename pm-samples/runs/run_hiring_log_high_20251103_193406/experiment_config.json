@@ -1,0 +1,26 @@
+{
+  "run_timestamp": "2025-11-03T19:34:06.777540",
+  "dataset_name": "hiring_log_high",
+  "xes_path": "benchmark/hiring/hiring_log_high.xes",
+  "model": "gpt-4o-mini",
+  "representations": [
+    "petri_net",
+    "bpmn",
+    "dfg"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into valid, displayable BPMN 2.0 XML diagrams with layout (DI coordinates).\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or c...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (0233cc65-b3b7-4409-8176-262383a82c77, 'Extensive Background Check'), (07eb3d99-bc15-474c-bfcb-170806d0308b, 'Make Job Offer'), (0a248417-72d2-4a11-a773-e90f4b089d5c, 'Telephonic Screening'), (3d57fa27-ddbd-4951-b8e9-063967dcdb1e, ...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "bpmn",
+      "dfg"
+    ],
+    "model_name": "gpt-4o-mini",
+    "prompt_file": "new_prompt.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates"
+  }
+}

@@ -1,0 +1,89 @@
+AS-IS Process Model — Real Estate Agent
+============================================================
+
+AS-IS Process Model — Real Estate Agent
+
+Section 1: Role Overview (purpose, responsibilities)
+The Real Estate Agent role performs the bulk of tenant-facing and case-managing work in the renting process. Agents: receive applications (sometimes enter applications), set or accept viewing appointments, conduct/show viewings, collect paperwork, coordinate or perform screening (including initiating "Extensive Screening" when needed), decide on acceptance or rejection of prospective tenants, sign rental contracts, coordinate move‑in, manage rent-collection follow-up (issue warnings, accept late payments, and in some cases initiate eviction), and liaise with lawyers and landlords for document checks and legal/operational actions. Multiple individual resources named "Real Estate Agent 1..5" behave similarly and are grouped here.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Apply for Viewing Appointment: (sometimes performed by agents) enter or register applications into the system on behalf of prospects or during intake.
+- Set Appointment: schedule and confirm viewing appointments.
+- View The Property: perform or host on-site/property viewings with prospects.
+- Hand In The Paperwork: collect application documents from prospects; may be performed by the agent who hosted the viewing.
+- Screen Prospective Tenant: perform the initial screening (credit, references). Based on screening the agent either rejects, accepts, or escalates to extensive screening.
+- Extensive Screening: initiate or conduct extra checks (deeper background checks); invoked for borderline or high-risk prospects.
+- Reject Prospective Tenant: decide and record rejection after viewing or screening.
+- Sign Contract: complete contract signing with accepted tenants.
+- Move In: coordinate (sometimes execute) move-in logistics in cooperation with landlord; agents are involved in handovers to the landlord for actual move-in in many cases.
+- Issue Warning: send warnings to tenants after missed rent payments.
+- Accept Late Payment: record and accept late rent payments after warnings.
+- Evict Tenant: initiate/coordinate eviction proceedings in cases of unresolved non-payment (rare but observed).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation triggers
+- Intake: Agent involvement starts when an application is received (either entered by the agent or forwarded from Hotline). The agent is also activated by direct handover from Tenant (rare), Hotline, or another agent.
+- Viewing & documentation: Agents are triggered after an appointment is set or when paperwork is handed in.
+- Post-contract lifecycle: After Sign Contract and Move In, agents are re-activated recurrently for rent-collection issues (Issue Warning, Accept Late Payment, Evict Tenant).
+
+Typical sequences and decision points (all observed variants included)
+- Application intake path (most common): Apply for Viewing Appointment -> Set Appointment -> View The Property. After View The Property the agent either:
+  - Directly reject the prospect (View The Property -> Reject Prospective Tenant). This path is observed frequently (~17% variant).
+  - Collect paperwork (View The Property -> Hand In The Paperwork) then hand paperwork for checking.
+- Paperwork & screening path (observed main branch): Hand In The Paperwork -> Check Paperwork (performed by Lawyer or occasionally internal) -> Screen Prospective Tenant. After screening the agent decides:
+  - Reject Prospective Tenant (frequent ~28% variant after full check & screen).
+  - Initiate Extensive Screening (Screen Prospective Tenant -> Extensive Screening) then likely Reject or Sign Contract (observed medium frequency ~18% variant leads to rejection; others lead to contract signing).
+  - Sign Contract (if screening passes): Sign Contract -> Move In -> Pay Rent loop begins.
+- Rent management loop (post move-in): Move In -> Pay Rent repeated multiple times. Observed behaviors include:
+  - Normal payment sequence: Pay Rent repeated (many cases show repeated Pay Rent events).
+  - Missed payment handling: Pay Rent -> Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent (this loop repeats; Accept Late Payment sometimes leads back to Miss Rent Payment in later cycles).
+  - Escalations: After repeated Miss Rent Payment and Issue Warning, the agent may handle Evict Tenant (rare: observed edges), or the tenant may cancel the apartment (Tenant Cancels Appartment).
+
+Ordering and optionality rules observed (explicitly all valid orderings)
+- Set Appointment always directly precedes View The Property in the majority of cases (chain constraint), but there are traces where Apply for Viewing Appointment -> Reject Prospective Tenant (application rejected before any appointment) (optional skip of Set/View).
+- After View The Property, Hand In The Paperwork is optional; View can be followed by Reject (skip paperwork) or by Hand In The Paperwork.
+- After Screen Prospective Tenant, either Reject, Extensive Screening, or Sign Contract can occur; Extensive Screening is optional.
+- After Sign Contract, Move In always follows (chain), then the Pay Rent / Miss Rent Payment loops start; Pay Rent can repeat many times and interleave with Miss Rent Payment / Issue Warning / Accept Late Payment cycles in many combinations.
+
+Decision criteria handled by the role
+- Whether to reject a prospect immediately after viewing (no paperwork) vs collect paperwork and proceed to checks.
+- Whether standard screening suffices or Extensive Screening is required.
+- Whether to sign contract (accept applicant) or reject after screening results.
+- How to treat missed rent: issue warning, accept late payment, or escalate to eviction depending on recurrence and response.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Real Estate Agent (top observed senders from handover network)
+- Hotline -> Real Estate Agent (agents 1/2/5): Hotline forwards incoming applications and appointment requests (weights: Hotline → REA2 0.0147, Hotline → REA1 0.0144, Hotline → REA5 0.0076).
+- Tenant -> Real Estate Agent (weight small but present): tenants initiate rent payments and cancellations that the agent must react to (Tenant → REA1/2/5 observed).
+- Other Real Estate Agents -> Real Estate Agent: frequent internal handovers among agents (agents hand cases among themselves; RA2→RA1, RA1→RA2 etc; weights ~0.046–0.024), indicating reassignments or collaborations.
+- Lawyers -> Real Estate Agent: lawyers return checked paperwork or legal advice to agents (Lawyer 1/2/3 -> REA edges ~0.01 weight).
+
+Who Real Estate Agent hands work TO
+- Lawyer(s): for Check Paperwork or legal review (REA -> Lawyer 1/2/3 weights ~0.010–0.011), especially after Hand In The Paperwork.
+- Other Real Estate Agents: reassignments or collaboration (self and inter-agent handovers observed).
+- Landlord(s): coordinate Move In (REA -> Landlord 1/4/5 etc. small weights) and pass operational tasks to landlords.
+- Tenant: for communication about rent, warnings, accept late payments, or notifying about eviction/cancellation.
+- Hotline: occasionally hand back to Hotline (small weights) for scheduling or call handling follow‑ups.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+Observed high/medium frequency variants involving agents (percentages from variant output):
+- Main happy-ish paths (high frequency): Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Reject Prospective Tenant (28%).
+- Alternative common path: Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Reject Prospective Tenant (18%).
+- Short rejection before paperwork: Apply for Viewing Appointment -> Set Appointment -> View The Property -> Reject Prospective Tenant (17%).
+- Immediate application rejection: Apply for Viewing Appointment -> Reject Prospective Tenant (8%).
+- Contract and long post‑move rent loops (low frequency but important): Apply -> Set -> View -> Hand In Paperwork -> Check Paperwork -> Screen -> Sign Contract -> Move In -> Pay Rent repeated many times and intertwined Miss Rent Payment -> Issue Warning -> Accept Late Payment loops; outcomes include Tenant Cancels Appartment or Evict Tenant (variants with many repeated Pay Rent and Miss Rent Payment cycles; each such long-running variant individually low frequency (~1–2%) but collectively show the rent-recovery loop behavior).
+- Rare exception: after repeated non-payment the agent initiates Evict Tenant (observed but rare) or tenant cancels the apartment mid-lifecycle.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Significant fragmentation of handovers among multiple agents (1..5) produces frequent internal reassignments which can add delays.
+- The screening branch produces many rejections even after full paperwork (28%), indicating potentially inefficient screening criteria or poor lead quality.
+- The Check Paperwork step is often performed by lawyers (handover delays to an external role) which may be a bottleneck before screening; Check Paperwork -> Screen is a high-frequency edge suggesting a necessary handoff.
+- The rent collection lifecycle shows heavy repetition and long durations (many repeated Pay Rent events and repeated Miss Rent Payment -> Issue Warning -> Accept Late Payment cycles). This creates very long-case durations for tenants who enter the pay-recovery loop.
+- Rare but costly escalations (eviction proceedings) exist and correlate with long-running traces (very high performance/time values), indicating expensive exception handling.
+
+Practical notes for someone assuming this role
+- Expect to alternate between front-office intake (appointments & viewings) and long-running back-office follow-up (rent collection and legal coordination).
+- You will frequently hand paperwork to lawyers and coordinate with landlords; expect reassignments to/from other agents.
+- Be prepared to manage repeated payment cycles and to escalate when warnings are ignored.
+
+(End of Real Estate Agent role description)

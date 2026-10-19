@@ -1,0 +1,134 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+# AS-IS Process Model
+
+Process purpose and scope
+- End-to-end hiring process from Hand In Job Application through optional assessments to a single terminal decision: either Application Rejected or Make Job Offer.
+- The model includes optional steps and parallelism in the pre-technical stage, with strict stage-entry and exit dependencies that constrain ordering.
+
+Activities (canonical names)
+- Intake: Hand In Job Application (Application)
+- Early assessment: Telephonic Screening (Telephonic)
+- Pre-technical evaluations (AND-parallel): Screening Interview (Screening), Background Check (Background)
+- Post-pre-technical: Extensive Background Check (Extensive)
+- Technical gateway: Coding Interview (Coding)
+- Technical interviews: ML Interview (ML), Backend Interview (Backend), Frontend Interview (Frontend)
+- Final decision: Application Rejected (Rejected), Behavioral Interview (Behavioral), Make Job Offer (Offer)
+
+Start and end
+- Start: Application is the first visible activity.
+- End: Exactly one terminal decision must occur and be last:
+  • Rejected (case ends immediately), or
+  • Offer (case ends immediately; if Behavioral occurs, it must precede Offer).
+
+High-level control-flow and stages
+
+Stage 0 — Intake
+- Application is mandatory and first.
+
+Stage 1 — Early assessment (Telephonic) with optional bypass
+- Telephonic is optional.
+  • If Telephonic is skipped, the case proceeds directly to the final decision stage (Stage 4). In this path, Screening, Background, Extensive, Coding, ML, Backend, Frontend cannot occur.
+- If Telephonic occurs, two mutually exclusive choices are available immediately after it:
+  A) Bypass pre-technical: directly proceed to Stage 4 (final decision). In this path, Screening, Background, Extensive, Coding, ML, Backend, Frontend cannot occur.
+  B) Enter pre-technical evaluations (Stage 2).
+
+Stage 2 — Pre-technical evaluations (AND-parallel) with mandatory synchronization
+- Upon entering this stage, the process AND-splits into two mandatory branches:
+  • Screening
+  • Background
+- Ordering: Screening and Background may occur in any order or in parallel, but both must occur exactly once before leaving this stage.
+- AND-join: Progress beyond this stage is only possible after both Screening and Background are completed.
+
+Stage 2.5 — Post-pre-technical check
+- After the AND-join, Extensive may optionally occur exactly once; otherwise it is skipped.
+- Extensive may occur only after both Screening and Background have completed.
+
+Stage 3 — Technical gateway and interviews (mandatory if Stage 2 was entered)
+- If Stage 2 was entered, Stage 3 is mandatory.
+  • Coding occurs exactly once and can occur only after the Stage 2 AND-join (post any optional Extensive).
+  • After Coding, all three technical interviews must occur, each exactly once, in any order (including interleavings):
+    – ML
+    – Backend
+    – Frontend
+- No technical interview (ML/Backend/Frontend) may occur unless Coding has occurred earlier in the same case.
+- Stage 4 can be entered only after Coding and all three technical interviews have completed.
+
+Stage 4 — Final decision (exclusive outcomes; no parallelism; terminal)
+- Entry: This stage is entered from:
+  • Skipping Telephonic (Stage 0 → Stage 4), or
+  • Telephonic followed by bypass (Stage 1A → Stage 4), or
+  • Completion of Stages 2/2.5/3 (with Coding and all three technical interviews).
+- Exclusive outcomes (XOR):
+  A) Reject outcome:
+     • Activity: Rejected
+     • Cardinality: exactly once
+     • Terminal: After Rejected, the case ends immediately. No Behavioral or Offer may occur anywhere in the case if Rejected occurs.
+  B) Offer outcome:
+     • Activities: Behavioral (optional), Offer (mandatory for this outcome)
+     • Cardinality: Behavioral 0 or 1; Offer exactly 1
+     • Ordering: If Behavioral occurs, it must precede Offer.
+     • Terminal: Offer is the last activity of the case.
+- No loops in Stage 4. No interleavings between Rejected and Behavioral/Offer are permitted (they are mutually exclusive outcomes).
+- No return to earlier stages after any Stage 4 activity.
+
+Optionality and cardinality summary
+- Mandatory once: Application.
+- Optional (0 or 1): Telephonic; Extensive.
+- Conditional mandatory if Stage 2 is entered: Screening and Background each exactly once (AND-parallel and must both complete).
+- Conditional mandatory if Stage 2 is entered (Stage 3): Coding exactly once; then ML, Backend, Frontend each exactly once, any order.
+- Final decision (exactly one outcome per case):
+  • Reject outcome: Rejected exactly once; no Behavioral or Offer.
+  • Offer outcome: Offer exactly once (last); Behavioral 0 or 1 before Offer; no Rejected.
+
+Explicit ordering and dependency constraints (must-haves)
+- Application is first. No activity can precede it.
+- Telephonic gating:
+  • Screening and Background cannot occur unless Telephonic occurred earlier and Stage 2 was chosen.
+  • If Telephonic is skipped or Telephonic bypass is chosen, then Screening, Background, Extensive, Coding, ML, Backend, Frontend are all disallowed for the remainder of the case.
+- Pre-technical AND semantics:
+  • If either Screening or Background occurs, then the other must also occur exactly once before leaving Stage 2.
+  • Extensive may occur only after both Screening and Background have completed; at most once.
+- Technical dependencies:
+  • If Stage 2 was entered, Coding must occur exactly once after the Screening+Background AND-join (post any Optional Extensive).
+  • ML, Backend, and Frontend may occur only after Coding and must all occur exactly once each; no repetitions; any order.
+- Final decision entry and no-return:
+  • Stage 4 can be entered only from the three entry points listed; once entered, no earlier-stage activity may occur afterward.
+- Final decision exclusivity and terminal rules:
+  • Exactly one of Rejected or Offer must occur, and it must be the last event.
+  • Rejected and Offer are mutually exclusive; if Rejected occurs, no Behavioral or Offer may occur anywhere in the case.
+  • Behavioral may occur at most once and only in the Offer outcome, before Offer. Behavioral cannot occur after Offer.
+  • No activity in Stage 4 may repeat.
+
+Concurrency and synchronization semantics
+- AND-parallel:
+  • Stage 2: Screening and Background must both complete (any order/parallel) before proceeding.
+  • Stage 3: ML/Backend/Frontend may execute in any order/parallel if, and only if, Coding has occurred; all three are mandatory and must complete before Stage 4.
+- Stage 4: No parallelism; exclusive outcome with terminal event.
+
+Examples of valid orderings (illustrative, not exhaustive)
+- Application → Rejected
+- Application → Telephonic → Rejected
+- Application → Telephonic → Behavioral → Offer
+- Application → Telephonic → Screening → Background → Coding → ML → Backend → Frontend → Rejected
+- Application → Telephonic → Background → Screening → Extensive → Coding → Backend → ML → Frontend → Behavioral → Offer
+
+Examples of invalid orderings (must be rejected)
+- Any Stage 2 activity without prior Telephonic (e.g., Application → Screening → …).
+- Entering Stage 2 but not completing both Screening and Background exactly once each.
+- Entering Stage 2 and then going to Stage 4 without completing Coding and all three technical interviews.
+  • Example: Application → Telephonic → Background → Screening → Rejected.
+- Any technical interview before Coding (e.g., … → ML → Coding …).
+- Skipping any of ML/Backend/Frontend after Coding when Stage 2 was entered (e.g., … → Coding → Frontend → Rejected; … → Coding → ML → Frontend → Offer).
+- Any return to earlier stages after Stage 4 begins (e.g., … → Offer → Screening …; … → Rejected → Background …).
+- Mixing or repeating final decision activities:
+  • Rejected together with Behavioral and/or Offer (e.g., … → Rejected → Behavioral …; … → Offer → Rejected …).
+  • Multiple Rejected, Behavioral, or Offer occurrences (e.g., … → Rejected → Rejected; … → Behavioral → Behavioral; … → Offer → Offer).
+  • Behavioral after Offer (e.g., … → Offer → Behavioral).
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

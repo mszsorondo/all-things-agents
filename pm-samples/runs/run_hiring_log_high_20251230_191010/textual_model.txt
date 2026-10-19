@@ -1,0 +1,100 @@
+### AS-IS Process Model
+
+#### Process Overview and Purpose
+The AS-IS process model represents the current, observed recruitment and hiring process for technical positions (such as software development roles involving frontend, backend, machine learning, and general coding skills), as discovered from event logs using inductive mining, directly-follows graphs (DFG), and variant analysis. The process is highly variable, inefficient, and prone to deviations, including frequent early and late rejections, optional/skipped steps, out-of-order activities (e.g., Background Check before or after Screening Interview), rework loops in technical and behavioral interviews, repeated job offers, and anomalous continuations after rejections (e.g., proceeding to interviews or offers post-rejection). The purpose is to evaluate and select candidates, but it suffers from bottlenecks, non-compliance with logical sequencing, and high rejection rates (over 80% of cases do not reach offer based on frequencies). Total observed variants exceed 30 significant paths, with average performance times ranging from hours (screening) to days (interviews), exacerbated by loops.
+
+#### Key Stakeholders and Roles Involved
+Roles are not explicitly specified in the source models. Activities imply involvement of:
+- Recruiters/HR for initial screening, telephonic, background checks, and offers.
+- Technical interviewers for coding, frontend, backend, ML interviews.
+- Hiring managers for behavioral interviews.
+- Candidates submitting applications.
+
+#### Detailed Step-by-Step Process Flow
+The flow is non-linear with XOR/parallel choices (modeled by tau splits/joins and skips), loops, and merges. Start from 'source' place (initial marking: 1 token), end at 'sink' (final marking: 1 token). Invisible transitions (skips, tau, init_loops) enable skipping, parallelism, and loops.
+
+1. **Start Conditions and Triggers**: Process triggered when candidate performs "Hand In Job Application" (highest frequency start, leads to p_4).
+   - Frequency: Basis for all variants.
+
+2. **Initial Screening Phase** (from p_4):
+   - **Telephonic Screening** (high freq: 8799) → p_6, or skip_2 → p_5.
+   - From p_6: skip_3 → p_5 or tauSplit_4 → parallel choice:
+     - p_10 → **Screening Interview** → p_11 → tauJoin_5 → p_7.
+     - p_8 → **Background Check** → p_9 → tauJoin_5 → p_7.
+   - Direct from application: **Application Rejected** (freq 1201, early exit).
+   - From p_5 (post-merge/skip): tauSplit_14 → choices leading to loops or continues.
+   - Telephonic → direct **Application Rejected** (freq 990).
+
+3. **Pre-Technical Checks** (from p_7 post tauJoin_5):
+   - **Extensive Background Check** → p_12 or skip_6 → p_12.
+   - p_12 → **Coding Interview** → p_13 or skip_7.
+   - Background Check or Screening Interview often swapped (variants show both orders, freq ~3961 and 3848).
+
+4. **Technical Interview Phase** (highly variable, from p_13 → tauSplit_9 → parallel/XOR choices to p_14, p_16, p_18):
+   - **Coding Interview** (freq after screening/background high).
+   - Splits to:
+     | Activity | Leads to | Notes |
+     |----------|----------|-------|
+     | ML Interview (p_14 →) | p_15 → tauJoin_10 | Freq 1304 after coding; loops with frontend. |
+     | Backend Interview (p_16 →) | p_17 → tauJoin_10 | Freq 701 after coding; cross-loops with frontend. |
+     | Frontend Interview (p_18 →) | p_19 → tauJoin_10 | Freq 1513 after coding; loops ML/Backend. |
+   - Skips (e.g., skip_11/12/13) bypass individual interviews.
+   - tauJoin_10 → p_5 (loop back to early splits, enabling rework).
+   - Extensive Background Check → Coding or Reject (freq 974/1125).
+   - Rejects throughout (e.g., Coding → Reject freq 386).
+
+5. **Loop and Optional Paths** (tauSplit_14 from p_5 → p_20/p_25; init_loop_* → reject paths like p_22/p_28 → Reject).
+   - init_loop_17/22/27 enable rework loops post-tech, often to Reject (p_23 → skips → reject/continue).
+
+6. **Late Stage Interviews and Decisions** (post tauJoin_10 loops):
+   - **Behavioral Interview** → p_29 (freq after tech high, e.g., 853 from frontend).
+   - Loops: Behavioral → Behavioral (freq 1032, perf 47ms – quick repeats).
+   - p_29 → skip_24/25 → p_28/p_27 → more Behavioral or loops.
+
+7. **Offer and Final Rejects**:
+   - **Make Job Offer** → p_32 (freq 1850 from behavioral).
+   - Loops: Offer → Offer (freq 861).
+   - Post-offer **Application Rejected** (freq 110 – anomalous).
+   - Rejects loop: Reject → Behavioral/Offer (freq 740/690) or Reject → Reject (654).
+   - tauJoin_15 → sink (after various skips/loops).
+   - Other rejects high freq (e.g., post-screening 1391/1389).
+
+**Decision Points**:
+- Exclusive (XOR): Skip vs. perform activity (e.g., Telephonic? Background first?).
+- Inclusive/Parallel splits (tauSplit_4/9/14): Multiple tech interviews optional/co-occurring.
+- Reject gateways after nearly every activity (criteria implicit: fail threshold).
+
+**Parallel Activities and Synchronization**:
+- Tech interviews (ML/Frontend/Backend) can occur in any order/combination due to tauSplit_9 and cross-arcs (e.g., Frontend → Backend freq 529).
+- Joins via tauJoin_10/15 before proceeding/ending.
+
+**Exception Handling and Error Paths**:
+- Rejections at any step end or anomalously continue (non-compliant).
+- No explicit escalations; loops act as rework.
+
+**Rework Loops and Escalation Procedures**:
+- Tech loops (Frontend ↔ ML/Backend).
+- Behavioral self-loop.
+- Offer self-loop.
+- Post-reject continuations.
+
+**End Conditions and Outcomes**:
+- Positive: Multiple "Make Job Offer" → sink.
+- Negative: "Application Rejected" (dominant, multiple instances) → sink.
+- Implicit sink via tauJoin_15.
+
+#### Process Metrics and Performance Characteristics
+- High rejection rate (~85-90% from frequencies/variants).
+- Cycle times: Short for rejects (e.g., 146k post-app), long for successes (530k ms ~9 days).
+- Loops add overhead (e.g., Behavioral loop 47ms x1032).
+- Bottlenecks: Screening/Background swaps (high freq), tech loops.
+- Throughput: Low offer completion (~5-10% variants).
+
+#### Key Challenges and Pain Points
+- Extreme variability (30+ variants, out-of-order screens/checks).
+- Frequent skips of critical steps (telephonic, background).
+- Rework loops inflate cycle time (tech/behavioral/offer repeats).
+- Anomalous post-reject continuations (non-compliance).
+- Parallel but unordered tech interviews lead to inefficiency.
+- High early rejects indicate poor pre-filtering.
+- No clear roles/resources, potential bottlenecks in interviews.

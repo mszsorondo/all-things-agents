@@ -1,0 +1,103 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, compliant, and efficient target (to-be) process for loan intake and decisioning that preserves the allowed visible behaviors from the AS-IS model but removes wasteful, risky, and noncompliant behavior. The IDEAL model enforces mandatory verification gates before underwriting, limits and controls collateral assessment activity, standardizes co-signer handling, and eliminates unsafe shortcuts (e.g., skipped examinations leading directly to approvals).
+- Scope: From the applicant Request Appointment through to final outcomes (Sign Loan Agreement, Application Rejected, Loan Denied), with clear SLAs, gating rules and constrained parallelism for collateral assessments.
+
+Key stakeholders and roles (inferred and explicitly assigned)
+- Applicant/Customer: initiates request and provides documentation.
+- Appointment Scheduler / Intake: handles Request Appointment and sets appointments.
+- Loan Processor / Intake Clerk: accepts Hand In Credit Application and performs initial completeness checks.
+- Verifier / Caseworker: responsible for Verify Borrowers Information and triggering the next steps or rework.
+- Field Assessor: performs Make Visit to Assess Collateral under controlled rules (maximum attempts and defined escalation).
+- Loan Officer: coordinates co-signer requests and ensures supporting documentation.
+- Underwriter: examines complete files that have passed verification gating and collateral assessment (where required) and issues decisions.
+
+Detailed step-by-step IDEAL flow
+Start conditions and triggers
+1. Start: Applicant submits Request Appointment.
+2. Appointment Scheduler responds: either Set Appointment (primary path) or Appointment Denied (a clearly documented and auditable pre-screen rejection) — appointment denials should be rare and annotated with the reason.
+
+Core gating and processing sequence
+1. Set Appointment -> Hand In Credit Application
+   - At hand-in, Loan Processor performs an immediate completeness check against a standard checklist. If critical documents are missing, the applicant is informed and either provides the documents within a defined short SLA or the application is moved to a documented 'Incomplete' bucket (not immediate rejection).
+
+2. Verify Borrowers Information (mandatory gate)
+   - This is a formal gate with a checklist and an explicit decision outcome. The verifier must choose one of the following, with documented reasons and auto-assigned next steps:
+     a) Pass -> Submit File to Underwriter (only for cases meeting completeness and minimum underwriting criteria)
+     b) Minor Issue -> Request additional documents from applicant (timed rework; maximum 1 re-submit allowed without supervisor approval)
+     c) Co-Signer Required -> Request Co-Signer On Loan (follow standard co-signer workflow)
+     d) Collateral Required -> Create Collateral Assessment task (Make Visit) if objective evidence indicates need
+     e) Immediate Rejection -> Application Rejected (only when criteria for auto-reject are met and documented)
+   - Important: The IDEAL model forbids silent skipping of mandatory examination (skip_examination). Any decision to bypass an examination requires supervisor sign-off and audit logging.
+
+3. Collateral assessment (Make Visit) — controlled, limited rework
+   - Make Visit is executed only when verifier marks collateral as required.
+   - Rules:
+     - Maximum attempts: 2 field visits by default. If the collateral cannot be assessed within 2 attempts, escalate to Supervisor for remote appraisal or valuation alternative.
+     - Collect complete assessment data and photos in the first successful visit; do not perform repetitive unsystematic visits.
+     - If the field assessor finds new information triggering co-signer or additional documentation, generate a specific issue task that returns to the verifier (one controlled feedback loop) before resubmission.
+   - After completion or escalation, case proceeds to Submit File to Underwriter.
+
+4. Request Co-Signer On Loan — standardized flow
+   - When verifier or assessor determines a co-signer is required, Loan Officer initiates a documented co-signer request.
+   - Co-signer documentation is validated against the same completeness checklist and, upon satisfaction, the case proceeds to Submit File to Underwriter.
+   - Limit rework: require co-signer documentation in a single pass where possible; if not possible, escalate after one failed attempt.
+
+5. Submit File to Underwriter (gated)
+   - Only fully validated and gated files are submitted. The submit action must include a metadata packet showing which checks were passed and any non-standard decisions (e.g., co-signer, remote appraisal, supervisor exceptions).
+   - Underwriter outcomes:
+     - Sign Loan Agreement (Approve)
+     - Loan Denied (Reject) — but denials should be traceable to documented reasons; if a high denial rate persists, feedback loops to improve upstream gating are triggered.
+
+Decision points with criteria and possible outcomes (explicit)
+- Appointment Denied: criteria limited to documented intake checks (e.g., ineligible product, duplicate request) — outcome is termination.
+- Verify Borrowers Information: criteria evaluated via checklist (identity, income, credit bureau check, required documents). Outcomes: Submit, Request Documents, Co-signer, Collateral, Reject.
+- Collateral assessment: pass/fail or escalate; max visits rule enforced.
+- Underwriter decision: Approve (Sign Loan Agreement) or Deny (Loan Denied) — require documented rationale.
+
+Parallel activities and synchronization
+- The IDEAL model minimizes parallelism: collateral assessment and co-signer procurement are executed as controlled sequences and synchronized back at the verification gate before a single Submit to Underwriter. This replaces the ambiguous tau splits/joins from AS-IS with explicit, auditable parallelism only where necessary (e.g., concurrent background credit checks that do not block submission), and synchronization points are enforced before submission.
+
+Exception handling and error paths
+- Missing documentation: Immediate Request for Documents, 1 short SLA window for resubmission.
+- Collateral inaccessible after 2 visits: escalate to Supervisor for alternative valuation or protective underwriting conditions.
+- Applicant withdraws: case closed with 'Applicant Withdrawn' outcome (tracked for analytics).
+- Supervisor exception: limited, documented, and rare. Supervisor must record reason to allow skipping a mandatory step; such exceptions produce alerts to compliance.
+
+Rework loops and escalation procedures (controlled)
+- Limit rework loops to explicit single rework cycles: one document re-submission without supervisor approval; one additional collateral attempt; otherwise escalate.
+- For repeat failure patterns (e.g., repeated denials due to missing info), implement root-cause analysis and process improvements.
+
+End conditions and outcomes
+- Sign Loan Agreement: Approved deal; case closed successfully.
+- Loan Denied: Denied by underwriter with documented reasoning; closed.
+- Application Rejected: Rejected at verifier stage due to eligibility/clearly failing criteria; closed.
+- Appointment Denied: Intake-level denial; closed.
+- Applicant Withdrawn: voluntary closure.
+
+Process metrics and target performance characteristics (IDEAL targets)
+- Volume targets: maintain ability to process same throughput as AS-IS (10,000 intake events), but with fewer rework events.
+- SLA and timing targets (examples based on AS-IS measurements; units are the same as in the input):
+  - Request -> Set Appointment: reduce mean from 82,658 to target 20,000 (reduce wait/processing time by standardizing scheduling and auto-confirmation).
+  - Verify Borrowers Information processing: reduce mean from 42,027 to target 10,000 by enforcing checklists and front-office completeness checks.
+  - Submit -> Decision (Underwriter): reduce turnaround from ~80,700 to target 30,000 by ensuring only gated, complete files reach underwriting.
+  - Collateral visits: reduce average number of visits per case from ~1.6 (observed loops) to <=1.2 and cap at 2 visits per case.
+  - Denial rate at underwriter: target decrease from ~67.6% of submissions denied to <30% by improving upstream quality and gating.
+- KPI suite to monitor:
+  - Time-to-verify (median and 95th percentile), Submit-to-decision time, Average number of visits per case, Denial rate post-submit, % of cases with supervisor exceptions, % of cases with skipped examinations (target 0).
+
+Improvements made (IDEAL benefits)
+1. Reduce waste and cost by eliminating unconstrained repeated field visits and limiting rework loops.
+2. Improve underwriting efficiency and reduce denial rates by enforcing a verification gate and checklist before submission.
+3. Remove compliance risk by eliminating silent/skipped examinations; mandate documented exceptions.
+4. Reduce cycle time and variability with SLAs and by reducing handoff ambiguity (explicit synchronization before submission to underwriter).
+5. Improve traceability and auditability by requiring metadata at submission and by limiting supervisor exceptions.
+6. Implement targeted KPIs and root-cause procedures to monitor and correct upstream failures causing high denial rates.
+
+Implementation notes and conservative changes from AS-IS
+- No entirely new business functions are introduced; all IDEAL activities map to observed AS-IS activities (Request Appointment, Set Appointment, Hand In Credit Application, Verify Borrowers Information, Make Visit to Assess Collateral, Request Co-Signer On Loan, Submit File to Underwriter, Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied). The IDEAL model reorganizes the order and control logic, tightens gating criteria, and limits optional/skipped behavior.
+- Silent tau-splits/joins and skip transitions in AS-IS are replaced by explicit decision nodes and documented exception handling.
+
+Summary of IDEAL
+- The IDEAL process is a cleaned, auditable version of the observed process that retains required business activities but enforces mandatory verification before underwriting, controls field visits, standardizes co-signer handling, eliminates un-audited skips, and sets measurable SLAs and KPIs to reduce denials, cycle time, and operational cost.

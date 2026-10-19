@@ -1,0 +1,179 @@
+## 1) WHAT THIS REPRESENTATION DESCRIBES
+
+A **textual listing of the constraints contained in a DECLARE declarative process model**.
+
+It describes:
+
+* **Which DECLARE constraint templates are present** (e.g., *Existence*, *Response*, *Chain response*, *Non Co-Existence*, etc.)
+* **Which activity (or ordered activity pair)** each constraint is stated over
+
+It **does not** describe traces, executions, frequencies, supports, confidences, violations, or discovery quality—only the **model’s constraint set** as given.
+
+---
+
+## 2) TYPICAL OUTPUT FORM (conceptual)
+
+Conceptually, the output has:
+
+1. *(Optional header / explanatory preface)*
+   A short explanation of what each supported constraint template means (human-readable).
+
+2. A fixed intro line:
+   `These are the constraints of the model:`
+
+3. Then one line per constraint template that exists in the provided model, e.g.:
+
+* `Existence: A, B, C`
+* `Initialization: A`
+* `Response: (A, B), (C, D)`
+* `Non Co-Existence: (A, B)`
+
+*(Exact formatting of each listed element depends on how activities/pairs render to text, but the structure above holds.)*
+
+---
+
+## 3) HOW TO READ EACH LINE
+
+### 3.1 Meaning of the sequence (ordering)
+
+Read the output in this order:
+
+1. **(If included)** A glossary-like explanation of constraint templates.
+2. The line **“These are the constraints of the model:”** meaning “the model contains the following constraint instances.”
+3. A list of **template lines**, one per template present in the model.
+
+**Important ordering note:**
+The template lines are emitted in the **iteration order of the model’s internal mapping**. This ordering is **not guaranteed to be semantic** (e.g., not by importance, frequency, strength, or category). Treat it as a **presentation order**, not a ranking.
+
+### 3.2 Meaning of each reported “metric”
+
+There are **no numeric metrics** in this representation.
+
+* Even if the underlying DECLARE model internally stores values like *support* / *confidence* for rules, **they are not shown** here.
+* Each line is purely: **Template name + list of constrained items**.
+
+### 3.3 How to interpret a template line
+
+Each template line has the form:
+
+`<TemplateLabel>: <Item1>, <Item2>, ...`
+
+Where:
+
+* **`<TemplateLabel>`** is the human label of a DECLARE constraint template (e.g., “Existence”, “Response”, “Chain succession”, “Non Succession”…).
+* Each **`<Item>`** is either:
+
+  * a **single activity name** (for unary templates), or
+  * an **ordered pair (A, B)** (for binary/relational templates)
+
+#### Unary templates (single activity)
+
+When you see an activity listed under:
+
+* **Existence: X**
+  X must occur **at least once** in every valid trace.
+
+* **Absence: X**
+  X must **not occur** in any valid trace.
+
+* **Exactly 1: X**
+  X must occur **exactly once** in every valid trace.
+
+* **Initialization: X**
+  Every valid trace must **start with** X (i.e., the first event is X).
+
+#### Binary templates (ordered pair A, B)
+
+When you see a pair **(A, B)** listed under:
+
+* **Responded Existence: (A, B)**
+  If A occurs, then B occurs **somewhere** in the trace (no ordering implied).
+
+* **Co-Existence: (A, B)**
+  If A occurs, then B occurs **somewhere** in the trace (no ordering implied).
+  *(Note: in this textual guide, it is presented with the same “if A then B” phrasing; do not assume the stronger “both ways” meaning from this representation alone—see corrections below.)*
+
+* **Response: (A, B)**
+  If A occurs, then B occurs **later** (in the future of the trace).
+
+* **Precedence: (A, B)**
+  If B occurs, then A occurred **earlier** (in the past of the trace).
+
+* **Succession: (A, B)**
+  Both **Response(A, B)** and **Precedence(A, B)** hold.
+
+* **Alternate response / alternate precedence / alternate succession: (A, B)**
+  As above, but strengthened to enforce **alternation without repetitions** (as stated in the header text).
+
+* **Chain response / chain precedence / chain succession: (A, B)**
+  As above, but strengthened to impose **directly-follows** (immediate adjacency).
+
+* **Non Co-Existence: (A, B)**
+  If A occurs, then B **must not** occur.
+
+* **Non Succession: (A, B)**
+  B **must not follow** A (i.e., B cannot occur after an occurrence of A).
+
+* **Non Chain succession: (A, B)**
+  B must **not immediately follow** A.
+
+---
+
+## 4) GLOBAL SEMANTIC MEANING
+
+Taken together, the text represents:
+
+> “Here are the DECLARE constraint **instances** present in the model, grouped by template.”
+
+A “constraint instance” means: a specific template applied to a specific activity (unary) or ordered activity pair (binary).
+
+---
+
+## 5) HOW TO INTERPRET THE LIST AS A WHOLE
+
+* The output is a **set-like inventory** of constraints (grouped by type).
+* The presence of an item means: **the model contains that constraint**.
+* The absence of a template line means: **that template is not present in the model** (in the provided mapping).
+* The absence of a particular activity/pair under a template means: **that particular constraint instance is not listed**.
+
+**No truncation / summarization is encoded here.**
+If the model has many constraints, the output will be long; nothing in this format indicates “top-k”, “most important”, “filtered”, “approximate”, etc.
+
+---
+
+## 6) WHAT THIS REPRESENTATION IS FOR
+
+* Giving humans or LLMs a **compact, readable specification** of “what constraints define this DECLARE model”.
+* Prompting tasks like:
+
+  * explaining the model,
+  * translating to natural language,
+  * comparing two models by constraint inventory,
+  * generating trace examples that satisfy the listed constraints (as a downstream task).
+
+---
+
+## 7) WHAT THIS REPRESENTATION IS NOT
+
+It is **not**:
+
+* A behavioral log summary (no traces, variants, counts)
+* A conformance report (no violations, fitness)
+* A discovery-quality report (no support/confidence shown)
+* A complete “logic semantics” specification beyond the template gloss provided
+* A guarantee of symmetry/strength beyond what is explicitly stated in the output text itself
+* A ranked or prioritized list
+
+---
+
+## 8) ONE-SENTENCE CORE SUMMARY
+
+A human-readable dump of a DECLARE model that lists, by constraint template, which activities or ordered activity pairs are constrained—optionally preceded by brief template explanations—without any metrics, ranking, or conformance information.
+
+---
+
+### Corrections to your base description (kept minimal, only where needed)
+
+* **No metrics are printed** (no support/confidence/frequency), even if the underlying model might store them.
+* The guide text **defines Co-Existence using the same “if A then B” wording**; therefore, from *this representation alone*, you should not assert the stronger “A and B always occur together or both absent” meaning unless you bring in external DECLARE semantics not encoded here.
+* Ordering of lines is **not** “discovered constraints ordered by importance”; it’s simply the model’s iteration order.

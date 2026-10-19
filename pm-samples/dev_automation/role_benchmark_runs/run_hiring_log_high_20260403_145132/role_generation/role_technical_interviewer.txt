@@ -1,0 +1,50 @@
+AS-IS Process Model — Technical Interviewer
+============================================================
+
+Title: AS-IS Process Model — Technical Interviewer
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Assess candidate technical skills through multiple interview types (coding, frontend, backend, ML) and recommend progression or rejection.
+- Responsibilities: conduct Coding Interview, Backend Interview, Frontend Interview, ML Interview, and occasionally mark Application Rejected when technical evaluation fails.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Coding Interview: initial technical assessment; common gateway to more specialized interviews.
+- Frontend Interview: interview focused on frontend skills.
+- Backend Interview: interview focused on backend skills.
+- ML Interview: interview focused on machine learning expertise.
+- Application Rejected: close the case when technical evaluation fails (observed but less frequent than HR rejections).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation: Technical Interviewer gets involved after HR/Screener approvals: typically after Screening Interview and/or Background Check. Coding Interview often precedes specialized interviews.
+- Observed sequences (AS-IS):
+  - Screening Interview/Background Check -> Coding Interview -> Frontend Interview and/or Backend Interview and/or ML Interview -> Behavioral Interview -> Make Job Offer or Application Rejected.
+  - Coding Interview -> ML Interview -> Frontend Interview -> Backend Interview (many permutations observed in low-frequency variants). The order between Frontend, Backend, and ML interviews varies — DFG shows mutual directly-follows edges and 0.000 performance for some, indicating many orders are possible and sometimes instant transitions.
+  - Extensive Background Check may interleave with technical interviews in some cases.
+- Decision points handled:
+  - After Coding Interview: decide whether candidate advances to specialized interviews (Frontend/Backend/ML) or is rejected.
+  - After specialized interviews: decide whether to send candidate to Behavioral Interview or reject.
+- Note on ordering variability: There is high variability in the ordering of specialized interviews; valid observed orderings include many permutations and repeating interviews (rework loops exist in case of repeated behavioral interviews).
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+- Inputs to Technical Interviewer: HR Screener (Coding Interviewer receives after Screening Interview/Background Check), Background Check Specialist, HR-pro, and Senior Partner for escalations.
+- Outputs from Technical Interviewer:
+  - Frontend/Backend/ML Interview handoffs among Technical Interviewer roles themselves (observed high intra-role handover frequency),
+  - Behavioral Interview (handoff after technical track),
+  - Application Rejected (technical rejection),
+  - Senior Partner and HR-pro (for deliberation or offer decision).
+- Handover network shows Coding Interviewer hands to themselves often (interviewers rotate or multiple technical interviews by same resource role).
+
+Section 5: Variants and Exceptions (all observed paths)
+- Common and observed variants (AS-IS):
+  - Coding Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer / Application Rejected
+  - Coding Interview -> Backend Interview -> Behavioral Interview -> Make Job Offer / Application Rejected
+  - Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> ...
+  - Complex low-frequency paths: multiple specialized interviews in different orders, repeated Application Rejected and Make Job Offer events in same trace (observed odd sequences where Application Rejected and Make Job Offer both occur multiple times) — these are observed in the log and must be included.
+- Rework and exceptions: Behavioral Interview repeats frequently (self-loop), Make Job Offer sometimes repeats, and traces show Application Rejected followed by Behavioral Interview or Make Job Offer (post-rejection recovery or logging inconsistencies).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- High variability and permutations in technical interview ordering suggest weak orchestration — candidates move between technical interviewers in many orders, causing scheduling complexity.
+- Repetitions of Application Rejected and Make Job Offer are irregular and indicate data quality issues or manual overrides (re-hiring after rejection).
+- Mutual direct follows with 0.000 performance in DFG indicate simultaneous scheduling or immediate transitions in the system (possible logging artefacts).
+
+(End of AS-IS description for Technical Interviewer)

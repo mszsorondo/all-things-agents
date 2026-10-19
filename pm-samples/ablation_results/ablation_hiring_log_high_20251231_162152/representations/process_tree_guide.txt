@@ -1,0 +1,32 @@
+
+=== PROCESS TREE INTERPRETATION GUIDE ===
+A Process Tree is a hierarchical representation of process behavior:
+
+1. OPERATORS (internal nodes):
+   - → (sequence): Execute children in order
+   - X (exclusive choice): Execute one child
+   - + (parallel): Execute all children concurrently
+   - ↺ (loop): Repeat body, execute exit condition
+   - τ (silent): Hidden/internal activity
+
+2. LEAVES:
+   - Activity names: Actual process activities
+   - τ: Silent/skip activity
+
+3. SEMANTICS:
+   - Read tree top-down, left-to-right
+   - Each operator defines control flow for children
+   - Guarantees soundness (proper completion)
+   - Block-structured (properly nested)
+
+4. EXAMPLE INTERPRETATIONS:
+   - →(A, X(B, C), D): Do A, then either B or C, then D
+   - +(A, B, C): Do A, B, C in parallel
+   - ↺(A, B): Do A repeatedly, exit with B
+   - X(→(A, B), →(C, D)): Either do A then B, or C then D
+
+5. INDUCTIVE MINER PROPERTIES:
+   - Always produces sound models
+   - Handles incomplete logs
+   - May introduce τ transitions for fitness
+   - Rediscovers original tree if log is complete

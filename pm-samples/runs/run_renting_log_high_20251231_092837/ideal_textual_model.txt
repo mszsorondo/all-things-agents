@@ -1,0 +1,65 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model streamlines the apartment rental lifecycle into a compliant, efficient flow. It enforces complete checks before approvals, eliminates bypasses/skips, mandates full screening, simplifies post-move-in rent handling with clear escalation for non-payment, and reduces rejection points. The purpose remains tenant acquisition and management, but with governance: early filtering, consistent processes, and proactive issue resolution to minimize long problematic tenancies and operational waste.
+
+#### Key Stakeholders and Roles Involved
+Roles not specified in sources; implies rental agency (scheduling, screening, collections) and tenants.
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers:** Prospective tenant submits application → **Apply for Viewing Appointment**.
+
+1. **Apply for Viewing Appointment** → **Set Appointment**.
+2. **Set Appointment** → **View The Property**.
+3. **View The Property** → **Hand In The Paperwork**.
+4. **Hand In The Paperwork** → **Check Paperwork**.
+5. **Check Paperwork** → **Screen Prospective Tenant**.
+6. **Screen Prospective Tenant** → **Extensive Screening** (mandatory for viable candidates).
+7. **Extensive Screening** → Decision Gateway: Suitability check.
+   - Reject → **Reject Prospective Tenant** → End.
+   - Approve → **Sign Contract** → **Move In**.
+
+8. Post-Move In - Structured Monthly Rent Loop:
+   - **Move In** → **Pay Rent** (monthly trigger).
+   - After Pay Rent: Loop back to next **Pay Rent** (ongoing tenancy).
+   - If **Miss Rent Payment** (detected): → **Issue Warning**.
+   - **Issue Warning** → Decision: Pays late?
+     - Yes → **Accept Late Payment** → back to **Pay Rent** loop.
+     - No (second miss) → **Evict Tenant** → End.
+   - At any tenancy point: Tenant may **Tenant Cancels Apartment** → End.
+
+**Decision Points and Gateways:**
+- Single Reject Gateway post-Extensive Screening (criteria: full background/credit check passes).
+- Post-Warning XOR: Late pay accepted (one chance) vs. Evict (enforce after repeat miss).
+- Inclusive optional: Tenant Cancel at any post-move-in point.
+
+**Parallel Activities and Synchronization Points:** None; fully sequential with loops.
+
+**Exception Handling and Error Paths:**
+- Early reject only after full screening (no pre-screen skips).
+- Non-payment: Strict 1-warning policy → Evict.
+
+**Rework Loops and Escalation Procedures:**
+- Application: Linear, no loops.
+- Tenancy: Simple Pay Rent self-loop; Miss → Warn → Late Accept (back to loop) or Evict.
+- Escalation: Auto-evict after one missed post-warning payment.
+
+**End Conditions and Outcomes:**
+- Reject Prospective Tenant (post-full checks).
+- Evict Tenant (non-payment escalation).
+- Tenant Cancels Apartment (voluntary exit).
+
+#### Process Metrics and Performance Characteristics
+- Reduced cycle time: Mandatory full application flow (~300-400k ms estimated vs. variable AS-IS).
+- Fewer variants: 3 main paths (reject, successful tenancy short/long, evict).
+- Target: 80%+ move-in success post-screen; average tenancy 12 months (12 Pays); <5% evictions.
+- Performance: Streamlined steps cut screening time; automated warnings.
+
+#### Key Improvements Made
+- Eliminated skips/bypasses: Ensures consistent, compliant screening (no early rejections without cause).
+- Single rejection point: Reduces rework, catches issues earlier but after investment.
+- Simplified rent handling: Clear escalation prevents endless late payment loops; promotes timely payments.
+- Removed redundant paths: Extensive always after initial screen; no optional screening.
+- Bottleneck fixes: Sequential enforcement speeds decisions.
+- Better governance: Limits long low-value tenancies, increases turnover for better tenants.
+- Overall: Higher efficiency, lower rejection waste, enforceable policies.

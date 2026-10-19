@@ -1,0 +1,70 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model represents a streamlined, efficient, and compliant version of the loan application process. It eliminates rework loops, reduces variability to essential paths, enforces mandatory checks where appropriate, consolidates decision points, and ensures clear outcomes. The purpose remains handling customer credit loan requests through appointment, application handling, verification, conditional co-signer/collateral steps (limited to once each), underwriting, and final approval or denial.
+
+#### Key Stakeholders and Roles Involved
+Roles are not explicitly specified in the source models; activities are assigned to loan processing staff, verifiers, underwriters, and collateral assessors as implied.
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers**: Process triggered by customer 'Request Appointment' for a loan.
+
+1. **Request Appointment**: Customer initiates loan application request.
+   
+2. **Set Appointment**: Automatically schedule appointment (remove early denial to reduce drop-offs; handle via later checks).
+
+3. **Hand In Credit Application**: Customer submits application at appointment.
+
+4. **Verify Borrowers Information**: Comprehensive verification of borrower details.
+
+5. **Decision Point: Verification and Preliminary Eligibility** (Exclusive Gateway, consolidated):
+   - Criteria: Information validity, basic eligibility (combines verify + early post-verify checks).
+   - Outcomes:
+     - Fail: 'Application Rejected' → End (Rejected).
+     - Pass: Proceed to conditional requirements.
+
+6. **Inclusive Gateway: Additional Requirements Check** (Post-verification):
+   - Criteria: Risk assessment post-verification.
+   - Optional branches (execute only if needed, no loops, parallel where possible):
+     - **Co-Signer Needed?**: Yes → 'Request Co-Signer On Loan' (once only) → merge.
+     - **Collateral Assessment Needed?**: Yes → 'Make Visit to Assess Collateral' (single visit, no loops) → merge.
+     - No additional needs → direct merge.
+   - Branches can occur in any order or parallel; synchronization before underwriting.
+
+7. **Submit File to Underwriter**: Single submission after all requirements met (removes multiple submits).
+
+8. **Decision Point: Underwriting Approval** (Exclusive Gateway):
+   - Criteria: Underwriter review of complete file.
+   - Outcomes:
+     - Approve: 'Sign Loan Agreement' → End (Approved).
+     - Deny: 'Loan Denied' → End (Denied).
+
+**Synchronization Points**: Merge gateway after co-signer/collateral branches before 'Submit File to Underwriter'.
+
+**Exception Handling and Error Paths**: Centralized at verification (reject) and underwriting (deny). No early appointment denials; all rejections post-submission.
+
+**Rework Loops and Escalation Procedures**: Eliminated all loops (no iterative collateral/co-signer). Escalations: If co-signer/collateral fails criteria, route to deny at underwriting.
+
+**End Conditions and Outcomes**:
+- **Approved**: 'Sign Loan Agreement'.
+- **Denied**: 'Loan Denied'.
+- **Rejected**: 'Application Rejected' (early filter).
+- No skips or ambiguous ends.
+
+#### Process Metrics and Performance Characteristics
+- Expected cases: Scalable to 10,000+ with reduced variability.
+- Variants reduced to ~5 core paths (straight approve, +co-signer, +collateral, +both, rejects/denials).
+- Denial rate: Targeted 20-30% (better early filtering).
+- Cycle times: Reduced to 100,000–200,000 ms average (eliminate loops; perf data suggests 40k-80k ms per step).
+- Bottlenecks resolved: Single assessments, one submit.
+
+#### Key Challenges and Pain Points (for AS-IS) or Improvements Made (for IDEAL)
+**Improvements Made**:
+- **Eliminated Rework**: No loops on collateral (limited to 1 visit); no interleaving—clear conditional branches.
+- **Reduced Variability**: From 25+ to ~5 paths; no skips like 'skipped_examination' (integrated into verification/collateral).
+- **Consolidated Decisions**: Single verification/reject point; one underwriting decision (absorbs early 'Loan Denied').
+- **Removed Appointment Denial**: Streamlined intake to boost throughput.
+- **Clear Outcomes**: All paths end explicitly (Approved/Denied/Rejected); no ambiguous skips.
+- **Performance Gains**: 50%+ cycle time reduction by cutting loops (e.g., rare 400k+ ms paths gone).
+- **Compliance Enhancements**: Mandatory single assessments ensure full due diligence; single submit reduces errors.
+- **Efficiency**: Parallel optional branches (co-signer/collateral) where feasible; early rejects save resources.

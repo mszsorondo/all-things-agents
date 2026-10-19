@@ -1,0 +1,25 @@
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('Extensive Background Check', 'Background Check') ('Extensive Background Check', 'Telephonic Screening') ('Screening Interview', 'Hand In Job Application') ('ML Interview', 'Hand In Job Application') ('Extensive Background Check', 'Hand In Job Application') ('ML Interview', 'Screening Interview') ('Background Check', 'Telephonic Screening') ('Coding Interview', 'Background Check') ('Coding Interview', 'Telephonic Screening') ('Extensive Background Check', 'Screening Interview') ('Frontend Interview', 'Coding Interview') ('Frontend Interview', 'Telephonic Screening') ('Frontend Interview', 'Background Check') ('Backend Interview', 'Coding Interview') ('Backend Interview', 'Background Check') ('Coding Interview', 'Hand In Job Application') ('Background Check', 'Hand In Job Application') ('Coding Interview', 'Screening Interview') ('Background Check', 'Screening Interview') ('Backend Interview', 'Telephonic Screening') ('Frontend Interview', 'Hand In Job Application') ('Frontend Interview', 'Screening Interview') ('Backend Interview', 'Hand In Job Application') ('Backend Interview', 'Screening Interview') ('Telephonic Screening', 'Hand In Job Application') ('Screening Interview', 'Background Check') ('Screening Interview', 'Telephonic Screening') ('ML Interview', 'Background Check') ('ML Interview', 'Coding Interview') ('ML Interview', 'Telephonic Screening')
+
+Always Before:  ('Extensive Background Check', 'Background Check') ('Extensive Background Check', 'Telephonic Screening') ('Screening Interview', 'Hand In Job Application') ('ML Interview', 'Hand In Job Application') ('Extensive Background Check', 'Hand In Job Application') ('Coding Interview', 'Telephonic Screening') ('ML Interview', 'Screening Interview') ('Background Check', 'Telephonic Screening') ('Coding Interview', 'Background Check') ('Extensive Background Check', 'Screening Interview') ('Frontend Interview', 'Coding Interview') ('Frontend Interview', 'Telephonic Screening') ('Frontend Interview', 'Background Check') ('Backend Interview', 'Coding Interview') ('Backend Interview', 'Background Check') ('Coding Interview', 'Hand In Job Application') ('Background Check', 'Hand In Job Application') ('Coding Interview', 'Screening Interview') ('Backend Interview', 'Telephonic Screening') ('Frontend Interview', 'Hand In Job Application') ('Frontend Interview', 'Screening Interview') ('Backend Interview', 'Hand In Job Application') ('Backend Interview', 'Screening Interview') ('Telephonic Screening', 'Hand In Job Application') ('Screening Interview', 'Telephonic Screening') ('ML Interview', 'Background Check') ('ML Interview', 'Coding Interview') ('ML Interview', 'Telephonic Screening')
+
+Always After: 
+
+Never Together: 
+
+Activity Occurrences:  Hand In Job Application: 1; Telephonic Screening: 0, 1; Screening Interview: 0, 1; Background Check: 0, 1; Extensive Background Check: 0, 1; Coding Interview: 0, 1; ML Interview: 0, 1; Frontend Interview: 0, 1; Behavioral Interview: 0, 1, 2, 3; Make Job Offer: 0, 1, 2, 3; Application Rejected: 0, 1, 2, 3; Backend Interview: 0, 1;
+
+Directly-Follows Constraints: 
+

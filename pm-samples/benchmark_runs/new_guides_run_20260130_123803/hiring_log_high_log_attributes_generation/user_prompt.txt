@@ -1,0 +1,75 @@
+
+============================================================
+REPRESENTATION 1: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Hand In Job Application; freq. 10000) (Application Rejected; freq. 9654) (Telephonic Screening; freq. 8799) (Screening Interview; freq. 7809) (Background Check; freq. 7809) (Coding Interview; freq. 3904) (Behavioral Interview; freq. 3796) (Make Job Offer; freq. 3401) (Frontend Interview; freq. 2913) (ML Interview; freq. 2334) (Extensive Background Check; freq. 2099) (Backend Interview; freq. 1351)
+case:citizen  empty: 0 values: (True; freq. 39611) (False; freq. 24258)
+case:gender  empty: 0 values: (True; freq. 39461) (False; freq. 24408)
+case:german speaking  empty: 0 values: (False; freq. 32248) (True; freq. 31621)
+case:protected  empty: 0 values: (False; freq. 50613) (True; freq. 13256)
+case:religious  empty: 0 values: (True; freq. 39683) (False; freq. 24186)
+concept:name  empty: 0 values: (Hand In Job Application; freq. 10000) (Application Rejected; freq. 9654) (Telephonic Screening; freq. 8799) (Screening Interview; freq. 7809) (Background Check; freq. 7809) (Coding Interview; freq. 3904) (Behavioral Interview; freq. 3796) (Make Job Offer; freq. 3401) (Frontend Interview; freq. 2913) (ML Interview; freq. 2334) (Extensive Background Check; freq. 2099) (Backend Interview; freq. 1351)
+resource  empty: 0 values: (HR-dummy; freq. 18126) (Senior Partner; freq. 10680) (Coding Interviewer; freq. 10502) (HR-pro; freq. 9509) (Online System; freq. 5083) (Front Desk; freq. 4917) (HR-pro and Senior Partner; freq. 3796) (deepResearch Inc.; freq. 1256)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}

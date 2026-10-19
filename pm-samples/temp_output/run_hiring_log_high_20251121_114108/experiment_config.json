@@ -1,0 +1,31 @@
+{
+  "run_timestamp": "2025-11-21T11:44:46.445141",
+  "dataset_name": "hiring_log_high",
+  "xes_path": "benchmark/hiring/hiring_log_high.xes",
+  "model": "gpt-4o-mini",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants",
+    "process_tree",
+    "heuristics_net"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: ",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants",
+      "process_tree",
+      "heuristics_net"
+    ],
+    "model_name": "gpt-4o-mini",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "temp_output",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

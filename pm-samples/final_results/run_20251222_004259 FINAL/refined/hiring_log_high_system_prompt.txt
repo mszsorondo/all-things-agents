@@ -1,0 +1,143 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+# AS-IS Process Model
+
+Process purpose and scope
+- End-to-end hiring process from Hand In Job Application through optional assessments to either Application Rejected and/or Make Job Offer, as discovered from the inductive-miner Petri net, DFG, and abstract variants.
+- The model includes optional steps, parallelism, and loops, but with strict phase-entry and phase-exit dependencies that constrain ordering.
+
+Activities (canonical names)
+- Intake: Hand In Job Application (Application)
+- Early assessment: Telephonic Screening (Telephonic)
+- Pre-technical evaluation (AND-parallel): Screening Interview (Screening), Background Check (Background)
+- Post-pre-technical: Extensive Background Check (Extensive)
+- Technical gateway: Coding Interview (Coding)
+- Technical interviews (fan-out): ML Interview (ML), Backend Interview (Backend), Frontend Interview (Frontend)
+- Final decision phase (parallel branches):
+  • Rejection branch: Application Rejected (Rejected)
+  • Behavioral/Offer branch: Behavioral Interview (Behavioral), Make Job Offer (Offer)
+
+Start and end
+- Start: Application is the first visible activity.
+- End: After both final-phase branches (Rejection branch and Behavioral/Offer branch) have been closed (each may be skipped), the case completes.
+
+High-level control-flow and stages
+
+Stage 0 — Intake
+- Application is mandatory and first.
+
+Stage 1 — Early assessment (Telephonic) with optional bypass
+- Telephonic is optional.
+  • If Telephonic is skipped, the case proceeds directly to the final decision phase (Stage 4). In this path, Screening, Background, Extensive, Coding, and the technical interviews cannot occur later in the case.
+
+- If Telephonic occurs, two mutually exclusive choices are available immediately after it:
+  A) Bypass pre-technical: directly proceed to Stage 4 (final decision phase). In this path, Screening, Background, Extensive, Coding, and the technical interviews cannot occur later in the case.
+  B) Enter pre-technical evaluations (Stage 2).
+
+Stage 2 — Pre-technical evaluations (AND-parallel) with mandatory synchronization
+- Upon entering this stage, the process AND-splits into two mandatory branches:
+  • Screening
+  • Background
+- Ordering: Screening and Background may occur in any order or truly in parallel, but both must occur exactly once before leaving this stage.
+- AND-join: Progress beyond this stage is only possible after both Screening and Background are completed.
+
+Stage 2.5 — Post-pre-technical check
+- After the AND-join, Extensive may optionally occur exactly once; otherwise it is skipped.
+- Extensive may only occur after both Screening and Background have completed; it cannot occur earlier or after entering the final decision phase.
+
+Stage 3 — Technical gateway and interviews
+- Coding is optional and can occur only after the AND-join of Stage 2 (post any optional Extensive).
+  • If Coding is skipped, the case proceeds to Stage 4. In this path, ML, Backend, and Frontend cannot occur later in the case.
+- If Coding occurs, it enables a parallel fan-out where the following technical interviews are each optional, can occur at most once each, and may occur in any order (including apparent interleavings):
+  • ML
+  • Backend
+  • Frontend
+- All executed technical interviews must complete (AND-join) before the case proceeds to Stage 4.
+- Important dependency: No technical interview (ML/Backend/Frontend) may occur unless Coding has occurred earlier in the same case.
+
+Stage 4 — Final decision phase (two parallel branches)
+- Entry: This stage is entered from any of:
+  • Skipping Telephonic (Stage 0 → Stage 4),
+  • Telephonic followed by bypass (Stage 1A → Stage 4),
+  • Completion of Stage 2/2.5/3 (with or without Coding and with any subset of ML/Backend/Frontend).
+- Once any Stage 4 activity occurs, the process cannot return to any earlier-stage activity (Telephonic, Screening, Background, Extensive, Coding, ML, Backend, Frontend).
+
+- Parallel split (AND) into two concurrent branches:
+  A) Rejection branch
+     • Activity: Rejected
+     • Loop: Rejected may repeat one or more times (self-loop).
+     • When done, the branch can be exited.
+
+  B) Behavioral/Offer branch
+     • Activities: Behavioral and Offer
+     • Both are optional; each may occur zero or more times (self-loops permitted).
+     • Ordering between Behavioral and Offer is flexible; either may precede the other and they may repeat.
+
+- Inter-branch interleavings permitted:
+  • Rejected may interleave with Behavioral and/or Offer in any order (e.g., Rejected → Behavioral, Rejected → Offer, Offer → Rejected), possibly multiple times.
+- Final synchronization: The case ends after both branches have been explicitly or implicitly closed (each branch can be skipped).
+
+Optionality and cardinality summary
+- Mandatory once: Application.
+- Optional (0 or 1 occurrence each): Telephonic, Extensive, Coding.
+- Mandatory if Stage 2 is entered: both Screening and Background exactly once each (AND-parallel).
+- Technical interviews (enabled only if Coding occurs): ML, Backend, Frontend each 0 or 1 time; any order; at most once.
+- Final phase loops (Stage 4): Rejected 1+ times if entered; Behavioral 0+ times; Offer 0+ times. Any interleaving among Stage 4 activities is allowed.
+
+Explicit ordering and dependency constraints (must-haves)
+- Application is first. No activity can precede it.
+- Telephonic gating:
+  • Screening and Background cannot occur unless Telephonic occurred earlier (and the case chose to enter Stage 2).
+  • If Telephonic is skipped, then Screening, Background, Extensive, Coding, ML, Backend, Frontend are all disallowed for the remainder of the case.
+
+- Pre-technical AND semantics:
+  • If either Screening or Background occurs, then the other must also occur exactly once before leaving Stage 2.
+  • Extensive may occur only after both Screening and Background are completed.
+
+- Technical dependencies:
+  • Coding may occur only after the Screening+Background AND-join (post any optional Extensive).
+  • ML, Backend, and Frontend may occur only if Coding occurred earlier; they may not occur before Coding or if Coding is skipped.
+  • ML, Backend, Frontend can occur in any order and at most once each; no repetitions.
+
+- Final-phase entry and no-return rule:
+  • Stage 4 (Rejected, Behavioral, Offer) can be entered at three points:
+    – directly after Application (skipping Telephonic),
+    – after Telephonic (bypass path),
+    – after completion of Stage 2/2.5/3 (with or without Coding and any subset of technical interviews).
+  • Once any Stage 4 activity occurs (Rejected, Behavioral, Offer), no earlier-stage activity may occur afterward (Telephonic, Screening, Background, Extensive, Coding, ML, Backend, Frontend). Returning to earlier stages is not permitted.
+
+- Final-phase flexibility:
+  • Within Stage 4, Rejected may repeat; Behavioral and Offer may each repeat; any interleaving among these three is allowed.
+  • Either branch of Stage 4 may be skipped entirely.
+
+Examples of valid orderings (illustrative, not exhaustive)
+- Application → Rejected
+- Application → Telephonic → Rejected
+- Application → Telephonic → Background → Screening → Rejected
+- Application → Telephonic → Screening → Background → Coding → Frontend → Rejected
+- Application → Telephonic → Background → Screening → Coding → ML → Frontend → Behavioral → Offer
+- Application → Telephonic → Screening → Background → Coding → ML → Frontend → Rejected → Behavioral → Offer
+- Application → Telephonic → Background → Screening → Coding → Backend → Frontend → Behavioral → Behavioral → Offer → Offer
+- Application → Telephonic → (bypass) → Rejected → Behavioral → Offer (Stage 4 interleavings)
+
+Examples of invalid orderings (must be rejected)
+- Screening or Background before Telephonic (e.g., Application → Screening → Telephonic → …).
+- Background or Screening executed without the other when Stage 2 is entered.
+- Extensive before both Screening and Background have completed.
+- Any technical interview before Coding (e.g., … → ML → Coding …; … → Frontend → Coding …).
+- Any return to earlier stages after Stage 4 activities have begun (e.g., … → Offer → Screening …; … → Rejected → Background …; … → Rejected → Extensive …; … → Offer → Coding …).
+- Telephonic after Screening or Background (e.g., Application → Background → Telephonic …).
+
+Concurrency and synchronization semantics
+- AND-parallel:
+  • Stage 2: Screening and Background must both complete (any order/parallel) before proceeding.
+  • Stage 3: ML/Backend/Frontend may execute in any order/parallel if, and only if, Coding has occurred.
+  • Stage 4: Rejection branch and Behavioral/Offer branch are in true parallel; activities in these branches can interleave arbitrarily until the final join.
+- Skips (silent transitions) allow optional entry/exit at the points described above; they do not permit violating the ordering and dependency constraints listed.
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

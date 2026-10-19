@@ -1,0 +1,87 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Scope: A streamlined, governed loan origination flow from appointment request to underwriting decision and signing, with clear rules for early rejection, targeted enrichment, and an exclusive underwriter decision point.
+- Purpose: Reduce waste and cycle time, eliminate uncontrolled rework, and ensure approvals are based on complete, properly sequenced information.
+
+Key stakeholders and roles involved
+- Applicant/Borrower (explicitly referenced)
+- Underwriter (explicitly referenced)
+- Other operational roles are left implicit; tasks retain their names without assigning additional actors.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Trigger: Applicant submits Request Appointment.
+
+Intake and appointment
+1) Request Appointment
+   - Decision (exclusive):
+     a) Appointment Denied (end). Criteria should be explicit and consistently applied to avoid unnecessary requests (e.g., capacity, basic eligibility). No additional activities are introduced; this refines decision usage.
+     b) Set Appointment (accepted).
+2) Set Appointment -> Hand In Credit Application
+   - Target: Minimize wait between setting the appointment and hand-in.
+3) Hand In Credit Application -> Verify Borrowers Information
+   - Verification completes baseline checks before any enrichment.
+
+Post-verify decisioning (sequentialized governance)
+4) Decision 1 (exclusive): Baseline outcome
+   - If baseline fails: Application Rejected (terminal). Enforce prompt termination to avoid downstream waste.
+   - Else: Proceed to one of the following governed paths.
+5) Decision 2 (exclusive): Straight-through eligibility vs. enrichment required
+   - If strictly defined straight-through criteria are met: execute skipped_examination and proceed directly to signing. Skipped path is retained but tightly governed; it cannot bypass the requirement to sign on approval.
+   - Else: perform targeted enrichment prior to underwriting submission.
+
+Targeted enrichment (optional, parallel allowed, but bounded and criteria-driven)
+6) Optional Enrichment A: Request Co-Signer On Loan
+   - Trigger only when applicant profile meets defined co-signer thresholds. At most one request cycle; no repeated re-requests.
+7) Optional Enrichment B: Make Visit to Assess Collateral
+   - Trigger when collateral is material to the risk decision. Cap at one scheduled visit; if unsuccessful or insufficient, move to a documented decision (reject for insufficient information or request alternative evidence) rather than looping indefinitely. No additional activities are introduced; this constrains rework within existing steps.
+8) Synchronization and submission
+   - Synchronize completion of the required enrichment steps (if any). If neither enrichment is required, proceed directly. Submit File to Underwriter occurs only after enrichment is completed or explicitly deemed not required.
+
+Underwriter decision and completion (exclusive, strictly after submission)
+9) Underwriter decision (exclusive, with SLA)
+   - Approve: Sign Loan Agreement is mandatory on all approvals; no skip-to-end without signing.
+   - Decline: Loan Denied (terminal).
+   - Decision occurs only after Submit File to Underwriter; remove model-level parallelism that allowed interleavings.
+10) End conditions and outcomes
+   - Appointment Denied
+   - Application Rejected
+   - Loan Denied
+   - Sign Loan Agreement
+
+Parallel activities and synchronization points
+- Parallelism is limited to the optional enrichment pair (co-signer request and collateral visit), which may proceed concurrently when both are required. A single synchronization point precedes Submit File to Underwriter. No parallelism exists between underwriting decision and other tasks; the flow is sequential to improve traceability.
+
+Exception handling and error paths
+- Appointment Denied: Immediate end.
+- Application Rejected: Immediate end on baseline failure after verification.
+- Enrichment exceptions:
+  • Co-signer unavailable or declines: proceed to underwriter submission with a note of insufficiency or reject for insufficient support, per defined criteria.
+  • Collateral visit unsuccessful: no repeats beyond the cap; proceed to decision (reject or alternative evidence determination) without creating loops.
+- Underwriter decision: If additional information is requested, return to a single, bounded enrichment cycle; avoid unbounded back-and-forth.
+
+Rework loops and escalation procedures (improvements)
+- Remove unbounded Make Visit loops; allow at most one visit in the standard flow. Any need for further evidence is resolved via a single, bounded re-evaluation rather than iterative field visits.
+- Disallow repeated co-signer requests; one governed request only.
+- Enforce a single synchronization checkpoint before submission; no concurrent underwriter decision-making with upstream tasks.
+
+Process metrics and performance characteristics (targets)
+- Shorten intake delays:
+  • Request -> Set Appointment and Set -> Hand In: reduce waiting by clear scheduling policies; target reductions from ~82k time units to substantially lower (for example, 40–50% improvement). The exact numeric target can be set by the organization’s SLA framework.
+- Reduce waste downstream by earlier terminations:
+  • Increase proportion of Application Rejected decisions when baseline clearly fails, reducing expensive Submit -> Denied outcomes.
+- Enrichment efficiency:
+  • Eliminate multi-visit loops (observed 563 repeats), expect significant cycle-time reduction on paths previously reaching 360k–430k units.
+- Underwriter SLA:
+  • Set a strict turnaround from Submit to decision (approval or denial) to prevent ~80k-unit delays; aim for a materially shorter target based on capacity.
+- Quality and compliance:
+  • Remove the possibility to approve without signing; all approvals must culminate in Sign Loan Agreement.
+
+Improvements made compared to AS-IS
+- Sequencing corrected: Underwriter decision happens only after submission; parallel artifacts that caused interleavings are removed.
+- Governance of straight-through path: skipped_examination retained but bound to strict criteria and cannot bypass required signing.
+- Bounded rework: Collateral visit capped at one standard attempt; co-signer request limited to a single governed cycle, eliminating observed unbounded loops and alternating churn.
+- Targeted enrichment: Co-signer and collateral are triggered by explicit criteria and may run in parallel, then synchronize once before submission.
+- Early exit discipline: Stronger use of Application Rejected immediately after Verify when baseline fails, to avoid costly Submit -> Denied cases.
+- Simplified monitoring: Clear exclusive gateways and a single submission checkpoint enable unambiguous performance tracking and SLA enforcement.

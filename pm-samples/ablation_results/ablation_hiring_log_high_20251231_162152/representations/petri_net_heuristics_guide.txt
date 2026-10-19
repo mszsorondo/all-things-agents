@@ -1,0 +1,52 @@
+=== PETRI NET (HEURISTICS MINER) INTERPRETATION GUIDE ===
+
+The Heuristics Miner produces Petri nets by using frequency-based dependency measures, making it more robust to noise than the Alpha Miner.
+
+1. DEPENDENCY MEASURE CALCULATION:
+   - For activities A and B: dependency(A,B) = (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+   - Range: -1 to +1
+   - Positive values: A likely causes B
+   - Negative values: B likely causes A
+   - Near zero: No clear dependency
+
+2. THRESHOLDS AND PARAMETERS:
+   - Dependency threshold: Minimum dependency value to include an edge
+   - Positive observations: Minimum times A->B must occur
+   - Relative-to-best threshold: For detecting AND/XOR patterns
+   - Long-distance dependencies: Detect non-adjacent causal relationships
+
+3. ADVANTAGES OVER ALPHA MINER:
+   - Handles noise by using thresholds
+   - Can detect loops of length 1 and 2
+   - Identifies long-distance dependencies
+   - Produces cleaner models for noisy logs
+   - Distinguishes between AND and XOR splits/joins
+
+4. PETRI NET CONSTRUCTION:
+   - Activities become transitions
+   - Dependency edges become arcs through intermediate places
+   - AND/XOR semantics determined by frequency patterns
+   - Silent transitions may be added for routing
+
+5. INTERPRETING THE OUTPUT:
+   - Strong edges (high dependency): Main process flow
+   - Weak edges (low dependency): Exceptional paths
+   - Self-loops: Activity repetition
+   - Long-distance arcs: Skip patterns or escalations
+
+6. SPLIT/JOIN DETECTION:
+   - AND-split: All outputs typically activated together
+   - XOR-split: Exactly one output typically activated
+   - Based on co-occurrence frequencies in the log
+
+7. WHEN TO USE:
+   - Real-world event logs with noise
+   - When you need to filter out infrequent behavior
+   - Complex processes with loops
+   - When Alpha Miner produces poor results
+
+8. LIMITATIONS:
+   - May over-simplify if thresholds are too high
+   - May include noise if thresholds are too low
+   - Parameter tuning can be challenging
+   - Does not guarantee soundness like Inductive Miner

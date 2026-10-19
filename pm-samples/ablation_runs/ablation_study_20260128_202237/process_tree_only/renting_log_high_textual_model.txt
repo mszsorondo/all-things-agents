@@ -1,0 +1,248 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Describe the discovered rental/tenancy lifecycle from initial interest through decision, move-in, recurring rent handling, and termination as mined from event data.
+- Scope: From 'Apply for Viewing Appointment' to one of the terminal outcomes ('Reject Prospective Tenant', 'Evict Tenant', or 'Tenant Cancels Appartment').
+- Modeling basis: Inductive Miner process tree with sequences, exclusive choices, loops, and silent (tau) transitions that introduce optional/skippable behavior.
+
+Key stakeholders and roles involved
+- Prospective Tenant: Applies, views, submits paperwork, moves in, pays rent, may cancel.
+- Property Management/Landlord: Schedules/viewings, checks paperwork, screens tenants, decides on rejection/acceptance, issues warnings, accepts late payments, initiates eviction.
+
+Detailed step-by-step process flow
+
+Start conditions and trigger
+- Trigger: A prospective tenant performs 'Apply for Viewing Appointment'. This is the universal start of every case.
+
+Core activities and control flow (as observed)
+1) Apply for Viewing Appointment (always first)
+   - Intake of prospective tenant’s interest/request to view a property.
+
+2) Optional viewing path (exclusive choice: skip OR perform)
+   - Option A (skip via tau): No appointment is set and no property viewing occurs; the process can continue without a viewing.
+   - Option B (perform in sequence):
+     2.1) Set Appointment
+     2.2) View The Property
+     2.3) Optional paperwork and screening block (exclusive choice: skip OR perform)
+          - Option B1 (skip via tau): No paperwork or screening is performed at this point.
+          - Option B2 (perform in sequence):
+            a) Hand In The Paperwork
+            b) Check Paperwork
+            c) Screen Prospective Tenant
+            d) Optional: Extensive Screening (exclusive choice: skip OR perform)
+               - Either no additional screening
+               - Or perform 'Extensive Screening'
+
+3) Decision on candidate (exclusive choice)
+   - Path 3A) Reject Prospective Tenant
+     - Terminates the case immediately. End state: Rejected.
+   - Path 3B) Acceptance/Onboarding path (sequence):
+     3.1) Sign Contract
+     3.2) Move In
+
+4) Post–move-in rent handling (repeating loop; open-ended number of cycles)
+   - For each iteration of the loop (representing a rent period), the body allows:
+     4.1) Optional “missed payment management” (exclusive choice: skip OR inner repeating missed-payment cycle)
+          - Skip (via tau): No missed payment management occurs in this iteration.
+          - Or execute an inner loop that can repeat multiple times within the same iteration:
+            a) Miss Rent Payment
+            b) Issue Warning
+            c) Optional: Accept Late Payment (exclusive choice: skip OR accept)
+               - Either no acceptance recorded
+               - Or 'Accept Late Payment'
+            - This inner trio (a→b→c) can repeat multiple times in the same rent period, allowing multiple sequences of miss→warning→(optional acceptance).
+     4.2) Optional Pay Rent (exclusive choice: skip OR perform)
+          - Either rent is paid ('Pay Rent')
+          - Or paying rent is skipped in this iteration
+   - The outer loop repeats, meaning periods can continue indefinitely with combinations of the above, including the possibility of:
+     - Only missed-payment handling; or
+     - Only paying rent; or
+     - Both miss-handling and pay in the same iteration; or
+     - Neither (due to optionality via tau).
+
+5) Termination after tenancy
+   - Exclusive choice:
+     - Evict Tenant
+     - Tenant Cancels Appartment
+   - One of these ends the case. The discovered model does not include an explicit “normal lease completion” termination.
+
+Decision points with criteria and outcomes (as implied)
+- Optional viewing decision (skip vs proceed): The model allows the process to continue even if viewing is skipped.
+- Optional paperwork/screening decision (skip vs proceed): The model allows continuing without paperwork and screening.
+- Candidate decision: Exclusive choice between rejection and acceptance (proceed to sign+move-in).
+- Rent-cycle micro-decisions:
+  - Whether a missed payment occurs (if so, issue warning, optionally accept late payment).
+  - Whether rent is paid in the same cycle (optional and can co-occur with missed-payment handling).
+- End-of-tenancy termination: Exclusive choice between eviction and tenant cancellation.
+
+Parallel activities and synchronization
+- No parallel (+) operator is present in the discovered model; activities occur in sequence or via alternative/loop paths.
+
+Exception handling and error paths
+- Miss Rent Payment → Issue Warning → (optionally) Accept Late Payment. This pattern may occur repeatedly within a single cycle, and over many cycles.
+- Evict Tenant is a terminal exception outcome following extended noncompliance or policy decisions (criteria not encoded in the model).
+- Tenant Cancels Appartment is a terminal outcome initiated by the tenant.
+
+Rework loops and escalation procedures
+- Rework/looping:
+  - Outer rent loop: indefinite number of rental periods.
+  - Inner missed-payment loop: can repeat miss→warning→(optional acceptance) multiple times within the same period (rework within a cycle).
+- Escalation:
+  - Implicit via 'Issue Warning' and terminal 'Evict Tenant'. No explicit thresholds or timers are encoded.
+
+End conditions and outcomes
+- End state 1: Reject Prospective Tenant (pre-lease termination).
+- End state 2: Evict Tenant (post-move-in termination).
+- End state 3: Tenant Cancels Appartment (post-move-in termination).
+- No explicit “lease completed” end is present.
+
+Process metrics and performance characteristics (as observed/derivable)
+- Intake and decision metrics:
+  - Count of applications.
+  - Lead time from application to decision (reject vs accept).
+  - Viewing utilization rate: % skipping 'Set Appointment'/'View The Property'.
+  - Paperwork and screening coverage: % skipping vs completing 'Hand In The Paperwork'/'Check Paperwork'/'Screen Prospective Tenant' and 'Extensive Screening' rate.
+  - Acceptance vs rejection rate.
+- Onboarding metrics:
+  - Time from 'Sign Contract' to 'Move In'.
+- Tenancy/rent metrics:
+  - Average number of rent cycles per tenancy.
+  - On-time payment rate (% cycles with 'Pay Rent' and no 'Miss Rent Payment').
+  - Late/missed payment incidence, average warnings per tenancy, and frequency of 'Accept Late Payment'.
+  - Instances of cycles with neither pay nor missed-payment handling (data/compliance gaps).
+- Termination metrics:
+  - Distribution of end states: % eviction vs % tenant cancellation (no normal completion captured).
+  - Time from last warning to eviction (where applicable).
+
+Key challenges and pain points
+- Compliance gaps:
+  - Viewing is optional and fully skippable.
+  - Paperwork/check/screening can be entirely skipped before decision/signature.
+- Decision control weakness:
+  - The model permits choosing acceptance without evidence of completed paperwork/screening.
+- Rent-cycle ambiguity:
+  - Within a given period, the model allows both missing and paying rent, or neither, due to optional constructs; this causes data ambiguity and weak internal controls.
+  - Unlimited inner repetitions of miss→warning→(optional acceptance) enable indefinite rework without clear thresholds or escalation rules.
+- Termination coverage:
+  - Only eviction or tenant cancellation are modeled; normal lease completion is absent from the discovered behavior.
+- Reporting integrity:
+  - Optional/skippable steps and tau-induced paths make conformance and KPI attribution difficult (e.g., true conversion rates, screening compliance).
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a governed, controlled tenancy process that preserves all legitimate business behaviors while removing wasteful or noncompliant paths and clarifying decision logic and loops.
+- Scope: From initial application through decision, onboarding, recurring rent handling, and clear termination outcomes (including normal completion as an end condition).
+
+Key stakeholders and roles involved
+- Prospective Tenant: Initiates application, may view property, submits paperwork, moves in, pays rent, may cancel.
+- Property Management/Landlord: Conducts appointments, checks paperwork, screens tenant, decides on rejection/acceptance, issues warnings, may accept late payments under policy, and may evict in accordance with policy.
+
+Detailed step-by-step process flow
+
+Start conditions and trigger
+- Trigger: 'Apply for Viewing Appointment' by a prospective tenant.
+
+Governed pre-tenancy flow (mandatory checks before acceptance)
+1) Apply for Viewing Appointment
+2) Optional viewing (policy-allowed but controlled):
+   - If the tenant chooses to view first:
+     2.1) Set Appointment
+     2.2) View The Property
+   - If viewing is skipped, the process continues but paperwork and screening remain mandatory before any acceptance.
+3) Mandatory documentation and screening (must be completed before decision):
+   3.1) Hand In The Paperwork (required)
+   3.2) Check Paperwork (required)
+   3.3) Screen Prospective Tenant (required)
+   3.4) Conditional: Extensive Screening (performed only when risk criteria warrant; otherwise skipped)
+4) Decision on candidate (exclusive choice after screening):
+   - Reject Prospective Tenant (end state for pre-lease cases)
+   - Or accept and proceed:
+     4.1) Sign Contract
+     4.2) Move In
+
+Controlled rent cycle loop (one-and-only-one outcome per period)
+5) For each rent period (repeat until tenancy ends):
+   5.1) Period start: determine payment status by due date.
+   5.2) Exclusive outcomes per period:
+        - On-time payment path:
+          a) Pay Rent (completes the period)
+        - Missed payment path:
+          a) Miss Rent Payment
+          b) Issue Warning (includes due notice per policy)
+          c) Decision: Accept Late Payment this period?
+             - If yes: Accept Late Payment (completes the period)
+             - If no: no acceptance recorded for the period
+          d) Escalation rule: If cumulative missed payments/warnings exceed policy thresholds across periods, proceed to eviction (see termination). Thresholds are policy-defined; the activity used remains 'Evict Tenant'.
+   5.3) Proceed to next period and repeat the cycle.
+
+Termination outcomes (clear and complete)
+- Pre-lease termination:
+  - Reject Prospective Tenant (as above).
+- Post–move-in termination (exclusive outcome for the whole tenancy):
+  - Tenant Cancels Appartment (voluntary early termination).
+  - Evict Tenant (involuntary termination following governed escalation).
+  - Natural lease completion (non-activity end condition): tenancy ends at agreed lease maturity with all obligations fulfilled; process closes without additional steps.
+
+Decision points with criteria and outcomes
+- Viewing decision: Optional, does not bypass mandatory documentation and screening.
+- Screening outcome: Exclusive choice to reject or accept; acceptance is permitted only after 3.1–3.3 are completed (and 3.4 if triggered).
+- Rent-cycle decision: Exactly one per period:
+  - Pay on time OR miss→warning→(optional acceptance). Both cannot occur in the same period; neither cannot occur.
+- Eviction escalation: Based on policy thresholds (e.g., number of missed payments/warnings or age of arrears); when reached, terminate via 'Evict Tenant'.
+
+Parallel activities and synchronization
+- None required; the process remains sequential with clear gateways and a governed loop.
+
+Exception handling and error paths
+- Missed payment handling:
+  - Issue Warning each time a period is missed.
+  - Optionally Accept Late Payment once for that period if paid within grace terms.
+  - If thresholds are exceeded over time, terminate via 'Evict Tenant'.
+- Early termination by tenant:
+  - Tenant Cancels Appartment at any time post–move-in per policy.
+- Screening exceptions:
+  - Extensive Screening performed conditionally; if adverse results, reject.
+
+Rework loops and escalation procedures
+- Rework is limited to the rent-cycle loop:
+  - Exactly one outcome per period (on-time pay or miss-handling).
+  - Late acceptance is at most once per missed period (no inner repeated cycles in the same period).
+  - Escalation to eviction follows defined thresholds across periods (no indefinite warning loops).
+- No rework loops exist in pre-tenancy beyond re-submission of paperwork as needed (within 'Check Paperwork' resolution).
+
+End conditions and outcomes
+- Pre-lease: Rejected (process ends).
+- Post–move-in: One of:
+  - Natural lease completion (end condition without additional activity).
+  - Tenant Cancels Appartment.
+  - Evict Tenant.
+
+Process metrics and performance characteristics (targets and controls)
+- Compliance metrics:
+  - 100% completion of 'Hand In The Paperwork', 'Check Paperwork', and 'Screen Prospective Tenant' before any acceptance.
+  - Conditional 'Extensive Screening' usage rate aligned with risk criteria.
+- Efficiency metrics:
+  - Lead time from application to decision and to move-in.
+  - Appointment setup time and show-up rate (for cases choosing to view).
+- Tenancy health metrics:
+  - On-time payment rate per period.
+  - Missed payment rate, average warnings per tenancy, and late-payment acceptance rate (once-per-period cap).
+  - Time-to-eviction after threshold breach (minimize while ensuring due process).
+  - Average tenancy duration and distribution of termination outcomes, including proportion of natural completions.
+- Data integrity metrics:
+  - Zero periods with neither 'Pay Rent' nor 'Miss Rent Payment' recorded.
+  - No periods recording both 'Miss Rent Payment' and 'Pay Rent' concurrently.
+
+Key improvements made
+- Mandatory pre-acceptance controls: Paperwork, checks, and screening must precede any acceptance and contract signing.
+- Clarified optionality: Viewing remains optional but does not waive mandatory due diligence.
+- Clean rent-cycle logic: Exactly one outcome per period; removed allowance for both or neither event per period.
+- Limited rework: Inner repetitive miss→warning→accept loops within the same period are removed; acceptance of late payment is capped to once per missed period.
+- Governed escalation: Eviction tied to clear policy thresholds rather than indefinite warnings.
+- Complete termination set: Added a normal lease completion end condition for clarity and reporting (no new activity introduced).
+- Improved measurability: KPI set ensures screening compliance, data integrity per period, and transparent termination reasons.
+")

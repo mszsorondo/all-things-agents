@@ -1,0 +1,271 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end residential rental process from initial apartment viewing request through tenant onboarding, recurring rent collection, and tenancy termination.
+- Source: Directly-Follows Graph (DFG) of observed behavior. The description preserves all visible paths, loops, and outcomes.
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. Activities imply participation of:
+  - Prospective Tenant/Tenant (e.g., applying, viewing, paying, canceling)
+  - Internal property management staff for leasing, paperwork checking, screening, collections, and enforcement (e.g., checking paperwork, screening, issuing warnings, eviction)
+- No system-specific roles are provided.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Primary trigger: A prospective tenant initiates “Apply for Viewing Appointment.”
+
+Main intake and viewing sequence
+1) Apply for Viewing Appointment
+   - Decision: Early suitability check (implicit from observed immediate rejections).
+   - Outcomes:
+     a) Reject Prospective Tenant (frequency ≈ 849): Application is rejected without scheduling a viewing.
+     b) Set Appointment (≈ 9151): A viewing is scheduled.
+
+2) Set Appointment → View The Property (≈ 9151)
+   - Viewing occurs as scheduled.
+
+3) Post-viewing decision
+   - Outcomes:
+     a) Reject Prospective Tenant (≈ 1710): Candidate rejected after viewing.
+     b) Hand In The Paperwork (≈ 7441): Candidate decides to continue and submits paperwork.
+
+Qualification and contracting sequence
+4) Hand In The Paperwork → Check Paperwork (≈ 7441)
+   - Documentation is reviewed for completeness and accuracy.
+
+5) Check Paperwork → Screen Prospective Tenant (≈ 7441)
+   - Screening is performed based on the submitted documents.
+
+6) Screening outcomes
+   - Paths (mutually exclusive based on observed behavior):
+     a) Reject Prospective Tenant (≈ 2856)
+     b) Extensive Screening (≈ 2793) → subsequent outcomes:
+        - Reject Prospective Tenant (≈ 1815)
+        - Sign Contract (≈ 978)
+     c) Sign Contract (≈ 1792) directly from initial screening
+
+7) Sign Contract → Move In (≈ 2770)
+   - Contracted tenants proceed to occupancy.
+
+Post-move-in rent collection cycle
+8) First billing period after move-in
+   - Move In → Pay Rent (≈ 2656)
+   - Move In → Miss Rent Payment (≈ 114)
+
+9) Ongoing recurring payments
+   - Pay Rent → Pay Rent loop (≈ 14819): Regular periodic payments continue across billing cycles.
+
+Delinquency handling
+10) Pay Rent → Miss Rent Payment (≈ 770): Some tenants become delinquent in a subsequent period.
+11) Miss Rent Payment → Issue Warning (≈ 945): A warning is issued in every observed delinquency.
+12) Issue Warning outcomes
+    - Accept Late Payment (≈ 855) → then typically Pay Rent (≈ 794) to return to good standing.
+    - Evict Tenant (≈ 90) ends the tenancy for a subset who do not resolve the delinquency.
+13) Recidivism loop
+    - Accept Late Payment → Miss Rent Payment (≈ 61): Some tenants become delinquent again in the next period.
+
+Tenancy termination (regular/offboarding path)
+14) Pay Rent → Tenant Cancels Apartment (≈ 2680)
+    - Tenancy ends through tenant-initiated cancellation/notice following a rent payment.
+
+Decision points with criteria and possible outcomes
+- After Apply for Viewing Appointment:
+  - Criteria (implied): Basic eligibility or availability check.
+  - Outcomes: Reject Prospective Tenant or Set Appointment.
+- After View The Property:
+  - Criteria (implied): Post-viewing suitability/interest and availability.
+  - Outcomes: Reject Prospective Tenant or Hand In The Paperwork.
+- After Screen Prospective Tenant:
+  - Criteria (implied): Credit, background, affordability, references.
+  - Outcomes: Reject Prospective Tenant, Extensive Screening, or Sign Contract.
+- After Extensive Screening:
+  - Outcomes: Reject Prospective Tenant or Sign Contract.
+- Delinquency handling:
+  - After Miss Rent Payment → Issue Warning:
+    - Outcomes: Accept Late Payment (cure) or Evict Tenant (non-cure).
+
+Parallel activities and synchronization points
+- No explicit parallelism observed in the DFG; the flow appears sequential with exclusive decisions.
+
+Exception handling and error paths
+- Early rejection at application or post-viewing (paths to Reject Prospective Tenant).
+- Delinquency path with warning and either cure (Accept Late Payment) or termination (Evict Tenant).
+
+Rework loops and escalation procedures
+- Rework: Recurring rent payments (Pay Rent → Pay Rent).
+- Delinquency recurrence: Accept Late Payment → Miss Rent Payment indicates repeat issues and repeated warnings.
+- Escalation: Issue Warning → Evict Tenant represents enforcement escalation.
+
+End conditions and outcomes
+- Rejected before contract (Reject Prospective Tenant) – process ends for the candidate.
+- Tenancy confirmed and active (Move In) – transitions into ongoing billing cycle.
+- Tenancy ends via:
+  - Tenant Cancels Apartment (post-payment path)
+  - Evict Tenant (post-delinquency escalation)
+
+Process metrics and performance characteristics (as observed)
+- Volumes (derived from DFG frequencies; approximate):
+  - Applications advancing to appointment: 9151; early rejections: 849 → ~10,000 total applications.
+  - Viewing to next step: 7441 proceed to paperwork; 1710 rejected.
+  - Screening outcomes (of 7441):
+    - Direct reject: 2856
+    - Extensive screening: 2793 → 978 accepted, 1815 rejected
+    - Direct sign: 1792
+    - Overall accepts to contract: 2770 (≈ 37% of screened)
+  - Move In events: ≈ 2770
+  - First-period outcomes after Move In: 2656 pay, 114 miss
+  - Delinquency incidents: 945 warnings issued across observed periods; ~90 evictions (≈ 9.5% of delinquency incidents)
+  - Late cures: 855 accept late payment; 794 of those return to Pay Rent; 61 re-miss
+  - Tenant-initiated cancellations: 2680 (typically following a payment)
+  - Recurring payments: very high Pay Rent → Pay Rent transitions (≈ 14819), reflecting ongoing monthly cycles.
+
+- Timings (performance values in seconds; indicative averages):
+  - Apply → Set Appointment / Set Appointment → View / View → Hand In / Screen → outcomes: often around ~80–84k s (≈ 22–24 hours) between consecutive steps.
+  - Hand In The Paperwork → Check Paperwork: ~44,106 s (≈ 12.3 hours).
+  - Check Paperwork → Screen Prospective Tenant: ~37,860 s (≈ 10.5 hours).
+  - Post-move-in actions (e.g., Move In → Pay Rent): ~81k s (≈ 22.5 hours) between recorded events; rent cycle timing reflects periodic billing.
+
+Key challenges and pain points
+- High attrition late in the funnel:
+  - ~63% of screened candidates are rejected, implying substantial effort spent on candidates unlikely to qualify.
+  - 1710 rejections post-viewing indicate capacity spent on showings that do not convert.
+- Delinquency and repeat issues:
+  - 945 delinquency incidents with 7% immediate recidivism after late-payment cure (61/855).
+  - 9.5% of delinquency incidents lead to eviction, which is costly for all parties.
+- Operational load:
+  - Extensive Screening invoked for ~37.5% of screened candidates (2793/7441), creating longer cycle times.
+- Terminations:
+  - High frequency of tenant-initiated cancellations (2680) suggests many tenancies conclude via regular notice rather than eviction; ensuring smooth offboarding is critical.
+- Bottlenecks:
+  - Multi-step handoffs each separated by ~10–24 hours suggest waiting/coordination delays, especially in paperwork checking and screening.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Streamlined residential rental process that improves conversion of qualified applicants, reduces late-stage rejections and delinquency, and clarifies termination handling—while preserving the same set of activities observed in the source model.
+
+Key stakeholders and roles involved
+- Roles not specified in the source; responsibilities inferred from activity names:
+  - Prospective Tenant/Tenant
+  - Internal property management staff for leasing, paperwork checks, screening, collections, and enforcement
+- Governance focuses on decision criteria, sequencing discipline, and service levels without adding new activities.
+
+Detailed step-by-step process flow (optimized sequencing and criteria)
+
+Start conditions and triggers
+- Trigger: Prospective tenant initiates Apply for Viewing Appointment.
+
+Intake and pre-viewing triage (tightened criteria using existing paths)
+1) Apply for Viewing Appointment
+   - Decision rule enhancement:
+     - Apply stronger up-front criteria (based on clearly published minimum requirements) to increase appropriate early rejections via Reject Prospective Tenant when applicants are unlikely to qualify.
+     - Qualified applicants proceed to Set Appointment.
+   - Outcomes:
+     a) Reject Prospective Tenant
+     b) Set Appointment
+
+2) Set Appointment → View The Property
+   - Ensure appointment confirmations and punctual showings (no added tasks; policy).
+
+Post-viewing gate (reduce paperwork on low-probability candidates)
+3) View The Property
+   - Decision:
+     - Only candidates affirming intent and meeting basic criteria proceed to Hand In The Paperwork.
+     - Otherwise, Reject Prospective Tenant.
+   - Outcomes:
+     a) Reject Prospective Tenant
+     b) Hand In The Paperwork
+
+Qualification and contracting (SLA-driven, risk-based pathing)
+4) Hand In The Paperwork → Check Paperwork
+   - Target SLA for completeness verification to minimize wait time (use existing Check Paperwork activity).
+
+5) Check Paperwork → Screen Prospective Tenant
+   - Decision at screening:
+     - If candidate clearly meets thresholds, proceed to Sign Contract directly.
+     - If risk signals present but not disqualifying, route to Extensive Screening.
+     - If clear disqualifiers exist, Reject Prospective Tenant.
+
+6) Extensive Screening (when invoked)
+   - Decision:
+     - If criteria met after deeper review, Sign Contract.
+     - Else, Reject Prospective Tenant.
+
+7) Sign Contract → Move In
+   - Confirm unit readiness and onboarding (policy within the same activity sequence; no added steps).
+
+Post-move-in rent cycle with disciplined delinquency handling
+8) First billing period after Move In
+   - Paths:
+     a) Move In → Pay Rent
+     b) Move In → Miss Rent Payment (for initial delinquencies)
+
+9) Recurring rent cycle
+   - Pay Rent → Pay Rent loop continues on schedule.
+
+10) Delinquency management
+    - Miss Rent Payment → Issue Warning
+    - Issue Warning decision rule improvements (using the same activities):
+      a) Accept Late Payment: If payment is received within the grace period, return to Pay Rent.
+      b) Evict Tenant: Reserved for repeated or unresolved misses. Policy: eviction only after failure to cure across repeated warnings or consecutive misses (the same Issue Warning step can occur multiple times; decision logic is tightened rather than adding new tasks).
+    - Recidivism handling: If Accept Late Payment → Miss Rent Payment repeats, loop back to Issue Warning with stricter conditions per policy.
+
+Tenancy termination (clarified)
+11) Regular offboarding path
+    - Pay Rent → Tenant Cancels Apartment
+    - Ensure that cancellation occurs with the account in good standing (final period paid), using existing sequence with policy checks embedded.
+
+Decision points with criteria and possible outcomes (optimized)
+- Apply for Viewing Appointment:
+  - Criteria: Published minimum requirements; use Reject Prospective Tenant for clear mismatches; Set Appointment for likely-qualified.
+- Post-viewing:
+  - Criteria: Intent to proceed and still-meeting basics; otherwise reject early before paperwork.
+- Screening:
+  - Criteria: Deterministic thresholds for direct Sign Contract; route only borderline cases to Extensive Screening; reject if thresholds not met.
+- Extensive Screening:
+  - Criteria: Approve borderline but acceptable risks → Sign Contract; otherwise reject.
+- Delinquency:
+  - Criteria: Grace period for Accept Late Payment; Evict Tenant based on non-cure and repeat offenses (multiple passes through Issue Warning allowed before eviction).
+
+Parallel activities and synchronization points
+- No explicit parallelism introduced; the flow remains sequential with exclusive decisions. All joins/splits are XOR based on criteria.
+
+Exception handling and error paths
+- Immediate rejections at intake or post-viewing prevent unnecessary downstream work.
+- Delinquency exceptions managed via repeated Issue Warning passes before Evict Tenant, reducing premature terminations.
+
+Rework loops and escalation procedures
+- Pay Rent → Pay Rent ongoing cycle remains.
+- Delinquency loop: Accept Late Payment → Miss Rent Payment → Issue Warning can repeat, but eviction is gated to occur after repeated non-cure events (policy). This reduces oscillation and improves stability.
+
+End conditions and outcomes
+- Reject Prospective Tenant (at intake, post-viewing, or after screening/extensive screening).
+- Active tenancy with recurring rent (Pay Rent loop).
+- Tenant Cancels Apartment (regular termination).
+- Evict Tenant (only after repeated non-cure per tightened policy).
+
+Process metrics and performance targets
+- Conversion improvements (targets using existing steps and decisions):
+  - Increase early rejection rate at Apply stage to reduce unnecessary showings by pre-filtering (shift some of the 1710 post-viewing rejections upstream).
+  - Reduce reliance on Extensive Screening by applying clearer thresholds; aim to reserve it for genuinely borderline cases (decrease from ~37.5% of screened cases).
+  - Improve acceptance yield among those who proceed to paperwork by eliminating low-probability candidates earlier.
+- Cycle-time targets (based on observed ~10–24 hours between steps):
+  - Hand In The Paperwork → Check Paperwork: target < 8 hours average (from ~12.3 hours observed).
+  - Check Paperwork → Screen Prospective Tenant: target < 8 hours average (from ~10.5 hours observed).
+  - Screening → decision (Sign/Reject/Extensive): target < 12–16 hours depending on path.
+- Delinquency outcomes:
+  - Reduce eviction share among delinquency incidents by tightening the cure-first policy (target < 5% of delinquency incidents resulting in eviction).
+  - Reduce immediate recidivism after Accept Late Payment (target < 3%).
+
+Improvements made (without adding new activities)
+- Stronger early decisioning at Apply and post-viewing steps to avoid downstream waste.
+- Risk-based and criteria-driven routing to Extensive Screening to reduce unnecessary deep reviews.
+- SLA discipline on paperwork checks and screening to compress idle time between steps.
+- Cure-first delinquency policy using repeated Issue Warning before Evict Tenant, decreasing premature terminations while maintaining enforcement capability.
+- Clarified offboarding through Tenant Cancels Apartment post-payment to ensure clean closures.
+
+""")

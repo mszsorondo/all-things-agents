@@ -1,0 +1,225 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- This process describes patient flow from registration through clinical assessment, diagnosis, treatment, outcome evaluation, and discharge, as observed in the provided directly-follows graph (DFG). It consolidates behavior across two entry channels (Register at FD and Register at ER) and captures common paths, alternatives, rework, and timing between activities.
+
+Key stakeholders and roles involved
+- Specific roles are not named in the source. The process involves:
+  - Patient (implicit)
+  - Healthcare provider team responsible for registration, examinations, diagnosis, treatment, and discharge (aggregate actor; individual roles not specified in the source)
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start events (two observed):
+  1) Register at FD (family doctor/primary care channel)
+  2) Register at ER (emergency channel)
+- The DFG shows no incoming edges to these two activities; they are inferred as start points. Volume split is approximately even:
+  - Register at FD: 4,992 cases (~49.9%)
+  - Register at ER: 5,008 cases (~50.1%)
+
+Post-registration routing (triage to assessment)
+- From both registration channels, four alternative next steps are observed (XOR):
+  - To Expert Examination: 5,754 cases (~57.5%; 2,888 from FD, 2,866 from ER; average delay ~11.1 hours, 40,000 seconds)
+  - To Examination: 3,609 cases (~36.1%; 1,783 from FD, 1,826 from ER; ~11.1 hours)
+  - To Thorough Examination: 317 cases (~3.2%; 158 from FD, 159 from ER; ~22.2 hours, 80,000 seconds)
+  - Directly to Diagnosis: 320 cases (~3.2%; 163 from FD, 157 from ER; ~22.2 hours)
+
+Assessment and escalation path
+- Examination (general) path:
+  - Examination -> Diagnosis: 1,641 cases (~45.5% of Examination; ~16.7 hours, 60,000 seconds)
+  - Examination -> Thorough Examination: 1,968 cases (~54.5% of Examination; ~16.7 hours)
+- Expert Examination path:
+  - Expert Examination -> Diagnosis: 2,117 cases (~36.7% of Expert Examination; ~16.7 hours)
+  - Expert Examination -> Thorough Examination: 3,637 cases (~63.3% of Expert Examination; ~16.7 hours)
+- Thorough Examination path (common sink for escalations):
+  - Thorough Examination -> Diagnosis: 5,922 cases (covers escalations from both Examination and Expert Examination; ~16.7 hours)
+
+Diagnosis to treatment
+- Diagnosis -> Treatment: 11,746 occurrences (~16.7 hours)
+  - Note: Count exceeds case count due to rework loops after unsuccessful treatment (see below).
+
+Treatment and outcomes
+- From Treatment, three outcomes are observed (XOR):
+  - Treatment -> Treatment successful: 9,005 transitions (~76.7% of treatment transitions; ~16.7 hours)
+  - Treatment -> Treatment unsuccessful: 1,746 transitions (~14.9%; ~16.7 hours)
+  - Treatment -> Discharge: 995 transitions (~8.5%; ~27.8 hours, 100,003 seconds)
+- Post-successful treatment:
+  - Treatment successful -> Discharge: 9,005 transitions (~11.1 hours)
+- Post-unsuccessful treatment (rework loop):
+  - Treatment unsuccessful -> Diagnosis: 1,746 transitions (~11.1 hours), initiating a repeat cycle of Diagnosis -> Treatment -> Outcome.
+
+Decision points with criteria and possible outcomes
+- Entry channel decision (implicit, outside process scope): Register at FD vs Register at ER (both observed).
+- Post-registration triage decision (XOR among four):
+  - Route to Expert Examination, Examination, Thorough Examination, or direct Diagnosis.
+- Assessment escalation (XOR):
+  - From Examination or Expert Examination, either proceed to Diagnosis or escalate to Thorough Examination.
+- Treatment outcome decision (XOR):
+  - Treatment successful, Treatment unsuccessful, or direct Discharge (without an explicit success tag).
+
+Parallel activities and synchronization points
+- No parallelism is evidenced in the DFG; flow proceeds sequentially through assessments to diagnosis and treatment. No explicit joins are required beyond normal sequential flow.
+
+Exception handling and error paths
+- Direct Register -> Diagnosis (rare ~3.2%): apparent fast-track or bypass of examinations (criteria not visible in the log).
+- Treatment -> Discharge without an explicit “Treatment successful” step (~9.9% of discharges): indicates either a shortcut or incomplete documentation of outcomes.
+- Rework after unsuccessful treatment: Unsuccessful outcomes loop back to Diagnosis (1,746 transitions), implying repeated cycles of diagnosis and treatment until a successful outcome is achieved or direct discharge occurs.
+
+Rework loops and escalation procedures
+- Rework loop: Treatment unsuccessful -> Diagnosis -> Treatment -> (successful/unsuccessful). The DFG shows at least 1,746 such loops; the number of cycles per patient is not directly observable from DFG alone.
+- Escalation: Both Examination and Expert Examination frequently escalate to Thorough Examination before Diagnosis:
+  - Expert Examination escalates in ~63% of cases.
+  - Examination escalates in ~55% of cases.
+
+End conditions and outcomes
+- Primary end state: Discharge
+  - Via Treatment successful -> Discharge: 9,005 cases (~90.1% of all discharges)
+  - Via Treatment -> Discharge directly: 995 cases (~9.9% of discharges)
+- No other end states are observed in the DFG.
+
+Process metrics and performance characteristics
+- Volumes and proportions:
+  - Approximate total cases: ~10,000 (sum of initial registration routes equals 10,000).
+  - Entry channels: ~50/50 split between FD and ER.
+  - Initial routing:
+    - Expert Examination: 57.5%
+    - Examination: 36.1%
+    - Thorough Examination (direct): 3.2%
+    - Direct Diagnosis: 3.2%
+  - Escalations:
+    - From Expert Examination to Thorough Examination: 63.3%
+    - From Examination to Thorough Examination: 54.5%
+  - Treatment outcomes (per transition out of Treatment):
+    - Successful: 76.7%
+    - Unsuccessful (rework): 14.9%
+    - Direct discharge without explicit success: 8.5%
+- Performance (average time between steps):
+  - Most successive steps: ~16.7 hours (60,000 seconds)
+  - Registration to first assessment decision: ~11.1 hours (40,000 seconds)
+  - Rare registration to Diagnosis/Thorough Examination: ~22.2 hours (80,000 seconds)
+  - Treatment -> Discharge (direct): ~27.8 hours (100,003 seconds), the slowest observed leg
+  - Treatment successful -> Discharge: ~11.1 hours
+- Indicative end-to-end time for the dominant pathway (Register -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge): roughly 88.9 hours (~3.7 days), aggregating average inter-step times (40k + 60k + 60k + 60k + 60k + 40k seconds).
+- Bottlenecks and queues:
+  - Escalations to Thorough Examination add repeated ~16.7-hour waits and are frequent, indicating a capacity or triage precision issue.
+  - The direct Treatment -> Discharge leg is the longest single hop (~27.8 hours) and may reflect discharge readiness or bed management delays.
+
+Key challenges and pain points
+- High escalation rates to Thorough Examination (>50% from both Examination types), suggesting initial triage may frequently under-specify the needed assessment level.
+- Rework loop after unsuccessful treatment (1,746 loops), causing extended cycle times and resource consumption.
+- Data quality/compliance gap: 995 direct Treatment -> Discharge transitions bypass an explicit outcome classification step, reducing transparency of clinical effectiveness.
+- Variable post-registration routing (four-way XOR) without visible criteria leads to inconsistent patient journeys and uneven workload distribution.
+- End-to-end duration is long for the dominant path (~3.7 days), driven by multiple ~16.7-hour waits between steps and repeated escalations.
+- Uneven performance: the slowest hop is direct Treatment -> Discharge (~27.8 hours), potentially indicating discharge coordination delays.
+- Limited visibility into decision criteria and no evidence of parallel efficiency gains (e.g., concurrent preparatory activities), though DFG is not suited to identify parallelism.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- This target design streamlines the observed flow while preserving all legitimate clinical activities: Registration (FD/ER), Examination or Expert Examination with controlled escalation to Thorough Examination, Diagnosis, Treatment, explicit outcome classification (successful or unsuccessful), and Discharge.
+- It removes or constrains wasteful and noncompliant behaviors (e.g., discharging after treatment without an explicit outcome) and clarifies decision logic to reduce escalations and rework.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source. The process is described for the Patient and a generalized Healthcare provider team. Governance improvements are stated as rules within the existing activity set (no new activities introduced).
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start events:
+  - Register at FD (primary care channel)
+  - Register at ER (emergency channel)
+- These remain separate start points but feed a single standardized triage logic.
+
+Standardized post-registration triage (XOR)
+- After registration, route to exactly one of:
+  1) Examination (default pathway for routine/low-complexity presentations)
+  2) Expert Examination (for clearly complex/specialized presentations)
+  3) Thorough Examination (reserved for clearly critical/complex cases where comprehensive assessment is immediately warranted)
+  4) Direct Diagnosis (fast-track only when clinical evidence is unequivocal)
+- Improvements:
+  - Formalize criteria for each route to minimize unnecessary escalations later. The choice is made once, based on available information at registration and initial assessment signals, and documented.
+
+Assessment and escalation (controlled)
+- Examination path:
+  - Examination -> Diagnosis by default.
+  - Conditional escalation to Thorough Examination only if Examination evidence is insufficient. Escalation is allowed once per case prior to the first Diagnosis.
+- Expert Examination path:
+  - Expert Examination -> Diagnosis by default.
+  - Conditional escalation to Thorough Examination only if expert-level assessment still lacks sufficient evidence. Escalation is allowed once per case prior to the first Diagnosis.
+- Thorough Examination path:
+  - Thorough Examination -> Diagnosis (no further assessment escalation).
+- Improvements:
+  - Limit the number of escalations (at most one escalation to Thorough Examination before the first Diagnosis), reducing repeated waits and handoffs.
+  - Make routing criteria explicit so that Thorough Examination is used intentionally rather than as a frequent fallback.
+
+Diagnosis to treatment
+- Diagnosis -> Treatment (required sequence; no shortcuts).
+- Improvements:
+  - Ensure completeness of diagnostic information before starting Treatment (especially if no prior Thorough Examination and diagnosis remains uncertain).
+
+Treatment and mandatory outcome classification (XOR)
+- From Treatment, exactly one of the following must occur:
+  - Treatment successful -> Discharge
+  - Treatment unsuccessful -> Diagnosis (rework)
+- The direct path Treatment -> Discharge is removed. Discharge requires an explicit outcome classification step (successful vs unsuccessful).
+- Improvements:
+  - Data quality and compliance: All discharges reflect a documented treatment outcome.
+  - Eliminate ambiguity and enable performance monitoring of treatment effectiveness.
+
+Rework loop (constrained)
+- If Treatment unsuccessful:
+  - Return to Diagnosis.
+  - If the prior pathway to Diagnosis did not include Thorough Examination and diagnostic uncertainty remains, proceed to Thorough Examination before re-diagnosing. Otherwise, proceed directly to Diagnosis.
+- Improvements:
+  - Use existing activities to prevent low-value cycling: require a comprehensive assessment (Thorough Examination) before repeating treatment when previous steps lacked it.
+
+Decision points with criteria and outcomes
+- Triage decision (XOR) with documented criteria to choose one of the four assessment entry paths.
+- Assessment escalation (XOR) with a single-escation rule to Thorough Examination.
+- Treatment outcome decision (XOR) mandates explicit outcome classification prior to Discharge.
+
+Parallel activities and synchronization points
+- No explicit parallelism is introduced, aligning with observed sequential flow. The design focuses on cleaner XOR logic and minimized escalations.
+
+Exception handling and error paths
+- Fast-track to Diagnosis remains permitted for clearly evident conditions; otherwise an assessment step is required.
+- If a patient’s condition worsens or remains unresolved after an unsuccessful treatment:
+  - Re-diagnose; if necessary, leverage Thorough Examination before repeating Treatment.
+- Discharge without outcome classification is not allowed.
+
+Rework loops and escalation procedures
+- Rework loop exists only when Treatment unsuccessful, and is bounded by:
+  - Mandatory reconsideration of diagnostic completeness (prefer Thorough Examination if not already performed and uncertainty persists).
+  - Explicit documentation of outcome at each treatment cycle to track effectiveness and prevent silent cycling.
+
+End conditions and outcomes
+- Discharge (single end state), reachable only after “Treatment successful -> Discharge.”
+- Cases may undergo one or more diagnosis-treatment cycles, but each cycle must end in either successful outcome and discharge, or further re-diagnosis with strengthened evidence.
+
+Process metrics and performance characteristics (targets)
+- Reduce escalations:
+  - Expert/Examination -> Thorough Examination escalation rate target: <25% (from current ~63% and ~55% respectively).
+- Eliminate direct Treatment -> Discharge hops:
+  - 0% of discharges without explicit “Treatment successful.”
+- Cycle time targets (median):
+  - Registration to first assessment: ~6–8 hours (from ~11.1 hours)
+  - Assessment to Diagnosis: ~8–10 hours (from ~16.7 hours)
+  - Diagnosis to Treatment: ~8–10 hours (from ~16.7 hours)
+  - Treatment to outcome classification: ~8–10 hours (from ~16.7 hours)
+  - Outcome to Discharge: ~6–8 hours (from ~11.1 hours)
+  - Dominant path end-to-end: ~48–60 hours (from ~88.9 hours), excluding rework.
+- Rework:
+  - Unsuccessful treatment loop rate target: <8% of treatments (from ~14.9%), achieved by improved initial triage and bounded escalation.
+
+Improvements made (summary)
+- Standardized triage: One-time, criteria-based routing to the appropriate assessment level; minimizes later escalations.
+- Controlled escalation: At most one escalation to Thorough Examination before first Diagnosis; prevents repeated delays.
+- Mandatory outcome classification: Removes ambiguous Treatment -> Discharge behavior; improves transparency and compliance.
+- Rework governance using existing activities: Before repeating treatment after an unsuccessful outcome, ensure diagnostic completeness (prefer Thorough Examination if not previously performed and uncertainty persists).
+- Performance focus: Tighter inter-step SLAs to reduce average waits by ~30–45% and shorten overall cycle time.
+- Data quality and monitoring: Outcome documentation enables reliable effectiveness metrics and root-cause analysis of rework.
+""")

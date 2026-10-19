@@ -1,0 +1,482 @@
+AS-IS PROCESS MODEL
+
+# LOAN APPLICATION PROCESS - CURRENT STATE
+
+## 1. PROCESS OVERVIEW AND PURPOSE
+
+The AS-IS loan application process represents the current operational reality of a financial institution's consumer lending workflow. This process handles loan applications from initial appointment request through final decision (approval with signing, denial, or rejection). The process exhibits significant complexity with multiple quality control steps, collateral assessments, co-signer requirements, and various paths to both successful and unsuccessful outcomes.
+
+The primary purpose is to evaluate creditworthiness, assess risk through collateral examination, and make lending decisions while managing appointment scheduling, borrower verification, and underwriting activities.
+
+## 2. KEY STAKEHOLDERS AND ROLES
+
+While specific role assignments are not explicitly defined in the source models, the following functional roles are implied by the activities:
+
+- **Loan Applicants/Borrowers**: Individuals requesting loans and participating in the appointment and application process
+- **Appointment Coordinators**: Staff responsible for scheduling and managing appointments
+- **Application Processors**: Personnel who receive and process credit applications
+- **Verification Specialists**: Staff conducting borrower information verification
+- **Collateral Assessors**: Personnel conducting physical visits to assess collateral value
+- **Credit Analysts**: Staff determining co-signer requirements and evaluating risk
+- **Underwriters**: Decision-makers who evaluate complete loan files and make lending recommendations
+- **Loan Officers**: Personnel responsible for finalizing approved loans and obtaining signatures
+
+## 3. DETAILED STEP-BY-STEP PROCESS FLOW
+
+### 3.1 START CONDITIONS AND TRIGGERS
+
+**Start Event**: Process begins when a potential borrower initiates contact with the lending institution.
+
+**Initial Trigger**: Customer expresses interest in obtaining a loan.
+
+### 3.2 MAIN PROCESS ACTIVITIES
+
+#### PHASE 1: APPOINTMENT SCHEDULING
+
+**Activity 1: Request Appointment**
+- **Description**: The borrower requests an appointment with the lending institution to discuss a loan application
+- **Start**: This is the first activity in the process (from source marking)
+- **Output**: Appointment request is created and queued for processing
+- **Average Duration to Next Activity**: ~82,658 seconds (approximately 23 hours)
+
+**Decision Point 1: Appointment Acceptance**
+After "Request Appointment", the process branches into two mutually exclusive paths:
+
+**Path A: Appointment Granted (90.4% of cases - 9,038 out of 10,000)**
+
+**Activity 2A: Set Appointment**
+- **Description**: An appointment time is scheduled and confirmed with the borrower
+- **Frequency**: 9,038 occurrences
+- **Average Duration to Next Activity**: ~82,658 seconds
+- **Outcome**: Borrower has a confirmed appointment to submit loan application
+
+**Path B: Appointment Denied (9.6% of cases - 962 out of 10,000)**
+
+**Activity 2B: Appointment Denied**
+- **Description**: The appointment request is denied (reasons not specified but may include incomplete information, ineligibility indicators, or capacity constraints)
+- **Frequency**: 962 occurrences
+- **Average Duration**: ~86,227 seconds from request to denial notification
+- **Outcome**: Process terminates immediately
+- **End State**: Application process ends without proceeding to formal application
+
+#### PHASE 2: APPLICATION SUBMISSION
+
+**Activity 3: Hand In Credit Application**
+- **Prerequisites**: Successful appointment has been set
+- **Description**: The borrower appears for the appointment and submits a formal credit application with required documentation
+- **Frequency**: 9,038 occurrences (all appointed applicants)
+- **Average Duration to Next Activity**: ~42,028 seconds (approximately 11.7 hours)
+- **Output**: Credit application is logged into the system and queued for verification
+
+#### PHASE 3: BORROWER VERIFICATION
+
+**Activity 4: Verify Borrowers Information**
+- **Description**: Staff verify the borrower's identity, income, employment, credit history, and other submitted information
+- **Frequency**: 9,038 occurrences
+- **Average Duration**: Variable depending on outcome path (32,266 to 50,001 seconds)
+- **Verification Scope**: Includes identity verification, employment confirmation, income validation, credit report review, and documentation completeness check
+
+**Critical Decision Point 2: Post-Verification Routing**
+After verification, the process exhibits complex branching with five possible paths:
+
+**Path 1: Direct Rejection (18.0% - 1,624 cases)**
+
+**Activity 5.1: Application Rejected**
+- **Description**: Application is rejected based on verification findings (likely due to credit score, income insufficiency, false information, or other disqualifying factors)
+- **Frequency**: 1,624 occurrences
+- **Average Duration**: ~32,266 seconds from verification completion
+- **Outcome**: Process terminates
+- **End State**: Application denied before underwriting
+
+**Path 2: Direct to Underwriting (51.1% - 4,623 cases)**
+
+**Activity 5.2: Submit File to Underwriter** (Direct submission without additional requirements)
+- **Description**: Application proceeds directly to underwriting without requiring collateral assessment or co-signer
+- **Frequency**: 4,623 direct submissions
+- **Average Duration to Underwriting**: ~48,327 seconds
+- **Outcome**: Underwriter receives complete file for evaluation
+
+**Path 3: Collateral Assessment Required (13.6% - 1,226 cases initially)**
+
+**Activity 5.3: Make Visit to Assess Collateral**
+- **Description**: Physical inspection and valuation of property or assets offered as loan collateral
+- **Frequency**: Initial visits: 1,226; Total visits across all instances: 2,789 (including loops)
+- **Average Duration**: ~35,269 seconds from verification to initial assessment
+- **Critical Issue**: REWORK LOOP DETECTED - This activity can repeat multiple times
+  - **Self-loop frequency**: 563 occurrences of repeated collateral visits
+  - **Average rework cycle time**: ~22,399 seconds per additional visit
+  - **Maximum observed repetitions**: Up to 7 consecutive visits in extreme cases
+- **Rework Causes** (inferred from behavior):
+  - Incomplete initial assessment
+  - Documentation deficiencies
+  - Property access issues
+  - Valuation disputes requiring re-assessment
+  - Additional collateral items requiring separate visits
+
+**Path 4: Co-Signer Requirement (13.6% - 1,233 cases initially)**
+
+**Activity 5.4: Request Co-Signer On Loan**
+- **Description**: Borrower is notified that a co-signer is required to strengthen the application
+- **Frequency**: 1,233 initial requests; 1,772 total (including after collateral assessment)
+- **Average Duration**: ~35,838 seconds from verification
+- **Critical Issue**: INTERLEAVED WITH COLLATERAL ASSESSMENT
+  - 733 cases show co-signer request followed by collateral visit
+  - 539 cases show collateral visit followed by co-signer request
+  - Zero performance time between collateral-to-cosigner suggests immediate sequential processing
+
+**Path 5: Examination Skipped - Fast Track (3.7% - 332 cases)**
+
+**Activity 5.5: Skipped_examination**
+- **Description**: A subset of applications bypasses normal underwriting examination, proceeding directly to loan agreement signing
+- **Frequency**: 332 occurrences
+- **Average Duration**: ~50,001 seconds from verification
+- **Critical Issue**: COMPLIANCE CONCERN
+  - This represents a "fast track" or potentially irregular approval path
+  - No underwriter review is performed
+  - Proceeds directly to signing, bypassing normal controls
+  - May indicate pre-approved products, insider loans, or process violations
+- **Outcome**: Direct path to loan signing without underwriting scrutiny
+
+#### PHASE 4: COMPLEX ROUTING AND CONVERGENCE
+
+**Multi-Path Convergence Logic**:
+
+The process exhibits complex interleaving of collateral assessment and co-signer requirements:
+
+**Scenario A**: Co-Signer → Collateral → Underwriting
+- Frequency: 1,030 cases (297 + 733 direct)
+- Total duration: Typically 346,000-372,000 seconds
+
+**Scenario B**: Collateral → Co-Signer → Underwriting
+- Frequency: 905 cases (287 + 539 + others)
+- Total duration: Typically 342,000-377,000 seconds
+
+**Scenario C**: Collateral Only → Underwriting
+- Frequency: 381 initial direct paths
+- Multiple collateral loops then underwriting
+
+**Scenario D**: Co-Signer Only → Underwriting
+- Frequency: 473 cases
+- Single co-signer requirement then underwriting
+
+**Critical Process Issue - Collateral Assessment Loops**:
+
+Evidence from variants shows excessive collateral re-assessment cycles:
+- 2 visits: 1,226 base cases proceed to at least one visit
+- 3 visits: 563 cases (direct self-loop evidence)
+- 4 visits: 237 cases (from variants)
+- 5 visits: 111 cases
+- 6 visits: 49 cases
+- 7 visits: 18 cases
+- 8+ visits: 10 cases (extreme outliers)
+
+**Total Collateral Visits**: 2,789 total visits for 1,226 initial requirements = 2.27 visits per case on average
+
+#### PHASE 5: UNDERWRITING DECISION
+
+**Activity 6: Submit File to Underwriter**
+- **Description**: Complete loan file (application, verification results, collateral assessment if applicable, co-signer information if applicable) is submitted to underwriter for final credit decision
+- **Total Frequency**: 7,082 submissions reach underwriting
+- **Average Duration to Decision**: 80,000-82,666 seconds depending on outcome
+- **Inputs**: Complete loan package including all prior documentation
+
+**Critical Decision Point 3: Underwriting Outcome**
+
+After underwriting review, the process splits into two mutually exclusive outcomes:
+
+**Outcome A: Loan Denied (67.6% of underwritten cases - 4,787 out of 7,082)**
+
+**Activity 7A: Loan Denied**
+- **Description**: Underwriter determines loan does not meet approval criteria and denies the application
+- **Frequency**: 4,787 cases
+- **Average Duration**: ~82,666 seconds from underwriting submission
+- **Percentage of Total Process Starts**: 47.9% of all appointment-granted applicants
+- **Critical Issue**: EXTREMELY HIGH DENIAL RATE
+  - Despite passing verification and completing assessments, over two-thirds of underwritten applications are denied
+  - Indicates potential issues with:
+    - Premature advancement of weak applications
+    - Inadequate pre-screening
+    - Ineffective verification or assessment processes
+    - Unrealistic underwriting standards
+    - Wasted effort on non-viable applications
+- **Outcome**: Process terminates
+- **End State**: Loan application denied after full underwriting review
+
+**Outcome B: Loan Approved (32.4% of underwritten cases - 2,295 out of 7,082)**
+
+**Activity 7B: Sign Loan Agreement**
+- **Description**: Approved loan proceeds to execution phase where borrower signs loan agreement and related documents
+- **Frequency**: 2,295 cases from normal underwriting path
+- **Additional**: 332 cases from skipped_examination path
+- **Total Signings**: 2,627 successful loan agreements
+- **Average Duration**: ~80,725 seconds from underwriting approval
+- **Outcome**: Process completes successfully
+- **End State**: Loan agreement executed, funds presumably disbursed
+
+#### PHASE 6: PROCESS TERMINATION
+
+**End Event Paths**:
+
+The process has four distinct termination points:
+
+1. **Appointment Denied**: 962 cases (9.6% of total starts)
+   - Earliest exit point
+   - No application submitted
+
+2. **Application Rejected**: 1,624 cases (16.2% of total starts)
+   - Exit after verification
+   - Failed initial screening
+
+3. **Loan Denied**: 4,787 cases (47.9% of appointment-granted cases)
+   - Exit after full underwriting
+   - Failed final credit decision
+
+4. **Loan Agreement Signed**: 2,627 cases (26.3% of appointment-granted cases)
+   - Successful completion
+   - Includes 2,295 normal approvals + 332 skipped examination
+
+**Overall Success Rate**: 26.1% of all process initiations (2,627 signings / 10,000 total requests)
+
+## 4. PROCESS METRICS AND PERFORMANCE CHARACTERISTICS
+
+### 4.1 Volume Metrics
+
+- **Total Process Initiations**: 10,000 appointment requests
+- **Appointments Granted**: 9,038 (90.4%)
+- **Appointments Denied**: 962 (9.6%)
+- **Applications Submitted**: 9,038 (100% of appointments)
+- **Applications Rejected Early**: 1,624 (18.0% of submissions)
+- **Cases Reaching Underwriting**: 7,082 (78.4% of submissions)
+- **Underwriting Denials**: 4,787 (67.6% of underwritten)
+- **Final Approvals**: 2,627 (26.1% overall, 29.1% of submissions)
+
+### 4.2 Timing Performance
+
+**Average End-to-End Duration by Variant**:
+- **Simple approval path** (no collateral/co-signer): ~339,454 seconds (94.3 hours / 3.9 days)
+- **Simple denial path** (no collateral/co-signer): ~337,687 seconds (93.8 hours / 3.9 days)
+- **Early rejection path**: ~236,355 seconds (65.7 hours / 2.7 days)
+- **Appointment denial**: ~86,227 seconds (24.0 hours / 1.0 days)
+- **With co-signer requirement**: ~372,496 seconds (103.5 hours / 4.3 days)
+- **With collateral assessment**: ~376,774 seconds (104.7 hours / 4.4 days)
+- **With both co-signer and collateral**: ~346,180 to ~367,719 seconds (varies by sequence)
+- **Skipped examination fast track**: ~260,013 seconds (72.2 hours / 3.0 days)
+- **Multiple collateral visits**: Up to ~469,827 seconds (130.5 hours / 5.4 days) for extreme cases
+
+**Activity-Level Performance**:
+- Request Appointment → Set/Deny: ~82,658 seconds (23.0 hours)
+- Set Appointment → Hand In Application: ~82,658 seconds (23.0 hours)
+- Hand In → Verify: ~42,028 seconds (11.7 hours)
+- Verify → Application Rejected: ~32,266 seconds (9.0 hours)
+- Verify → Submit to Underwriter: ~48,327 seconds (13.4 hours)
+- Verify → Co-Signer Request: ~35,838 seconds (10.0 hours)
+- Verify → Collateral Visit: ~35,269 seconds (9.8 hours)
+- Verify → Skipped Examination: ~50,001 seconds (13.9 hours)
+- Submit to Underwriter → Loan Denied: ~82,666 seconds (23.0 hours)
+- Submit to Underwriter → Sign Agreement: ~80,725 seconds (22.4 hours)
+- Collateral Visit → Submit to Underwriter: ~33,927 seconds (9.4 hours)
+- Co-Signer → Submit to Underwriter: ~37,792 seconds (10.5 hours)
+- Co-Signer → Collateral Visit: ~4,966 seconds (1.4 hours)
+- Collateral Visit loop (self): ~22,399 seconds (6.2 hours) per iteration
+
+### 4.3 Path Distribution
+
+**Primary Process Variants** (by frequency):
+1. Simple underwriting denial: 2,936 cases (29.4%)
+2. Simple underwriting approval: 1,687 cases (16.9%)
+3. Early rejection after verification: 1,624 cases (16.2%)
+4. Appointment denial: 962 cases (9.6%)
+5. Co-signer + denial: 473 cases (4.7%)
+6. Collateral assessment + denial: 381 cases (3.8%)
+7. Fast-track skipped examination: 332 cases (3.3%)
+8. Complex multi-step variants: 1,643 cases (16.4%)
+
+### 4.4 Rework and Loop Metrics
+
+**Collateral Assessment Rework**:
+- Cases requiring collateral assessment: 1,226 (13.6% of submissions)
+- Total collateral visits performed: 2,789
+- Average visits per case: 2.27
+- Cases with 2+ visits: ~563 (45.9% of collateral cases)
+- Cases with 3+ visits: ~237 (19.3% of collateral cases)
+- Cases with 4+ visits: ~111 (9.1% of collateral cases)
+- Cases with 5+ visits: ~49 (4.0% of collateral cases)
+- Maximum visits observed: 7-8 visits
+
+**Interleaved Activity Patterns**:
+- Co-signer → Collateral transitions: 733 occurrences
+- Collateral → Co-signer transitions: 539 occurrences
+- Total cases with both requirements: ~1,772 cases (19.6% of submissions)
+
+## 5. KEY CHALLENGES AND PAIN POINTS
+
+### 5.1 Process Efficiency Issues
+
+**1. Excessive Collateral Assessment Rework**
+- **Problem**: 45.9% of collateral cases require multiple visits, with some requiring up to 7-8 visits
+- **Impact**: 
+  - Wasted staff time and travel costs
+  - Extended processing times (additional ~22,399 seconds per loop)
+  - Borrower frustration and delays
+  - Resource inefficiency
+- **Root Causes** (inferred):
+  - Inadequate preparation or instruction for initial assessments
+  - Lack of clear assessment criteria or checklists
+  - Poor communication of requirements
+  - Incomplete initial visits
+  - Quality control issues
+
+**2. Extremely High Underwriting Denial Rate**
+- **Problem**: 67.6% of applications reaching underwriting are ultimately denied
+- **Impact**:
+  - Massive waste of processing effort on non-viable applications
+  - Poor customer experience (false hope)
+  - Inefficient resource utilization
+  - Staff demoralization
+  - Reputational damage
+- **Root Causes** (inferred):
+  - Ineffective pre-screening at verification stage
+  - Weak credit criteria applied too late in process
+  - Verification step not empowered to reject weak applications
+  - Gap between verification standards and underwriting standards
+
+**3. Complex and Inconsistent Routing**
+- **Problem**: High variability in whether co-signer or collateral assessment occurs first, with frequent back-and-forth
+- **Impact**:
+  - Process unpredictability
+  - Inconsistent customer experience
+  - Difficult to manage and optimize
+  - Training challenges for staff
+- **Root Causes** (inferred):
+  - Lack of standardized decision rules
+  - Ad-hoc routing decisions by individual staff
+  - No clear process logic for determining sequence
+  - Reactive rather than proactive assessment
+
+**4. "Skipped Examination" Control Weakness**
+- **Problem**: 332 cases (3.7%) bypass underwriting entirely through "skipped_examination" path
+- **Impact**:
+  - CRITICAL COMPLIANCE RISK
+  - Potential for fraud or abuse
+  - Inconsistent risk management
+  - Regulatory exposure
+  - Internal control failure
+- **Root Causes** (inferred):
+  - Undocumented exception process
+  - Possible pre-approved product without proper controls
+  - Manual overrides without proper authorization
+  - System workarounds or shortcuts
+
+### 5.2 Performance Issues
+
+**1. Long Cycle Times**
+- **Problem**: Average successful application takes 3.9-4.4 days (simple cases) to 5.4+ days (complex cases)
+- **Impact**:
+  - Poor customer satisfaction
+  - Competitive disadvantage
+  - Increased risk of customer withdrawal
+  - Higher processing costs
+- **Contributing Factors**:
+  - Long wait times between activities (~23 hours at multiple points)
+  - Rework loops adding days to process
+  - Sequential rather than parallel processing
+
+**2. High Early-Stage Attrition**
+- **Problem**: 9.6% denied at appointment stage, 18.0% rejected after verification
+- **Impact**:
+  - 27.6% of applicants eliminated before underwriting
+  - Resource waste on pre-screening activities
+  - May indicate overly restrictive early filters or poor lead quality
+
+### 5.3 Structural Issues
+
+**1. Late-Stage Failure Concentration**
+- **Problem**: 47.9% of appointment-granted applicants ultimately denied at underwriting
+- **Impact**: 
+  - Maximum investment of time/effort before discovering application is not viable
+  - All collateral assessments, co-signer searches, and verification work wasted
+  - Worst possible failure point from efficiency perspective
+
+**2. Low Overall Success Rate**
+- **Problem**: Only 26.1% of process initiations result in signed loan agreements
+- **Impact**:
+  - 73.9% failure rate across all paths
+  - Significant organizational effort producing limited output
+  - Questions about lead quality, marketing, or pre-qualification
+  - High cost per successful loan
+
+**3. Lack of Parallel Processing**
+- **Problem**: Co-signer requests and collateral assessments appear to be sequential rather than parallel
+- **Impact**:
+  - Extended cycle times
+  - Unnecessary delays when both are required
+  - Missed opportunities for time savings
+
+### 5.4 Quality and Consistency Issues
+
+**1. Inconsistent Application of Requirements**
+- **Problem**: Wide variation in when and how co-signer and collateral requirements are determined
+- **Impact**:
+  - Fairness and consistency concerns
+  - Potential discrimination risks
+  - Difficult to explain to customers
+  - Training and standardization challenges
+
+**2. Appointment Denial Opacity**
+- **Problem**: 962 appointment denials with no visible criteria or routing logic
+- **Impact**:
+  - Potential loss of viable applicants
+  - Reputational risk if denials are not well-founded
+  - Lack of data on denial reasons
+
+**3. Verification Effectiveness**
+- **Problem**: Verification step fails to prevent 67.6% underwriting denial rate
+- **Impact**:
+  - Verification not adding sufficient value
+  - Either too lenient or checking wrong factors
+  - Misalignment with underwriting criteria
+
+### 5.5 Data and Visibility Issues
+
+**1. Limited Decision Transparency**
+- **Problem**: Process models show no explicit decision criteria for any branching points
+- **Impact**:
+  - Difficult to audit or improve decisions
+  - Potential compliance and fairness issues
+  - Cannot optimize without understanding decision logic
+
+**2. Performance Variability**
+- **Problem**: High standard deviation implied in timing metrics across similar paths
+- **Impact**:
+  - Unpredictable process outcomes
+  - Difficult to set customer expectations
+  - Challenge for capacity planning
+
+## 6. PROCESS VARIANTS AND COMPLEXITY
+
+The process exhibits 34 distinct variants in the data, indicating high complexity and variability. The top 7 variants account for only 80.1% of cases, with a long tail of low-frequency complex variants involving multiple collateral assessment loops and various combinations of co-signer and collateral requirements.
+
+**Complexity Indicators**:
+- 34 distinct observable variants
+- Up to 13 activities in longest variant
+- Multiple nested loops possible
+- Five different process termination points
+- Complex interleaving of optional activities
+
+## 7. COMPLIANCE AND RISK OBSERVATIONS
+
+**Critical Compliance Concerns**:
+1. **Skipped Examination Path**: Represents a significant control weakness and potential audit finding
+2. **Inconsistent Application of Credit Standards**: High variability in routing suggests potential fairness issues
+3. **Late-Stage Rejections**: May indicate inadequate due diligence in earlier stages
+4. **Excessive Rework**: Suggests quality control issues in collateral assessment process
+
+**Operational Risks**:
+1. **High Resource Waste**: 73.9% of started processes do not complete successfully
+2. **Customer Satisfaction Risk**: Long cycle times and high denial rates likely damage reputation
+3. **Staff Burnout Risk**: Excessive rework and high failure rates may demoralize staff
+4. **Competitive Risk**: Long cycle times may cause applicants to seek other lenders
+
+---
+
+**Summary**: The AS-IS loan application process is characterized by high complexity, significant rework, very high denial rates at late stages, inconsistent routing logic, and a critical compliance gap in the "skipped examination" path. While the process successfully produces 2,627 loan agreements from 10,000 requests, it does so inefficiently with substantial waste, risk exposure, and customer friction. The process urgently requires rationalization, standardization, and control improvements.

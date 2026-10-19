@@ -1,0 +1,92 @@
+### AS-IS Process Model
+
+#### Process Overview and Purpose
+The AS-IS process model represents the observed behavior in apartment rental management, discovered from process mining outputs including a Petri net from the inductive miner, a Directly-Follows Graph (DFG), and abstract variants. The process handles prospective tenant applications for viewing apartments, progresses through screening and contracting, and manages ongoing tenancy including rent payments, late payments, warnings, cancellations, and evictions. It captures real-world deviations such as early rejections, skipped steps (via silent skips), optional extensive screening, frequent rent payment loops interrupted by misses, high rejection rates, and tenancies ending mostly in voluntary cancellations after multiple rent payments. The purpose is tenant acquisition and retention, but it exhibits inefficiencies like high drop-offs, repeated late payment allowances, and unstructured loops.
+
+#### Key Stakeholders and Roles Involved
+No specific roles or swimlanes are defined in the input models. Activities are performed by implied actors such as property managers/landlords (handling appointments, screenings, contracts, payments, warnings) and tenants (applying, viewing, submitting paperwork, paying rent, canceling).
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers**: The process starts when a prospective tenant 'Apply for Viewing Appointment' (source marking).
+
+1. **Apply for Viewing Appointment** → Leads to place p3.
+   - From p3: 
+     - **Set Appointment** → p5 (high frequency: 9151).
+     - Or skip_1 → p4 (allows skipping to screening/contract stage).
+
+2. **Set Appointment** → **View The Property** → p6 (9151 → 9151 frequencies).
+   - From p6:
+     - **Hand In The Paperwork** → p7 → **Check Paperwork** → p8 → **Screen Prospective Tenant** → p9 (7441 frequencies through paperwork and check).
+     - Or skip_2 → p4 (skips paperwork).
+
+3. **Screen Prospective Tenant** → p9:
+   - **Extensive Screening** → p4 (2793 freq) or skip_3 → p4.
+   - Also direct to **Reject Prospective Tenant** (2856 freq).
+
+4. From p4:
+   - **Sign Contract** → p10 → **Move In** → p13 (1792 + 978 from screening paths).
+   - Or **Reject Prospective Tenant** → sink.
+
+Other early rejects observed: View Property → Reject (1710), Apply directly → Reject (849).
+
+**Post-Move-In Loop (Ongoing Tenancy Management)**:
+- From p13 (Move In):
+  - init_loop_7 → p16 → **Miss Rent Payment** → p18 → **Issue Warning** → p19.
+  - Or skip_6 → p15.
+- From p15:
+  - **Pay Rent** → p14 (multiple loops observed, e.g., 14819 self-loops).
+  - Or skip_12 → p14.
+- From p14:
+  - skip_13 → p13 (loop back to start of cycle).
+  - skip_14 → p12.
+- From p16: **Miss Rent Payment** → p18 → **Issue Warning** → p19.
+- From p19:
+  - **Accept Late Payment** → p17 (855 freq).
+  - skip_9 → p17.
+- From p17:
+  - skip_10 → p16 (back to miss).
+  - skip_11 → p15 (back to pay).
+- From p12 (end of payment cycle):
+  - **Evict Tenant** → sink (low freq: 90).
+  - **Tenant Cancels Appartment** → sink (high freq: 2680).
+
+**Decision Points**:
+- After Apply/Set/View: Skip to reject or proceed (exclusive choices via skips).
+- After Screen: Reject vs. Extensive Screening vs. Sign (XOR-like).
+- After Extensive: Sign vs. Reject.
+- Post-Move-In: Pay on time (Pay Rent loops), Miss → Warning → Accept Late (back to pay/miss) or skip to cancel/evict.
+- Criteria inferred from frequencies: High rejection at screening (4671 total rejects), occasional extensive screening, frequent late accepts (794), rare evicts.
+
+**Parallel Activities and Synchronization**: No explicit parallels; all sequential with optional skips acting as shortcuts. Synchronization via place merges (e.g., p4 merges screening paths, p17 merges late payments).
+
+**Exception Handling and Error Paths**:
+- Rejections at multiple points (sink).
+- Late payments handled via warnings and accepts, looping back.
+- Escalation: Warning → Evict (rare).
+
+**Rework Loops and Escalation Procedures**:
+- Rent payment loops (Pay Rent self-loop 14819 times).
+- Late payment cycle: Miss → Warning → Accept → back (performance ~80k ms per cycle).
+- Long tenancies: Variants show 2-17+ Pay Rents before cancel.
+
+**End Conditions and Outcomes**:
+- Reject Prospective Tenant (dominant: ~5000+ cases).
+- Tenant Cancels Appartment (after payments).
+- Evict Tenant (rare).
+
+#### Process Metrics and Performance Characteristics
+- Total variants: Many (high fragmentation), longest ~17 Pay Rents.
+- Frequencies: Apply→Set→View→Paper→Check→Screen dominant prefix (7441).
+- Rejects: 2856 (screen), 1815 (extensive), 1710 (view), 849 (apply).
+- Accepts/Move In: ~2770+.
+- Post-move: Pay Rent loops (avg multiple per tenancy), Miss (770+114), Warnings (945), Late Accept (855), Cancels (2680), Evicts (90).
+- Performance: Cycles ~80k ms (e.g., Pay→Pay 81k ms), total variant times up to 1.7M ms for long tenancies.
+
+#### Key Challenges and Pain Points
+- High rejection rate (~60-70% drop-off before contract).
+- Frequent skips bypassing paperwork/screening (non-compliance or shortcuts).
+- Inefficient screening: Optional extensive, rejects after investment (e.g., post-viewing).
+- Repeated late payments tolerated (multiple accepts/loops), delaying evictions.
+- Long unstructured rent loops, high cancellation rate post-multiple payments (no proactive retention).
+- Fragmentation: 20+ variants, bottlenecks at screening/rejects.
+- Low eviction enforcement, potential revenue loss from chronic late payers.

@@ -1,0 +1,47 @@
+AS-IS Process Model — Online System (Self-Service Intake)
+============================================================
+
+Title: AS-IS Process Model — Online System (Self-Service Intake)
+
+Section 1: Role Overview (purpose, responsibilities)
+The Online System represents the automated, self-service intake channel that records the Hand In Credit Appliaction activity on behalf of applicants (or as next step after Set Appointment). It serves as the primary mechanism that transfers work from intake (Appointment Agent) to Loan Officers by creating the case event 'Hand In Credit Appliaction'. It is the most frequent resource in the log.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Hand In Credit Appliaction: Record the submission of the credit application (most often recorded after Set Appointment).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated after Set Appointment (strongly correlated: DFG shows Request Appointment -> Set Appointment and Set Appointment -> Hand In Credit Appliaction frequencies are equal at 9038). It may also be triggered by direct online submissions without human-set appointments, but the log shows Set Appointment precedes Hand In Credit Appliaction for recorded traces.
+
+Typical sequence(s) observed:
+- Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information (performed by Loan Officers). The Online System typically only executes Hand In Credit Appliaction and then the case is handled by Loan Officers.
+
+Decision points and criteria handled by this role:
+- The Online System does not make decisions in the logged activities; it records Hand In Credit Appliaction and then hands off to Loan Officers. No branching decisions by the Online System are observed.
+
+Ordering and optionality rules (AS-IS):
+- Hand In Credit Appliaction always occurs after Set Appointment in observed traces; it is part of the mandatory sequence Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information.
+- Online System does not perform any additional activities in the log.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO this role:
+- Appointment Agent (Hotline / Resource 1..5): Strong handovers observed (weights ~0.029–0.037) from these resources to Online System.
+- Resource 5/4/3/2/1 also show handover edges to Online System reflecting that both human agents and other channels feed the system.
+
+Who this role hands work TO:
+- Loan Officers (Loan Officer 1..5): Observed edges Online System -> Loan Officer X (weights ~0.036). The Online System triggers the next visible activity Verify Borrowers Information which Loan Officers perform.
+
+Section 5: Variants and Exceptions (all observed paths)
+Observed variants involving this role:
+- Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information (most frequent).
+- Online System rarely appears in appointment-denied traces (Request Appointment -> Appointment Denied paths do not include the Online System).
+
+Exceptions and rework:
+- None observed for the Online System in the logged activities; no repeats or alternative activities recorded for this resource.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Online System is a reliable, single-activity resource with predictable handovers. It is central to case intake, and any delays here would affect many cases.
+- Because it records a single activity, any performance problems should be looked for in the timing between Set Appointment and Hand In Credit Appliaction or in the system-to-loan-officer handover.
+
+Notes for someone assuming this role
+- The role is primarily automated: ensure Hand In Credit Appliaction is recorded promptly after Set Appointment. No decision-making is required in the logs.

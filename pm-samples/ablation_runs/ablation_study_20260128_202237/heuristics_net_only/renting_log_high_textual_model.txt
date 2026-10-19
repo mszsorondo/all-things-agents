@@ -1,0 +1,227 @@
+write_AS_IS_comprehensive_textual_description(content:
+"AS-IS Process Model
+
+Process overview and purpose
+- Scope: End-to-end residential rental process from initial viewing request through application, screening, move-in, recurring rent collection, delinquency handling, and termination.
+- Purpose: Describe the actual observed behaviors captured in the heuristics net, including all alternative paths, rework loops, and end states (rejection, eviction, tenant cancellation).
+
+Key stakeholders and roles involved
+- Roles are not explicitly specified in the source. Activities imply two generic parties:
+  - Applicant/Tenant (e.g., Apply for Viewing Appointment, View The Property, Hand In The Paperwork, Pay Rent)
+  - Property Management/Landlord (e.g., Set Appointment, Check Paperwork, Screen Prospective Tenant, Extensive Screening, Issue Warning, Accept Late Payment, Evict Tenant, Reject Prospective Tenant)
+- The descriptions below refer to these two generic parties only.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: An individual initiates the process by submitting Apply for Viewing Appointment (start activity).
+
+Main activities in sequence and decisions
+1) Apply for Viewing Appointment (Start)
+   - Immediately after the application, two mutually exclusive outcomes are observed:
+     a) Immediate rejection:
+        - Apply for Viewing Appointment -> Reject Prospective Tenant
+        - Represents early denial based on information provided at application.
+     b) Proceed to scheduling:
+        - Apply for Viewing Appointment -> Set Appointment
+
+2) Set Appointment -> View The Property
+   - Scheduled property viewing occurs.
+
+3) Decision after viewing (exclusive)
+   - View The Property -> Hand In The Paperwork (continue)
+   - View The Property -> Reject Prospective Tenant (stop)
+   - Interpretation: A portion of prospects are denied after viewing (e.g., mismatches or policies).
+
+4) Application submission and administrative checks
+   - Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant
+
+5) Decision after initial screening (exclusive; three-way)
+   - Screen Prospective Tenant -> Reject Prospective Tenant (stop)
+   - Screen Prospective Tenant -> Sign Contract (approve directly)
+   - Screen Prospective Tenant -> Extensive Screening (defer decision for deeper assessment)
+
+6) Extensive Screening (if required)
+   - Extensive Screening -> Reject Prospective Tenant (stop)
+   - Extensive Screening -> Sign Contract (approve)
+
+7) Contracting and occupancy
+   - Sign Contract -> Move In
+
+8) Post move-in: rent payment lifecycle (repeating cycle)
+   - First period after move-in:
+     - Move In -> Pay Rent (on-time pay commonly observed)
+     - Move In -> Miss Rent Payment (some miss the first due payment)
+   - Ongoing monthly cycle:
+     - Pay Rent -> Pay Rent (recurring on-time payment from one cycle to the next)
+     - Pay Rent -> Miss Rent Payment (a paid month can be followed by a missed month)
+     - From Pay Rent, tenants may also terminate:
+       - Pay Rent -> Tenant Cancels Appartment (voluntary end of tenancy; process end)
+   - Delinquency handling:
+     - Miss Rent Payment -> Issue Warning
+     - Issue Warning -> Accept Late Payment (late payment is received/accepted)
+     - Issue Warning -> Evict Tenant (process end due to eviction)
+     - After accepting late payment, two observed follow-ups:
+       - Accept Late Payment -> Pay Rent (returns to normal cycle next month)
+       - Accept Late Payment -> Miss Rent Payment (relapse into delinquency next month)
+
+Parallel activities and synchronization points
+- No true parallelism is observed in the discovered behavior; flow proceeds sequentially with exclusive decisions and looping.
+
+Exception handling, rework loops, and escalations
+- Rework/looping in the payment cycle:
+  - Pay Rent -> Pay Rent loop: continuous monthly rental cycle for long-term tenants.
+  - Miss Rent Payment -> Issue Warning -> Accept Late Payment -> (back to) Pay Rent; possible relapse to Miss Rent Payment in later cycles.
+  - Eviction is an escalation from Issue Warning for unresolved non-payment.
+- Multiple rejection points constitute exception/termination points:
+  - Immediate (from application), post-viewing, post-initial screening, and post-extensive screening.
+
+End conditions and outcomes
+- Reject Prospective Tenant (multiple points in the pre-lease stages)
+- Evict Tenant (post-lease delinquency escalation)
+- Tenant Cancels Appartment (voluntary termination after one or more payments)
+
+Process metrics and performance characteristics (derived from observed frequencies)
+Note: Frequencies reflect observed successions; they align cleanly across major gateways enabling indicative conversion rates.
+- Funnel from application to move-in (approximate volumes):
+  - Total applications observed: 10,000 (Apply -> Set Appointment: 9,151; Apply -> Reject: 849)
+  - After viewing: 9,151 viewings
+    - Proceed to paperwork: 7,441
+    - Rejected after viewing: 1,710 (≈18.7% of viewings)
+  - Screening outcomes from Screen Prospective Tenant (total 7,441):
+    - Reject: 2,856 (≈38.4%)
+    - Extensive Screening: 2,793 (≈37.5%)
+    - Direct Sign Contract: 1,792 (≈24.1%)
+  - Extensive screening outcomes (total 2,793):
+    - Reject: 1,815 (≈65.0%)
+    - Sign Contract: 978 (≈35.0%)
+  - Total Sign Contract: 1,792 + 978 = 2,770
+  - Move In: 2,770 (≈27.7% conversion from 10,000 applications)
+  - Total pre-lease rejections: 849 + 1,710 + 2,856 + 1,815 = 7,230 (≈72.3% of applicants)
+- Initial payment behavior post move-in:
+  - Move In -> Pay Rent: 2,656 (≈95.9%)
+  - Move In -> Miss Rent Payment: 114 (≈4.1%)
+- Ongoing rent cycle:
+  - Pay Rent -> Pay Rent: 14,819 occurrences (stable ongoing payments)
+  - Pay Rent -> Miss Rent Payment: 770 (≈4.9% chance that an on-time month is followed by a missed month; denominator 14,819 + 770)
+  - Accept Late Payment -> Pay Rent: 794 (≈92.9% chance to return to on-time payment next cycle after late acceptance)
+  - Accept Late Payment -> Miss Rent Payment: 61 (≈7.1% relapse rate post late acceptance)
+- Delinquency resolution:
+  - Miss Rent Payment -> Issue Warning: 945 total delinquency episodes
+  - Issue Warning -> Accept Late Payment: 855 (≈90.5% of warnings resolve without eviction)
+  - Issue Warning -> Evict Tenant: 90 (≈9.5% of warnings result in eviction; process end)
+- Voluntary termination:
+  - Pay Rent -> Tenant Cancels Appartment: 2,680 observed terminations over the observed period/process instances
+
+Key challenges and pain points
+- Late-stage denials and rework:
+  - Significant rejections occur after viewing (1,710) and after screening (2,856) or extensive screening (1,815), indicating late-stage effort spent on candidates who are ultimately denied.
+- High reliance on extended assessments:
+  - 37.5% of applicants reaching screening are routed to Extensive Screening; two-thirds of them are eventually rejected, implying high cost-to-value in deeper checks.
+- Post-move-in delinquency:
+  - 4.1% miss the first rent payment; circa 4.9% of on-time months are followed by a missed month.
+  - Although most warnings lead to late payment acceptance, a notable 9.5% convert to eviction, representing value loss and operational burden.
+  - A 7.1% relapse rate after accepting late payment indicates insufficient stabilization after delinquency.
+- Process fragmentation and multiple rejection points:
+  - Denials appear at four different stages, which may lengthen time-to-outcome and increase applicant/agent workload.
+- Tenant churn:
+  - 2,680 voluntary cancellations occur after periods of payment, requiring re-letting efforts and adding turnover costs.
+")
+
+write_IDEAL_comprehensive_textual_description(content:
+"IDEAL Process Model
+
+Process overview and purpose
+- Scope: Streamlined rental process from initial inquiry to stable tenancy and closure, designed to minimize late-stage rejections, reduce unnecessary work, and improve payment outcomes.
+- Purpose: Present a to-be process that enforces early qualification, concentrates decision-making at appropriate checkpoints, and standardizes delinquency handling, while preserving the observable activities from the source.
+
+Key stakeholders and roles involved
+- Roles remain generic as not explicitly specified:
+  - Applicant/Tenant
+  - Property Management/Landlord
+- Responsibility alignment is clarified via decision placement and sequencing (who acts is implied by each activity name).
+
+Detailed step-by-step process flow (to-be)
+
+Start conditions and triggers
+- Trigger: Applicant submits Apply for Viewing Appointment.
+
+Early qualification and viewing
+1) Apply for Viewing Appointment
+   - Decision (exclusive): Minimum eligibility met?
+     - No -> Reject Prospective Tenant (early stop; consolidates immediate rejections at the earliest point)
+     - Yes -> Set Appointment
+2) Set Appointment -> View The Property
+   - Conduct viewing with only pre-qualified prospects.
+
+Post-viewing application and screening
+3) Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant
+   - Viewing is followed by a single, consolidated application-and-screening sequence; management-initiated rejection is deferred to screening stages (eliminates routine reject-after-viewing for pre-qualified applicants).
+
+Screening decisions (consolidated, criterion-driven)
+4) Screen Prospective Tenant (exclusive outcomes):
+   - Clear pass -> Sign Contract
+   - Borderline -> Extensive Screening (only when necessary)
+   - Clear fail -> Reject Prospective Tenant
+5) Extensive Screening (if used, exclusive outcomes):
+   - Pass -> Sign Contract
+   - Fail -> Reject Prospective Tenant
+- Rationale: Concentrates denials into objective checkpoints (pre-screen and screening), curbing midstream denials after viewing unless triggered by disqualifying behavior observed during viewing.
+
+Contracting and occupancy
+6) Sign Contract -> Move In
+   - Move-in proceeds only after signing.
+
+Payment lifecycle with standardized controls
+7) Post move-in rent cycle (monthly, exclusive each period):
+   - On-time -> Pay Rent
+   - Missed -> Miss Rent Payment -> Issue Warning
+     - Issue Warning (exclusive outcomes):
+       - Payment made/accepted -> Accept Late Payment -> Pay Rent (return to normal cycle next period)
+       - Non-payment or repeated non-compliance -> Evict Tenant
+- Design targets:
+   - First cycle: strongly favor Move In -> Pay Rent as the initial pattern and minimize Move In -> Miss Rent Payment occurrences.
+   - After Accept Late Payment, normalize back to Pay Rent; discourage immediate relapse to Miss Rent Payment by applying stricter decision criteria before choosing eviction versus accepting another late payment.
+
+End conditions and outcomes
+- Reject Prospective Tenant (only at formal qualification points: early pre-screen or screening/extensive screening)
+- Evict Tenant (only after documented warning and unresolved non-payment or repeated non-compliance)
+- Tenant Cancels Appartment (voluntary termination after settled payments)
+
+Parallel activities and synchronization points
+- None required; the process remains sequential with clear exclusive decisions and looped rent cycles.
+
+Exception handling and rework loops
+- Payment cycle rework is preserved but governed:
+  - Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent (default recovery path)
+  - Eviction only after the warning step and failure to cure or repeated non-payment as per defined criteria.
+- Remove routine management-initiated rejection immediately after viewing for pre-qualified applicants; concentrate rejection logic within screening checkpoints to avoid unnecessary rework.
+
+Process metrics and performance characteristics (expected improvements)
+- Funnel quality and workload:
+  - Early pre-qualification should reduce the proportion of viewings that end in rejection (previously 1,710 rejections post-viewing out of 9,151 viewings ≈18.7%); target is to shift most of these to early rejection at application, reducing wasted showings and agent time.
+  - Consolidating denial decisions at screening reduces duplicated effort in paperwork review and repeated interactions.
+- Conversion to move-in:
+  - With fewer late-stage denials and more focused screening, aim to improve conversion beyond ~27.7% (2,770/10,000), subject to market constraints and unchanged eligibility criteria.
+- Payment stability:
+  - Reduce first-period misses (previously ~4.1% Move In -> Miss Rent Payment) and cut the probability that an on-time month is followed by a missed month (previously ~4.9%).
+  - After Accept Late Payment, aim to lower relapse (previously ~7.1%) through tighter acceptance criteria and clearer cure expectations before allowing repeated late acceptance.
+  - Maintain a low eviction rate and decrease the share of warnings that convert to eviction (previously ~9.5%), by prioritizing accepted late payments where viable and using eviction as a last resort.
+- Time-to-decision:
+  - Earlier, criteria-driven decisions reduce cycle time for non-qualifying applicants and improve experience for qualified ones.
+- Operational clarity:
+  - Fewer decision points (especially eliminating routine rejection after viewing for pre-qualified prospects) reduces back-and-forth and clarifies accountability.
+
+Improvements made (summary)
+- Early qualification enforced:
+  - Converts immediate post-application rejections into a formal pre-screen decision before scheduling viewings.
+- Consolidated denial checkpoints:
+  - Management-initiated rejections now occur at defined screening stages (initial or extensive), limiting late-stage denials after viewing for pre-qualified applicants.
+- Focused use of Extensive Screening:
+  - Used only for borderline cases; reduces overuse and cuts high-cost, low-yield deep checks (previously only ~35% pass after extensive screening).
+- Standardized delinquency path:
+  - Every missed payment triggers Issue Warning; acceptance of late payment returns to Pay Rent; eviction occurs only after defined criteria are met, targeting lower eviction rates and fewer relapses.
+- Streamlined, sequential control flow:
+  - No unnecessary branches; clear exclusive gateways; payment loop remains but is governed to minimize rework and churn.
+
+")

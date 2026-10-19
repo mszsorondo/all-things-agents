@@ -1,0 +1,168 @@
+# AS-IS Process Model: Healthcare Treatment Process
+
+## Process Overview and Purpose
+This AS-IS process model represents a healthcare treatment workflow for patients requiring medical attention. The process begins with patient registration at either the Emergency Room (ER) or Family Department (FD), proceeds through various examination and diagnostic stages, provides treatment, and concludes with either successful discharge or treatment continuation. The process exhibits significant variability, rework loops, and multiple pathways based on patient condition and examination outcomes.
+
+## Key Stakeholders and Roles Involved
+- **Patients**: Individuals seeking medical treatment
+- **ER Registration Staff**: Personnel handling emergency room registrations
+- **FD Registration Staff**: Personnel handling family department registrations
+- **Medical Examiners**: Healthcare professionals conducting initial examinations
+- **Expert Examiners**: Specialists conducting thorough or specialized examinations
+- **Diagnosticians**: Medical professionals responsible for diagnosis
+- **Treatment Providers**: Healthcare staff administering treatments
+- **Discharge Coordinators**: Personnel managing patient discharge
+
+## Detailed Step-by-Step Process Flow
+
+### 1. Start Conditions and Triggers
+- **Trigger**: Patient arrives seeking medical attention
+- **Entry Points**: Two parallel registration channels:
+  1. Emergency Room (ER) registration
+  2. Family Department (FD) registration
+
+### 2. Registration Phase
+**Activity 1: Register at ER** (Frequency: 4,692)
+- **Description**: Patient completes registration process at Emergency Room
+- **Responsible**: ER Registration Staff
+- **Performance**: Average 40,000 time units
+
+**Activity 2: Register at FD** (Frequency: 3,634)
+- **Description**: Patient completes registration process at Family Department
+- **Responsible**: FD Registration Staff
+- **Performance**: Average 40,000 time units
+
+### 3. Examination Phase (Highly Variable)
+After registration, patients follow one of four primary examination pathways:
+
+**Pathway A: Expert Examination → Thorough Examination** (Frequency: 3,637)
+- **Activity 3a**: Expert Examination
+- **Activity 3b**: Thorough Examination
+
+**Pathway B: Expert Examination → Direct Diagnosis** (Frequency: 2,117)
+- **Activity 3a**: Expert Examination
+- **Activity 3c**: Direct to Diagnosis (skipping Thorough Examination)
+
+**Pathway C: Standard Examination → Thorough Examination** (Frequency: 1,968)
+- **Activity 3d**: Standard Examination
+- **Activity 3b**: Thorough Examination
+
+**Pathway D: Standard Examination → Direct Diagnosis** (Frequency: 1,641)
+- **Activity 3d**: Standard Examination
+- **Activity 3c**: Direct to Diagnosis
+
+**Pathway E: Direct to Diagnosis** (Frequency: 320)
+- **Activity 3c**: Direct Diagnosis (skipping all examinations)
+
+**Pathway F: Direct to Thorough Examination** (Frequency: 317)
+- **Activity 3b**: Thorough Examination (skipping initial examinations)
+
+### 4. Diagnosis Phase
+**Activity 4: Diagnosis** (Total Frequency: 11,746)
+- **Description**: Medical professional establishes diagnosis based on examination findings
+- **Responsible**: Diagnostician
+- **Performance**: Average 60,000 time units
+- **Input Sources**: All examination pathways converge here
+
+### 5. Treatment Phase
+**Activity 5: Treatment** (Total Frequency: 11,746)
+- **Description**: Administration of prescribed medical treatment
+- **Responsible**: Treatment Providers
+- **Performance**: Average 60,000 time units
+
+### 6. Treatment Outcome Assessment
+After treatment, three possible outcomes:
+
+**Outcome A: Treatment Successful** (Frequency: 9,005)
+- **Activity 6a**: Treatment successful assessment
+- **Path**: Proceeds to Discharge
+
+**Outcome B: Treatment Unsuccessful** (Frequency: 1,746)
+- **Activity 6b**: Treatment unsuccessful assessment
+- **Path**: Returns to Diagnosis phase for re-evaluation and new treatment
+
+**Outcome C: Direct Discharge** (Frequency: 995)
+- **Activity 6c**: Direct discharge without explicit success assessment
+- **Path**: Proceeds directly to Discharge
+
+### 7. Rework Loops and Escalation Procedures
+**Primary Rework Loop**: Treatment unsuccessful → Diagnosis → Treatment
+- **Frequency**: 1,746 occurrences
+- **Description**: When treatment fails, patient returns to diagnosis for re-evaluation
+- **Multiple Iterations**: Some cases show 2-4 treatment failure cycles before success
+
+**Complex Rework Patterns**:
+- Single rework loop: 1,746 cases
+- Double rework loops: 241-197 cases
+- Triple rework loops: 42-38 cases
+- Quadruple rework loops: 6-5 cases
+
+### 8. End Conditions and Outcomes
+**Activity 7: Discharge** (Total Frequency: 11,746)
+- **Description**: Formal patient discharge from healthcare facility
+- **Responsible**: Discharge Coordinators
+- **Performance**: Average 40,000-100,000 time units depending on path
+- **Final State**: Process completion
+
+## Process Metrics and Performance Characteristics
+
+### Frequency Distribution
+- **Total Cases**: Approximately 11,746 patient journeys
+- **Most Common Path**: Diagnosis → Treatment → Treatment successful → Discharge (9,005 cases)
+- **Registration Split**: 56% ER vs 44% FD registrations
+- **Examination Variability**: 6 distinct examination pathways with varying frequencies
+
+### Performance Metrics
+- **Average Process Duration**: Varies significantly by path:
+  - Simple paths: 240,000-260,000 time units
+  - Standard paths: 320,000 time units
+  - With rework: 420,000-480,000 time units
+  - Complex rework: 580,000-800,000 time units
+- **Bottleneck Activities**: 
+  - Diagnosis and Treatment phases (60,000 time units each)
+  - Rework loops add significant delays
+
+### Quality Metrics
+- **Treatment Success Rate**: 76.6% (9,005/11,746)
+- **Treatment Failure Rate**: 14.9% (1,746/11,746)
+- **Direct Discharge Rate**: 8.5% (995/11,746)
+- **Rework Incidence**: 14.9% require at least one rework cycle
+
+## Key Challenges and Pain Points
+
+### 1. Process Variability and Inconsistency
+- **Issue**: 6 different examination pathways with no clear criteria for selection
+- **Impact**: Inconsistent patient experiences and potential quality variations
+- **Evidence**: Direct diagnosis paths bypass necessary examinations in 320 cases
+
+### 2. Excessive Rework and Treatment Failures
+- **Issue**: 14.9% treatment failure rate requiring re-diagnosis
+- **Impact**: Extended patient stays, increased costs, and potential complications
+- **Evidence**: Some cases undergo up to 4 treatment cycles before success
+
+### 3. Inefficient Examination Sequencing
+- **Issue**: Multiple examination types with unclear purpose differentiation
+- **Impact**: Redundant examinations and wasted resources
+- **Evidence**: Expert Examination sometimes leads to Thorough Examination, sometimes directly to Diagnosis
+
+### 4. Missing Success Assessment
+- **Issue**: 8.5% of cases discharge directly without treatment success assessment
+- **Impact**: Potential premature discharges and quality of care concerns
+- **Evidence**: Direct discharge paths exist without explicit success verification
+
+### 5. Performance Bottlenecks
+- **Issue**: Diagnosis and Treatment phases take 60,000 time units each
+- **Impact**: Extended wait times and reduced throughput
+- **Evidence**: Consistent high performance times across all variants
+
+### 6. Complex Registration System
+- **Issue**: Dual registration systems (ER and FD) with similar processes
+- **Impact**: Potential duplication and coordination challenges
+- **Evidence**: Both registration types feed into same examination pathways
+
+### 7. Data Quality Issues
+- **Issue**: Inconsistent process execution and documentation
+- **Impact**: Difficult to analyze and improve process systematically
+- **Evidence**: Multiple variants with similar outcomes but different paths
+
+This AS-IS model reveals a healthcare treatment process with significant variability, quality concerns, and efficiency issues that require systematic improvement to enhance patient outcomes and operational effectiveness.

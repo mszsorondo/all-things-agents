@@ -1,0 +1,244 @@
+AS-IS Process Model
+
+1. Process overview and purpose
+- Purpose: This is the observed tenant acquisition and tenancy lifecycle process for residential properties: from a prospective tenant applying for a viewing through the agent/landlord screening and decision (reject or sign contract), to move-in and the subsequent rent-payment lifecycle (including missed payments, warnings, late-payment acceptance and, rarely, eviction or tenant cancellation).
+- Scope: Covers applicant interactions (viewings, paperwork), landlord/agent screening (including optional extensive screening), contract signing and move-in, recurring rent payments and the handling of missed payments (warnings, acceptance of late payment, repeated missed payments), and end-of-case outcomes (Reject Prospective Tenant, Tenant Cancels Apartment, Evict Tenant).
+
+2. Key stakeholders and roles (observed in the logs)
+- Tenant (resource labelled Tenant): initiates the process (Apply for Viewing Appointment); performs tenant-side actions such as Hand In The Paperwork, Pay Rent, Miss Rent Payment, Accept Late Payment, Tenant Cancels Appartment.
+- Real Estate Agents (Resource labels: Real Estate Agent 1–5, Hotline): perform operational activities such as Set Appointment, View The Property (conduct/showing), Check Paperwork, Screen Prospective Tenant, and may coordinate Extensive Screening.
+- Lawyers (Lawyer 1–3): observed in the log and involved in legal actions (primarily Evict Tenant / legal follow-up).
+- Landlords (Landlord 1–5): decision-makers or recipients of screening results and sign-off; involved implicitly in final decision steps (signing/eviction).
+- Hotline: customer contacts / appointment coordination in some instances.
+Note: resource attribution is taken from observed resource values; responsibilities above reflect typical task performers from the log (not invented roles).
+
+3. Start conditions and triggers
+- Implicit/observed start event (initializing activity): Apply for Viewing Appointment.
+  - Declaration/Log constraints show Apply for Viewing Appointment is an initialization and it occurs exactly once per case (cases start with this activity).
+- Some cases end early (reject) while others progress to viewings and paperwork; a small fraction proceed through contract, move-in and long rent-payment histories.
+
+4. High-level behavioral summary (all observed variant families)
+- Immediate rejection variants (approx. 8%): Apply for Viewing Appointment -> Reject Prospective Tenant. These cases close early with no appointment or viewing.
+- Short screening rejection variants (approx. 17%): Apply -> Set Appointment -> View The Property -> Reject Prospective Tenant (rejection upon/after viewing).
+- Paperwork screening rejection variants (approx. 28%): Apply -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Reject Prospective Tenant.
+- Extensive-screening rejection variants (approx. 18%): same as above but Screen Prospective Tenant -> Extensive Screening -> Reject Prospective Tenant.
+- Successful tenancy variants (small percentage, ~2% and lower per individual long variant lines): Apply -> Set Appointment -> View -> Hand In Paperwork -> Check Paperwork -> Screen Prospective Tenant (or Extensive Screening) -> Sign Contract -> Move In -> Pay Rent (then many possible sequences of Pay Rent, Miss Rent Payment, Issue Warning, Accept Late Payment, repeated cycles) -> end by Tenant Cancels Appartment or Evict Tenant.
+- Rent-payment lifecycle variants: After Move In and Pay Rent sequences, cases may contain many repeated Pay Rent events (Pay Rent -> Pay Rent is the most frequent edge), interleaved with Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent loops; repeated missed payments can lead to Evict Tenant (rare). Tenant Cancels Appartment is another frequently observed end for tenants who leave.
+
+5. Detailed step-by-step process flow (with all observed branches and orderings)
+Note: the description below enumerates the full set of observed activities and all observed alternative orderings/loops. Any trace that follows one of the listed patterns was observed in the event log.
+
+A. Entry (mandatory)
+1) Apply for Viewing Appointment
+   - Observed as the required start activity for all cases (initialization constraint).
+   - Occurs exactly once per case (Declare/Log Skeleton).
+
+B. Optional/conditional appointment & viewing
+2) Two main possibilities immediately after Apply:
+   - Path 1 (most common for progressing applicants): Set Appointment -> View The Property
+     - Set Appointment and View The Property occur in sequence (chain precedence/chain succession observed).
+     - Set Appointment -> View The Property observed frequently (DFG frequency 9151).
+     - The model shows Set Appointment and View The Property exist exactly once when they occur.
+   - Path 2 (early rejection): Apply -> Reject Prospective Tenant (no appointment/viewing).
+   - Path 3 (direct view without explicit Set Appointment): Declare constraints allow Apply -> View The Property (some traces follow Apply -> View The Property directly).
+
+C. Post-viewing paperwork (if viewing occurred and applicant wishes to proceed)
+3) Optional paperwork submission:
+   - Hand In The Paperwork (observed to occur after View The Property in many cases).
+   - Chain: View The Property -> Hand In The Paperwork -> Check Paperwork.
+   - Check Paperwork follows Hand In The Paperwork (DFG: Hand In -> Check Paperwork freq 7441).
+
+D. Screening (decision point with 3 observed outcomes)
+4) Screen Prospective Tenant (performed after Check Paperwork)
+   - Observed successors and frequencies:
+     - Screen Prospective Tenant -> Reject Prospective Tenant (DFG freq 2856)
+     - Screen Prospective Tenant -> Extensive Screening (DFG freq 2793)
+     - Screen Prospective Tenant -> Sign Contract (DFG freq 1792)
+   - Decision criteria (observed behavior): based on screening results, tenant may be rejected, accepted (sign contract), or escalated to Extensive Screening. The log does not contain explicit decision rules; only the observed outcomes.
+
+5) Extensive Screening (optional, occurs only when Screen Prospective Tenant triggers it)
+   - Outcomes observed:
+     - Extensive Screening -> Reject Prospective Tenant (DFG freq 1815)
+     - Extensive Screening -> Sign Contract (DFG freq 978)
+   - So Extensive Screening can still end in rejection or in approval and signing.
+
+E. Contract and move-in (when application accepted)
+6) Sign Contract
+   - Observed to follow Screen or Extensive Screening in cases that progress.
+   - After Sign Contract -> Move In (DFG freq 2770; chain relation: Sign Contract precedes Move In).
+
+7) Move In
+   - Immediately after Sign Contract in observed cases.
+   - After Move In the recurring rent-payment phase begins. Move In -> Pay Rent is frequent (DFG freq 2656).
+
+F. Tenancy and recurring rent-payment lifecycle (major source of loops / long durations)
+8) Recurring Pay Rent
+   - Pay Rent is the most frequent activity in the log (activity frequency 18269).
+   - Observed behavior:
+     - Pay Rent -> Pay Rent (self-loop, frequency 14819): tenants regularly pay rent multiple times (monthly sequences).
+     - Interleavings with missed payments and warnings are common.
+9) Missed payments and remediation (exception loop)
+   - Observed sequence when a payment is missed:
+     - Miss Rent Payment -> Issue Warning (DFG freq 945)
+     - Issue Warning -> Accept Late Payment (DFG freq 855)
+     - Accept Late Payment -> Pay Rent (DFG freq 794)
+   - Additional observed transitions:
+     - Pay Rent -> Miss Rent Payment (DFG freq 770): after some pay events, a later missed payment may occur.
+     - Accept Late Payment -> Miss Rent Payment (DFG freq 61): even after an accepted late payment, another miss can happen.
+   - These sequences can repeat (multiple cycles of Miss -> Warning -> Accept -> Pay) in a single tenant case; the process contains loops for repeated missed payments and accepted late payments.
+10) Escalation to eviction (rare)
+   - Issue Warning -> Evict Tenant observed but rare (DFG freq 90). Observed behavior: after repeated missed payments/warnings the case may end in Evict Tenant.
+   - When Evict Tenant occurs, the case finishes (final marking is sink).
+11) Early/leaving termination: Tenant Cancels Appartment
+   - Pay Rent -> Tenant Cancels Appartment (DFG freq 2680): Tenants often cancel/terminate their tenancy voluntarily after periods of payment; this is a frequent end state.
+   - Tenant Cancels Appartment is an end-state observed both in short and long traces (after move-in and after many payment cycles).
+
+G. Rejection end states (early termination)
+12) Reject Prospective Tenant
+   - Observed as an end state after several possible points: directly after Apply, after View The Property, after Screen Prospective Tenant, or after Extensive Screening.
+   - Reject leads to case termination (final marking).
+
+6. Decision points and criteria (observed outcomes)
+- Decision 1: After Apply
+  - Outcomes: Set Appointment & View (proceed) OR immediate Reject (case ends).
+  - Evidence: variants Apply->Reject (8%) and Apply->Set->View... (other variants).
+- Decision 2: After View or after Check Paperwork
+  - Outcomes: No further action (some traces end), or Hand In The Paperwork -> Check -> Screen.
+- Decision 3: Screening outcome (Screen Prospective Tenant)
+  - Outcomes (observed):
+    - Reject Prospective Tenant (immediate termination)
+    - Extensive Screening (escalation)
+    - Sign Contract (proceed to contract and move-in)
+  - All three were observed; no other outcomes allowed by observed traces.
+- Decision 4: Extensive Screening
+  - Outcomes:
+    - Reject (terminate) OR Sign Contract (proceed). Both seen.
+- Decision 5: After repeated missed payments / warnings
+  - Outcomes:
+    - Accept Late Payment -> return to Pay Rent cycle (remediate)
+    - Evict Tenant -> termination (rare)
+    - Continued Pay Rent until voluntary Tenant Cancels Appartment (tenant leaves)
+  - Observed: Accept Late Payment is more frequent than Evict Tenant; Evict occurs in a small number of cases.
+
+7. Parallelism and synchronization
+- No explicit parallel (AND) branches were required by the observed behavior. The model is predominantly sequential with optional branches and loops.
+- Some declarative constraints show co-existence, but operationally activities were observed in single-threaded sequences (viewing -> paperwork -> screening -> contract -> move-in -> rent cycles). No observed concurrent execution of distinct activities that must synchronize.
+
+8. Exception handling, rework loops and escalation procedures (observed)
+- Rework/loops:
+  - Repeated payments (Pay Rent self-loop) and repeated missed-payment cycles (Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent) are common; repeated misses cause repeated warnings and further acceptances or escalation.
+- Escalation:
+  - Repeated missed payments -> Issue Warning -> (if unresolved) Evict Tenant (rare). Observed chain Issue Warning -> Evict Tenant.
+- Exception termination:
+  - Early rejection at several points terminates the case (Apply/ View / Screen / Extensive Screening).
+- Observed anomalies:
+  - Some cases show extremely long durations (many repeated Pay Rents and repeated miss/warning cycles) before termination by Tenant Cancels Appartment or Evict Tenant.
+
+9. End conditions and outcomes (all observed)
+- Observed final states (cases observed to finish in these states):
+  1) Reject Prospective Tenant — case ends; observed frequently (aggregate of several variants; DFG shows Reject reached often).
+  2) Tenant Cancels Appartment — tenant voluntarily cancels/terminates tenancy after move-in and payment history; common end.
+  3) Evict Tenant — legal eviction after repeated issues; rare but present.
+- All three are explicit sink states in the Petri net and appear as final markings in the discovered model.
+
+10. All valid observed activity orderings (explicit listing of families)
+(Each family below is an observed valid trace pattern. Variants percentages/performance given where available.)
+- Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Reject Prospective Tenant
+  - Frequency: ~28% of cases; average case duration ~406,411 sec (≈ 4.7 days)
+- Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Extensive Screening -> Reject Prospective Tenant
+  - Frequency: ~18%; avg duration ~506,228 sec (≈ 5.9 days)
+- Apply for Viewing Appointment -> Set Appointment -> View The Property -> Reject Prospective Tenant
+  - Frequency: ~17%; avg duration ~258,176 sec (≈ 3.0 days)
+- Apply for Viewing Appointment -> Reject Prospective Tenant
+  - Frequency: ~8%; avg duration ~85,702 sec (≈ 1.0 day)
+- Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent [-> (repeat Pay Rent)*] -> Tenant Cancels Appartment
+  - Observed in low-frequency variants (≈2% each); durations vary widely depending on number of payments (multiple 100k–4M+ seconds in long-running cases).
+- Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> Sign Contract -> Move In -> Pay Rent -> ... sequences containing repeated Pay Rent and loops of Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent -> [repeat] -> Tenant Cancels Appartment OR Evict Tenant
+  - Many low-frequency, long-duration variants observed (some with hundreds/thousands of Pay Rent events in the trace summaries). Extreme cases show cumulative durations in the millions of seconds (tens of days to months).
+- Note: The model also allows variants where Extensive Screening replaces immediate acceptance, and after Extensive Screening the signing and move-in sequence follows as above. All interleavings of the rent-payment and miss/warning/accept cycles observed are permitted by the observed traces.
+
+11. Process metrics and performance characteristics (observed)
+- Activity frequencies (top activities in log):
+  - Pay Rent: 18,269 events (most frequent)
+  - Apply for Viewing Appointment: 10,000 events (all cases start with this)
+  - View The Property: 9,151
+  - Set Appointment: 9,151
+  - Screen Prospective Tenant: 7,441
+  - Hand In The Paperwork / Check Paperwork: 7,441 each
+  - Reject Prospective Tenant: 7,230
+  - Extensive Screening: 2,793
+  - Sign Contract / Move In: 2,770 each
+  - Tenant Cancels Appartment: 2,680
+  - Miss Rent Payment: 945
+  - Issue Warning: 945
+  - Accept Late Payment: 855
+  - Evict Tenant: 90
+- Directly-follows frequencies (key edges, DFG):
+  - Pay Rent -> Pay Rent: 14,819 (tenants repeatedly pay rent)
+  - Apply for Viewing Appointment -> Set Appointment: 9,151
+  - Set Appointment -> View The Property: 9,151
+  - View The Property -> Hand In The Paperwork: 7,441
+  - Hand In The Paperwork -> Check Paperwork: 7,441
+  - Check Paperwork -> Screen Prospective Tenant: 7,441
+  - Screen Prospective Tenant -> Reject Prospective Tenant: 2,856
+  - Screen Prospective Tenant -> Extensive Screening: 2,793
+  - Screen Prospective Tenant -> Sign Contract: 1,792
+  - Sign Contract -> Move In: 2,770
+  - Move In -> Pay Rent: 2,656
+  - Pay Rent -> Tenant Cancels Appartment: 2,680
+  - Miss Rent Payment -> Issue Warning: 945
+  - Issue Warning -> Accept Late Payment: 855
+  - Accept Late Payment -> Pay Rent: 794
+  - Pay Rent -> Miss Rent Payment: 770
+  - Issue Warning -> Evict Tenant: 90
+- Performance (case durations per variant / edge average times provided in source):
+  - Typical rejection variants have case durations in the range ~85k–506k seconds (≈1–6 days).
+  - Variants that include long rent/payment histories (with repeated missed payments and warnings) have very large average durations: e.g., 4.5M–6.1M seconds (~52–71 days) in several long variants — these reflect cases observed over many payment cycles and months.
+  - Edge-level average delays (DFG performance values) show substantial wait times between activities; e.g., Apply->Set ~82,731 sec (~0.96 days) average, Set->View ~82,730 sec, View->HandIn ~81,965 sec. Edge performance numbers should be interpreted as average time between those events for traces containing them (units are seconds).
+
+12. Key challenges, pain points and risk areas (observed from behavior)
+- High variability and long durations in tenancy lifecycle:
+  - Cases that progress to tenancy can last many months (large number of Pay Rent events and repeated missed-payment cycles), causing very high case durations and long-lived cases.
+- Frequent repeated missed payments and long remediation cycles:
+  - Missed payments and warnings create loops (Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent) that repeat; this both prolongs cases and increases administrative overhead.
+  - Although Accept Late Payment is more common, repeated misses can escalate to Evict Tenant (rare), indicating inconsistent or insufficient remediation policies.
+- Large proportion of rejections early in the process:
+  - Significant percentage of applicants are rejected (combined Reject variants are substantial: e.g., 28% + 18% + 17% + 8% groups cover the majority of traces). This suggests either strict screening criteria or inefficient pre-screening leading to wasted appointment resources.
+- Screening process variability:
+  - Some applicants go through Immediate Screening and are accepted or rejected; others are escalated to Extensive Screening. The criteria for escalation are not explicit in the event log; variability suggests non-standardized rules or missing data for decision criteria.
+- Resource involvement and potential bottlenecks:
+  - Many activities (Set Appointment, View The Property, Check Paperwork, Screening) are performed by agents; large numbers of rejections and repeated scheduling imply potential resource waste.
+  - The DFG performance metrics show non-negligible average delays between Apply and Set / View, indicating booking/coordination delays (average ~82k seconds ≈ ~0.95 days between some steps).
+- Low but high-impact legal actions:
+  - Evictions are rare (DFG 90 direct follows to Evict Tenant) but represent costly legal processes; they typically occur after long unsuccessful remediation cycles.
+
+13. Observed compliance/declarative constraints (summary)
+- The log declarative models indicate:
+  - Apply for Viewing Appointment is always the first observed activity.
+  - When Set Appointment occurs, View The Property and related paperwork/screening are expected/related (co-existence and responded existence constraints).
+  - Sign Contract and Move In are tightly coupled (Sign Contract precedes Move In).
+  - Activities Miss Rent Payment, Issue Warning, Accept Late Payment and Evict Tenant appear in cycles and are optional (exist in some cases but absent in many).
+- Practically: the process enforces sequences from Apply -> (Set Appointment -> View) -> (Hand In -> Check -> Screen -> [Extensive]) -> [Reject | Sign Contract -> Move In -> Rent cycles].
+
+14. Practical implications and recommendations (based on observed AS-IS)
+- Prioritize optimization for the dominant flows:
+  - High-frequency rejection path (Apply -> Set -> View -> Paperwork -> Screen -> Reject) indicates potential to introduce stronger pre-screening or online checks to reduce wasted appointments and agent effort.
+- Introduce standardized screening criteria and decision recording:
+  - Observed variability in escalation to Extensive Screening suggests inconsistent decision rules. Standardizing criteria will improve predictability and fairness.
+- Tighten or automate remediation for missed payments:
+  - Given repetitive Miss -> Warning -> Accept -> Pay loops, consider earlier standardized interventions (payment reminders, automated late fees, or payment plans) to reduce manual warnings and repeated cycles, and thereby reduce administrative cost and case duration.
+- Monitor long-running tenancy cases:
+  - Identify tenants with repeated late-payment cycles for intervention to reduce risk of costly eviction proceedings.
+- Measure and reduce lead times between Apply -> Set -> View and Check -> Screen:
+  - DFG shows non-trivial delays between these steps; process automation or better scheduling could improve candidate experience and reduce case durations.
+
+15. Trace acceptance (behavioral fidelity)
+- The AS-IS description above is permissive: any trace that follows an observed variant (including all listed orderings, optional steps, loops and repeated cycles) should be considered valid. All observed variants and interleavings (screening outcomes, extensive screening, contract/move-in, rent-payment loops, missed-payment remediation, tenant cancellation, eviction) are captured.
+
+16. Final notes on modeling constructs used to infer flow
+- Start event inferred: Apply for Viewing Appointment (explicit in Declare / log skeleton).
+- End events observed (explicit): Reject Prospective Tenant, Tenant Cancels Appartment, Evict Tenant (all reached sink in the Petri net).
+- Loops / repetitions are explicit in DFG and process-tree / Petri net (Pay Rent loops, Miss/Warning/Accept loops).
+- No additional unseen activities or roles were invented; all activities and resources mentioned come from the provided logs/models.
+
+This AS-IS description documents the observed tenant-application-to-tenancy lifecycle, including every observed variant family, decision point, loops and end outcomes, and highlights performance and operational pain points derived from event frequencies and durations.

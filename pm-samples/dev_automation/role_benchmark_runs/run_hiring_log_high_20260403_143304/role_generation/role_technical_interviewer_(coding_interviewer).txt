@@ -1,0 +1,57 @@
+AS-IS Process Model — Technical Interviewer (Coding Interviewer)
+============================================================
+
+Title: AS-IS Process Model — Technical Interviewer (Coding Interviewer)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Conduct technical assessments of candidates through coding, backend, frontend, and ML interviews; decide technical pass/fail or hand candidates to other technical interviewers or behavioral interviewers.
+- Observed responsibilities: Coding Interview, Backend Interview, Frontend Interview, ML Interview, and some handovers to HR and Senior Partner for subsequent decisions.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Coding Interview: Technical coding assessment; often followed by specialized technical interviews or Application Rejected.
+- Backend Interview: Backend-focused technical assessment.
+- Frontend Interview: Frontend-focused technical assessment; often leads to Behavioral Interview or technical peers.
+- ML Interview: Machine-learning/algorithmic technical assessment.
+- Application Rejected (occasionally): Technical interviewers sometimes record or trigger rejections after interviews (edge observed: Coding Interview -> Application Rejected).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Typically activated after HR Screener completes Background Check and/or Screening Interview and hands the candidate to technical assessment (Background Check -> Coding Interview, Screening Interview -> Coding Interview).
+- Observed orderings (all valid sequences):
+  - ... -> Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview -> Behavioral Interview -> ...
+  - ... -> Coding Interview -> ML Interview -> Frontend Interview -> Backend Interview -> ...
+  - Coding Interview -> Backend Interview -> Frontend Interview (mutual direct follows; some edges have 0.000 performance indicating immediate succession in certain variants)
+  - Coding Interview -> Application Rejected (technical rejection)
+  - Frontend Interview -> Behavioral Interview (frequently) or -> Application Rejected
+- Decision points handled by Technical Interviewer:
+  - After Coding Interview: decide whether candidate proceeds to specialized technical interviews (ML/Backend/Frontend), rejected, or to Behavioral Interview later.
+  - After specialized technical interviews: decide to recommend rejection or pass candidate to Behavioral Interview and HR for offer.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO Technical Interviewer (observed):
+  - HR Screener (HR-dummy / HR-pro / Senior Partner) — main sources via Background Check or Screening Interview
+  - deepResearch Inc. (for cases where extensive background checks are done before technical interviews)
+  - Senior Partner (some handovers observed)
+- Who Technical Interviewer hands work TO (observed):
+  - Other Technical Interviewers (peer handovers between Coding Interviewer, Backend, Frontend, ML)
+  - Behavioral Interviewers (HR-pro and Senior Partner act as behavioral interviewers) — Frontend/ML/Backend often hand to Behavioral Interview
+  - HR roles (HR-dummy / HR-pro / Senior Partner) for final decisions or offer processing
+  - Application Rejected activity may be executed by technical interviewers or handed back to HR-dummy to record rejection
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency technical sequences:
+  - Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview (and permutations)
+  - Coding Interview -> Backend Interview -> Frontend Interview
+- Medium/low-frequency:
+  - Coding Interview -> Application Rejected (some candidates fail immediately after coding)
+  - Frontend Interview -> Behavioral Interview -> Make Job Offer/application decisions
+  - ML Interview / Backend Interview have 0.000 direct-follows with peers in some cases (indicating near-instant or batched recordings)
+- Rework and self-loops:
+  - Make Job Offer -> Make Job Offer and Application Rejected -> Application Rejected appear in the system (not specific to technical interviewers but observed in the overall life-cycle)
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Technical interviews show many permutations and different orders; lack of a strict sequence creates variable candidate experience and potentially duplicated effort.
+- Several technical interview edges have 0.000 performance (e.g., ML <-> Frontend, Backend <-> Frontend), suggesting simultaneous or batched logging — this may be an artifact of scheduling or logging rather than real concurrent interviews.
+- Handovers among technical interviewers are frequent and include loops back to HR; unclear responsibilities may lead to unnecessary reassessments.
+- Some candidates are rejected after technical rounds, but Application Rejected often loops back into interview activities in other traces — suggests noisy logging or multiple rejection/offer updates recorded.
+
+Notes: 'Coding Interviewer' resource(s) were clustered into the Technical Interviewer role because they perform all coding/backend/frontend/ML interview activities in the log.

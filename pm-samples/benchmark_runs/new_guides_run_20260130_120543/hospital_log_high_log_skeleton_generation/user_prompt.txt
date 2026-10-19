@@ -1,0 +1,83 @@
+
+============================================================
+REPRESENTATION 1: LOG_SKELETON
+============================================================
+
+
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model capturing behavioral constraints
+observed in an event log.
+
+OUTPUT FORMAT:
+--------------
+The output starts with an explanation, then lists constraints:
+"The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence: ('A', 'B') ('C', 'D') ...
+Always Before: ('A', 'B') ...
+Always After: ('A', 'B') ...
+Never Together: ('A', 'B') ...
+Directly-Follows: ('A', 'B') ..."
+
+CONSTRAINT TYPES:
+1. Equivalence: Activities A and B always occur the same number of times
+2. Always Before: If A occurs, B must have occurred before
+3. Always After: If A occurs, B must occur afterwards
+4. Never Together: A and B cannot both occur in the same case
+5. Activity Occurrences: Bounds on how many times an activity occurs
+6. Directly-Follows: B must immediately follow A
+
+READING THE CONSTRAINTS:
+- Tuples ('A', 'B'): Constraint relates activity A to activity B
+- Multiple tuples: Each represents one constraint instance
+- Order matters: First activity triggers the constraint
+
+USE FOR:
+- Compliance checking
+- Process auditing
+- Anomaly detection
+- Understanding mandatory relationships
+- Validating process instances
+
+COMPARISON:
+- vs Petri Net: Declarative vs procedural
+- vs DECLARE: Log skeleton is simpler subset
+- vs DFG: Captures more than direct follows
+
+
+--- DISCOVERED MODEL ---
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('Treatment', 'Diagnosis') ('Examination', 'Discharge') ('Register at FD', 'Discharge') ('Expert Examination', 'Discharge') ('Register at ER', 'Discharge') ('Thorough Examination', 'Discharge') ('Diagnosis', 'Treatment') ('Treatment successful', 'Discharge')
+
+Always Before:  ('Treatment successful', 'Treatment') ('Discharge', 'Treatment') ('Treatment successful', 'Diagnosis') ('Discharge', 'Diagnosis')
+
+Always After:  ('Register at FD', 'Diagnosis') ('Examination', 'Discharge') ('Register at FD', 'Treatment') ('Thorough Examination', 'Diagnosis') ('Expert Examination', 'Diagnosis') ('Register at ER', 'Diagnosis') ('Register at FD', 'Discharge') ('Expert Examination', 'Treatment') ('Thorough Examination', 'Treatment') ('Expert Examination', 'Discharge') ('Examination', 'Diagnosis') ('Register at ER', 'Discharge') ('Register at ER', 'Treatment') ('Thorough Examination', 'Discharge') ('Examination', 'Treatment') ('Treatment successful', 'Discharge')
+
+Never Together:  ('Register at ER', 'Register at FD') ('Expert Examination', 'Examination') ('Register at FD', 'Register at ER') ('Examination', 'Expert Examination')
+
+Activity Occurrences:  Register at ER: 0, 1; Expert Examination: 0, 1; Diagnosis: 1, 2, 3, 4, 5, 6; Treatment: 1, 2, 3, 4, 5, 6; Treatment successful: 0, 1; Discharge: 1; Thorough Examination: 0, 1; Register at FD: 0, 1; Examination: 0, 1; Treatment unsuccessful: 0, 1, 2, 3, 4, 5;
+
+Directly-Follows Constraints:  ('Treatment unsuccessful', 'Diagnosis') ('Thorough Examination', 'Diagnosis') ('Diagnosis', 'Treatment') ('Treatment successful', 'Discharge')
+
+

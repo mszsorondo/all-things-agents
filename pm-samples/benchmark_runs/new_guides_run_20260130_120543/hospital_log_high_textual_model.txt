@@ -1,0 +1,202 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- This process describes a patient episode that starts with registration (either at the Emergency Room or at a Front Desk) and ends with patient discharge.
+- The core care loop alternates between Diagnosis and Treatment, possibly multiple times, until Treatment is successful; upon success, Discharge follows immediately.
+- Several types of pre-diagnosis examinations can occur; some are mutually exclusive by design.
+
+Key stakeholders and roles involved
+- The source model does not explicitly specify roles. Activities are listed without swimlanes.
+- Where activity names imply locations or variants (e.g., Register at ER vs Register at FD; Examination vs Expert Examination vs Thorough Examination), we treat them as activity variants rather than assign explicit roles.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Case opening trigger: a patient needs care and is registered. Exactly one registration variant is used per case.
+  - Register at ER (0..1 occurrence per case)
+  - Register at FD (0..1 occurrence per case)
+- Mutual exclusion: Register at ER and Register at FD never co-occur in the same case.
+
+Pre-diagnosis assessments (optional, before Diagnosis)
+- Optional examinations, each with at most one occurrence per case:
+  - Examination (0..1), cannot co-exist with Expert Examination (mutually exclusive).
+  - Expert Examination (0..1), cannot co-exist with Examination.
+  - Thorough Examination (0..1), may occur; if it occurs, it is immediately followed by Diagnosis (directly-follows).
+- Temporal guarantees when an exam occurs:
+  - Always after an examination, Diagnosis occurs later in the case.
+  - Always after any examination (Examination, Expert Examination, Thorough Examination), Treatment and Discharge will eventually occur in the case.
+- Directly-follows constraint:
+  - Thorough Examination -> Diagnosis immediately next.
+
+Core care loop (Diagnosis–Treatment cycles with possible rework)
+- Diagnosis occurs 1..6 times per case.
+- Immediately after each Diagnosis, Treatment occurs (directly-follows: Diagnosis -> Treatment).
+- Treatment occurs 1..6 times per case.
+- After a Treatment:
+  - If the outcome is unsuccessful:
+    - Treatment unsuccessful (0..5 per case) may be recorded and must be followed immediately by Diagnosis (directly-follows: Treatment unsuccessful -> Diagnosis), thereby re-entering the loop.
+  - If the outcome is successful:
+    - Treatment successful (0..1 per case) may be recorded. When present, it must occur after Diagnosis and Treatment, and Discharge follows immediately (directly-follows: Treatment successful -> Discharge).
+
+Discharge (process completion)
+- Discharge occurs exactly once per case (1).
+- Discharge is always preceded by both Diagnosis and Treatment in the same case (always-before: Discharge -> Diagnosis; Discharge -> Treatment).
+- When Treatment successful is present, Discharge must follow it immediately.
+
+Decision points with criteria and possible outcomes
+- Exclusive registration choice:
+  - ER vs FD (mutually exclusive; chosen based on entry channel).
+- Pre-diagnosis examination selection:
+  - Examination OR Expert Examination (mutually exclusive).
+  - Thorough Examination is optional and, if it occurs, it is the last exam immediately before Diagnosis (due to the directly-follows constraint), though the model does not forbid its co-occurrence with the other exam types prior to it.
+- Treatment outcome decision:
+  - Successful: proceed immediately to Discharge (with Treatment successful recorded when present).
+  - Unsuccessful: record Treatment unsuccessful (when present) and immediately re-diagnose.
+
+Parallel activities and synchronization points
+- No true parallelism is evidenced. Control flow is sequential with merges:
+  - Registration variants merge into a common pre-diagnosis stage.
+  - Examination variants (when present) merge into Diagnosis.
+  - Each Diagnosis directly leads to Treatment; rework returns to Diagnosis.
+
+Exception handling and error paths
+- Conformance exceptions (violations if observed):
+  - Register at ER and Register at FD cannot both occur in a single case.
+  - Examination and Expert Examination cannot both occur in a single case.
+  - If Treatment unsuccessful occurs, it must be followed immediately by Diagnosis.
+  - Diagnosis must always be followed immediately by Treatment.
+  - If Treatment successful occurs, it must be followed immediately by Discharge.
+- Data-quality exception pattern observed:
+  - Although Discharge always occurs once, Treatment successful is allowed 0..1 by the log, creating potential cases with Discharge but no explicit success marker, which is inconsistent with the equivalence relation reported between Treatment successful and Discharge.
+
+Rework loops and escalation procedures
+- Rework loop:
+  - Diagnosis -> Treatment -> (Treatment unsuccessful) -> Diagnosis -> Treatment ... (repeat up to the observed bounds).
+- The discovered model does not provide an explicit escalation activity; it permits up to six Diagnosis/Treatment cycles and up to five recorded Treatment unsuccessful events.
+
+End conditions and outcomes
+- Normal completion: Discharge (exactly once per case), typically immediately following Treatment successful when that event is recorded.
+- The model does not include alternative end states; all observed cases end in Discharge.
+
+Process metrics and performance characteristics (as implied by constraints)
+- Cardinalities:
+  - Discharge: exactly 1.
+  - Diagnosis: 1..6.
+  - Treatment: 1..6.
+  - Treatment unsuccessful: 0..5.
+  - Treatment successful: 0..1 (but intended to align 1:1 with Discharge).
+  - Registration (ER or FD): 0..1 each; mutually exclusive.
+  - Examinations: 0..1 each; Examination and Expert Examination are mutually exclusive.
+- Adjacency guarantees (zero-event gap):
+  - Diagnosis -> Treatment.
+  - Treatment unsuccessful -> Diagnosis.
+  - Treatment successful -> Discharge.
+  - Thorough Examination -> Diagnosis.
+- Structural implications:
+  - The loop length (number of cycles) varies per case; success terminates the loop and triggers immediate discharge.
+
+Key challenges and pain points
+- Contradictory equivalence constraints vs mutual exclusion:
+  - The log reports equivalence between several activities and Discharge (e.g., Register at ER, Register at FD, various examinations, Treatment successful), yet Register at ER and Register at FD can never co-occur. Reconciling this suggests the intended meaning is: when these activities occur, they occur exactly once (co-occurrence with Discharge in count), not that all must be present in every case.
+- Incomplete success logging:
+  - Discharge is always present, but Treatment successful is only 0..1 by the log. Missing success markers undermine traceability and compliance evidence.
+- Ambiguity in pre-diagnosis pathway:
+  - Examination vs Expert Examination are exclusive, but Thorough Examination may co-occur, with the only hard constraint being that if Thorough Examination happens, it is immediately followed by Diagnosis. This creates variability that is hard to govern.
+- Potential rework inefficiency:
+  - Up to six Diagnosis/Treatment cycles are permitted with up to five unsuccessful outcomes, which may indicate long loops without explicit guardrails in the model.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Objective: standardize and streamline the care episode from registration to discharge, ensuring clear sequencing, minimal unnecessary variation, and complete outcome logging.
+- The improved model preserves all intended core behaviors (assessment, diagnosis–treatment cycles, success-driven discharge) while tightening optionality and documentation.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source. The IDEAL model keeps activity variants but enforces clearer control logic without introducing new activities or roles.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Case opens upon exactly one registration activity:
+  - Exclusive choice: Register at ER OR Register at FD (never both). Exactly one per case.
+
+Pre-diagnosis assessment (exactly one, chosen based on case need)
+- Exclusive choice (one-of-three):
+  - Examination OR Expert Examination OR Thorough Examination (each at most once).
+- Temporal requirement:
+  - If Thorough Examination is chosen, it must be followed immediately by Diagnosis (as in AS-IS).
+  - If Examination or Expert Examination is chosen, proceed directly to Diagnosis without inserting other activities between (enforce immediate handoff to reduce waiting and ambiguity).
+
+Core care loop with controlled rework
+- Diagnosis -> Treatment must remain an immediate pair (no intervening events).
+- Post-treatment outcome:
+  - If unsuccessful: record Treatment unsuccessful, then immediately perform Diagnosis (Treatment unsuccessful -> Diagnosis), continuing the loop.
+  - If successful: record Treatment successful, then immediately Discharge (Treatment successful -> Discharge).
+- Completeness rule:
+  - Treatment successful must be present exactly once in every completed case (to align with the single Discharge), closing the loop with a clear success marker.
+
+Discharge (process completion)
+- Discharge occurs exactly once and immediately follows Treatment successful.
+- Discharge must be preceded by at least one Diagnosis and Treatment (unchanged).
+
+Decision points with criteria and possible outcomes
+- Registration channel decision (exclusive):
+  - ER vs FD, based on arrival context; exactly one variant per case.
+- Assessment selection (exclusive, exactly one):
+  - Examination vs Expert Examination vs Thorough Examination, chosen by established clinical criteria.
+- Outcome decision after Treatment:
+  - Successful: finalize with Treatment successful -> Discharge (immediate).
+  - Unsuccessful: Treatment unsuccessful -> immediate re-diagnosis.
+
+Parallel activities and synchronization points
+- No parallel branches. Simple merges:
+  - Registration variants merge into assessment.
+  - Assessment merges into Diagnosis.
+  - Loop merges back into Diagnosis after an unsuccessful outcome.
+
+Exception handling and error paths
+- Enforced constraints (hard compliance):
+  - Never both Register at ER and Register at FD in the same case.
+  - Exactly one assessment activity per case; Examination and Expert Examination remain mutually exclusive, and Thorough Examination is part of the same exclusive choice.
+  - Diagnosis must be immediately followed by Treatment.
+  - If Treatment unsuccessful occurs, it must be immediately followed by Diagnosis.
+  - Treatment successful must be present exactly once and must be immediately followed by Discharge.
+- Data-quality enforcement:
+  - Prohibit Discharge without a recorded Treatment successful.
+  - Prohibit missing or duplicate assessment events.
+
+Rework loops and escalation procedures
+- Rework loop retained but governed:
+  - Diagnosis -> Treatment -> (Treatment unsuccessful) -> Diagnosis ...
+  - The IDEAL model does not add new activities; governance (outside the model) may define thresholds for review. Within the model, the loop is allowed but data requirements (unsuccessful marker presence and immediate re-diagnosis) are strict.
+
+End conditions and outcomes
+- Single, controlled end state:
+  - Discharge exactly once, immediately after a single Treatment successful event.
+
+Process metrics and performance characteristics
+- Structural metrics (targets):
+  - Registration: exactly 1 (ER xor FD).
+  - Assessment: exactly 1 (xor among Examination, Expert Examination, Thorough Examination).
+  - Diagnosis and Treatment: at least 1 each; maintain immediate adjacency.
+  - Treatment unsuccessful: 0..N (governed), each immediately followed by Diagnosis.
+  - Treatment successful: exactly 1.
+  - Discharge: exactly 1, immediately after Treatment successful.
+- Compliance KPIs:
+  - Percentage of cases with correct immediate pairs: Diagnosis->Treatment; Treatment unsuccessful->Diagnosis; Treatment successful->Discharge; Thorough Examination->Diagnosis (when chosen).
+  - Zero instances of ER+FD co-occurrence; zero instances of Examination+Expert Examination co-occurrence; zero cases with multiple assessments.
+  - Zero Discharge-without-success cases.
+- Performance KPIs (suggested monitoring):
+  - Average number of Diagnosis–Treatment cycles per case.
+  - Proportion of cases requiring rework.
+  - Time from Registration to first Diagnosis; from last Treatment to Discharge.
+
+Improvements made compared to AS-IS
+- Resolved ambiguity in the assessment stage by enforcing exactly one assessment per case (exclusive choice), reducing variability and potential redundancy.
+- Aligned outcome and completion by making Treatment successful mandatory and directly preceding Discharge, eliminating cases that discharge without a recorded success marker.
+- Maintained necessary immediacy constraints to reduce handoff delays and ensure clear, auditable sequencing (Diagnosis->Treatment; unsuccessful->Diagnosis; successful->Discharge; Thorough Examination->Diagnosis).
+- Preserved the essential rework capability while tightening documentation and control logic for cleaner governance and conformance.
+")

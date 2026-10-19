@@ -1,0 +1,94 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Define a standardized, efficient, and safe clinical process from patient registration (ER or FD) through Diagnosis, Treatment, and Discharge that minimizes rework, enforces necessary clinical assessment steps, and ensures timely escalation for cases with repeated unsuccessful treatment. The IDEAL model preserves all necessary clinical decision points observed in AS-IS but removes wasteful variability (skips, inconsistent expert involvement) and adds clear thresholds and SLAs for treatment loops and escalation.
+- Scope: Same end-to-end scope as AS-IS: Registration -> Assessment -> Diagnosis -> Treatment -> Outcome -> Discharge. No new clinical activities are introduced beyond those in the observed model; improvements are achieved by standardizing when existing activities are executed and by implementing governance rules.
+
+Key stakeholders and roles involved (explicit responsibilities)
+- ER Registration: perform registration and standardized triage questions as part of registration (routing decision is part of the registration activity).
+- FD Registration: perform registration and standardized triage questions (routing decision part of registration).
+- Examiner / Clinician (Examination): perform initial clinical exam in all cases unless clear criteria for immediate Expert input are met (criteria defined below).
+- Expert Examiner: consulted when specific escalation criteria are met at registration or post-diagnosis review (explicit, rule-based involvement rather than ad-hoc).
+- Thorough Examiner: perform extended assessment when indicated by Examination or Expert opinion (criteria codified).
+- Diagnostician: produce Diagnosis from collected exam information.
+- Treatment Team: execute Treatment according to diagnosis and documented treatment plan.
+- Discharge Clerk/Nurse: confirm treatment outcome recorded and issue Discharge.
+- Clinical Governance / Case Review Team (organizational role, procedural): monitors repeated unsuccessful cycles and enforces escalation policy. (Note: this is a governance role applied to existing activities — it does not introduce a new logged clinical task.)
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and triggers
+1. Start: Patient arrival recorded at either "Register at ER" or "Register at FD". Registration must include a brief triage checklist (embedded in registration activity) that records key indicators to determine immediate Expert involvement (see criteria below).
+
+2. Mandatory first-line Assessment
+   - After registration, the default path is to perform "Examination" (initial clinical exam) for all patients. This removes the AS-IS skip behavior. The only exception is when registration triage explicitly triggers immediate Expert Examination according to objective criteria (see Decision points below).
+
+3. Expert Examination (conditional)
+   - Expert Examination is invoked only when one or more of the following documented criteria are met at registration or after initial Examination:
+     a) High-risk presentation on triage (e.g., unstable vital signs, complex co-morbidities — criteria codified locally), or
+     b) Initial Examination identifies ambiguous or complex findings that meet escalation thresholds, or
+     c) Explicit request by treating clinician with documented rationale.
+   - If criteria are met, Expert Examination runs before or in parallel with Thorough Examination (schedule-dependent); otherwise Expert Examination is an on-demand consult, not the default.
+
+4. Thorough Examination (conditional and standardized)
+   - Thorough Examination is performed when Examination or Expert Examination indicates need for deeper assessment (codified triggers). The pathway to Thorough Examination is standardized to ensure diagnoses are supported by necessary data. The IDEAL model eliminates unstructured skipping of Thorough Examination when clinical indicators are present.
+
+5. Diagnosis
+   - Diagnosis is generated after the available examinations. If Expert Examination or Thorough Examination was performed, their findings are merged into the diagnostic decision. Diagnosis must include a documented confidence level and plan for treatment.
+
+6. Treatment (single planned attempt + defined rework policy)
+   - Treatment is administered according to the documented plan.
+   - Outcome recorded as either:
+     a) Treatment successful — proceed to Discharge; or
+     b) Treatment unsuccessful — trigger immediate structured re-evaluation (see Rework rules).
+   - Treatment->Discharge without a recorded "Treatment successful" event is disallowed: Discharge requires an explicit documented outcome.
+
+Decision points with criteria and possible outcomes (IDEAL)
+- Registration routing (embedded triage):
+  - Outcome A: Routine case -> proceed to Examination.
+  - Outcome B: High-risk / complex -> proceed immediately to Expert Examination + Examination concurrently as resources allow.
+- Post-Examination routing:
+  - If clinical indicators for thorough assessment are present -> perform Thorough Examination.
+  - Else -> proceed to Diagnosis.
+- Treatment outcome decision and rework logic:
+  - If Treatment successful -> record success and proceed to Discharge.
+  - If Treatment unsuccessful -> initiate a structured re-evaluation step within a defined SLA (e.g., re-evaluation within X hours) and record reason for failure; if this is the first unsuccessful attempt, allow one re-treatment attempt after re-diagnosis. If unsuccessful a second time, immediate mandatory Expert Examination and case review are triggered. After two unsuccessful treatment cycles, escalate to a multidisciplinary case review and consider alternative treatment strategies.
+
+Parallel activities and synchronization points (IDEAL)
+- Expert Examination and Thorough Examination may be scheduled in parallel when escalation criteria and resource availability permit; their findings will synchronize into Diagnosis. The model prescribes synchronization points: both exam results must be consolidated in the Diagnosis activity before initiating Treatment.
+
+Exception handling and standardized escalation
+- Rework limit and escalation: maximum of two consecutive unsuccessful Treatment cycles allowed without formal escalation to case review and senior expert input.
+- Mandatory documentation on any Treatment unsuccessful event: reason for failure, immediate corrective actions, and SLA for re-evaluation.
+- Disallow skipping of core diagnostic steps when indicators are present; missing documentation or skipped steps generates an audit flag for clinical governance.
+
+End conditions and outcomes (IDEAL)
+- Final successful outcome: Treatment successful -> Discharge (explicitly recorded). Target: 95% of cases record a Treatment successful event before Discharge.
+- Alternative acceptable outcomes: If clinical decision is to transfer the patient to another facility or to palliative/alternative care pathways (not present in observed models), the case is closed with appropriate event records. (No new logged activities are added in the process — this is a documentation requirement.)
+
+Process metrics and target performance characteristics (IDEAL)
+- Target metrics (examples based on AS-IS baselines):
+  - Increase Treatment success rate from ~83.8% to ≥95% by reducing rework and enforcing expert escalation.
+  - Reduce average number of Treatment unsuccessful cycles per case to <0.05 (from currently high frequency observed in variants).
+  - Reduce mean variant-level elapsed time for top variants by 30–50% (target: e.g., reduce variant performance 320,000 -> 160,000–224,000 in the same units reported), primarily by eliminating unnecessary skips, retries and late expert involvement.
+  - SLA compliance: triage-to-Examination within defined time window for all registrations; re-evaluation after unsuccessful Treatment within defined SLA.
+  - Data quality: 100% of discharged cases must have a documented treatment outcome event (Treatment successful or documented alternative closure) to remove ambiguity like AS-IS direct Treatment->Discharge events.
+
+Key improvements made (IDEAL)
+- Removal of ad-hoc skips: Examination and Thorough Examination become mandatory when clinically indicated and cant be silently bypassed; this reduces missed assessments that cause rework.
+- Standardized expert involvement: Expert Examination is triggered based on defined criteria rather than ad-hoc; this reduces late-stage escalation and repeated treatment failures.
+- Controlled rework with escalation threshold: limits the number of repeated unsuccessful Treatment cycles and routes cases to multidisciplinary review earlier.
+- Enforced outcome recording: Discharge requires explicit recorded treatment outcome to ensure data quality and clarity of case closure.
+- Measurable SLAs and KPIs: defines time-to-exam, time-to-diagnosis, rework rate, success rate, and escalation response time for operational monitoring.
+
+Expected operational impact
+- Reduced total case time and resource consumption by cutting repeated cycles and unnecessary specialist involvement later in the flow.
+- Improved clinical quality and patient safety due to timely escalation and comprehensive assessment when indicated.
+- Better data for continuous improvement due to enforced recording of outcomes and decision criteria.
+
+Implementation notes (non-functional guidance aligned with source model)
+- No new clinical activities are introduced; existing activities (Register at ER/FD, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge) are kept. The IDEAL model focuses on governance, routing rules, SLAs, and mandatory documentation to change how these existing activities are executed and recorded.
+- IT change: ensure the electronic record enforces mandatory fields (e.g., outcome event requirement before Discharge) and supports automatic routing flags based on triage answers.
+- Reporting: build dashboards to track the KPIs listed above (success rate, rework frequency, average time per variant).
+
+Summary (IDEAL)
+- The IDEAL process preserves the clinically necessary steps from the AS-IS model but removes inconsistent and wasteful behavior (skips, ad-hoc expert use, unconstrained rework loops). By standardizing triage, gating Expert Examination by objective criteria, enforcing documentation, and setting escalation thresholds, the IDEAL process improves quality, reduces time and resource waste, and provides clear metrics for continuous monitoring.

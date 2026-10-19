@@ -1,0 +1,67 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is an improved, streamlined version of the patient admission, examination, diagnosis, treatment, and discharge workflow. It rationalizes the AS-IS complexities by standardizing examination paths, enforcing mandatory outcome checks before discharge, limiting rework loops to a single retry (with escalation), collapsing redundant skips, and ensuring sequential progression. This promotes efficiency, compliance, patient safety, and consistent performance, targeting average cycle times of 240,000-280,000 ms. Retains all core activities from the source without inventing new ones.
+
+#### Key Stakeholders and Roles Involved
+Roles not specified in sources; assumes undifferentiated medical staff.
+
+#### Detailed Step-by-Step Process Flow
+- **Start Conditions and Triggers**: Patient arrival at ER or FD.
+
+- **Registration (XOR Gateway)**:
+  1. 'Register at ER' → post-registration.
+  2. OR 'Register at FD' → post-registration.
+
+- **Initial Examination (XOR Gateway, standardized)**:
+  - Mandatory choice:
+    1. 'Examination' (routine cases) → thorough phase.
+    2. OR 'Expert Examination' (high severity, based on registration triage) → thorough phase.
+  - Removes AS-IS skips for consistency.
+
+- **Thorough Examination (Mandatory)**:
+  - 'Thorough Examination' → diagnosis entry.
+  - Removes optional skips; always performed post-initial exam for completeness.
+
+- **Diagnosis** → Treatment phase.
+
+- **Treatment → Outcome Check (Loop limited to 1 retry)**:
+  1. 'Treatment'.
+  2. **XOR Outcome Gateway**:
+     - 'Treatment successful' → Discharge path.
+     - OR 'Treatment unsuccessful' → Single rework: back to 'Diagnosis' → 'Treatment' (second attempt).
+  3. After second 'Treatment':
+     - MUST 'Treatment successful' → Discharge (no further loops).
+     - If second unsuccessful: Escalation path (implicit merge to Discharge with note, but enforce success or external handling).
+
+- **Discharge (Final Synchronization)**:
+  - 'Discharge' → process end.
+  - Removes direct Treatment → Discharge skips; outcome mandatory.
+
+- **Decision Points**:
+  | Gateway | Type | Criteria/Outcomes |
+  |---------|------|-------------------|
+  | Registration | XOR | ER (urgent) vs FD (transfer?). |
+  | Initial Exam | XOR | Routine ('Examination') vs Severe ('Expert Examination'). |
+  | Outcome | XOR | Success → End; Unsuccessful → 1x rework only. |
+
+- **Parallel Activities and Synchronization**: None; fully sequential.
+- **Exception Handling and Error Paths**: After 1 unsuccessful treatment, second failure triggers escalation (e.g., specialist consult implied by loop limit, not new activity).
+- **Rework Loops**: Strictly limited to 1 Diagnosis-Treatment cycle retry.
+- **End Conditions and Outcomes**:
+  - Discharge only after confirmed 'Treatment successful'.
+  - No premature ends.
+
+#### Process Metrics and Performance Characteristics (Targeted)
+- Expected avg time: 240k ms straight success (90% cases); 360k ms with 1 loop (10%).
+- Bottlenecks addressed: Fixed exam sequence (~120k ms total exams); limited loops.
+- Compliance: 100% outcome-checked discharges; standardized paths.
+
+#### Key Improvements Made
+- **Streamlined Exams**: Mandatory sequence (Initial → Thorough) eliminates skips/variability; Expert for severe cases only.
+- **Rework Limits**: Max 1 loop prevents long cycles (eliminates 640k+ ms traces).
+- **Enforced Compliance**: No Discharge without 'Treatment successful'; removes risky skips.
+- **Reduced Variability**: Fewer gateways (XOR only); consistent ~80% reduction in variants.
+- **Efficiency Gains**: Targets 20-30% faster throughput by cutting rework (from ~15% 1-loop to 10%, no multi-loops).
+- **Safety Enhancements**: Mandatory thorough checks and outcome validation reduce errors.
+- **Bottleneck Fixes**: Clear sequencing avoids optional paths; escalation after 2 failures.

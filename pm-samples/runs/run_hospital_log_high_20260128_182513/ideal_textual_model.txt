@@ -1,0 +1,74 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL model is a rationalized, governance-compliant target for the mined patient flow. It preserves the original visible activities (registration, examination variants, thorough examination, diagnosis, treatment, discharge) but removes ambiguous invisible-routing, enforces required checks, bounds rework, and clarifies decision points. The goal is to reduce unnecessary loop iterations, eliminate undocumented skips, ensure consistent recording, and provide clear escalation for treatment failures.
+
+Key stakeholders and roles involved
+- The source Petri net does not explicitly name roles. The IDEAL model avoids inventing new actors; instead it prescribes role-aware controls that align with the existing activity set (e.g., registration function, examining clinician(s), diagnostic process, treatment team, discharge action). Specific role assignments should be added in implementation based on local organization charts.
+
+Detailed step-by-step IDEAL process flow
+Start conditions and triggers
+1. Start event: Patient registration. Consolidate the two observed registration transitions into a single logical 'Register' entry point with an attribute "Location = ER | FD" to reflect the two origins observed in the AS-IS. This preserves both options while removing duplicate control paths.
+
+2. Triage/Examination decision (explicit gateway)
+   - After Register the process reaches an explicit decision gateway: Perform Examination? If yes, choose one of two examination types based on clinical criteria recorded at registration (explicit rule):
+     - Expert Examination (if criteria for expert review are met)
+     - Examination (standard)
+   - If no exam is clinically required, record an explicit documented "No Examination Required" outcome (this replaces invisible skip_1 with a visible decision that must be logged). This prevents silent omission and enforces traceability.
+
+3. Thorough Examination requirement (explicit gateway)
+   - After Examination/Expert Examination, apply a mandatory check: Is a Thorough Examination required? The IDEAL model mandates a thorough examination in all cases that will proceed to active treatment unless a documented exception is recorded (e.g., minor complaint resolved by examination). If an exception applies, the exception reason must be recorded (replaces skip_2 with explicit exception logging).
+   - If Thorough Examination is required, execute 'Thorough Examination' (existing activity). Otherwise record the exception path explicitly.
+
+4. Diagnosis and Treatment loop with controlled escalation
+   - After Thorough Examination (or documented exception) perform 'Diagnosis'. Then execute 'Treatment'.
+   - If Treatment is successful (explicit outcome 'Treatment successful'), continue to Discharge.
+   - If Treatment is unsuccessful, do NOT immediately loop back to raw Diagnosis without control. Instead require an explicit re-assessment path using the existing activities:
+     - First failure: route the case back to 'Thorough Examination' (re-assessment) and then to 'Diagnosis' and 'Treatment' again. This uses existing 'Thorough Examination' activity rather than inventing a new review step.
+     - If a case experiences more than N unsuccessful treatment attempts (N to be defined by clinical governance — e.g., N = 2), escalate: require an 'Expert Examination' before the next diagnosis-treatment cycle. This uses the existing 'Expert Examination' activity as the escalation path.
+   - Each routable decision and escalation must be recorded as a visible, auditable transition (no invisible skips).
+
+5. Treatment success and discharge
+   - Once 'Treatment successful' occurs, proceed to 'Discharge' and end the process. All successes should be explicitly recorded; hidden success paths (skip_6) are removed in IDEAL and replaced by an explicitly recorded 'Treatment successful' outcome.
+
+Decision points with criteria and possible outcomes (explicit in IDEAL)
+- Examination required? -> Yes (perform Examination/Expert Examination) or No (record exception reason).
+- Thorough Examination required? -> Yes (perform Thorough Examination) or No (record exception reason).
+- Treatment outcome -> Success (recorded) or Failure (recorded). Failure triggers re-assessment, and after repeated failures triggers Expert Examination (escalation).
+
+Parallel activities and synchronization points
+- The IDEAL model remains largely sequential to preserve clinical safety (Examination -> Thorough Examination -> Diagnosis -> Treatment). If parallel tasks are needed in practice (e.g., diagnostics testing performed in parallel with other assessments), they should be represented explicitly on implementation with visible synchronization; such parallelism was not present in the mined model and is not introduced here.
+
+Exception handling and error paths
+- Explicit exception logging replaces invisible skip transitions. For any path that previously used skip_1, skip_2, skip_5, or skip_6, the IDEAL model requires a documented exception reason (e.g., clinically not indicated, patient refused, emergency override, data-recording error) before the case continues.
+- Repeated treatment failures trigger escalation: after a configurable number of Treatment unsuccessful outcomes, route the case to Expert Examination for reassessment.
+
+Rework loops and escalation procedures
+- Controlled rework: failures route to Thorough Examination and Diagnosis for rework, not silently back into Diagnosis without reassessment.
+- Escalation: after exceeding the configured failure threshold, require Expert Examination before the next treatment attempt. This prevents unbounded loops and ensures second-opinion input for persistent failures.
+
+End conditions and outcomes
+- Normal completion: explicit 'Treatment successful' recorded, then 'Discharge' transition to final state.
+- Exceptional completion: if a documented exception prevents further clinical activity (e.g., patient left AMA, documented non-treatment), record the exception and close the case as a documented exception outcome that is handled by governance procedures.
+
+Process metrics and performance characteristics (targets for IDEAL)
+- Mandatory logging coverage: 100% of decisions (examination required, thorough exam required, treatment outcome) are recorded; invisible skips eliminated.
+- Rework rate target: reduce Treatment unsuccessful rate by X% (to be set by clinical governance); importantly the number of repeated cycles per case should have a sub-goal threshold (average diagnosis-treatment iterations per case <= target).
+- Escalation compliance: 100% of cases exceeding the failure threshold are routed to Expert Examination.
+- Cycle time target: reduce average time from Registration to Discharge by eliminating unnecessary repeated treatment cycles and by ensuring reassessments occur promptly.
+- Data quality: eliminate skip_* gaps in event log — every path must have an explicit recorded transition or exception.
+
+Improvements made relative to AS-IS (explicit)
+- Removed invisible transitions: all previously skip_* behaviors are replaced by explicit decisions or documented exceptions to improve auditability and reduce ambiguity.
+- Enforced examination governance: required checks and documentation ensure that examination and thorough examination are performed or skipped only with recorded justification.
+- Controlled rework and escalation: the rework loop is preserved for clinical necessity but controlled by mandatory reassessment and an escalation rule that routes persistent failures to Expert Examination.
+- Consolidated registration paths: two start transitions are unified into a single logical Register with a location attribute, simplifying process structure while preserving the factual origin.
+- Improved traceability and measurement: the IDEAL model defines clear metrics to monitor rework, coverage, escalation compliance, and cycle time.
+
+Implementation notes (non-invasive, consistent with original activities)
+- No new activities are introduced; the IDEAL model uses only activities observed in the mined Petri net (Register at ER/FD consolidated conceptually into Register, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge). Where the IDEAL model prescribes changes it does so by changing routing rules, decision logging, and escalation thresholds rather than adding novel tasks.
+- During rollout, map the consolidated/register-with-attribute design back to system fields (e.g., registration location) so the implementation can preserve original source distinctions while using a single control flow.
+
+Summary of IDEAL behavior
+- The IDEAL process preserves the same clinical building blocks as the observed model but eliminates implicit skips, requires explicit recording of decisions and exceptions, bounds and manages rework through reassessment and escalation to Expert Examination, and enables clear metrics and governance to reduce loops and improve throughput. This produces a safer, auditable, and more efficient patient flow while staying faithful to the original observed activities.
+

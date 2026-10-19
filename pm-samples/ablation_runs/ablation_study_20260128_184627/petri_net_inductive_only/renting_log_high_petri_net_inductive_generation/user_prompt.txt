@@ -1,0 +1,71 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_10, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (0a4e2e18-cde4-43a2-bdad-76a585e54d1a, 'Move In'), (1a9d7566-41fe-4e0b-9654-5696740be3d9, 'Set Appointment'), (1f959fd6-0bce-4430-b4a6-bc856b2b796c, 'Extensive Screening'), (33dfdc66-1549-43eb-9698-e812c54ab3d8, 'Hand In The Paperwork'), (4f2cc993-7241-4102-9671-db17b2c5893e, 'Pay Rent'), (52f5b0b4-25b2-4330-a03b-4b6bff3ec3f4, 'Reject Prospective Tenant'), (571536f5-97b2-49bd-913b-68b31b8ca2e7, 'Sign Contract'), (63e211d6-f871-4294-b5c5-88542cea1412, 'Tenant Cancels Appartment'), (6af46d68-01e3-4944-980c-c46a25e7ccfe, 'Screen Prospective Tenant'), (8bb8c576-841c-48fa-bd66-42fc3d74175f, 'View The Property'), (8cc10c6a-4541-4911-b51b-3888d664f1a9, 'Issue Warning'), (902b58be-4331-419e-88e1-93be3576f876, 'Apply for Viewing Appointment'), (a33e4713-d36a-46a7-9928-cc66fc34265a, 'Check Paperwork'), (ae319d53-5764-45c3-bdc8-a20deea9b2eb, 'Evict Tenant'), (c6ab00f4-fa2d-4a76-b0a9-fbb15c181377, 'Miss Rent Payment'), (ff52e64e-f151-4efe-8977-9669b136839b, 'Accept Late Payment'), (init_loop_7, None), (skip_1, None), (skip_10, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_14, None), (skip_2, None), (skip_3, None), (skip_6, None), (skip_9, None) ]
+arcs: [ (0a4e2e18-cde4-43a2-bdad-76a585e54d1a, 'Move In')->p_13, (1a9d7566-41fe-4e0b-9654-5696740be3d9, 'Set Appointment')->p_5, (1f959fd6-0bce-4430-b4a6-bc856b2b796c, 'Extensive Screening')->p_4, (33dfdc66-1549-43eb-9698-e812c54ab3d8, 'Hand In The Paperwork')->p_7, (4f2cc993-7241-4102-9671-db17b2c5893e, 'Pay Rent')->p_14, (52f5b0b4-25b2-4330-a03b-4b6bff3ec3f4, 'Reject Prospective Tenant')->sink, (571536f5-97b2-49bd-913b-68b31b8ca2e7, 'Sign Contract')->p_10, (63e211d6-f871-4294-b5c5-88542cea1412, 'Tenant Cancels Appartment')->sink, (6af46d68-01e3-4944-980c-c46a25e7ccfe, 'Screen Prospective Tenant')->p_9, (8bb8c576-841c-48fa-bd66-42fc3d74175f, 'View The Property')->p_6, (8cc10c6a-4541-4911-b51b-3888d664f1a9, 'Issue Warning')->p_19, (902b58be-4331-419e-88e1-93be3576f876, 'Apply for Viewing Appointment')->p_3, (a33e4713-d36a-46a7-9928-cc66fc34265a, 'Check Paperwork')->p_8, (ae319d53-5764-45c3-bdc8-a20deea9b2eb, 'Evict Tenant')->sink, (c6ab00f4-fa2d-4a76-b0a9-fbb15c181377, 'Miss Rent Payment')->p_18, (ff52e64e-f151-4efe-8977-9669b136839b, 'Accept Late Payment')->p_17, (init_loop_7, None)->p_16, (skip_1, None)->p_4, (skip_10, None)->p_16, (skip_11, None)->p_15, (skip_12, None)->p_14, (skip_13, None)->p_13, (skip_14, None)->p_12, (skip_2, None)->p_4, (skip_3, None)->p_4, (skip_6, None)->p_15, (skip_9, None)->p_17, p_10->(0a4e2e18-cde4-43a2-bdad-76a585e54d1a, 'Move In'), p_12->(63e211d6-f871-4294-b5c5-88542cea1412, 'Tenant Cancels Appartment'), p_12->(ae319d53-5764-45c3-bdc8-a20deea9b2eb, 'Evict Tenant'), p_13->(init_loop_7, None), p_13->(skip_6, None), p_14->(skip_13, None), p_14->(skip_14, None), p_15->(4f2cc993-7241-4102-9671-db17b2c5893e, 'Pay Rent'), p_15->(skip_12, None), p_16->(c6ab00f4-fa2d-4a76-b0a9-fbb15c181377, 'Miss Rent Payment'), p_17->(skip_10, None), p_17->(skip_11, None), p_18->(8cc10c6a-4541-4911-b51b-3888d664f1a9, 'Issue Warning'), p_19->(ff52e64e-f151-4efe-8977-9669b136839b, 'Accept Late Payment'), p_19->(skip_9, None), p_3->(1a9d7566-41fe-4e0b-9654-5696740be3d9, 'Set Appointment'), p_3->(skip_1, None), p_4->(52f5b0b4-25b2-4330-a03b-4b6bff3ec3f4, 'Reject Prospective Tenant'), p_4->(571536f5-97b2-49bd-913b-68b31b8ca2e7, 'Sign Contract'), p_5->(8bb8c576-841c-48fa-bd66-42fc3d74175f, 'View The Property'), p_6->(33dfdc66-1549-43eb-9698-e812c54ab3d8, 'Hand In The Paperwork'), p_6->(skip_2, None), p_7->(a33e4713-d36a-46a7-9928-cc66fc34265a, 'Check Paperwork'), p_8->(6af46d68-01e3-4944-980c-c46a25e7ccfe, 'Screen Prospective Tenant'), p_9->(1f959fd6-0bce-4430-b4a6-bc856b2b796c, 'Extensive Screening'), p_9->(skip_3, None), source->(902b58be-4331-419e-88e1-93be3576f876, 'Apply for Viewing Appointment') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

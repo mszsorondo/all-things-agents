@@ -1,0 +1,76 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_ILP
+============================================================
+
+
+=== PETRI NET (ILP MINER) INTERPRETATION GUIDE ===
+
+The ILP (Integer Linear Programming) Miner constructs Petri nets that perfectly
+fit the observed behavior by solving an optimization problem.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ 3, 4, 5, ..., sink, source ]
+transitions: [ (Activity, 'Activity'), (■, None), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+PLACE NAMING:
+- Numeric identifiers (3, 4, 5, ...) for intermediate places
+- 'source' and 'sink' for start/end
+- Minimized number of places (optimization objective)
+
+SPECIAL TRANSITIONS:
+- (■, None) or similar: Silent/tau transitions for routing
+- Visible activities: (ActivityName, 'ActivityName')
+
+KEY CHARACTERISTICS:
+- Perfect fitness: ALL observed traces can replay
+- Minimal structure: Fewest places/arcs that explain behavior
+- May include silent transitions for complex routing
+- Numerically named places (optimization result)
+
+OPTIMIZATION OBJECTIVE:
+- Minimize structural complexity
+- Subject to: All traces must be replayable
+- Token flow conservation at each step
+
+ADVANTAGES:
+- Guaranteed perfect fitness
+- Mathematically rigorous
+- No heuristic parameters to tune
+- Finds minimal explaining structure
+
+LIMITATIONS:
+- Computationally expensive for large logs
+- May overfit to observed behavior
+- Does not handle noise well
+- Scalability issues with many activities
+
+WHEN TO USE:
+- Small to medium-sized logs
+- When perfect fitness is required
+- Clean logs without noise
+- Understanding exact behavioral boundaries
+
+
+--- DISCOVERED MODEL ---
+[ILP Miner]
+
+
+If I have a Petri net:
+
+places: [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 3, 4, 5, 6, 7, 8, 9, sink, source ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Backend Interview, 'Backend Interview'), (Background Check, 'Background Check'), (Behavioral Interview, 'Behavioral Interview'), (Coding Interview, 'Coding Interview'), (Extensive Background Check, 'Extensive Background Check'), (Frontend Interview, 'Frontend Interview'), (Hand In Job Application, 'Hand In Job Application'), (ML Interview, 'ML Interview'), (Make Job Offer, 'Make Job Offer'), (Screening Interview, 'Screening Interview'), (Telephonic Screening, 'Telephonic Screening'), (■, None) ]
+arcs: [ (Application Rejected, 'Application Rejected')->14, (Application Rejected, 'Application Rejected')->15, (Application Rejected, 'Application Rejected')->17, (Application Rejected, 'Application Rejected')->18, (Application Rejected, 'Application Rejected')->19, (Application Rejected, 'Application Rejected')->20, (Application Rejected, 'Application Rejected')->21, (Application Rejected, 'Application Rejected')->25, (Backend Interview, 'Backend Interview')->22, (Backend Interview, 'Backend Interview')->24, (Backend Interview, 'Backend Interview')->25, (Background Check, 'Background Check')->11, (Background Check, 'Background Check')->18, (Background Check, 'Background Check')->5, (Behavioral Interview, 'Behavioral Interview')->13, (Behavioral Interview, 'Behavioral Interview')->24, (Behavioral Interview, 'Behavioral Interview')->8, (Behavioral Interview, 'Behavioral Interview')->9, (Coding Interview, 'Coding Interview')->11, (Coding Interview, 'Coding Interview')->12, (Coding Interview, 'Coding Interview')->16, (Coding Interview, 'Coding Interview')->19, (Coding Interview, 'Coding Interview')->22, (Coding Interview, 'Coding Interview')->6, (Coding Interview, 'Coding Interview')->7, (Extensive Background Check, 'Extensive Background Check')->20, (Extensive Background Check, 'Extensive Background Check')->23, (Extensive Background Check, 'Extensive Background Check')->5, (Extensive Background Check, 'Extensive Background Check')->6, (Frontend Interview, 'Frontend Interview')->12, (Frontend Interview, 'Frontend Interview')->17, (Frontend Interview, 'Frontend Interview')->8, (Hand In Job Application, 'Hand In Job Application')->10, (Hand In Job Application, 'Hand In Job Application')->11, (Hand In Job Application, 'Hand In Job Application')->12, (Hand In Job Application, 'Hand In Job Application')->13, (Hand In Job Application, 'Hand In Job Application')->14, (Hand In Job Application, 'Hand In Job Application')->15, (Hand In Job Application, 'Hand In Job Application')->16, (Hand In Job Application, 'Hand In Job Application')->17, (Hand In Job Application, 'Hand In Job Application')->18, (Hand In Job Application, 'Hand In Job Application')->19, (Hand In Job Application, 'Hand In Job Application')->20, (Hand In Job Application, 'Hand In Job Application')->21, (Hand In Job Application, 'Hand In Job Application')->22, (Hand In Job Application, 'Hand In Job Application')->23, (Hand In Job Application, 'Hand In Job Application')->24, (Hand In Job Application, 'Hand In Job Application')->25, (Hand In Job Application, 'Hand In Job Application')->3, (Hand In Job Application, 'Hand In Job Application')->4, (Hand In Job Application, 'Hand In Job Application')->5, (Hand In Job Application, 'Hand In Job Application')->6, (Hand In Job Application, 'Hand In Job Application')->7, (Hand In Job Application, 'Hand In Job Application')->8, (Hand In Job Application, 'Hand In Job Application')->9, (ML Interview, 'ML Interview')->13, (ML Interview, 'ML Interview')->21, (ML Interview, 'ML Interview')->7, (Make Job Offer, 'Make Job Offer')->10, (Make Job Offer, 'Make Job Offer')->9, (Screening Interview, 'Screening Interview')->10, (Screening Interview, 'Screening Interview')->11, (Screening Interview, 'Screening Interview')->12, (Screening Interview, 'Screening Interview')->13, (Screening Interview, 'Screening Interview')->14, (Screening Interview, 'Screening Interview')->15, (Screening Interview, 'Screening Interview')->16, (Screening Interview, 'Screening Interview')->17, (Screening Interview, 'Screening Interview')->18, (Screening Interview, 'Screening Interview')->19, (Screening Interview, 'Screening Interview')->20, (Screening Interview, 'Screening Interview')->21, (Screening Interview, 'Screening Interview')->22, (Screening Interview, 'Screening Interview')->23, (Screening Interview, 'Screening Interview')->24, (Screening Interview, 'Screening Interview')->25, (Screening Interview, 'Screening Interview')->3, (Screening Interview, 'Screening Interview')->4, (Screening Interview, 'Screening Interview')->5, (Screening Interview, 'Screening Interview')->6, (Screening Interview, 'Screening Interview')->7, (Screening Interview, 'Screening Interview')->8, (Screening Interview, 'Screening Interview')->9, (Telephonic Screening, 'Telephonic Screening')->14, (Telephonic Screening, 'Telephonic Screening')->3, (Telephonic Screening, 'Telephonic Screening')->4, (■, None)->sink, 10->(Background Check, 'Background Check'), 10->(Make Job Offer, 'Make Job Offer'), 10->(■, None), 11->(Background Check, 'Background Check'), 11->(Coding Interview, 'Coding Interview'), 11->(Screening Interview, 'Screening Interview'), 11->(■, None), 12->(Background Check, 'Background Check'), 12->(Coding Interview, 'Coding Interview'), 12->(Frontend Interview, 'Frontend Interview'), 12->(■, None), 13->(Background Check, 'Background Check'), 13->(Behavioral Interview, 'Behavioral Interview'), 13->(ML Interview, 'ML Interview'), 13->(■, None), 14->(Application Rejected, 'Application Rejected'), 14->(Background Check, 'Background Check'), 14->(Telephonic Screening, 'Telephonic Screening'), 14->(■, None), 15->(Application Rejected, 'Application Rejected'), 15->(Background Check, 'Background Check'), 15->(■, None), 16->(Background Check, 'Background Check'), 16->(Coding Interview, 'Coding Interview'), 16->(■, None), 17->(Application Rejected, 'Application Rejected'), 17->(Background Check, 'Background Check'), 17->(Frontend Interview, 'Frontend Interview'), 17->(■, None), 18->(Application Rejected, 'Application Rejected'), 18->(Background Check, 'Background Check'), 18->(Screening Interview, 'Screening Interview'), 18->(■, None), 19->(Application Rejected, 'Application Rejected'), 19->(Background Check, 'Background Check'), 19->(Coding Interview, 'Coding Interview'), 19->(■, None), 20->(Application Rejected, 'Application Rejected'), 20->(Background Check, 'Background Check'), 20->(Extensive Background Check, 'Extensive Background Check'), 20->(■, None), 21->(Application Rejected, 'Application Rejected'), 21->(Background Check, 'Background Check'), 21->(ML Interview, 'ML Interview'), 21->(■, None), 22->(Backend Interview, 'Backend Interview'), 22->(Background Check, 'Background Check'), 22->(Coding Interview, 'Coding Interview'), 22->(■, None), 23->(Background Check, 'Background Check'), 23->(Extensive Background Check, 'Extensive Background Check'), 23->(■, None), 24->(Backend Interview, 'Backend Interview'), 24->(Background Check, 'Background Check'), 24->(Behavioral Interview, 'Behavioral Interview'), 24->(■, None), 25->(Application Rejected, 'Application Rejected'), 25->(Backend Interview, 'Backend Interview'), 25->(Background Check, 'Background Check'), 25->(■, None), 3->(Background Check, 'Background Check'), 3->(Telephonic Screening, 'Telephonic Screening'), 3->(■, None), 4->(Screening Interview, 'Screening Interview'), 4->(Telephonic Screening, 'Telephonic Screening'), 4->(■, None), 5->(Background Check, 'Background Check'), 5->(Extensive Background Check, 'Extensive Background Check'), 5->(Screening Interview, 'Screening Interview'), 5->(■, None), 6->(Background Check, 'Background Check'), 6->(Coding Interview, 'Coding Interview'), 6->(Extensive Background Check, 'Extensive Background Check'), 6->(■, None), 7->(Background Check, 'Background Check'), 7->(Coding Interview, 'Coding Interview'), 7->(ML Interview, 'ML Interview'), 7->(■, None), 8->(Background Check, 'Background Check'), 8->(Behavioral Interview, 'Behavioral Interview'), 8->(Frontend Interview, 'Frontend Interview'), 8->(■, None), 9->(Background Check, 'Background Check'), 9->(Behavioral Interview, 'Behavioral Interview'), 9->(Make Job Offer, 'Make Job Offer'), 9->(■, None), source->(Hand In Job Application, 'Hand In Job Application') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

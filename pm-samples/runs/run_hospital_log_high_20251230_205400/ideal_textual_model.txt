@@ -1,0 +1,85 @@
+IDEAL Process Model
+
+Process overview and purpose
+- This target model streamlines the same set of activities discovered (Registration, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment outcomes, Discharge) to ensure consistent assessment before diagnosis, reliable outcome capture after treatment, and controlled rework with reassessment when treatment is unsuccessful.
+
+Key stakeholders and roles involved
+- The source models do not specify explicit role ownership. The IDEAL flow therefore references activities without assigning them to specific roles. Departments/work centers implied by labels (ER/FD registration, examinations, diagnosis, treatment, discharge) remain responsible as in current practice.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start: Patient registers at ER or FD (exclusive start). Both entry points remain supported.
+
+1) Registration (ER or FD)
+- Purpose: Create the encounter and direct the patient to an appropriate assessment track.
+- Rule: The registration source (ER vs FD) does not change the required clinical steps that follow.
+
+2) Standardized assessment (mandatory; exclusive routing with controlled escalation)
+- Tier 1 (mandatory): Perform exactly one of the following based on case complexity:
+  a) Examination (general), OR
+  b) Expert Examination (specialized)
+- Tier 2 (conditional): Perform Thorough Examination only when indicated by Tier 1 findings. If not indicated, skip.
+- Prohibited in the IDEAL model: Direct Registration → Diagnosis and direct Registration → Thorough Examination without first performing Tier 1. At least one initial assessment must occur before Diagnosis.
+- Escalation rule (before Diagnosis): If the initial Examination was general and uncertainty remains, escalate to Expert Examination or Thorough Examination before proceeding to Diagnosis.
+
+3) Diagnosis
+- Purpose: Decide the treatment plan based on completed assessment. All diagnoses are supported by at least one preceding assessment activity.
+
+4) Treatment
+- Execute treatment according to the diagnosis.
+
+5) Mandatory outcome capture (exclusive outcomes; no silent bypass)
+- Immediately after Treatment, record exactly one outcome event:
+  a) Treatment unsuccessful → proceed to controlled rework, OR
+  b) Treatment successful → proceed to Discharge.
+- Prohibited in the IDEAL model: Direct Treatment → Discharge without an explicit outcome event. All discharges must be preceded by either Treatment successful (preferred) or an explicitly documented pathway from an unsuccessful cycle to an alternative disposition (see rework).
+
+6) Controlled rework with reassessment when treatment is unsuccessful
+- If Treatment unsuccessful:
+  - Return to Diagnosis, and conduct targeted reassessment as needed before committing to a new treatment cycle:
+    • Optionally perform Expert Examination and/or Thorough Examination when the cause of failure is unclear or when new information is required. These are existing activities used purposefully here to inform re-diagnosis.
+  - Policy: Limit repeated unsuccessful cycles by introducing review thresholds (e.g., after the second unsuccessful cycle, require Expert Examination before the next Diagnosis). This enforces evidence-based re-diagnosis using existing assessment activities.
+  - After reassessment and Diagnosis, proceed to Treatment again, then record the outcome.
+
+7) Discharge (end)
+- Occurs only after explicit outcome recording. Normally follows Treatment successful → Discharge.
+
+Decision points with criteria and possible outcomes
+- Registration channel (ER vs FD): administrative choice; clinical path remains identical thereafter.
+- Assessment routing:
+  • Tier 1: Choose Examination vs Expert Examination based on complexity/acuity (to be governed by SOPs).
+  • Tier 2: Perform Thorough Examination only when indicated; otherwise skip.
+- Treatment outcome:
+  • Exactly one: Treatment successful vs Treatment unsuccessful (mandatory logging).
+- Rework controls:
+  • If unsuccessful, require reassessment before the next Diagnosis when uncertainty exists; enforce escalation after repeated failures.
+
+Parallel activities and synchronization points
+- No parallelism is mandated. The process remains single-threaded with clear merges at each decision outcome.
+
+Exception handling and error paths
+- If immediate discharge is clinically necessary, record the appropriate outcome event before Discharge (e.g., conclude as Treatment successful if criteria are met, or document Treatment unsuccessful followed by clinically justified discharge). No discharge should bypass outcome capture.
+
+Rework loops and escalation procedures
+- Rework is allowed but controlled:
+  • After each Treatment unsuccessful, return to Diagnosis with optional Expert/Thorough Examination to inform the next plan.
+  • Introduce escalation thresholds to prevent excessive loops.
+
+End conditions and outcomes
+- Standard completion: Treatment successful → Discharge.
+- Alternative completion: If discharge follows an unsuccessful pathway, it must still record the unsuccessful outcome prior to Discharge (i.e., no silent skip).
+
+Process metrics and performance characteristics (targets)
+- Assessment completeness: 100% of cases have at least one assessment (Examination or Expert Examination) before Diagnosis; Thorough Examination used only when indicated.
+- Outcome recording: 100% of treatments have an explicit outcome event; 0% of Treatment → Discharge without outcome.
+- Rework containment: Reduce multi-cycle rework (≥2 unsuccessful loops) to a minimal level (e.g., <5% of cases involving rework), aided by reassessment rules.
+- Cycle time improvements (directional targets):
+  • Shorten pre-diagnosis variability by standardizing Tier 1, thereby stabilizing time from Registration to Diagnosis.
+  • Reduce time from Treatment to Discharge by eliminating outcome recording gaps and preventing unnecessary additional cycles via reassessment.
+
+Improvements made versus AS-IS
+- Eliminated optional skips that allowed direct Registration → Diagnosis (ensures evidence-based Diagnosis).
+- Clarified assessment structure: mandatory Tier 1, conditional Tier 2 with criteria; added pre-diagnosis escalation when uncertainty exists.
+- Enforced mandatory outcome capture; removed silent path Treatment → Discharge.
+- Introduced rework governance: reassessment on failure using existing examination activities; thresholds to curb repeated unsuccessful cycles.
+- Preserved both entry points (ER/FD) but decoupled them from clinical routing variability to improve consistency.

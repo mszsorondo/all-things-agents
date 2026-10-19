@@ -1,0 +1,50 @@
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs

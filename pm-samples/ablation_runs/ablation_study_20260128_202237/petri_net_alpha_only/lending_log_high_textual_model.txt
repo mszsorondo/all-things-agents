@@ -1,0 +1,201 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Origination of a consumer loan from initial appointment request through application submission, information verification, possible co-signer involvement, underwriting decision, and either loan agreement signing or termination.
+- Source: Discovered from an Alpha Miner Petri net. All tasks are visible; no silent/invisible transitions. The discovery may include structural artifacts (e.g., duplicated places, disconnected activities) and does not support short loops.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source models. Activities are described without lane assignments.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start event: The process begins when a Request Appointment event is recorded.
+
+Activities and sequence
+1) Request Appointment (start)
+   - Directly followed by an exclusive decision:
+     • Appointment Denied (early termination)
+     • Set Appointment (continue process)
+
+2) Set Appointment
+   - Followed by Hand In Credit Appliaction [sic]
+   - Then Verify Borrowers Information
+
+3) Verify Borrowers Information
+   - This step is a prerequisite for all downstream outcomes. The discovered Petri net produces two internal gating conditions (two places) after verification that together enable or disable downstream options. Practically, the following visible outcomes are observed:
+     a) Application Rejected (early termination)
+     b) Request Co-Signer On Loan (precondition to enable submission)
+     c) skipped_examination (an observed event/marker)
+     d) Submit File to Underwriter (submission to underwriting)
+
+Decision points with criteria and possible outcomes
+- Decision 1: After Request Appointment
+  • If the appointment cannot be accommodated or is refused, Appointment Denied → End.
+  • Otherwise, Set Appointment → proceed with application.
+- Decision 2: After Verify Borrowers Information (multi-way choice with synchronization constraints)
+  • Application Rejected → End.
+  • Request Co-Signer On Loan → Enables subsequent Submit File to Underwriter.
+  • skipped_examination → Observed as a recorded event that indicates an examination was skipped.
+  • Submit File to Underwriter → Underwriting decision step.
+
+  Important structural note from the discovered net:
+  - Submit File to Underwriter requires both:
+    • The post-verification gating token, and
+    • A token produced by Request Co-Signer On Loan.
+    This makes Request Co-Signer On Loan effectively mandatory for submission in the discovered AS-IS model.
+  - Application Rejected and skipped_examination both require the two post-verification gating tokens simultaneously (i.e., they consume both), which means they are mutually exclusive with Request Co-Signer On Loan + Submit File to Underwriter if fired first.
+  - Sign Loan Agreement requires evidence of prior Submit File to Underwriter (cannot occur without Submit).
+
+Parallel activities and synchronization points
+- Although no explicit parallelism of visible tasks is modeled, several transitions require multiple internal gating conditions:
+  • Application Rejected and skipped_examination require both post-verification conditions.
+  • Submit File to Underwriter requires both the verification gating condition and the co-signer prerequisite.
+  • Sign Loan Agreement requires tokens from two post-submission conditions, effectively enforcing completion of Submit File to Underwriter before signing.
+  These behave like implicit AND-joins on internal conditions.
+
+Exception handling and error paths
+- Appointment Denied: The process ends immediately after the appointment is not granted.
+- Application Rejected: The process terminates after verification without reaching underwriting.
+- Loan Denied: The process terminates after underwriting.
+- skipped_examination: May be recorded after verification. In the discovered net it can dead-end the case if taken in lieu of submission (because it consumes the same post-verification gating needed for submission). This represents an unsound behavior allowed by the discovered structure.
+- Disconnected activity: Make Visit to Assess Colatteral appears as a transition but is not connected by any arcs in the discovered net, implying it can occur out-of-band with no enforced position relative to other tasks.
+
+Rework loops and escalation procedures
+- No explicit rework loops are represented in the discovered model (consistent with Alpha Miner’s limitations on 1- or 2-length loops).
+- No explicit escalations are present in the source.
+
+End conditions and outcomes
+- Appointment Denied → End
+- Application Rejected → End
+- Loan Denied → End
+- Sign Loan Agreement → End
+
+Process metrics and performance characteristics (as observable/trackable from the model)
+- Appointment conversion rate: Requests resulting in Set Appointment vs. Appointment Denied.
+- Verification rejection rate: Rate of Application Rejected after Verify Borrowers Information.
+- Co-signer dependency rate: Frequency of Request Co-Signer On Loan among cases that proceed beyond verification (noting that, in the discovered structure, submission depends on the co-signer step).
+- Underwriting outcomes: Ratio of Sign Loan Agreement vs. Loan Denied after submission.
+- Throughput times: 
+  • Request Appointment to Set Appointment
+  • Set Appointment to Verify Borrowers Information
+  • Verify Borrowers Information to Submit File to Underwriter
+  • Submit File to Underwriter to decision (Sign or Denied)
+- Incidence and impact of skipped_examination on completion rates (dead-ends).
+
+Key challenges and pain points
+- Structural unsoundness around skipped_examination:
+  • Taking skipped_examination consumes gating needed for subsequent submission, potentially dead-ending cases.
+- Mandatory co-signer prerequisite for submission:
+  • The discovered net enforces Request Co-Signer On Loan before Submit File to Underwriter, which may be stricter than business intent and can introduce delays.
+- Disconnected activity:
+  • Make Visit to Assess Colatteral is not wired into the flow, indicating ad-hoc execution without governance or timing controls.
+- Lack of silent transitions or explicit joins:
+  • The model relies on implicit multi-place joins, which can obscure true decision logic and contribute to deadlock-prone paths.
+- No modeled rework or exception remediation:
+  • If documents are incomplete or appointments fail, there is no represented retry or remediation path in the discovered model.
+")
+
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A sound and governable loan origination process from appointment request through underwriting decision, minimizing dead-ends, clarifying decision logic, and ensuring only necessary steps are performed.
+- Design principles applied:
+  • Remove deadlock-prone/unsound behavior.
+  • Make co-signer involvement conditional based on need.
+  • Ensure submission is possible when prerequisites are met.
+  • Place the collateral visit task where it adds value and is governed.
+  • Treat 'skipped_examination' as a data condition, not a control-flow step.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source; responsibilities are described at the activity level without lane assignments.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start event: Request Appointment.
+
+Activities and sequence
+1) Request Appointment (start)
+   - Decision: Appointment approved?
+     • No → Appointment Denied → End.
+     • Yes → Set Appointment.
+
+2) Set Appointment
+   - Then Hand In Credit Appliaction [sic].
+   - Then Verify Borrowers Information.
+
+3) Verify Borrowers Information
+   - Decision: Verification outcome
+     • Fail → Application Rejected → End.
+     • Pass → Proceed to risk/credit sufficiency evaluation.
+
+4) Conditional co-signer decision (explicit XOR)
+   - Is a co-signer required based on credit policy?
+     • Yes → Request Co-Signer On Loan (obtain co-signer details/commitment).
+     • No → Skip co-signer step.
+   - After this decision (regardless of path), converge and proceed.
+
+5) Submit File to Underwriter
+   - Submission is permitted as soon as:
+     • Verification has passed, and
+     • If required, the co-signer has been requested/obtained.
+   - The model removes the discovered artifact that made the co-signer step mandatory in all cases.
+
+6) Underwriting assessment (with governed optional collateral visit)
+   - Optional activity: Make Visit to Assess Colatteral
+     • Performed only when collateral-based evaluation is required by underwriting policy.
+     • May execute before or in parallel with document review but must complete before final underwriting decision.
+   - Data annotation: If an internal examination is legitimately bypassed, capture this as a case attribute (previously captured as skipped_examination) rather than a blocking control-flow task.
+
+7) Underwriter decision (explicit XOR)
+   - Loan Denied → End.
+   - Approved → Sign Loan Agreement → End.
+
+Decision points with criteria and possible outcomes
+- Post-appointment: Approve appointment? If no, terminate; if yes, continue.
+- Post-verification: Pass/fail. Fail terminates; pass continues.
+- Co-signer need: Conditional path based on policy/risk thresholds. Only if needed is the co-signer requested.
+- Underwriter decision: Deny vs. Approve.
+
+Parallel activities and synchronization points
+- Collateral visit may run in parallel with underwriting review but must complete before the decision is issued (AND-join at the underwriting decision).
+- No other parallelism is necessary; implicit gating conditions from the discovered model are replaced by explicit, sound joins.
+
+Exception handling and error paths
+- Appointment Denied, Application Rejected, and Loan Denied are explicit terminating exceptions.
+- skipped_examination is no longer a control-flow step. If an examination is legitimately skipped, it is recorded as data in the case (non-blocking).
+- No dead-end paths: All paths either progress to a decision or terminate with a clearly defined end state.
+
+Rework loops and escalation procedures
+- The target model intentionally avoids implicit loops. If verification fails or co-signer is not adequate, the case terminates (or is re-initiated externally) rather than stalling in unsound states. No additional activities beyond those present in the source are introduced.
+
+End conditions and outcomes
+- Appointment Denied → End
+- Application Rejected → End
+- Loan Denied → End
+- Sign Loan Agreement → End (successful completion)
+
+Process metrics and performance characteristics
+- Appointment conversion rate (Request → Set) and time to appointment.
+- Verification pass rate and time from application to verified.
+- Co-signer utilization rate and added lead time when required.
+- Underwriting cycle time (submit → decision), including any collateral visit duration.
+- Approval rate (decision) and time to Sign Loan Agreement for approved cases.
+- Incidence of examinations legitimately skipped (captured as data) and impact on cycle time/quality.
+
+Improvements made (vs. AS-IS)
+- Sound control flow:
+  • Removed deadlock-prone path where skipped_examination could consume gating needed for submission.
+- Conditional co-signer:
+  • Co-signer no longer hard-mandatory; it's required only when policy dictates. This reduces unnecessary delays while preserving observed behavior when a co-signer is actually needed.
+- Explicit decisions and joins:
+  • Replaced implicit multi-place gating with clear XOR/AND decisions and joins for transparency and auditability.
+- Governed collateral visit:
+  • Integrated Make Visit to Assess Colatteral as an optional, controlled step tied to underwriting, ensuring it completes before the decision when required.
+- Data vs. control separation:
+  • skipped_examination is treated as a case attribute rather than a control step, eliminating non-productive paths and improving traceability.
+- Clarity and label hygiene:
+  • Retain source task names for traceability while acknowledging the [sic] spelling; in practice, standardize labels for governance and reporting.
+")

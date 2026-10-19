@@ -1,0 +1,126 @@
+## 1) WHAT THIS REPRESENTATION DESCRIBES
+
+This representation is a **textual dump of an accepting Petri net** consisting of:
+
+* the **Petri net structure** itself (its places, transitions, and arcs), rendered as the library’s **standard textual representation of the net object**
+* an **initial marking** (where tokens start)
+* a **final marking** (where tokens must end for proper completion)
+
+In your wrapper, the whole block is also **prefixed by an algorithm tag**, e.g. `"[Inductive Miner]"`, indicating **which discovery method produced the net** (not additional semantics of the net).
+
+---
+
+## 2) TYPICAL OUTPUT FORM (conceptual)
+
+Conceptually, the produced string looks like:
+
+* *(optional header)* a short introductory sentence
+* a **single block** that describes the net’s **places / transitions / arcs** (exact formatting is the library’s canonical “repr” text)
+* a line for **initial marking**
+* a line for **final marking**
+
+Plus, in your wrapper:
+
+* a first line like:
+  `"[Inductive Miner]"`
+
+So overall:
+
+```
+[<algorithm name>]
+(optional) If I have a Petri net:
+<library textual representation of the Petri net>
+initial marking: <textual representation of marking>
+final marking: <textual representation of marking>
+```
+
+---
+
+## 3) HOW TO READ EACH LINE
+
+### A) Algorithm tag line (your wrapper)
+
+**`[Inductive Miner]`**
+Meaning: “The following Petri net was discovered using the Inductive Miner pathway.”
+It is **metadata about provenance**, not about the process behavior beyond “this is the mined model.”
+
+### B) Optional header line
+
+**`If I have a Petri net:`**
+Meaning: a human-oriented header that may be present or absent depending on the `response_header` setting.
+It does **not** change meaning—only presentation.
+
+### C) The net description block (the “repr” of the Petri net)
+
+This is the **structural definition** of the Petri net. Even if the exact formatting varies by PM4Py version, it semantically encodes:
+
+* **Places**: the state/condition nodes (often shown by names/IDs)
+* **Transitions**: the activity nodes
+
+  * **Visible transitions**: transitions that carry a **label** (the activity name shown to the user)
+  * **Silent transitions**: transitions whose label is absent/empty (often displayed as `None` or a tau-like notation), meaning **routing/control-flow only**
+* **Arcs**: directed edges connecting **place → transition** or **transition → place**
+
+**How to interpret this block:**
+
+* Any arc **place → transition** indicates a **precondition**: a token must be available there to enable the transition.
+* Any arc **transition → place** indicates a **postcondition**: firing the transition deposits a token there.
+* If arc weights are shown: they indicate **how many tokens** are consumed/produced (if weights are not shown, do not assume non-unit weights are present).
+
+### D) Initial marking line
+
+**`initial marking: <...>`**
+Meaning: the **token distribution at process start**.
+Read it as: “At time 0, these places contain this many tokens.”
+
+### E) Final marking line
+
+**`final marking: <...>`**
+Meaning: the **required token distribution for completion** in the accepting net.
+Read it as: “A run is complete/accepting when the marking matches this final configuration.”
+
+---
+
+## 4) GLOBAL SEMANTIC MEANING
+
+Taken together, the output defines an **accepting Petri net language of behavior**:
+
+* It specifies **which sequences of labeled transitions** (activities) are possible under token-flow rules,
+* while also specifying **which executions are considered complete** (reaching the final marking from the initial marking).
+
+Silent transitions may appear in executions but are **not observable activities**; they represent internal routing needed to realize the control-flow.
+
+---
+
+## 5) HOW TO INTERPRET THE LIST AS A WHOLE
+
+This is **not a list of multiple items** (like variants); it is a **single model snapshot** composed of three parts:
+
+1. **Net structure** (places/transitions/arcs)
+2. **Initial marking** (start tokens)
+3. **Final marking** (acceptance condition)
+
+Interpret the structure as the “rules of motion,” and the markings as the “start state” and “goal state.”
+
+---
+
+## 6) WHAT THIS REPRESENTATION IS FOR
+
+* **Communicating the discovered process model** in a compact textual form suitable for prompting an LLM or a human reader.
+* **Checking/understanding control-flow constraints** (ordering, concurrency, loops, optional paths) encoded by the Petri net.
+* Providing the minimum information needed to reason about **reachability and completion** (via initial/final markings).
+
+---
+
+## 7) WHAT THIS REPRESENTATION IS NOT
+
+* **Not a conformance result**: it does not say whether a given trace fits the model.
+* **Not a frequency/performance summary**: no counts, probabilities, durations, or bottlenecks are encoded here.
+* **Not guaranteed to include every “nice” formatting field** (like explicit “places: [...] / transitions: [...] / arcs: [...]” sections): the central block is whatever the library’s standard net text outputs.
+* **Not a guarantee about discovery properties** (e.g., soundness, noise handling) beyond the fact that the model came from a particular discovery method; those properties are not *encoded in the text* itself.
+
+---
+
+## 8) ONE-SENTENCE CORE SUMMARY
+
+A **textual definition of an accepting Petri net**—its places, transitions (labeled and possibly silent), arcs, and the initial/final token markings—optionally prefixed by a header and an algorithm tag indicating how the net was discovered.

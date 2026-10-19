@@ -1,0 +1,74 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model represents a streamlined, efficient "to-be" version of the job recruitment process for technical positions (frontend, backend, machine learning roles). It eliminates the AS-IS variability, rework loops, out-of-order executions, and excessive rejection points by enforcing a logical, sequential flow with clear decision gates. Optional escalations are preserved but gated. The purpose remains to rigorously yet efficiently evaluate candidates from application to hire, minimizing waste and ensuring compliance with best practices.
+
+#### Key Stakeholders and Roles Involved
+No specific roles defined; assumes recruiters handle screenings/checks, technical experts conduct interviews, and hiring managers finalize offers.
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers**: Triggered by "Hand In Job Application" from qualified candidates.
+
+1. **Hand In Job Application** → Mandatory first step.
+
+2. **Telephonic Screening** → Quick initial filter (eliminates direct skip/reject post-application).
+   - Decision: Pass? → Proceed; Fail → "Application Rejected" (early gate).
+
+3. **Screening Interview** → In-depth initial assessment (fixed before Background).
+   - Decision: Promising? → Proceed; Fail → Reject.
+
+4. **Background Check** → Standard verification.
+   - Decision: Clear? → Proceed to Coding; Issues? → Optional "Extensive Background Check".
+     - Extensive: Clear? → Proceed; Fail → Reject (gated, no continuation to tech).
+
+5. **Coding Interview** → Core technical gate (mandatory post-checks).
+   - Decision: Competent? → Tech Interviews; Fail → Reject.
+
+6. **Technical Interviews** (sequential with inclusive options; no crossovers/loops):
+   - Parallel split if needed: "Frontend Interview", "Backend Interview", "ML Interview" (candidate-specific; e.g., skip irrelevant).
+   - Sync join post-all required.
+   - Decision after each/set: Suitable? → Proceed; Fail → Reject (single mid-tech gate).
+
+7. **Behavioral Interview** → Final soft-skills assessment (no self-loops).
+   - Decision: Fit? → Proceed; Fail → Reject.
+
+8. **Make Job Offer** → Single execution (no loops).
+   - Negotiation if needed, but no repeat activity.
+   - Decision: Accept? → End Success; Decline → Optional re-offer once, else Reject.
+
+**Decision Points and Gateways**:
+- Exclusive (XOR) gateways at each step: Pass/Fail → Proceed/Reject.
+- Inclusive (OR) for tech interviews: Perform only relevant ones (e.g., ML for ML roles).
+- Single rejection path consolidates all fails.
+
+**Parallel Activities and Synchronization**:
+- Minimal: Optional parallel tech interviews (split post-Coding, join pre-Behavioral).
+- All else strictly sequential to enforce order.
+
+**Exception Handling and Error Paths**:
+- Centralized "Application Rejected" only at defined gates (post-Telephonic, post-Screening, post-Background/Extensive, post-Coding/Tech, post-Behavioral).
+- No continuation post-Reject.
+
+**Rework Loops and Escalation Procedures**:
+- Removed all loops/skips.
+- Escalation only for Extensive Background (if standard fails); rework limited to single re-offer post-decline.
+
+**End Conditions and Outcomes**:
+- Success: "Make Job Offer" accepted → Hired (sink).
+- Failure: "Application Rejected" → End (sink).
+- Clear business meaning: Hired vs. Not Selected.
+
+#### Process Metrics and Performance Characteristics
+- Expected cycle time: ~400-450s total (reduced from AS-IS 530s successes, eliminates loop overhead).
+- Rejection rate: Still high early (~80%), but consolidated to gates for efficiency.
+- Throughput: Higher to offer stage via fixed sequence.
+- Bottlenecks fixed: No ordering issues, no repeats.
+
+#### Key Improvements Made
+- Streamlined sequence: Fixed Screening → Background → Coding → Tech → Behavioral (eliminates swaps/crossovers).
+- Removed wasteful paths: No early rejects post-app, no mid-tech loops, no post-reject continuations.
+- Collapsed redundancies: Single Behavioral/Offer execution; gated Extensive check.
+- Enforced gates: Rejects only at logical points, reducing sunk costs.
+- Reduced variability: ~5-7 main paths (per role type) vs. 30+.
+- Improved candidate experience: Predictable progression, no surprises.
+- Compliance: Clear logic, no silent paths, auditable decisions.

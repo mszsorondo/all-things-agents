@@ -1,0 +1,76 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is an improved, streamlined version of the job recruitment process for technical positions. It enforces a logical, sequential hiring funnel with minimal branching, no wasteful loops or skips, and clear decision gates to ensure consistent, efficient evaluation. The purpose remains to select qualified candidates through structured screenings and interviews, but with reduced variability, faster throughput, and higher compliance to best practices.
+
+#### Key Stakeholders and Roles Involved
+- Job applicants.
+- Recruiters/HR (initial screenings, background checks, offers).
+- Technical interviewers (coding/specialized).
+- Behavioral interviewers.
+No specific per-task roles invented; generic recruitment team.
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers:** Process triggered by Hand In Job Application.
+
+1. **Hand In Job Application** (mandatory start).
+
+2. **Telephonic Screening** (mandatory, quick filter).
+
+3. **Screening Interview** (mandatory, post-phone screen).
+
+4. **Background Check** (mandatory, sequential after screening; no extensive variant unless triggered).
+
+5. **Decision: Background Clear?**
+   - Yes → Coding Interview.
+   - No → Application Rejected (end).
+
+6. **Coding Interview** (mandatory technical gate).
+
+7. **Inclusive Gateway: Specialized Technical Interviews** (parallel optional based on role):
+   - Frontend Interview (if relevant).
+   - Backend Interview (if relevant).
+   - ML Interview (if relevant).
+   - Synchronization after all required; skips disallowed for mandatory ones.
+
+8. **Decision: Technical Fit?**
+   - Yes → Behavioral Interview.
+   - No → Application Rejected.
+
+9. **Behavioral Interview** (single execution, no loops).
+
+10. **Decision: Final Approval?**
+    - Yes → Make Job Offer (single execution, no loops).
+    - No → Application Rejected.
+
+**Parallel Activities and Synchronization Points:**
+- Optional parallel specialized technical interviews (Frontend/Backend/ML), strict sync before Behavioral.
+- No uncontrolled parallels elsewhere.
+
+**Exception Handling and Error Paths:**
+- Rejections only at defined gates: Post-Background, Post-Technical, Post-Behavioral.
+- No post-reject continuations; clean end.
+
+**Rework Loops and Escalation Procedures:**
+- Eliminated all loops (no self-loops on Behavioral/Offer/Reject).
+- Escalation only if needed via new decision pre-Behavioral (e.g., manager review), but not in base flow.
+
+**End Conditions and Outcomes:**
+- Success: Make Job Offer (hire).
+- Failure: Application Rejected.
+- Expected perf: Reduced to ~400-450ks ms for success (~6-7 days), early rejects <200ks ms.
+
+#### Process Metrics and Performance Characteristics
+- Reduced variants to <10 core paths.
+- Target throughput: 20-30% offer rate (vs. current low).
+- Avg time: Screenings 1-2 days, technical 3-4 days, final 1 day.
+- No loop overhead.
+
+#### Key Challenges and Pain Points (for AS-IS) or Improvements Made (for IDEAL)
+- **Improvements:** 
+  - Enforced strict sequencing (Phone → Screening → Background → Coding → Tech → Behavioral → Offer/Reject) to eliminate 90% of variants.
+  - Removed skips/loops, reducing rework/delays by 20-30%.
+  - Consolidated background checks (Extensive only if flagged).
+  - Structured technicals with sync, ensuring complete assessment.
+  - Clear reject gates prevent post-reject waste.
+  - Potential 20-40% faster cycle time, better candidate experience, consistent decisions.

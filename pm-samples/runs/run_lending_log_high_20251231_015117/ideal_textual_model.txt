@@ -1,0 +1,64 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is an improved, streamlined version of the loan application process. It eliminates wasteful loops, reduces variability to a clear sequential flow with controlled optional branches, enforces proper sequencing, and minimizes denial points while maintaining compliance. The purpose remains to efficiently evaluate loan applications for approval, ensuring thorough checks without redundancy, targeting higher throughput and shorter cycle times. All paths lead to clear outcomes: approval or denial, with early exits where appropriate.
+
+#### Key Stakeholders and Roles Involved
+- Borrowers/Customers: Request appointment, hand in application.
+- Bank Staff/Loan Officers: Set appointments, verify information, handle optional co-signer/collateral, submit to underwriter.
+- Underwriter: Final decision.
+Roles inferred from activities; standardized for clarity.
+
+#### Detailed Step-by-Step Process Flow
+1. **Start Conditions and Triggers**: Customer submits 'Request Appointment'.
+
+2. **Request Appointment** → **Decision: Appointment Feasibility** (Exclusive Gateway):
+   - Denied (e.g., basic eligibility fail): 'Appointment Denied' → End (Early Denial).
+   - Approved: 'Set Appointment'.
+
+3. **Set Appointment** → Borrower 'Hand In Credit Application'.
+
+4. **Verify Borrowers Information** → **Decision: Verification Outcome** (Exclusive Gateway):
+   - Issues found: 'Application Rejected' → End (Rejected).
+   - Passes: Proceed to optional enhancements.
+
+5. **Inclusive Gateway - Optional Checks** (up to 1 iteration each; no loops):
+   - **Parallel Split (if needed)**:
+     - Request Co-Signer (if credit borderline): 'Request Co-Signer On Loan' (once only).
+     - Assess Collateral: 'Make Visit to Assess Collateral' (once only; parallel to co-signer if both needed).
+   - **Synchronization (Parallel Join)**: Both complete or skipped.
+   - Removed: Skipped examination (non-standard, rare); no interleaving/loops.
+
+6. **Submit File to Underwriter** (after all checks).
+
+7. **Underwriting Decision** (Exclusive Gateway):
+   - Approved: 'Sign Loan Agreement' → End (Loan Approved).
+   - Denied: 'Loan Denied' → End (Denied).
+
+8. **Rework Loops and Escalation Procedures**:
+   - No loops allowed; if additional info needed post-checks, escalate to manager review (new controlled step) instead of rework.
+   - Limit optional checks to 1 iteration each.
+
+9. **Exception Handling and Error Paths**:
+   - Early denials at appointment/verify/underwrite.
+   - Escalation: If verification borderline, single escalation to senior officer before optional checks.
+
+10. **End Conditions and Outcomes**:
+    - Loan Approved: Agreement signed.
+    - Denied/Rejected: Clear notification.
+
+#### Process Metrics and Performance Characteristics (Targeted)
+- Reduced variants to <10.
+- Cycle time target: <150k ms end-to-end (50% reduction via no loops).
+- Approval rate improvement: Via better upfront verification.
+- Throughput: Higher due to streamlined flow.
+- Key metrics: Appointment time <50k ms, Verify <30k ms, Optional checks <40k ms parallel, Underwrite <50k ms.
+
+#### Key Improvements Made
+- **Eliminated Loops**: No more multi-collateral visits or co-signer interleaving; max 1 each, parallelized for speed.
+- **Reduced Variability**: Consolidated to logical paths (e.g., co-signer OR collateral OR both once).
+- **Streamlined Decisions**: Clear criteria at gateways (e.g., Verify: credit score > threshold → proceed).
+- **Removed Waste**: Eliminated rare skips (skipped_examination); early denials only where value-adding.
+- **Bottleneck Fixes**: Parallel optional checks, collapsed redundant paths.
+- **Compliance & Governance**: Enforced sequencing, escalation instead of uncontrolled rework, better screening to reduce late denials.
+- **Performance Gains**: Expected 40-60% time reduction, fewer resources on loops, higher customer satisfaction via predictability.

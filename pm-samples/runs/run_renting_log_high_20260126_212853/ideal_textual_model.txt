@@ -1,0 +1,92 @@
+IDEAL Process Model
+
+Process overview and purpose
+- This IDEAL (to-be) process defines a streamlined, controlled tenant onboarding and payment lifecycle that eliminates unnecessary skips and rework observed in the AS-IS mining output, enforces consistent sequencing (no bypass of mandatory checks), reduces payment churn, and introduces clear, automated escalation rules for missed rent.
+- Purpose (target): deliver a consistent, fair, auditable tenant-selection and occupancy process that minimizes time-to-decision, reduces repeated manual tasks, improves payment compliance handling, and shortens case lifecycles.
+
+Key stakeholders and roles (aligned with AS-IS but with clearer responsibilities)
+- Prospective tenant / Applicant: completes an application, attends scheduled viewing, submits required paperwork, signs contract, and makes payments.
+- Property manager / Leasing agent: receives applications, manages scheduling (system-assisted), shows property, coordinates move-in, and executes contract signing.
+- Screening/Underwriting team: performs a mandatory two-tiered screening workflow with clear handoffs and documented decision criteria (preliminary screening then, if needed, extensive screening).
+- Finance / Accounts Receivable: processes rent payments via integrated payment gateway, monitors payment compliance, triggers automated reminders and escalation to Issue Warning/Eviction according to policy.
+- Legal / Eviction team: invoked only after automated remediation steps and formal warning thresholds are met.
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and trigger
+1. Start: Applicant submits Apply for Viewing Appointment (web form or agent intake).
+
+Pre-check and scheduling (mandatory, no silent skips)
+2. System: Automatic preliminary eligibility check (evaluate essential disqualifiers from application data).
+  - If fails preliminary eligibility -> Reject Prospective Tenant (early, documented rejection). This replaces ad-hoc direct rejections and ensures consistent criteria.
+3. If eligible: Agent or system: Set Appointment (online booking integrated into system). Appointment scheduling is mandatory and logged.
+4. Applicant: View The Property at the scheduled appointment.
+
+Documentation and mandatory screening (no optional bypass)
+5. Applicant: Hand In The Paperwork immediately after or during the viewing (required documents must be uploaded/verified before screening is executed). The process disallows skipping document hand-in.
+6. Agent/Clerk: Check Paperwork for completeness and basic validity (binary gate: complete/incomplete).
+  - If incomplete -> Return to Applicant to Hand In Paperwork (one corrective loop only, recorded); escalate if not completed within SLA -> Reject Prospective Tenant.
+7. Screening team: Screen Prospective Tenant (mandatory). Screening decision points:
+  - If pass -> Approve for Contract Signing.
+  - If indicators present -> escalate to Extensive Screening.
+  - If fail -> Reject Prospective Tenant.
+8. Extensive Screening (if triggered) -> result: Approve or Reject.
+  - The decision criteria, required documents, and expected turnaround time are standardized to avoid redundant checks.
+
+Contracting and move-in
+9. Approved application -> Sign Contract (single, auditable approval step). Combine redundant approvals and ensure a single authorized signer.
+10. Sign Contract -> Move In (move-in scheduled and recorded). No silent loops after Move In for pre-occupancy tasks.
+
+Payment lifecycle and compliance (improved)
+11. On Move In, tenant is enrolled in a standardized payment plan and integrated payment gateway.
+12. Pay Rent (recurring) -> payments processed via the gateway; system records payment timestamps and flags missed payments immediately.
+13. Miss Rent Payment -> automatic reminder sequence (automated notifications):
+  - Reminder 1: Day 1 overdue (soft reminder).
+  - Reminder 2: Day 7 overdue (formal notice).
+  - If unpaid after defined reminder sequence -> Issue Warning (system-generated, routed to Finance with legal/eviction thresholds).
+14. Issue Warning -> Accept Late Payment (if tenant pays within the warning window) -> recorded and closed; the payment flow returns to Pay Rent. Track the number of late payments in the lease cycle.
+  - If tenant repeats late payments beyond configurable threshold (for example, 2 late payments in 12 months) -> formal escalation to eviction process initiation (Legal/Eviction team).
+15. Evict Tenant only after defined policy conditions are satisfied (automated record of reminders and warnings), minimizing discretionary or late evictions but ensuring timely enforcement where required.
+
+Cancellation handling
+- Tenant Cancels Apartment: if tenant requests cancellation prior to Move In or within defined cooling-off period, process the cancellation and close the case. Capture reasons as structured data for feedback and improvement.
+
+Parallel activities and synchronization (target)
+- Where possible, administrative checks (e.g., paperwork completeness verification) should be parallelized with scheduling, but mandatory sequencing is preserved: screening must not proceed without paperwork. Synchronization points are explicit: screening waits for paperwork completeness confirmation; Move In waits for contract signing and payment enrollment.
+
+Exception handling and rework rules (target)
+- Limit rework loops: allow exactly one remediation-cycle for incomplete paperwork; further non-compliance leads to rejection.
+- Prevent infinite payment-recovery loops by tracking late-payment counts and applying escalation thresholds.
+- All automated actions (reminders, warnings) must be traceable and timestamped to provide evidence for any eviction decision.
+
+End conditions and outcomes (target)
+- Accepted outcomes (sink equivalents): Reject Prospective Tenant (early or after checks), Tenant Cancels Apartment (before or after move-in according to policy), Evict Tenant (only after defined policy and documented remediation), or Ongoing Active Tenancy (cases that remain active with regular Pay Rent events).
+- For reporting, closed cases should be categorized by exit reason and contain full audit trails of decisions and notifications.
+
+Process metrics and target performance characteristics (IDEAL KPIs)
+- Time-to-decision (apply -> reject/approve): target median <= 3 days.
+- Time-from-apply-to-view (scheduling): target <= 7 days for 95% of cases.
+- Screening turnaround: target <= 48 hours for preliminary screening; extensive screening <= 5 business days.
+- Paperwork completeness rate on first submission: target >= 90%.
+- Payment compliance: reduce Miss Rent Payment frequency by 50% in 6 months through automated reminders and integrated payments.
+- Average time between Pay Rent events (measure of regularity): target reduced variability vs. AS-IS; reduce Pay-Rent-to-Pay-Rent variance by 40%.
+- Eviction rate: enforce policy to avoid unnecessary evictions; track and reduce time from first missed payment to final resolution while maintaining legal compliance.
+
+Improvements made vs AS-IS (explicit mapping)
+- Removed uncontrolled skips: mandatory sequencing for paperwork and screening ensures consistent, auditable decisions (removes skip_* behaviors).
+- Consolidated screening decisions: formal two-tier screening with standardized criteria eliminates redundant or arbitrary extensive checks.
+- Reduced payment churn: automated reminders, integrated payment gateway and explicit escalation thresholds reduce Accept Late Payment <-> Miss Rent Payment loops.
+- Collapsed redundant approvals: single Sign Contract step with defined approver reduces friction and prevents post-signature rework.
+- Automation and logging: automated scheduling, reminders, and warning generation shrink manual delays and provide evidence trail for eviction decisions.
+- Data-driven rejection: early automated eligibility checks allow efficient front-loading of obvious rejections (reducing wasted showings and administrative effort).
+
+Operational considerations and governance
+- Implement SLAs and monitoring dashboards to enforce the KPI targets.
+- Configure business rules (eligibility criteria, late-payment thresholds) in a central rule engine to enable quick policy updates.
+- Retain audit logs for all automated and manual actions to support legal compliance for eviction actions.
+
+Risks and mitigation
+- Risk: Too-strict automation could increase false rejections. Mitigation: allow manual override with documented justification and secondary review paths.
+- Risk: Tenants may contest automated eviction triggers. Mitigation: provide clear communication, transparent timelines, and recorded notifications.
+
+Summary of IDEAL intent
+- The IDEAL model prescribes a deterministic, auditable flow that preserves the same high-level activities observed in the AS-IS model (apply, schedule, view, paperwork, screening, sign, move in, pay, handle misses), but enforces mandatory sequencing, reduces unnecessary loops and skips, automates remediation for missed payments, and establishes clear KPIs and thresholds to reduce variability and long-case durations.

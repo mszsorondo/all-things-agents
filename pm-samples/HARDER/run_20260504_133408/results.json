@@ -1,0 +1,246 @@
+{
+  "_meta": {
+    "start_time": "2026-05-04T13:34:08.866788",
+    "end_time": "2026-05-04T20:57:48.463446",
+    "config": {
+      "llm_model": "openai:gpt-5",
+      "validator_model": "gpt-5-mini",
+      "k_valid": 100,
+      "k_invalid_per_type": 50,
+      "perturbation_types": [
+        "A1_random_swap",
+        "A3_dependency_aware_swap",
+        "B1_insert_out_of_alphabet",
+        "B2_insert_misplaced_existing",
+        "B3_insert_duplicate_unique",
+        "C1_delete_mandatory",
+        "C2_delete_start_or_end",
+        "D1_cross_role",
+        "E1_two_swaps",
+        "E2_swap_and_insert"
+      ],
+      "seed": 42,
+      "datasets": [
+        "benchmark/lending/lending_log_high.xes"
+      ]
+    },
+    "run_folder": "HARDER/run_20260504_133408",
+    "status": "completed",
+    "resume_at": "2026-05-04T20:14:03.885075"
+  },
+  "lending_log_high": {
+    "status": "completed",
+    "xes_path": "benchmark/lending/lending_log_high.xes",
+    "traces": {
+      "valid_traces_path": "HARDER/run_20260504_133408/traces/lending_log_high/valid_traces.pkl",
+      "invalid_folder": "HARDER/run_20260504_133408/traces/lending_log_high/invalid_by_type",
+      "n_valid": 100,
+      "n_invalid_per_type": {
+        "A1_random_swap": 50,
+        "A3_dependency_aware_swap": 50,
+        "B1_insert_out_of_alphabet": 50,
+        "B2_insert_misplaced_existing": 50,
+        "B3_insert_duplicate_unique": 50,
+        "C1_delete_mandatory": 50,
+        "C2_delete_start_or_end": 50,
+        "D1_cross_role": 50,
+        "E1_two_swaps": 50,
+        "E2_swap_and_insert": 50
+      }
+    },
+    "textual_model_path": "HARDER/run_20260504_133408/lending_log_high_textual_model.txt",
+    "mining_config": {
+      "representations": [
+        "petri_net_inductive",
+        "dfg",
+        "abstract_variants"
+      ],
+      "model_name": "openai:gpt-5",
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+      "model_folder": "HARDER/run_20260504_133408/model_generation/lending_log_high"
+    },
+    "valid_evaluation": {
+      "compute_time_seconds": 428.0580368041992,
+      "tokens": {
+        "prompt_tokens": 278442,
+        "completion_tokens": 22632,
+        "total_tokens": 301074
+      },
+      "TP": 100,
+      "FN": 0
+    },
+    "per_type": {
+      "A1_random_swap": {
+        "compute_time_seconds": 315.01545000076294,
+        "tokens": {
+          "prompt_tokens": 139680,
+          "completion_tokens": 19508,
+          "total_tokens": 159188
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "resumed_from_existing": true
+      },
+      "A3_dependency_aware_swap": {
+        "compute_time_seconds": 250.11513447761536,
+        "tokens": {
+          "prompt_tokens": 139477,
+          "completion_tokens": 15860,
+          "total_tokens": 155337
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "resumed_from_existing": true
+      },
+      "B1_insert_out_of_alphabet": {
+        "compute_time_seconds": 406.7619643211365,
+        "tokens": {
+          "prompt_tokens": 145012,
+          "completion_tokens": 24629,
+          "total_tokens": 169641
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "resumed_from_existing": true
+      },
+      "B2_insert_misplaced_existing": {
+        "compute_time_seconds": 643.7754454612732,
+        "tokens": {
+          "prompt_tokens": 145139,
+          "completion_tokens": 36597,
+          "total_tokens": 181736
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 46,
+        "FP": 4,
+        "precision": 0.9615384615384616,
+        "recall": 1.0,
+        "f1": 0.9803921568627451,
+        "resumed_from_existing": true
+      },
+      "B3_insert_duplicate_unique": {
+        "compute_time_seconds": 568.2360219955444,
+        "tokens": {
+          "prompt_tokens": 145187,
+          "completion_tokens": 29236,
+          "total_tokens": 174423
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 44,
+        "FP": 6,
+        "precision": 0.9433962264150944,
+        "recall": 1.0,
+        "f1": 0.970873786407767
+      },
+      "C1_delete_mandatory": {
+        "compute_time_seconds": 386.290988445282,
+        "tokens": {
+          "prompt_tokens": 134814,
+          "completion_tokens": 18996,
+          "total_tokens": 153810
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "C2_delete_start_or_end": {
+        "compute_time_seconds": 404.8114151954651,
+        "tokens": {
+          "prompt_tokens": 134370,
+          "completion_tokens": 19828,
+          "total_tokens": 154198
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "D1_cross_role": {
+        "compute_time_seconds": 245.83093404769897,
+        "tokens": {
+          "prompt_tokens": 137869,
+          "completion_tokens": 10292,
+          "total_tokens": 148161
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 0,
+        "FP": 50,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "E1_two_swaps": {
+        "compute_time_seconds": 300.2083704471588,
+        "tokens": {
+          "prompt_tokens": 140558,
+          "completion_tokens": 15860,
+          "total_tokens": 156418
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "E2_swap_and_insert": {
+        "compute_time_seconds": 346.1330831050873,
+        "tokens": {
+          "prompt_tokens": 145063,
+          "completion_tokens": 23604,
+          "total_tokens": 168667
+        },
+        "TP": 100,
+        "FN": 0,
+        "TN": 50,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "aggregate": {
+      "TP": 100,
+      "FN": 0,
+      "TN": 440,
+      "FP": 60,
+      "precision": 0.625,
+      "recall": 1.0,
+      "f1": 0.7692307692307693,
+      "compute_time_seconds": 4295.236844301224,
+      "tokens": {
+        "prompt_tokens": 1685611,
+        "completion_tokens": 237042,
+        "total_tokens": 1922653
+      },
+      "n_valid": 100,
+      "n_invalid_total": 500
+    }
+  }
+}

@@ -1,0 +1,139 @@
+## 1) WHAT THIS REPRESENTATION DESCRIBES
+
+This text is a **Log Skeleton** abstraction: a **declarative summary of behavioral constraints** that are inferred from an event log.
+It does **not** describe a single “happy-path” sequence. Instead, it lists **which activity-to-activity relations must hold / must not hold / are constrained** across cases, plus **allowed occurrence counts per activity**.
+
+(Your base description is about **log attribute statistics**; it does **not** apply to this representation.)
+
+---
+
+## 2) TYPICAL OUTPUT FORM (conceptual)
+
+When `include_header=True` (default), the output begins with a short description, then lists constraint groups:
+
+* *(header text describing Log Skeleton constraints)*
+* `Equivalence: (A, B) (C, D) ...`
+* `Always Before: (A, B) (C, D) ...`
+* `Always After: (A, B) (C, D) ...`
+* `Never Together: (A, B) (C, D) ...`
+* `Activity Occurrences: A: 0, 1, 2; B: 1; C: 0, 3; ...`
+* `Directly-Follows Constraints: (A, B) (C, D) ...`
+
+If `include_header=False`, only the constraint sections appear.
+
+---
+
+## 3) HOW TO READ EACH LINE
+
+### General notes (applies to all constraint lists)
+
+* Each parenthesized pair like `(X, Y)` denotes a **binary relation between activities** `X` and `Y`.
+* **Ordering of items in each list is not semantically meaningful.** The representation prints collections whose iteration order is not intended to communicate priority or strength. Interpret them as **sets of constraints**, not ranked lists.
+* The representation contains **no frequencies, probabilities, confidence values, or “support” measures** for constraints.
+
+### A) `Equivalence: (X, Y) ...`
+
+Each pair `(X, Y)` means:
+
+* In every case where these activities are considered, **`X` and `Y` occur the same number of times** within that case.
+  So it is a **per-case equality of occurrence counts** between the two activities.
+
+### B) `Always Before: (X, Y) ...`
+
+Each pair `(X, Y)` means:
+
+* If activity `X` occurs in a case, then activity `Y` **must have occurred earlier** somewhere before `X` in that same case.
+
+This is an **existential precedence requirement** (“`Y` must appear before `X` if `X` appears”).
+
+### C) `Always After: (X, Y) ...`
+
+Each pair `(X, Y)` means:
+
+* If activity `X` occurs in a case, then activity `Y` **must occur later** in that same case.
+
+This is an **existential response requirement** (“`Y` must appear after `X` if `X` appears”).
+
+### D) `Never Together: (X, Y) ...`
+
+Each pair `(X, Y)` means:
+
+* **No single case** may contain **both** `X` and `Y`.
+  So `X` and `Y` are **mutually exclusive at the case level**.
+
+### E) `Activity Occurrences: A: ...; B: ...; ...`
+
+This section constrains **how many times each activity may occur in a case**.
+
+* Each entry is: `ActivityName: n1, n2, n3;`
+* The listed numbers are the **allowed per-case occurrence counts** for that activity.
+* If `0` is present, that means the activity is **allowed to be absent** in a case (i.e., may occur zero times).
+* The numbers are written as discrete allowed values (not as a range unless the set happens to include all intermediate values).
+
+### F) `Directly-Follows Constraints: (X, Y) ...`
+
+Each pair `(X, Y)` means:
+
+* If `X` occurs in a case, then `Y` must occur **immediately after `X`** as a direct successor somewhere the condition applies (i.e., a **directly-follows** relationship is enforced in the skeleton’s constraint sense).
+
+Interpret it as a constraint about **adjacent events**, not merely “eventually after”.
+
+---
+
+## 4) GLOBAL SEMANTIC MEANING
+
+Overall, the representation encodes a **declarative behavioral envelope** of the log:
+
+* which activities **must precede** others (Always Before),
+* which activities **must follow** others (Always After),
+* which activity pairs have **matched per-case counts** (Equivalence),
+* which activity pairs **cannot co-occur** in the same case (Never Together),
+* which activities have **restricted per-case repetition counts** (Activity Occurrences),
+* which activity pairs are constrained by **adjacency** (Directly-Follows Constraints).
+
+It is a compact way to describe **constraints over traces**, not the traces themselves.
+
+---
+
+## 5) HOW TO INTERPRET THE LIST AS A WHOLE
+
+* Treat each labeled section as a **set of constraints** of that type.
+* The model is the **union of all listed constraints**: a case is compliant only if it satisfies all applicable constraints simultaneously.
+* The text does **not** tell you:
+
+  * how many cases support each constraint,
+  * whether constraints are “stronger” or “weaker”,
+  * how to resolve conflicts (you must interpret the set as-is).
+
+**Parameter-dependent meaning:**
+
+* `include_header` only affects whether explanatory header text appears. It does **not** change the constraints themselves.
+
+---
+
+## 6) WHAT THIS REPRESENTATION IS FOR
+
+* Giving an LLM or a human a **declarative summary** of observed process behavior.
+* Quickly conveying **rules / invariants / incompatibilities** between activities.
+* Supporting tasks like:
+
+  * conformance-style reasoning (“is this trace allowed?”),
+  * generating or checking plausible traces under constraints,
+  * explaining “what must/must not happen” without a procedural model.
+
+---
+
+## 7) WHAT THIS REPRESENTATION IS NOT
+
+* **Not** a list of variants, traces, or the most common path.
+* **Not** a probabilistic model (no weights, supports, frequencies, confidence).
+* **Not** a Petri net / BPMN / procedural flowchart.
+* **Not** a timestamp/performance summary (no durations, waiting times, throughput).
+* **Not** a log-attribute statistics report (your base description applies to a different abstraction).
+* **Not** guaranteed to be short: there is **no built-in truncation/summarization** in the shown abstraction; it may print many constraints.
+
+---
+
+## 8) ONE-SENTENCE CORE SUMMARY
+
+A Log Skeleton abstraction is a **textual list of declarative constraints** (precedence, response, equivalence of counts, mutual exclusion, per-activity allowed occurrence counts, and direct-follow adjacency rules) that collectively describe the **allowed/required relationships between activities across cases** in the log.

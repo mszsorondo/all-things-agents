@@ -1,0 +1,156 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Efficiently convert eligible applicants into tenants, minimize wasted applicant interactions (unnecessary viewings), accelerate decision-making on eligibility, and reduce recurring payment failures and costly escalations (warnings/evictions). The IDEAL model preserves all original activities but enforces stricter sequencing, parallelizes compatible checks, eliminates unnecessary rework, and tightens exception handling so the process runs faster, with fewer repetitions and clearer outcomes.
+
+Key stakeholders and roles (inferred)
+- Applicant / Prospective Tenant — initiates the process and completes viewings, paperwork, payments.
+- Property Management Team (single role used for all organizational tasks) — receives applications, performs paperwork checks, screening, extensive screening, issues warnings, accepts late payments and executes eviction where required.
+- Note: Roles are intentionally kept minimal and generic (no new system or role names introduced beyond the actors implied by the AS-IS activities).
+
+Start and end events
+- Start: Applicant performs Apply for Viewing Appointment (process entry).
+- End (allowed terminal outcomes):
+  - Reject Prospective Tenant (applicant declined)
+  - Tenant Cancels Apartment (tenant voluntarily cancels tenancy)
+  - Evict Tenant (tenant removed via enforcement)
+  - Ongoing tenancy (active tenant; process instance can remain open with periodic Pay Rent events)
+
+Principles and constraints applied in the IDEAL model
+- Enforce eligibility screening earlier to avoid unnecessary viewings and paperwork processing for obviously unsuitable applicants.
+- Execute document verification (Check Paperwork) and initial screening (Screen Prospective Tenant) in a tightly coordinated/pipelined manner (parallel where safe) to shorten decision latency.
+- Only schedule a viewing (Set Appointment / View The Property) for applicants who pass initial screening and paperwork checks.
+- Collapse repeated ad-hoc remediation loops: Accept Late Payment is allowed but must re-enter the main payment loop and be monitored — repeated failure after acceptance triggers escalation (Evict Tenant) faster (policy-level constraint, not a new activity).
+- Preserve the ability for Extensive Screening for borderline cases, but run it in parallel with remaining verifications to avoid extra sequential delay.
+- Allow Pay Rent to repeat as the normal recurring activity; eliminate avoidable Accept Late Payment -> Miss Rent Payment cycles by conditioning acceptance on defined criteria (timely cure) and quicker escalation on repeated non-compliance.
+
+Detailed step-by-step IDEAL process flow
+
+1) Intake and mandatory pre-check (Start)
+- Trigger: Applicant completes Apply for Viewing Appointment.
+- Immediate mandatory activities (must complete before scheduling Set Appointment):
+  - Hand In The Paperwork (applicant submits documentation).
+  - Check Paperwork (property management verifies submitted documents).
+  - Screen Prospective Tenant (initial eligibility screening).
+- Execution pattern:
+  - Hand In The Paperwork is required immediately after Apply. Check Paperwork and Screen Prospective Tenant are executed immediately after paperwork submission and are coordinated so that they complete within a single automated/operational decision window:
+    - Check Paperwork and Screen Prospective Tenant may run in parallel (document verification vs. initial background checks) when operationally possible; results are synchronized before deciding on the viewing appointment.
+    - If Screen Prospective Tenant identifies a borderline case or specific flags, trigger Extensive Screening concurrently (see step 2). Extensive Screening is only used when flagged by Screen Prospective Tenant.
+
+2) Decision: proceed to viewing or reject (gate)
+- Decision criteria (deterministic, applied after pre-checks):
+  - If Check Paperwork passes AND Screen Prospective Tenant passes (no critical flags), outcome = schedule viewing.
+  - If Check Paperwork or Screen shows a clear fail (fraud, missing documents, ineligible), outcome = Reject Prospective Tenant (terminal).
+  - If Screen flags require further checks, outcome = perform Extensive Screening (non-terminal; see below).
+- Outcomes:
+  - Reject Prospective Tenant (end).
+  - Proceed to Set Appointment → View The Property (only for applicants who pass the pre-checks).
+  - Extensive Screening if flagged (see step 3).
+
+3) Extensive Screening (conditional, accelerated)
+- Trigger: flagged by initial Screen Prospective Tenant or by Check Paperwork anomalies.
+- Execution:
+  - Extensive Screening is performed immediately after the flag is raised and is prioritized to finish before scheduling a viewing (or completes in parallel with scheduling communications when safe).
+  - After Extensive Screening completes:
+    - If pass → proceed to Set Appointment → View The Property.
+    - If fail → Reject Prospective Tenant (terminal).
+- Rationale: avoid having applicants undergo viewings while in-depth checks are still pending.
+
+4) Viewing and final application completion
+- For applicants who passed pre-checks (or passed after Extensive Screening):
+  - Set Appointment → View The Property (appointment scheduled and viewing performed).
+  - Note: Viewing is now performed only for pre-qualified applicants, reducing wasted viewings.
+  - After viewing, applicant either:
+    - proceeds to Sign Contract (if ready and approved), or
+    - returns to paperwork or additional checks only if new information surfaced during viewing.
+- If applicant chooses not to proceed after viewing, they may perform Tenant Cancels Apartment (applicant-initiated cancellation — terminal for that applicant flow).
+
+5) Contracting and move-in
+- Sign Contract → Move In:
+  - After successful viewing and final approval, Sign Contract is executed; then Move In occurs.
+  - Move In must be preceded by Sign Contract (strict sequencing enforced).
+- After Move In, tenant enters the payment lifecycle.
+
+6) Payment lifecycle (stable, governed loop)
+- Normal recurring event: Pay Rent (repeatable, expected periodically).
+- Monitoring and exception handling for missed payments:
+  - If Miss Rent Payment occurs (a missed scheduled payment), the IDEAL flow requires:
+    1. Immediate Issue Warning (automated/fast, same activity name).
+    2. Issue Warning branches (decision criteria applied consistently):
+       - If tenant cures the missed payment within the defined cure window and Accept Late Payment criteria are satisfied → Accept Late Payment → Pay Rent (re-enter the normal payment loop). Acceptance is conditional: the tenant must both make the late payment and acknowledge repayment terms (policy condition; no new activity).
+       - If tenant fails to cure within the cure window, or has repeated failures following prior Accept Late Payment(s) → Issue Warning → Evict Tenant (escalate). The threshold for escalation is stricter in the IDEAL model to prevent repeated Accept Late Payment → Miss Rent Payment cycles.
+  - Accept Late Payment is retained as a controlled remediation path but is conditional and timebound to prevent repeated ineffective remediation loops. Accept Late Payment should re-integrate the tenant into the Pay Rent loop immediately.
+- Enforcement policy (process rule, not a new activity): limit the number of accepted late-payment remediations per tenancy (e.g., maximum allowed Accept Late Payment events before mandatory eviction escalation). This uses existing activities only; thresholds are governance parameters.
+
+7) Tenant cancellation
+- Tenant Cancels Apartment is retained as a voluntary terminal outcome and may occur any time after Move In (or after Sign Contract in pre-move cancellation scenarios).
+- If Tenant Cancels Apartment follows Pay Rent events, the case terminates; accounting/close-out work is handled outside this core flow (not adding new visible activities).
+
+Exception handling and rework minimization (streamlined)
+- Early rejection: applicants clearly failing pre-screen are rejected before viewings — removes sequences that previously went Apply -> Set -> View -> Reject.
+- Reduced sequential checks: Check Paperwork + Screen run in pipeline/parallel so decisions are made in one window; this reduces sequential wait times (no multiple handoffs).
+- Extensive Screening is only invoked when necessary and executed concurrently with other checks where safe to reduce latency.
+- Payment exceptions:
+  - Accept Late Payment remains but is conditioned and limited. Repeated Accept Late Payment → Miss Rent Payment loops are constrained by policy (after threshold reached, automatic escalation to Evict Tenant).
+  - Issue Warning is immediate upon missed payment; Accept Late Payment leads back to Pay Rent only after clear cure and within a defined time window.
+- All rework loops that existed in AS-IS (e.g., repeated Accept Late Payment followed by Miss) are reduced by policy enforcement and tighter decision gates while using existing activities.
+
+Parallel activities and synchronization points
+- Parallelizable activities:
+  - Check Paperwork and initial Screen Prospective Tenant can be executed in parallel after Hand In The Paperwork, with a synchronization point before the appointment decision.
+  - Extensive Screening (when flagged) can also be executed concurrently with remaining verification steps to avoid extra sequential delays.
+- Synchronization:
+  - Results from parallel checks synchronize at the decision gate before Set Appointment. The combined result determines Reject / Set Appointment / Extensive Screening outcome.
+
+Decision points with clear criteria (summarized)
+- Decision A: Proceed to viewing?
+  - Criterion to proceed: Check Paperwork = pass AND Screen Prospective Tenant = pass (or Extensive Screening pass if flagged). Otherwise Reject.
+- Decision B: After Miss Rent Payment (enforcement)
+  - Accept Late Payment if (tenant cures within defined cure window AND acceptance policy criteria met).
+  - Evict Tenant if (no cure within window OR repeated prior non-compliant history exceeds threshold).
+- Decision C: After Extensive Screening
+  - If pass → proceed to Set Appointment; if fail → Reject Prospective Tenant.
+
+End conditions and outcomes
+- Terminate on:
+  - Reject Prospective Tenant (rejection at any early gate).
+  - Tenant Cancels Apartment (voluntary termination).
+  - Evict Tenant (enforcement termination).
+  - Ongoing tenancy: repeated Pay Rent events without termination; these cases remain active and monitored.
+
+Expected process metrics and performance improvements (estimates and targets)
+- Reduction in wasted viewings:
+  - Target: reduce viewings for ultimately rejected applicants by 50–70% (because screening and paperwork checks are mandatory and performed before scheduling viewings).
+  - Expected effect: lower operational cost for showings and staff time.
+- Faster decision times (time to decision after Apply):
+  - Target: 30–60% reduction in elapsed time between Apply and final decision (Reject or proceed to Sign Contract), due to parallel checks and removal of unnecessary sequential steps.
+- Lower rework in screening:
+  - Target: reduce instances of View -> Reject and Apply -> Set -> View -> Reject by at least 50% (since low-quality applicants are filtered earlier).
+- Payment exceptions and enforcement outcomes:
+  - Target: reduce repeated Miss Rent Payment cycles by 30–50% by conditioning Accept Late Payment and implementing stricter escalation thresholds.
+  - Expected reduction in eviction costs: while Evict Tenant remains, earlier and clearer enforcement should reduce protracted delinquency and therefore reduce evictions by an estimated 10–30% (fewer long-running delinquent cases).
+- Throughput and staff efficiency:
+  - Target: overall staff time per case reduced via parallel work and fewer unnecessary viewings; throughput of cases processed (decisions per day) increases by an estimated 20–40%.
+- Note: exact numeric improvements depend on operational implementation; targets are conservative estimates based on removing the principal wastes observed in the AS-IS model (unnecessary viewings and repeated payment remediation cycles).
+
+Key improvements made compared to the AS-IS model
+- Eliminated wasteful sequences: no longer perform viewings for applicants who would be rejected by simple checks — reduces Apply -> Set -> View -> Reject occurrences.
+- Enforced correct sequencing: Hand In The Paperwork, Check Paperwork and Screen Prospective Tenant are mandatory before scheduling a viewing; Sign Contract must precede Move In.
+- Parallelized compatible checks: Check Paperwork, initial screening and Extensive Screening (when needed) run in parallel or pipelined to shorten decision cycles.
+- Reduced rework loops: Accept Late Payment is retained as remediation but is timebound and conditional, reducing repeated Accept Late Payment -> Miss Rent Payment cycles.
+- Faster, single-window decisioning: pre-checks synchronize at a decision gate reducing multiple back-and-forths and resulting delays seen in AS-IS.
+- Controlled escalation: stricter policy thresholds for eviction reduce expensive prolonged delinquency while preserving a chance for remediation.
+- No new visible activities introduced: all optimization uses existing activities only, reordering and applying governance to eliminate inefficiencies.
+
+Implementation notes and operational recommendations (using only existing activities)
+- Operationalize pre-check enforcement: require Hand In The Paperwork and complete Check Paperwork + Screen Prospective Tenant before Set Appointment is allowed.
+- Configure operational targets and thresholds (cure window, maximum Accept Late Payment count) as governance parameters that affect branching decisions but do not add new activities.
+- Ensure parallel execution capability (process orchestration or staff coordination) so Check Paperwork and Screen Prospective Tenant can complete within the same decision window.
+- Monitor key KPIs: ratio of Apply->Reject without viewing, median Apply->Decision time, frequency of repeated Miss Rent Payment after Accept Late Payment, and number of viewings per accepted tenant; adjust thresholds based on observed outcomes.
+
+Behavioral constraints preserved
+- All original AS-IS activities are retained (Apply for Viewing Appointment, Set Appointment, View The Property, Hand In The Paperwork, Check Paperwork, Screen Prospective Tenant, Extensive Screening, Reject Prospective Tenant, Sign Contract, Move In, Pay Rent, Miss Rent Payment, Issue Warning, Accept Late Payment, Evict Tenant, Tenant Cancels Apartment).
+- No new activities were introduced. The IDEAL model optimizes ordering, enforces decision gates, and conditions existing remediation paths.
+
+Summary (one-line)
+- The IDEAL process enforces early mandatory checks (paperwork + screening), parallelizes verification work, restricts viewings to pre-qualified candidates, and tightens the payment remediation and escalation policy—thereby reducing wasted viewings, shortening decision times, and minimizing repetitive payment remediation loops while using only the original set of activities.

@@ -1,0 +1,144 @@
+IDEAL Process Model
+
+1) Process overview and purpose
+- Purpose: Efficiently and reliably process consumer loan applications from appointment request through verification, (if required) co-signer request and collateral assessment, to underwriting and a clear final outcome (Sign Loan Agreement, Loan Denied, Application Rejected, or Appointment Denied). The IDEAL model preserves the same activities as the AS-IS model but enforces correct sequencing, eliminates wasteful rework (excessive repeated visits), removes uncontrolled shortcuts, and provides clear escalation rules to improve throughput, decision quality and cycle time.
+- Scope: Covers Request Appointment, Set Appointment, Hand In Credit Application, Verify Borrowers Information, Request Co-Signer On Loan, Make Visit to Assess Collateral (field visit(s)), Submit File to Underwriter, and terminal outcomes (Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied). The IDEAL model does not introduce new business activities; it reorganizes and constrains existing ones.
+
+2) Key stakeholders and roles (inferred responsibilities)
+- Applicant / Customer: initiates Request Appointment and provides application materials.
+- Loan Officer (inferred): handles Set Appointment, receives Hand In Credit Application, conducts Verify Borrowers Information, initiates Request Co-Signer and coordinates submission to Underwriter.
+- Field Assessor / Collateral Inspector (inferred): performs Make Visit to Assess Collateral.
+- Underwriter: receives submitted files, performs underwriting decision, and triggers Sign Loan Agreement or Loan Denied (or provides explicit authorisation to bypass full examination where policy allows).
+Note: Roles are assigned where activities imply responsibility; no new activities or actors are introduced beyond those implied by existing tasks.
+
+3) Start conditions and triggers
+- A case starts when the Applicant performs Request Appointment.
+- Request Appointment is completed by either:
+  - Proceed to Set Appointment (normal flow), or
+  - Appointment Denied (immediate termination) — preserved but constrained by improved front-line triage (see decision rules).
+
+4) High-level design principles enforced
+- Enforce strict sequencing for core path: Request Appointment -> Set Appointment -> Hand In Credit Application -> Verify Borrowers Information -> (optional actions) -> Submit File to Underwriter -> Underwriter decision -> Terminal outcome.
+- Restrict uncontrolled shortcuts: skipped_examination is disallowed as an uncontrolled path. skipped_examination can only occur when explicitly authorized by the Underwriter as a documented policy exception and recorded as part of Submit File to Underwriter (i.e., underwriter must sign off prior to skipping standard checks).
+- Limit and control Make Visit loops: visits are bounded and coordinated. Repeated visits are eliminated unless justified and escalated.
+- Coordinate Request Co-Signer and Make Visit: execute only if specific, documented criteria are met; if both are needed they are coordinated and synchronized before submission.
+- Use Submit File to Underwriter as the formal escalation point for unresolved cases rather than repeatedly repeating field work.
+
+5) Detailed step-by-step IDEAL flow, decisions and synchronization
+
+Start
+1. Request Appointment (Applicant)
+   - Decision at request:
+     - If basic eligibility or scheduling constraints immediately disqualify the request, outcome is Appointment Denied (case ends).
+     - Otherwise proceed to Set Appointment.
+   - Implementation note (policy): eligibility checks at request are limited to easily verifiable criteria (e.g., required documentation present at request time) to reduce unnecessary appointment denials later.
+
+2. Set Appointment (Loan Officer)
+   - Schedule a single appointment for the applicant to submit the application materials. Ensure applicant is informed of required documents to avoid rework.
+
+3. Hand In Credit Application (Applicant / Loan Officer)
+   - Applicant submits required documents and forms at the appointment. The Loan Officer performs a completeness check at hand-in (document checklist).
+   - Decision:
+     - If essential documents are missing or obviously incomplete, Loan Officer does not immediately trigger repeated field visits; instead, the Loan Officer returns the application to applicant for completion or proceeds to verification with clearly flagged missing items (minor missing items may be resolved without repeat field visits).
+     - If the application is complete enough for verification, proceed to Verify Borrowers Information.
+
+4. Verify Borrowers Information (Loan Officer)
+   - Verify documentation, identity, income, credit basics and whether collateral needs on-site assessment.
+   - Verification decision rules (explicit, objective criteria):
+     - Application Rejected: If verification shows fundamental ineligibility (policy-defined fail criteria), immediately end case as Application Rejected.
+     - Request Co-Signer On Loan: If creditworthiness is insufficient per defined thresholds (and co-signer could remedy), formally generate a Request Co-Signer action.
+     - Make Visit to Assess Collateral: If collateral must be physically inspected to establish value/eligibility, schedule a Make Visit.
+     - Submit File to Underwriter: If verification satisfies policy thresholds (possibly after co-signer request or visit), prepare and submit file.
+     - skipped_examination: Not allowed as an uncontrolled direct path. Skipping the standard verification must be approved by the Underwriter before or during Submit File to Underwriter with explicit justification and logged exception.
+
+5. Coordination of optional actions (Request Co-Signer and Make Visit)
+   - Rule: Request Co-Signer and Make Visit are conditional, not automatic, and should be executed only when verification criteria demand them.
+   - Preferred ordering and synchronization:
+     - If both are required, Loan Officer should normally request the Co-Signer first (so the applicant/co-signer can provide necessary documentation) and schedule at most one field visit to validate collateral afterwards (one visit is usually sufficient).
+     - Make Visit is limited to at most one scheduled visit plus one conditional repeat only if the first visit identifies new substantive information that cannot be resolved from documentation. Any requirement for more than one repeat must be escalated.
+   - Synchronization: Both branches must be merged (i.e., both completed if required) before preparing the final submission to the Underwriter.
+   - Escalation: If either branch cannot resolve the outstanding information within the allowed visit limit, the Loan Officer escalates by Submit File to Underwriter with a clear note of unresolved issues (the Underwriter then decides whether to approve, request additional field work, or reject).
+
+6. Make Visit to Assess Collateral (Field Assessor)
+   - Conduct at most 1 scheduled inspection and at most 1 conditional repeat (total maximum 2 visits) unless the Underwriter explicitly authorizes additional visits.
+   - Field assessor documents findings in a standard format to avoid rework.
+
+7. Request Co-Signer On Loan (Loan Officer)
+   - When triggered, the Loan Officer requests co-signer documentation and verifies co-signer eligibility; this action is to be completed before final submission (or concurrently with a single visit as noted).
+   - If co-signer is not forthcoming within defined timeframe, Loan Officer escalates to Underwriter via Submit File with status “co-signer pending”.
+
+8. Submit File to Underwriter (Loan Officer -> Underwriter)
+   - Submit only after required verification tasks and any required co-signer and visit activities are completed or after a structured escalation decision.
+   - The submission package must include:
+     - Completed verification checklist
+     - Field visit report (if any)
+     - Co-signer documentation (if any)
+     - Explicit note if any allowed exception (e.g., Underwriter-authorized skip) or unresolved items (with justification)
+   - The Underwriter must make a decision or provide explicit instructions within a predefined SLA.
+
+9. Underwriter decision
+   - Possible outcomes:
+     - Sign Loan Agreement — approve and proceed to signing (terminal, success).
+     - Loan Denied — decline (terminal).
+     - Request further action — rare and requires clear directive and SLA (e.g., request a single additional field visit or further documentation). Any further action is tightly controlled and logged; repeated cycles must be escalated for managerial review.
+
+10. Terminal outcomes
+   - Sign Loan Agreement (success) — the applicant signs and process ends.
+   - Loan Denied — underwriter denies and process ends.
+   - Application Rejected — verification-level rejection and process ends.
+   - Appointment Denied — request-level denial and process ends.
+
+6) Streamlined exception handling and governance
+- skipped_examination: removed as an uncontrolled path. Skipping verifications is only permitted if the Underwriter explicitly authorizes the skip prior to final approval and logs the exception; otherwise skipped_examination is disallowed.
+- Excessive Make Visit loops: disallowed. More than one conditional repeat requires Underwriter authorization documented in submission.
+- If Applicant does not provide required co-signer documentation within the allowed timeframe, the Loan Officer marks the submission as “Co-Signer Pending” and either:
+  - Submits to Underwriter for decision (with co-signer status clearly flagged), or
+  - Closes the case as Application Rejected if policy requires.
+- Any repeated back-and-forth beyond the allowed limits triggers managerial escalation and a formal review.
+
+7) Parallelism and synchronization
+- Parallel execution is minimized to avoid coordination overhead. Request Co-Signer and Make Visit should be performed sequentially or in tightly controlled parallelism only when documented:
+  - If done in parallel, the Loan Officer ensures synchronization at submission: both required branches must be completed before Submit to Underwriter.
+- The model enforces a single synchronization point prior to Submit File to Underwriter.
+
+8) Expected process metrics and performance improvements (targets)
+Based on AS-IS behaviors and frequencies, the IDEAL model targets the following measurable improvements:
+- Cycle time reduction:
+  - Reduce average end-to-end cycle time by 30–50% through elimination of repeated visits and enforced sequencing (target depends on baseline; repeated-visit cases see largest gains).
+- Reduce number of Make Visit repetitions:
+  - Reduce average number of Make Visit per case to ≤1.1 visits (from many repeated visits in AS-IS). Target: reduce multiple-visit cases by ~70%.
+- Improve submit-to-sign conversion:
+  - Increase Submit File to Underwriter -> Sign Loan Agreement ratio by improving pre-submit verification quality (goal: increase sign-rate by 20–40% of submitted cases).
+- Reduce unnecessary submissions:
+  - Fewer incomplete or low-quality submissions to Underwriter, reducing rework at underwriting.
+- SLA adherence:
+  - Underwriter decision turnaround time target: defined SLA (e.g., decision within X business days). This reduces the long waiting durations observed in AS-IS.
+
+(These are expected improvement targets; actual results should be measured after implementation and tuned.)
+
+9) Key improvements made compared to the AS-IS model
+- Eliminated uncontrolled skipped_examination shortcut; skipping verification is only allowed with explicit Underwriter authorization (removes compliance risk).
+- Controlled and limited Make Visit repetitions (bounded visits, documented justification for repeats) — major reduction of rework and long case durations.
+- Clear sequencing and validation at Hand In Credit Application to reduce document-related rework and repeat appointments.
+- Explicit decision rules in Verify Borrowers Information to reduce premature submissions and increase submission quality.
+- Submit File to Underwriter becomes the formal escalation/decision point rather than a place where many unresolved issues accumulate; submissions must include required artefacts and flags for unresolved items.
+- Coordinated handling of Request Co-Signer and Make Visit to avoid duplicate work and chaotic interleavings; synchronization before submission reduces confusion and delays.
+- Defined governance and exception handling procedures to reduce ad-hoc behavior and provide traceability for policy exceptions.
+
+10) Operational notes and implementation guidance
+- Update checklists and templates used by Loan Officers and Field Assessors so submissions consistently include required information (verification checklist, visit report, co-signer docs).
+- Configure simple operational limits and alerts: e.g., prevent scheduling a third visit without Underwriter code; flag cases where the co-signer request is outstanding beyond allowed timeframe.
+- Train Loan Officers and Field Assessors on sequence and escalation rules; make Underwriter authorization mandatory and auditable for exceptions.
+- Monitor KPIs post-implementation: average cycle time, average visits per case, submit-to-sign ratio, number of underwriter rework requests, and number of policy exceptions.
+
+11) Preserved behaviors and allowable variants in IDEAL (all are controlled)
+- Appointment Denied remains an allowed early terminal outcome (but should be less frequent due to better front-line checks).
+- Application Rejected remains a valid terminal outcome when verification fails hard criteria.
+- Request Co-Signer remains available when creditworthiness criteria require it.
+- Make Visit remains available but is limited and controlled; at least one visit is allowed when necessary.
+- Submit File to Underwriter remains the single formal escalation point; from there the Underwriter may Sign Loan Agreement or Loan Denied.
+- The skipped_examination path is not available as an uncontrolled route; it can only occur with underwriter authorisation and must be logged within the submission.
+
+12) Summary
+- The IDEAL Process Model preserves the original activities but reorganizes and constrains their execution to remove waste, reduce repeated Make Visit loops, enforce correct sequencing, and improve submission quality.
+- Key outcomes expected: substantially reduced cycle times, fewer repeated visits, higher quality submissions to underwriting, and improved approval rates for properly prepared applications — achieved without introducing new activities, only by applying governance, sequencing rules, bounded loops, and clarified decision criteria.

@@ -1,0 +1,214 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+PROCESS OVERVIEW AND PURPOSE
+This model describes the observed behavior of a loan origination process inferred from a Log Skeleton (declarative) model. The process begins with an appointment request, proceeds through intake (appointment, application hand-in, verification), and then branches into assessment and decision outcomes. The model preserves observed optionality, rework, bypasses, and mutually exclusive outcomes as they appear in the constraints.
+
+KEY STAKEHOLDERS AND ROLES INVOLVED
+- Underwriter (explicitly referenced by the activity 'Submit File to Underwriter' and the outcome 'Loan Denied').
+- Applicant/borrower (implied by 'Sign Loan Agreement'; the role name is not explicitly stated in the model).
+- Other roles (e.g., appointment scheduling, verification, field assessment) are not explicitly named in the provided model and therefore are left unspecified.
+
+DETAILED STEP-BY-STEP PROCESS FLOW
+
+Start conditions and trigger
+- The process is triggered by 'Request Appointment'.
+- 'Request Appointment' occurs exactly once in every case (Activity Occurrences: 1).
+
+Core intake sequence (if appointment proceeds)
+- Decision: Appointment outcome
+  - Exclusive outcome A: 'Appointment Denied'
+    - If this occurs, it is mutually exclusive with essentially all downstream processing:
+      - Never Together: Appointment Denied is mutually exclusive with Set Appointment, Hand In Credit Appliaction, Verify Borrowers Information, Submit File to Underwriter, Sign Loan Agreement, Loan Denied, Application Rejected, Make Visit to Assess Colatteral, Request Co-Signer On Loan.
+    - End state: Case ends early with appointment denial.
+  - Exclusive outcome B: 'Set Appointment'
+    - If the appointment is set, the following immediate sequence is enforced:
+      - Directly-Follows: Set Appointment -> Hand In Credit Appliaction
+      - Directly-Follows: Hand In Credit Appliaction -> Verify Borrowers Information
+    - Always After further supports this order:
+      - Set Appointment -> Hand In Credit Appliaction (must occur later)
+      - Set Appointment -> Verify Borrowers Information (must occur later)
+      - Hand In Credit Appliaction -> Verify Borrowers Information (must occur later)
+    - Therefore the intake spine is:
+      Request Appointment (start) -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information
+
+Post-verification branching and activities
+- After 'Verify Borrowers Information', the following optional behaviors are observed (not all occur in each case):
+  - Optional fast-track bypass:
+    - 'skipped_examination' may occur (0 or 1).
+    - Ordering:
+      - Always Before: 'skipped_examination' happens after Verify Borrowers Information (Verify must have been previously executed).
+      - Always After and Directly-Follows: 'skipped_examination' is immediately followed by 'Sign Loan Agreement'.
+    - Mutual exclusions (Never Together):
+      - 'skipped_examination' cannot co-exist with Submit File to Underwriter, Loan Denied, Application Rejected, Make Visit to Assess Colatteral, Request Co-Signer On Loan, Appointment Denied.
+    - Implication: This is a fast-track approval route that bypasses field visits and underwriting; it ends with signing the loan agreement.
+  - Optional assessment by field visits:
+    - 'Make Visit to Assess Colatteral' may occur multiple times (0 to 8).
+    - No explicit ordering constraints force when visits happen, but given other constraints they appear after verification and before a final outcome.
+    - Mutual exclusions (Never Together): It cannot co-exist with Application Rejected, Appointment Denied, or 'skipped_examination'.
+    - Rework/loop: Up to eight visits can occur before progressing.
+  - Optional credit strengthening:
+    - 'Request Co-Signer On Loan' (0 or 1).
+    - Ordering:
+      - Always Before: Verify Borrowers Information, Hand In Credit Appliaction, Set Appointment, and Request Appointment must have happened before Request Co-Signer On Loan (i.e., request is post-verification).
+      - Always After: If 'Request Co-Signer On Loan' occurs, 'Submit File to Underwriter' must occur later.
+    - Mutual exclusions (Never Together): Not allowed with Application Rejected, 'skipped_examination', or Appointment Denied.
+  - Front-office rejection (pre-underwriter):
+    - 'Application Rejected' (0 or 1).
+    - Ordering:
+      - Always Before: Must come after Request Appointment, Set Appointment, Hand In Credit Appliaction, and Verify Borrowers Information.
+    - Mutual exclusions (Never Together): Cannot co-exist with Submit File to Underwriter, Make Visit to Assess Colatteral, Appointment Denied, Request Co-Signer On Loan, Sign Loan Agreement, Loan Denied, or 'skipped_examination'.
+    - End state: Case ends with formal rejection without involving underwriting.
+  - Underwriter involvement:
+    - 'Submit File to Underwriter' (0 or 1).
+    - Ordering:
+      - Always Before: Request Appointment, Set Appointment, Hand In Credit Appliaction, and Verify Borrowers Information must have happened before submitting.
+    - Mutual exclusions (Never Together): Cannot co-exist with Application Rejected, Appointment Denied, or 'skipped_examination'.
+    - Outcomes from underwriting:
+      - 'Loan Denied' (0 or 1)
+        - Ordering: Must come after Request Appointment, Set Appointment, Hand In Credit Appliaction, Verify Borrowers Information, and Submit File to Underwriter.
+        - Mutual exclusions: Cannot co-exist with Sign Loan Agreement, Application Rejected, Appointment Denied, or 'skipped_examination'.
+        - End state: Underwriter denial.
+      - Approval path:
+        - While not enforced by a direct constraint, cases can progress to 'Sign Loan Agreement' (0 or 1) after underwriting in the observed behavior.
+        - 'Sign Loan Agreement' is mutually exclusive with Loan Denied, Application Rejected, and Appointment Denied. It occurs after Request Appointment, Set Appointment, Hand In Credit Appliaction, and Verify Borrowers Information.
+
+Parallel activities and synchronization points
+- No true concurrency is implied by the constraints. The intake spine is strictly sequential (Set Appointment -> Hand In -> Verify are immediate steps). Other post-verification actions are optional and appear to be taken in sequence culminating in either signing, denial, or rejection.
+
+Exception handling and error paths
+- Early termination: 'Appointment Denied'.
+- Pre-underwriter termination: 'Application Rejected'.
+- Underwriter termination: 'Loan Denied'.
+- Fast-track approval: 'skipped_examination' immediately followed by 'Sign Loan Agreement' with all assessment and underwriting steps excluded.
+
+Rework loops and escalation procedures
+- Rework loop: 'Make Visit to Assess Colatteral' can repeat up to 8 times per case. No explicit escalation or cap enforcement is present beyond the observed upper bound.
+- No other rework or escalation behaviors are specified by the constraints.
+
+End conditions and outcomes
+- Sign Loan Agreement (approved).
+- Loan Denied (underwriter outcome).
+- Application Rejected (front-office outcome).
+- Appointment Denied (earliest termination).
+- Additionally, because several post-verification activities are optional (0 or 1) and there is no enforced post-verification outcome, cases may end after verification without a recorded decision (implicit termination) in the observed model.
+
+PROCESS METRICS AND PERFORMANCE CHARACTERISTICS
+- Cardinalities (from Activity Occurrences):
+  - Request Appointment: exactly 1 per case.
+  - Set Appointment, Hand In Credit Appliaction, Verify Borrowers Information: 0 or 1 each, but when Set Appointment occurs it immediately leads to Hand In and Verify.
+  - Make Visit to Assess Colatteral: 0 to 8 per case (potential rework).
+  - Request Co-Signer On Loan, Submit File to Underwriter, Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied, 'skipped_examination': 0 or 1 each.
+- Directly-Follows (immediate transitions):
+  - Set Appointment -> Hand In Credit Appliaction.
+  - Hand In Credit Appliaction -> Verify Borrowers Information.
+  - 'skipped_examination' -> Sign Loan Agreement.
+- Mutual exclusivity (Never Together) defines exclusive outcomes and incompatible combinations (e.g., Appointment Denied excludes all processing; Sign Loan Agreement excludes denials/rejections; 'skipped_examination' excludes visits, co-signer, underwriting).
+- No concurrency is evident; sequencing dominates.
+
+KEY CHALLENGES AND PAIN POINTS
+- Silent/implicit terminations: The model permits cases to end after verification with no recorded outcome.
+- Governance inconsistency: A bypass path ('skipped_examination' -> Sign) avoids underwriting and field assessment; its criteria are not captured in the constraints, leading to inconsistent approval paths.
+- Rework overhead: Up to 8 collateral visits are observed, indicating potential inefficiency and unclear criteria for sufficiency of assessment.
+- Fragmented decision logic: Rejection ('Application Rejected') and denial ('Loan Denied') are on different branches with many mutual exclusions, but the model does not enforce a single decision point after verification.
+- Role ambiguity: With only 'Underwriter' explicitly referenced, responsibilities for verification, visits, and appointment management are not traceably tied to roles.
+- Data quality: Inconsistent activity naming (e.g., 'Appliaction', 'Colatteral') may hinder reporting and automation alignment.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+PROCESS OVERVIEW AND PURPOSE
+This improved (to-be) model rationalizes the observed behaviors into a stage-gated, controlled loan origination process. It preserves all legitimate pathways shown in the log skeleton (appointment denial, pre-underwriter rejection, underwriting denial, fast-track approval) while removing ambiguous endings, capping rework, and enforcing clear decision points and sequencing.
+
+KEY STAKEHOLDERS AND ROLES INVOLVED
+- Underwriter (explicitly referenced by activities in the source).
+- Applicant/borrower (implied by signing the loan agreement).
+- Other operational roles (appointment scheduling, verification, field assessment) remain unspecified in the source; responsibilities are described at the activity level without inventing new actors.
+
+DETAILED STEP-BY-STEP PROCESS FLOW
+
+Start conditions and trigger
+- Case starts with 'Request Appointment' (exactly once per case).
+
+Stage 1 — Appointment decision (exclusive)
+- Evaluate appointment request:
+  - If appointment is not granted: 'Appointment Denied' (end state).
+  - If appointment is granted: proceed to intake.
+
+Stage 2 — Intake spine (strictly sequential, immediate hand-offs)
+- 'Set Appointment'
+  - Immediately followed by 'Hand In Credit Appliaction'.
+- 'Hand In Credit Appliaction'
+  - Immediately followed by 'Verify Borrowers Information'.
+- These direct transitions are retained to minimize handoff latency and enforce data completeness before any assessment.
+
+Stage 3 — Post-verification decision (exclusive gateway with structured branches)
+- At this point, exactly one of the following outcomes/paths must be selected to eliminate silent termination:
+  1) Front-office rejection:
+     - If the application is incomplete or fails non-credit criteria, record 'Application Rejected' and end the case.
+     - This branch remains mutually exclusive with underwriting, visits, co-signer, and signing.
+  2) Fast-track approval (controlled bypass):
+     - If predefined risk/eligibility criteria are met, record 'skipped_examination' and immediately proceed to 'Sign Loan Agreement'.
+     - Underwriting, co-signer request, and field visits are explicitly skipped on this branch.
+  3) Standard assessment and underwriting:
+     - Conduct assessment activities that may include:
+       - 'Make Visit to Assess Colatteral' for site/asset checks. Limit rework by:
+         - Establishing a small, predefined maximum number of visits and completion criteria before escalation to a decision.
+       - 'Request Co-Signer On Loan' if needed to strengthen the application. If requested:
+         - Await co-signer fulfillment within a defined window.
+         - If not fulfilled, close with 'Application Rejected'.
+     - Once assessment prerequisites are satisfied:
+       - 'Submit File to Underwriter' (mandatory gateway to underwriting on this path).
+
+Stage 4 — Underwriter decision (exclusive)
+- Underwriter reviews the submitted file:
+  - If not approved: 'Loan Denied' (end state).
+  - If approved: proceed to 'Sign Loan Agreement' (approval consummated by signing).
+
+Parallel activities and synchronization points
+- The intake spine remains strictly sequential (Set Appointment -> Hand In -> Verify).
+- Assessment steps on the standard path (collateral visits and co-signer request) may be performed in any order or iteratively as long as they complete and meet criteria before 'Submit File to Underwriter'. Synchronization occurs at 'Submit File to Underwriter' (i.e., all required assessment steps must be finished before submission).
+
+Exception handling and error paths
+- Early termination: 'Appointment Denied' remains permitted as an initial exclusive outcome.
+- Pre-underwriter termination: 'Application Rejected' used for incomplete or failed cases before underwriting, including co-signer not provided when required.
+- Underwriter termination: 'Loan Denied' remains the exclusive negative outcome after submission.
+- Bypass misrouting prevention: Ensure 'skipped_examination' cannot co-occur with underwriting, co-signer requests, or field visits; enforce the immediate transition to 'Sign Loan Agreement'.
+
+Rework loops and escalation procedures
+- Collateral visits:
+  - Apply a defined maximum number of visits and objective completion criteria to avoid excessive rework (replacing the observed up-to-8 loop with a capped loop).
+  - If criteria remain unmet after the cap, escalate to a decision (underwriting submission or rejection), rather than continuing visits indefinitely.
+- Co-signer:
+  - If requested and not provided within the defined timeframe, end with 'Application Rejected' to prevent indefinite waiting.
+
+End conditions and outcomes
+- Exactly one of the following end states is required for every non-denied appointment:
+  - 'Sign Loan Agreement' (approval completion).
+  - 'Application Rejected' (pre-underwriter).
+  - 'Loan Denied' (underwriter).
+- For denied appointments:
+  - 'Appointment Denied' is a valid terminal outcome.
+- No case may end silently after verification.
+
+PROCESS METRICS AND PERFORMANCE CHARACTERISTICS
+- Structural conformance metrics:
+  - 100% of cases contain 'Request Appointment' exactly once and follow the intake spine (Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information) unless 'Appointment Denied' occurs first.
+  - 0 cases end without one of the four terminal outcomes (Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied).
+  - 0 co-occurrences of mutually exclusive pairs (e.g., 'skipped_examination' with Submit File to Underwriter, Loan Denied, or Make Visit to Assess Colatteral).
+  - Directly-follows constraints enforced: Set Appointment -> Hand In Credit Appliaction; Hand In Credit Appliaction -> Verify Borrowers Information; 'skipped_examination' -> Sign Loan Agreement.
+- Rework control:
+  - Collateral visits capped to a small, predefined maximum; monitor average visits per approved/denied case.
+- Decision latency:
+  - Measure cycle time from Verify Borrowers Information to a terminal outcome; target consistent, predictable durations across branches.
+
+IMPROVEMENTS MADE
+- Eliminated silent termination: Introduced a mandatory post-verification decision so every case ends in a clearly recorded outcome.
+- Governed fast-track: Retained the observed 'skipped_examination' path but constrained it to explicit eligibility and ensured immediate signing with no underwriting or visits.
+- Rework containment: Replaced unbounded (up to 8) collateral visits with a policy-bound cap and clear completion criteria.
+- Co-signer discipline: Ensured co-signer requests lead either to fulfillment and submission or to 'Application Rejected' if not met; removed open-ended waiting.
+- Clear stage-gating: Established explicit stages (Appointment decision, Intake spine, Post-verification decision, Underwriter decision) mirroring observed constraints while enforcing proper sequencing.
+- Mutual exclusivity compliance: Preserved all Never Together constraints by design, preventing contradictory event combinations.
+- Naming/traceability hygiene: While not altering activity names, the model expects consistent labeling to support reporting and compliance checks.
+")

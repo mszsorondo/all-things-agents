@@ -1,0 +1,186 @@
+Executive summary
+- Purpose and scope: This is the end-to-end hiring process from a candidate handing in a job application through to either Application Rejected or Make Job Offer. The model was reconstructed from operational logs and captures parallel work, optional steps, and rework loops.
+- Key findings: The process allows early rejection, heavy parallelization, optional skipping of key assessments, and loops that repeat Behavioral Interview, Make Job Offer, and Application Rejected. These behaviors create contradictory outcomes (offer and rejection in the same case), long cycle times (up to ~530,000 time units), and higher cost/risk from unnecessary background checks.
+- Scale and occurrence highlights: Of roughly 10,000 application starts, about 88% proceed to Telephonic Screening and about 12% are rejected directly. Post-telephonic, Screening Interview and Background Check typically run concurrently, then synchronize; Coding Interview and subsequent technical interviews are optional and re-orderable.
+- Strategic impact: Over-parallelization and permissive loops reduce governance, inflate cycle time and labor/cost, and create an ambiguous end-state where some cases can end without an explicit offer or rejection.
+
+Stakeholders and roles
+- Activities are described without explicit actor assignments in the source material. No roles/lanes are specified.
+
+Start condition and trigger
+- Start: Candidate submits Hand In Job Application.
+
+End conditions and outcomes
+- Formal end occurs only after both final decision branches (the rejection branch and the behavioral/offer branch) complete or are skipped and then converge. Because both branches can be skipped, a case can end without an explicit offer or rejection; in observed data, most cases include at least one of these outcomes.
+- Business-visible last activities:
+  • Application Rejected as last visible activity.
+  • Make Job Offer as last visible activity.
+  • Some cases show both before the process ends (order varies).
+
+Process phases and flow (business-language translation of all control logic)
+
+Phase 1 — Initial assessment (telephonic optional; early rejection possible)
+- Hand In Job Application (start).
+- Two possible next steps:
+  • Proceed to Telephonic Screening. Observed 8,799 transitions from Application to Telephonic Screening, approximately 88% of applications.
+  • Early direct rejection. Observed 1,201 transitions from Application to Application Rejected, approximately 12% of applications. Average time from application to this rejection is ~146,346 time units.
+- From Telephonic Screening:
+  • Early rejection can occur: Telephonic Screening -> Application Rejected observed 990 times (~11% of those that had Telephonic Screening), average waiting time ~143,282 time units.
+  • Otherwise, process branches to Phase 2.
+
+Phase 2 — Pre-technical evaluations in parallel (Screening Interview and Background Check)
+- After Telephonic Screening, the process branches to alternative paths that run concurrently:
+  • Screening Interview and Background Check can start in any order and interleave; they are synchronized later.
+  • Observed transitions reflect this concurrency and reordering:
+    - Telephonic Screening -> Background Check: 3,961 transitions (average ~81,906 time units).
+    - Telephonic Screening -> Screening Interview: 3,848 transitions (average ~81,903 time units).
+    - Screening Interview -> Background Check: 3,848 transitions (near-zero reorder time).
+    - Background Check -> Screening Interview: 3,961 transitions (near-zero reorder time).
+- Convergence: Parallel activities converge (both Screening Interview and Background Check must complete before proceeding).
+- Optional Extensive Background Check after convergence (may be skipped):
+  • Triggered after either preceding track, observed as:
+    - Background Check -> Extensive Background Check: 1,044 transitions.
+    - Screening Interview -> Extensive Background Check: 1,055 transitions.
+  • Outcomes from Extensive Background Check:
+    - Direct rejection: Extensive Background Check -> Application Rejected observed 1,125 times.
+    - Continue to further assessments, including Coding Interview: Extensive Background Check -> Coding Interview observed 974 times.
+
+Phase 3 — Technical assessment (optional; can run in parallel tracks)
+- Coding Interview is optional:
+  • The process can move from the pre-technical convergence either to Coding Interview or skip ahead without it.
+  • Observed triggers include:
+    - Screening Interview -> Coding Interview: 1,517 transitions (average ~129,892 time units).
+    - Background Check -> Coding Interview: 1,413 transitions (average ~129,885 time units).
+- From Coding Interview, the process branches to alternative paths, enabling up to three technical interviews, each optional and independently skippable; they can occur in any order and interleave:
+  • ML Interview.
+  • Backend Interview.
+  • Frontend Interview.
+  • Observed interleaving consistent with concurrency/flexible ordering:
+    - Coding Interview -> ML Interview: 1,304 transitions.
+    - Coding Interview -> Backend Interview: 701 transitions.
+    - Coding Interview -> Frontend Interview: 1,513 transitions.
+    - Near-zero-time edges among ML/Frontend/Backend indicate switching/parallelism between interview types.
+- Convergence: All selected technical interview tracks converge before moving to the final decision phase.
+
+Phase 4 — Final decision stage (two concurrent branches with loops; contradictory outcomes are permitted)
+- The process branches in parallel into two end-phase branches that proceed concurrently until the process ends. Each branch allows loops (repetition) and can be skipped entirely.
+
+  A) Rejection branch:
+  - Application Rejected can occur one or multiple times (loop present).
+  - Observed rework: Application Rejected -> Application Rejected occurs 654 times (self-loop).
+  - After exiting the loop, this branch waits for the other branch to complete/skip before the overall process ends.
+
+  B) Behavioral-and-offer branch:
+  - Behavioral Interview can occur one or multiple times (loop present). Observed self-loop: Behavioral Interview -> Behavioral Interview 1,032 times.
+  - Make Job Offer can occur and can repeat (loop present). Observed self-loop: Make Job Offer -> Make Job Offer 861 times.
+  - This branch can be skipped entirely.
+
+- Because both branches are active in parallel and each can loop, all of the following observed behaviors are valid:
+  • Application Rejected -> Behavioral Interview: 740 transitions.
+  • Application Rejected -> Make Job Offer: 690 transitions.
+  • Make Job Offer -> Application Rejected: 110 transitions.
+  • Behavioral Interview -> Make Job Offer: 1,850 transitions (average ~80,430 time units).
+- Final convergence: The two branches converge at the process end. Due to optional skipping in both branches, the process can end even if neither an explicit rejection nor an offer occurred, though observed variants commonly feature at least one of these outcomes.
+
+Decision points and control logic (business equivalents of all technical gateways)
+- After Application:
+  • Decision point allowing a choice: either proceed to Telephonic Screening or reject immediately (early direct rejection).
+- After Telephonic Screening:
+  • Process branches to alternative paths that run in parallel: Screening Interview and Background Check. Both must complete before moving forward.
+- After convergence of Screening Interview and Background Check:
+  • Optional decision to conduct Extensive Background Check or skip it.
+  • Optional decision to conduct Coding Interview or skip it.
+- Within the technical assessment after Coding Interview:
+  • Process branches into up to three parallel tracks (ML, Backend, Frontend), each optional. Parallel activities converge before moving on.
+- Final decision stage:
+  • Process branches into two parallel end-phase branches: the rejection branch and the behavioral/offer branch. Each branch can loop; both branches must reach their exits (completion or skip) and then converge to end the process.
+
+Exception handling and rework (preserving all exceptional/loop behaviors)
+- Early rejection permitted at multiple stages: immediately after Application, after Telephonic Screening, after Screening Interview, after Background Check, and after Extensive Background Check.
+- Rework loops permitted:
+  • Application Rejected can repeat (654 observed repeats).
+  • Behavioral Interview can repeat (1,032 observed repeats).
+  • Make Job Offer can repeat (861 observed repeats).
+- Cross-branch contradictions are allowed and observed: offer after rejection, and rejection after offer. These are treated as valid behaviors, not exceptions, in the current model.
+
+KPI summary and performance metrics (counts and timing; percentages provided where unambiguous)
+- Volume assumptions:
+  • Applications starting the process: approximately 10,000 (inferred from 8,799 Application->Telephonic and 1,201 Application->Application Rejected).
+- Initial funnel:
+  • Application -> Telephonic Screening: 8,799 transitions (~88% of applications), average ~82,440 time units.
+  • Application -> Application Rejected (direct): 1,201 transitions (~12%), average ~146,346 time units.
+- Post-telephonic parallel work (indicative concurrency, not exclusive shares):
+  • Telephonic -> Background Check: 3,961 transitions, average ~81,906 time units.
+  • Telephonic -> Screening Interview: 3,848 transitions, average ~81,903 time units.
+  • Screening <-> Background reordering edges occur with near-zero elapsed time, consistent with concurrency.
+- Rejection occurrences by preceding step (transition counts; cases may be counted more than once due to loops):
+  • Background Check -> Application Rejected: 1,391 (average ~155,320 time units).
+  • Screening Interview -> Application Rejected: 1,389 (average ~155,969 time units).
+  • Telephonic Screening -> Application Rejected: 990 (average ~143,282 time units).
+  • Extensive Background Check -> Application Rejected: 1,125 (timing not separately specified).
+- Optional deeper checks and technical entry:
+  • Background -> Extensive Background Check: 1,044; Screening -> Extensive Background Check: 1,055.
+  • Extensive Background Check -> Coding Interview: 974.
+  • Screening -> Coding Interview: 1,517 (average ~129,892 time units); Background -> Coding Interview: 1,413 (average ~129,885 time units).
+- Technical interview tracks (optional, re-orderable, concurrent):
+  • Coding -> ML: 1,304.
+  • Coding -> Backend: 701.
+  • Coding -> Frontend: 1,513.
+  • Near-zero-time edges among ML/Frontend/Backend indicate switching/parallelism.
+- Behavioral and offer activity:
+  • Behavioral Interview -> Make Job Offer: 1,850 transitions (average ~80,430 time units).
+  • Make Job Offer -> Make Job Offer (repeat): 861 transitions.
+- Cross-branch contradictions:
+  • Application Rejected -> Behavioral Interview: 740.
+  • Application Rejected -> Make Job Offer: 690.
+  • Make Job Offer -> Application Rejected: 110.
+- End-to-end performance of representative variants:
+  • Application -> Telephonic -> Screening -> Background -> Application Rejected: 1,391 cases, ~319,390 time units.
+  • Application -> Telephonic -> Background -> Screening -> Application Rejected: 1,389 cases, ~320,030 time units.
+  • Application -> Application Rejected directly: 1,201 cases, ~146,346 time units.
+  • Longer “successful-to-offer” variants with full technical stack and repeated Behavioral/Offer loops: ~530,000 time units.
+
+Parallel activities and synchronization (explicit)
+- After Telephonic Screening: Screening Interview and Background Check run concurrently; the process waits for both to finish before moving forward.
+- Within technical assessment: ML Interview, Backend Interview, and Frontend Interview can run in parallel (each optional), and must converge before proceeding.
+- Final decision stage: Rejection branch and Behavioral/Offer branch run in parallel with loops, and must both exit (complete or be skipped) before the process ends.
+
+Commonly observed business paths (preserving all sequences)
+- Early rejection paths:
+  • Application -> Application Rejected (direct).
+  • Application -> Telephonic -> Screening -> Background -> Application Rejected.
+  • Application -> Telephonic -> Background -> Screening -> Application Rejected.
+- Offer-oriented paths (examples):
+  • Application -> Telephonic -> Screening/Background (concurrent) -> Coding -> [ML/Backend/Frontend in any order/combination] -> Behavioral Interview (possibly repeated) -> Make Job Offer (possibly repeated).
+  • Paths with Application Rejected interleaved with Behavioral Interview and/or Make Job Offer are permitted and observed.
+
+Key challenges, bottlenecks, and business impact
+- Contradictory outcomes permitted:
+  • The model allows both issuing an offer then rejecting, and rejecting then proceeding with behavioral/offer activities. This undermines governance, candidate experience, and reporting clarity (observed contradictory transitions: 740, 690, and 110 instances).
+- Excessive rework loops:
+  • High repetition in Behavioral Interview (1,032 repeats) and Make Job Offer (861 repeats) increases cycle time, labor, and candidate attrition risk. Repeated Application Rejected events (654 repeats) also complicate reporting and auditing.
+- Over-parallelization:
+  • Screening Interview and Background Check in parallel, before firm qualification, drive unnecessary Background Check costs for candidates later rejected (notably 1,391 and 1,389 rejections after these steps). The final-stage parallelization enables interleaving of offers and rejections, creating compliance and brand risk.
+- Optionality without explicit criteria:
+  • Telephonic Screening, Coding Interview, and each of ML/Backend/Frontend can be skipped without defined rules, reducing fairness and comparability across candidates and complicating auditability.
+- Long cycle times and waits:
+  • Long waits around technical steps (e.g., ~129,8xx to initiate Coding Interview; ~80,4xx from Behavioral Interview to Make Job Offer) and end-to-end durations up to ~530,000 time units for complex offer paths.
+- Ambiguous end-state:
+  • The process can end without an explicit rejection or offer due to the final convergence logic, creating reporting and governance ambiguity.
+
+Strategic recommendations (while preserving all observed behaviors for validation)
+- Enforce mutually exclusive end outcomes at the final stage:
+  • Replace the parallel final branches with a decision point requiring a choice between “Reject” or “Proceed to Behavioral/Offer,” with a final single outcome prior to closure. If parallelism must be retained for operational reasons, impose a governance rule that closes one branch when the other reaches a terminal state.
+- Gate cost-intensive steps:
+  • Sequence Background Check after Screening Interview decision gates to reduce unnecessary checks. Introduce eligibility criteria for Extensive Background Check to control volume (currently observed ~1,044 and ~1,055 triggers from parallel tracks).
+- Define skip criteria and standardize assessments:
+  • Set clear rules for when Telephonic Screening, Coding Interview, and each technical interview (ML/Backend/Frontend) can be skipped. Publish a standardized assessment blueprint to improve fairness, throughput, and comparability.
+- Limit rework loops:
+  • Cap repetitions for Behavioral Interview and Make Job Offer (e.g., maximum N iterations or escalation after N-1 iterations). Use a formal re-approval step in lieu of repeated offers to maintain auditability.
+- Reduce cycle time with SLAs and scheduling:
+  • Set SLAs on key waits (Application -> Telephonic ~82,440; Screening/Background -> Coding ~129,8xx; Behavioral -> Offer ~80,430). Deploy scheduling automation to compress handoffs; prioritize fast failure where appropriate.
+- Clarify process closure:
+  • Require an explicit terminal outcome (offer or rejection) before case closure; prevent the process from ending when both final branches are skipped.
+
+Validation note
+- All activities, decision points, parallelisms, skips, loops, start/end conditions, and observed counts/timings from the original model are preserved in this business translation. The described behaviors support validation of process traces, including parallel execution, optional paths, and rework loops.

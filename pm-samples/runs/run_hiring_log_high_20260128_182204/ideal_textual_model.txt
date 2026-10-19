@@ -1,0 +1,85 @@
+IDEAL Process Model
+
+Process overview and purpose
+- High-level purpose: A streamlined, compliant hiring process that reduces variability, eliminates redundant checks and rework, enforces clear sequencing and decision criteria, and improves candidate experience while preserving necessary technical and behavioral evaluations.
+- Primary visible activities (kept from AS-IS): Hand In Job Application; Telephonic Screening; Screening Interview; Coding Interview (as an orchestration activity that may schedule technical sub-interviews); ML Interview; Backend Interview; Frontend Interview; Behavioral Interview; Background Check; Extensive Background Check; Make Job Offer; Application Rejected.
+
+Key stakeholders and roles
+- Candidate
+- Recruiter/HR: owns intake and gating, scheduling, initial screening, and final offer coordination.
+- Technical Interview Panel: conducts coding/ML/backend/frontend assessments; their participation is coordinated by Recruiter/Technical Lead.
+- Hiring Manager: makes final hiring decision (offer or rejection) based on assessment bundle.
+- Compliance/Background-Check Team: performs Background Check or Extensive Background Check per policy.
+
+Improvement principles applied
+- Gatekeeping: enforce Telephonic Screening as optional only for certain roles; require Screening Interview (or equivalent automated filter) before technical interviews for consistency.
+- Orchestration: treat Coding Interview as a coordination activity that schedules necessary technical sub-interviews rather than arbitrarily splitting into parallel unsynchronized branches.
+- Consolidation: define a single Background Check policy with two levels (standard or extensive) applied deterministically based on role seniority or risk profile, and performed once at a defined point.
+- Loop elimination: remove spurious init_loop repeats; re-evaluation only allowed via explicit, dated re-interview request with approval.
+
+Detailed step-by-step IDEAL flow
+Start conditions and trigger
+1. Start: Candidate submits application (Hand In Job Application). Recruiter performs triage to determine if the role requires Telephonic Screening and the background-check level.
+
+Main sequence of activities
+2. Triage decision (exclusive gateway, recruiter): Based on resume and role:
+   - If candidate clearly meets minimum criteria -> proceed to Scheduling Screening Interview.
+   - If uncertain OR for high-volume roles -> Telephonic Screening required; otherwise skip Telephonic Screening only for roles flagged as self-filtering by application system.
+
+3. Telephonic Screening (conditional): If applied, Telephonic Screening obtains confirmation of basic fit, availability, and clarifies role expectations. Outcomes:
+   - Pass -> schedule Screening Interview.
+   - Fail -> Application Rejected (explicit recorded rejection).
+
+4. Screening Interview (mandatory gating for technical roles): A short structured interview (30–45 min) assessing core skills. Outcomes:
+   - Pass -> Recruiter triggers Technical Assessment orchestration.
+   - Fail -> Application Rejected.
+
+5. Technical Assessment orchestration (Coding Interview orchestration task): Recruiter coordinates required technical sub-interviews based on the role (could be ML, Backend, Frontend). Rules:
+   - Determine which sub-interviews are required (1–2 maximum) according to job profile.
+   - Prefer sequential scheduling to avoid unnecessary parallel resource allocation; parallel only allowed if time-to-hire SLA requires it and interviewers are available.
+   - Each required technical interview is scheduled and executed (visible events: ML Interview, Backend Interview, Frontend Interview).
+
+6. Synchronization of technical results: After all required technical interviews complete, the technical panel consolidates feedback in a single Technical Assessment record. This is an explicit synchronization point (join), not an invisible tau-join.
+
+7. Behavioral Interview (if required): For mid-to-senior roles or where cultural fit is critical, Behavioral Interview is scheduled post-technical assessment. Criteria for requiring the behavioral interview must be defined and enforced.
+
+8. Background Check policy (single point of truth): Based on role risk and offer stage, the Compliance Team performs either Background Check (standard) or Extensive Background Check (senior/regulated roles). Rules:
+   - Background checks are only initiated after a positive technical and behavioral assessment (i.e., after hiring manager greenlight) to avoid wasted checks.
+   - Only one check type is performed per candidate; duplicate or repeated checks are not allowed without explicit cause.
+
+9. Final decision gateway (Hiring Manager + Recruiter): Consolidate Screening, Technical, Behavioral, and Background Check results.
+   - If assessments meet thresholds and background check clear -> Make Job Offer.
+   - If assessments fail or background check fails -> Application Rejected with recorded reason.
+
+Exception handling and rework controls
+- Re-interview only by exception: If a technical assessment is inconclusive, an explicit re-evaluation request is raised and must be approved by the Hiring Manager before scheduling further interviews. This prevents uncontrolled loops.
+- Withdrawn or dropouts: If the candidate withdraws or does not respond after predefined attempts, the case is closed with Application Rejected (status: Withdrawn) to keep records clean.
+- Failed background check after offer acceptance: define an escalation path (Offer rescinded or conditional employment) with legal and HR involvement; this is a formal exception path with clear documentation.
+
+End conditions and outcomes
+- Make Job Offer: offer is extended and recorded; process ends. If accepted, move to onboarding (outside this hiring subprocess).
+- Application Rejected: candidate receives an outcome with reason; process ends. Rejections are recorded and aggregated for quality metrics.
+
+Process metrics and target performance characteristics
+- Time-to-hire: target median 30 days for technical roles; strict SLAs for each stage (Telephonic Screening: 3 business days; Screening Interview: 5 business days; Technical Assessment: 10 business days; Background Check: 7 business days).
+- Interviewer utilization: cap parallel technical interviews to reduce wasted effort; prefer sequential execution unless SLA demands parallelization.
+- Rework rate: aim to reduce looped re-interviews to <5% of candidates via explicit approval rules.
+- Compliance: 100% policy alignment on background checks; no silent skips allowed—every skip must be explicit and recorded with reason.
+- Candidate experience: defined communication templates and timeline updates at each stage; target candidate drop-off rate reduction by 30%.
+
+Improvements made vs AS-IS
+- Reduced variability: eliminated invisible skip transitions by converting routing choices into explicit gateways with recorded outcomes and criteria.
+- Eliminated redundant checks: single background-check policy applied at a single, well-defined point.
+- Controlled concurrency: technical interviews coordinated centrally to avoid unnecessary parallel splits and interviewer duplication.
+- Removed implicit loops: re-interviews require approval; loops are formal exception paths rather than implicit miner artifacts.
+- Better auditability: all decisions and skips are visible and logged; no tau/invisible transitions.
+- Shorter, predictable time-to-hire and improved candidate communications.
+
+Roles and responsibilities mapping (per activity)
+- Recruiter/HR: Intake/Triage, Telephonic Screening, Scheduling, Orchestration, Final offer coordination.
+- Technical Lead/Hiring Manager: Define required technical assessments, approve re-interviews, make final decision.
+- Interviewers (Technical/Behavioral): Execute assigned interviews and submit structured feedback.
+- Compliance/Background-Check Team: Execute background checks according to policy.
+
+Summary of IDEAL
+- The IDEAL model preserves all necessary evaluations (technical, behavioral, background checks) but imposes deterministic rules for when and how they are applied. It replaces invisible routing with explicit decision gates, consolidates background checks, limits rework, and adds orchestration for technical interviews to reduce cost and time-to-hire while maintaining assessment quality and compliance.

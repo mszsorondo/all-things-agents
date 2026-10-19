@@ -1,0 +1,246 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- This process handles the screening and selection of job applicants from initial application through either rejection or a job offer.
+- The observed behavior is reconstructed from discovered process variants that show actual execution paths, their relative frequency, and average total duration.
+
+Key stakeholders and roles involved
+- The source does not specify roles or actors. Activities such as screening, background checks, interviews, rejection, and offering are performed by unspecified parties. Therefore, no role-to-task assignments are provided here.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start event: Hand In Job Application (explicit start across all variants).
+- Trigger: An application is submitted and becomes eligible for screening.
+
+Core activities and ordering
+1) Hand In Job Application (start)
+   - Immediately followed by one of the following paths:
+
+2) Early decision branch
+   - Path 2.1: Application Rejected
+     - Frequency: ~12% of cases.
+     - Average duration: ~146,346 seconds (~1.7 days).
+     - This is a terminal outcome for these cases.
+   - Path 2.2: Telephonic Screening
+     - Frequency: seen in a majority of non-immediate-reject cases.
+
+3) Telephonic Screening (when it occurs)
+   - After this activity, three main patterns are observed:
+     a) Application Rejected
+        - Frequency: ~9% of all cases.
+        - Average duration: ~229,938 seconds (~2.66 days).
+     b) Proceed to Background Check and Screening Interview in flexible order (both must occur, but order varies):
+        - Variant A (13%): Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected (~320,030 seconds; ~3.70 days).
+        - Variant B (13%): Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected (~319,390 seconds; ~3.70 days).
+        - Additional less frequent variants continue after these two activities.
+
+4) Background Check and Screening Interview (unordered pair)
+   - Observed as a pair with variable sequence (both completed before certain decisions).
+   - Synchronization point (implicit): once both are completed, one of two outcomes occurs:
+     a) Application Rejected (aggregate high frequency; e.g., two 13% variants end here).
+     b) Extensive Background Check (XBC) (less frequent but significant).
+
+5) Extensive Background Check (XBC)
+   - Often follows completion of Background Check and Screening Interview.
+   - Two broad outcomes:
+     a) Application Rejected
+        - Nontrivial proportion (~5% + ~5% variants) with average duration ~427,700–427,833 seconds (~4.95 days).
+     b) Proceed to interview rounds (low-frequency but longer-duration variants).
+
+6) Interview rounds (low-frequency, high-duration variants; ~1% per variant with many permutations)
+   - Technical interviews observed: Coding Interview, ML Interview, Backend Interview, Frontend Interview.
+   - Behavioral Interview is also observed, often once but sometimes repeated multiple times.
+   - Ordering across technical interviews varies widely; Behavioral Interview may occur after technical interviews.
+   - Repeated activities observed:
+     - Behavioral Interview repeated 2–3 times in some cases.
+   - Decision events observed midstream (non-terminal behavior):
+     - Application Rejected and Make Job Offer sometimes occur before or between interviews, and even repeat:
+       • Examples include:
+         - Application Rejected -> Application Rejected (duplicate terminal events).
+         - Make Job Offer -> Make Job Offer (duplicate terminal events).
+         - Application Rejected followed by Behavioral Interview and then Make Job Offer (reversal/reopen behavior).
+         - Make Job Offer followed by Application Rejected and then Make Job Offer again (state flip-flopping).
+   - These patterns suggest the process allows decisions to be recorded before all evaluations are complete and does not enforce finality of terminal states.
+
+Decision points with criteria and outcomes (as implied by behavior)
+- After Telephonic Screening: either reject or continue to complete both Background Check and Screening Interview.
+- After both Background Check and Screening Interview: either reject or trigger Extensive Background Check.
+- After Extensive Background Check: either reject or proceed to interviews.
+- During/after interviews: multiple non-exclusive decision recordings observed (reject/offer), often repeated or out of sequence.
+
+Parallel activities and synchronization points
+- No true parallelism is evidenced; however, Background Check and Screening Interview occur in flexible order, implying an unordered pair that must both complete before subsequent decisions. A logical merge/synchronization happens before Extensive Background Check or rejection.
+
+Exception handling and error paths (as observed)
+- Decision reversals and non-terminal “terminal” events:
+  - Application Rejected recorded, then later additional interviews and/or Make Job Offer.
+  - Make Job Offer recorded, then Application Rejected recorded, then another Make Job Offer.
+- Duplicate logging of end states:
+  - Application Rejected -> Application Rejected.
+  - Make Job Offer -> Make Job Offer.
+- Multiple Behavioral Interviews:
+  - Behavioral Interview repeats indicate rework, indecision, or scheduling/data issues.
+- These suggest either process re-openings without explicit “reopen” activity or logging/data governance issues.
+
+Rework loops and escalation procedures
+- Rework loops:
+  - Behavioral Interview may loop (2–3 times).
+  - Decision events are re-logged (reject/offer) without a stabilizing close.
+- No explicit escalation activities are observed in the source; any escalations are implicit in the rework or decision reversals.
+
+End conditions and outcomes
+- Intended terminal outcomes:
+  - Application Rejected
+  - Make Job Offer
+- In practice, these are not enforced as terminal:
+  - Events continue after these outcomes in some cases.
+  - Cases sometimes exhibit duplicate end-state events.
+
+Process metrics and performance characteristics
+- Frequency highlights:
+  - Two main mid-stage rejection variants: ~13% + ~13% (after Telephonic Screening + Background/Screening in variable order).
+  - Immediate rejection after application: ~12%.
+  - Rejection after Telephonic Screening: ~9%.
+  - Rejection after Extensive Background Check: ~5% + ~5%.
+  - Interview-heavy paths: many distinct variants at ~1% each.
+- Performance (average total duration by key clusters):
+  - Immediate rejection: ~146k seconds (~1.7 days).
+  - Rejection after Telephonic Screening: ~230k seconds (~2.66 days).
+  - Rejection after both Background and Screening: ~319–320k seconds (~3.7 days).
+  - Rejection after Extensive Background Check: ~428k seconds (~4.95 days).
+  - Interview-heavy paths (with or without rework/duplicated decisions): ~623k–650k seconds (~7.2–7.5 days).
+- Observations:
+  - Longer paths correlate with more interviews, repetitions, and decision reversals.
+  - High variance and many low-frequency variants indicate inconsistent execution and weak stage gates.
+
+Key challenges and pain points
+- Lack of terminal-state enforcement:
+  - Cases continue after Application Rejected or Make Job Offer; duplicate terminal events recorded.
+- Decision reversals without explicit reopen controls:
+  - Rejected candidates proceed to additional interviews or receive offers; offers are followed by rejections and then offers again.
+- Inconsistent ordering and stage gating:
+  - Background Check and Screening Interview are done in variable order; decisions occur before interview stages are settled.
+- Rework and redundant steps:
+  - Behavioral Interview frequently repeated; duplicate logging of terminal decisions.
+- Data quality and governance issues:
+  - Duplicate event entries for terminal states.
+  - Events recorded in non-sensical order (e.g., decision before completing planned interviews).
+- Performance impact:
+  - Interview-heavy and rework-laden variants are the slowest (~7+ days), with low frequency but high cost and variability.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- This model defines a cleaned, governed hiring process from application to a single, final outcome (rejection or offer), removing rework, duplicate decision logging, and allowing only well-controlled, necessary paths.
+
+Key stakeholders and roles involved
+- The source does not specify roles. Role-to-task assignments are therefore omitted. The model assumes activities are executed by appropriate parties without adding new actors.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start event: Hand In Job Application.
+- Trigger: A submitted application initiates the evaluation pipeline.
+
+Standardized activities and sequence
+1) Hand In Job Application (start)
+
+2) Telephonic Screening (mandatory first screen)
+   - Decision:
+     a) Not suitable -> Application Rejected (terminal).
+     b) Suitable -> proceed.
+
+3) Screening Interview (standard face-to-face/virtual screen)
+   - Decision:
+     a) Not suitable -> Application Rejected (terminal).
+     b) Suitable -> proceed.
+
+4) Background Check (standard scope)
+   - Decision:
+     a) Clear/no concerns -> proceed.
+     b) Concerns present -> Extensive Background Check (XBC).
+
+5) Extensive Background Check (conditional; only if required)
+   - Decision:
+     a) Concerns confirmed -> Application Rejected (terminal).
+     b) Concerns resolved -> proceed.
+
+6) Technical Interview stage (configured set; each used at most once)
+   - Inclusive selection of relevant interviews based on the candidate’s assessed profile (only from the existing set; no new activities introduced):
+     - Coding Interview (if applicable)
+     - ML Interview (if applicable)
+     - Backend Interview (if applicable)
+     - Frontend Interview (if applicable)
+   - Execute selected interviews in a planned sequence (no concurrency required). Each interview occurs at most once.
+
+7) Behavioral Interview (exactly once)
+   - Occurs after the selected technical interviews are complete.
+
+8) Final decision (single, authoritative)
+   - Evaluate all collected results.
+   - Outcomes (exactly one, terminal):
+     a) Application Rejected (terminal; no further activities allowed).
+     b) Make Job Offer (terminal; no further activities allowed).
+
+Decision points with criteria and outcomes
+- After Telephonic Screening: suitability for further evaluation -> proceed or reject.
+- After Screening Interview: confirm fit before background -> proceed or reject.
+- After Background Check: if concerns, require XBC; else proceed to interviews.
+- After XBC: confirm or rule out concerns -> reject or proceed.
+- After all planned interviews: single final decision -> reject or make offer.
+
+Parallel activities and synchronization points
+- No parallelism required. The process relies on clear, sequential stage gates.
+- Synchronization points:
+  - All selected technical interviews must complete before Behavioral Interview.
+  - Behavioral Interview must complete before final decision.
+
+Exception handling and error paths
+- Reopen controls:
+  - Once a terminal decision is logged (reject or offer), the case is closed; no additional activities are permitted on the same case.
+  - Any reconsideration requires starting a new case with a new application (outside the scope of activities listed; no new activities are added here).
+- Data governance:
+  - The system should prevent duplicate logging of terminal events (no repeated “Application Rejected” or “Make Job Offer”).
+  - Mid-process decision logging is disallowed; decisions are recorded only at the designated decision points.
+
+Rework loops and escalation procedures
+- Rework is minimized by design:
+  - Interviews (including Behavioral) occur at most once.
+  - If an interview needs to be repeated due to clear operational reasons, it must supersede and invalidate the prior record rather than create duplicates (policy-level constraint; no new activity added).
+- Escalations are implicit in decision gates (e.g., routing to XBC for concerns) and do not introduce extra activities.
+
+End conditions and outcomes
+- Exactly one terminal outcome:
+  - Application Rejected (terminal, immutable).
+  - Make Job Offer (terminal, immutable).
+- No activities are allowed after a terminal outcome is recorded.
+
+Process metrics and performance characteristics (targets/expectations)
+- Early screening outcomes:
+  - Telephonic Screening plus Screening Interview stages designed to resolve clear no-go cases within ~2–3 days total.
+- Background verification:
+  - Standard Background Check to complete promptly to avoid unnecessary interview scheduling.
+  - XBC used sparingly; where invoked, keep total time to decision under ~5 days when possible.
+- Interview stages:
+  - Complete selected technical interviews and the Behavioral Interview within an overall target window of ~5–7 days from application where feasible.
+- Variance control:
+  - Eliminate duplicated interviews and repeated terminal decisions to reduce cycle time spikes observed in the AS-IS (~7.2–7.5 days variants).
+
+Improvements made versus AS-IS
+- Enforced terminal states:
+  - Prevent any activity after Application Rejected or Make Job Offer; no duplicate terminal events.
+- Single final decision point:
+  - Disallow midstream reject/offer logging; decisions only after all planned evaluations are complete.
+- Standardized sequencing:
+  - Telephonic Screening -> Screening Interview -> Background Check -> (XBC if needed) -> Technical Interviews (selected, each once) -> Behavioral Interview -> Final Decision.
+- Reduced rework:
+  - Behavioral Interview occurs exactly once; technical interviews are selected deliberately and executed at most once each.
+- Governance and data quality:
+  - Strong event logging rules to prevent duplicates and state flip-flops.
+- Cycle time and cost optimization:
+  - Early disqualification through screening before deep checks and interviews, minimizing unnecessary long paths.
+""")

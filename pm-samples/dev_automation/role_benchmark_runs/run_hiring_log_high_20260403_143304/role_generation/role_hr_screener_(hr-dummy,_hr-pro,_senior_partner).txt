@@ -1,0 +1,63 @@
+AS-IS Process Model — HR Screener (HR-dummy, HR-pro, Senior Partner)
+============================================================
+
+Title: AS-IS Process Model — HR Screener (HR-dummy, HR-pro, Senior Partner)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Perform initial screenings (telephonic and background), decide whether candidates progress to interviews or are rejected, and in some cases perform screening interviews.
+- Observed responsibilities: Telephonic Screening, Background Check, Screening Interview, Application Rejected (HR-dummy & Senior Partner & HR-pro), and occasionally coordinate or hand over cases to interviewers or deepResearch Inc. for extensive checks.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Telephonic Screening: Conduct an initial phone screen to evaluate candidate fit. Major gateway activity after intake.
+- Background Check: Conduct standard background checks triggered after telephonic screening or screening interview.
+- Screening Interview: Short in-person or detailed screening to further evaluate candidate; observed to alternate with Background Check.
+- Extensive Background Check: A deeper background screening performed by HR-pro or outsourced to deepResearch Inc.
+- Application Rejected: Decide and mark candidate as rejected; HR resources frequently perform this activity.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation triggers: Most commonly activated after Hand In Job Application via intake. Telephonic Screening is the typical first HR activity.
+- Observed sequences (all valid orderings observed):
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> ...
+  - Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> ...
+  - Hand In Job Application -> Telephonic Screening -> Application Rejected
+  - Hand In Job Application -> Application Rejected (HR can reject immediately after intake, though intake does not perform the rejection)
+  - Telephonic Screening -> Background Check -> Extensive Background Check -> ...
+  - Screening Interview -> Coding Interview / Extensive Background Check / Application Rejected
+- Decision points and criteria handled by HR Screener:
+  - After Telephonic Screening: decide to either send candidate for Background Check, Screening Interview, or reject. The presence of both Telephonic Screening -> Background Check and Telephonic Screening -> Screening Interview edges indicates HR may choose either follow-up.
+  - After Background Check or Screening Interview: decide to escalate to Extensive Background Check, move candidate to Coding Interview (for technical roles), or reject.
+  - Extensive Background Check: typically precedes Coding Interview but can also lead to Application Rejected.
+  - Application Rejected can be triggered at several points (immediately after intake, after telephonic screening, after screening interview, or after background checks).
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO HR Screener (observed handovers):
+  - Intake: Front Desk and Online System (Hand In Job Application -> HR-dummy/HR-pro)
+  - HR-dummy sometimes hands to Senior Partner and to HR-pro and to Coding Interviewer (observed handover weights)
+  - Senior Partner and HR-pro and deepResearch Inc. interact with HR-dummy for coordination
+- Who HR Screener hands work TO (observed handovers):
+  - Coding Interviewer (for candidates progressing to technical interviews)
+  - Senior Partner (especially for screening interviews or decisions)
+  - deepResearch Inc. (outsourced Extensive Background Check)
+  - HR-pro and HR-dummy and occasionally HR-pro and Senior Partner acting jointly (Behavioral Interviews)
+  - Application outcome activities (Application Rejected or Make Job Offer) are also executed by HR roles or passed to HR-pro who performs Make Job Offer.
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- High-frequency patterns:
+  - Telephonic Screening -> Background Check -> Screening Interview -> (Coding Interview / Application Rejected / Extensive Background Check)
+  - Telephonic Screening -> Screening Interview -> Background Check -> ... (order of Background Check and Screening Interview can swap)
+- Medium-frequency:
+  - Telephonic Screening -> Application Rejected (immediate rejection after phone screen)
+  - Background Check -> Application Rejected (rejections after background failures)
+  - Background Check -> Extensive Background Check -> Coding Interview
+- Low-frequency / long variants:
+  - Paths involving repeated Application Rejected activities (Application Rejected -> Application Rejected self-loop observed in the net and DFG)
+  - Paths where Extensive Background Check triggers long sequences of interviews and back-and-forth (leading to very long durations)
+- Optional activities: Extensive Background Check occurs in only a subset (~5-10%) of traces; Screening Interview and Background Check are common but their relative ordering varies.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Parallel/alternative ordering between Background Check and Screening Interview indicates inconsistent process execution; this can create handovers and waiting times depending on which activity is done first.
+- Extensive Background Check significantly increases case duration when present (high performance values in variants), indicating a bottleneck.
+- HR-dummy performs a large number of Application Rejected activities (and hands off to Senior Partner and others), suggesting centralization of rejections but also repeated rejections (self-loop) indicating possible multiple rejection markings or process noise.
+- Handover network shows many loops and cross-handoffs between HR-dummy, HR-pro, Senior Partner — potential inefficiency or unclear role boundaries.
+
+Notes: This role clusters HR-dummy, HR-pro, and Senior Partner as HR Screener due to overlapping activities. Where specific activities are performed only by a single resource (e.g., Extensive Background Check also seen by deepResearch Inc.), those interactions are noted but the logical HR Screener role remains the primary actor for screening activities.

@@ -1,0 +1,72 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is an improved, streamlined version of the hospital ER/FD patient treatment process. It enforces a standardized, safe, and efficient flow by mandating essential examinations, limiting rework to a maximum of two treatment attempts with escalation, eliminating unsafe shortcuts like direct discharge without verification, and rationalizing exam paths into a sequential triage. The purpose remains patient registration, accurate diagnosis, effective treatment, and safe discharge, but with reduced variability, higher compliance, and better outcomes under good governance.
+
+#### Key Stakeholders and Roles Involved
+Roles are not explicitly specified in the source models. Activities imply involvement of reception staff (registration), triage nurses/doctors (examinations), physicians (diagnosis, treatment), and discharge coordinators.
+
+#### Detailed Step-by-Step Process Flow
+1. **Start Conditions and Triggers**: Patient arrival at ER or FD, with immediate registration.
+
+2. **Registration (Exclusive Gateway)**:
+   - XOR: "Register at ER" or "Register at FD" (based on location).
+   - Leads to triage.
+
+3. **Standardized Triage/Examination Sequence (Sequential with Optional Expert)**:
+   - Mandatory "Examination" (combines common paths).
+   - Followed by decision: If high severity → "Expert Examination"; else → proceed.
+   - Then mandatory "Thorough Examination".
+   - No skips; ensures accurate initial assessment (removes observed shortcuts).
+
+4. **Diagnosis**:
+   - Single "Diagnosis" activity post-exams.
+
+5. **Treatment with Limited Rework Loop**:
+   - "Treatment".
+   - Decision post-treatment:
+     - If "Treatment successful" → proceed to discharge.
+     - If "Treatment unsuccessful" → Loop back to Diagnosis (max 2 times).
+     - After 2 failures → Escalate to senior specialist (new merge point, implied synchronization).
+
+6. **Discharge**:
+   - Mandatory "Discharge" only after success verification.
+   - No direct Treatment→Discharge.
+
+7. **Decision Points**:
+   - Registration: Location-based (ER vs. FD).
+   - Post-Examination: Severity check (yes → Expert Exam; no → Thorough Exam).
+   - Post-Treatment: Outcome (success → discharge; unsuccessful → loop/escalate).
+   - Loop limit: Counter-based (≤2 → loop; >2 → escalate).
+   - Outcomes: Proceed, optional expert, limited retry, escalate, or end.
+
+8. **Parallel Activities and Synchronization**: None required; fully sequential for simplicity and safety. Synchronization at merges (e.g., post-exams to Diagnosis).
+
+9. **Exception Handling and Error Paths**:
+   - Unsuccessful treatment: Limited retries.
+   - Max loops exceeded: Escalate to "Expert Treatment Review" (inferred from expert exams, ensures resolution).
+
+10. **Rework Loops and Escalation Procedures**:
+    - Controlled loop: Max 2x Treatment unsuccessful → Diagnosis.
+    - Escalation after 2 failures: Route to senior review before retry or alternative discharge.
+
+11. **End Conditions and Outcomes**:
+    - Successful discharge after verification.
+    - Escalated resolution discharge.
+    - No premature ends.
+
+#### Process Metrics and Performance Characteristics
+- Expected straight-through time: ~240k-260k units (reduced from avg. 320k by eliminating skips/loops).
+- Loop cases: Limited to +120k per loop (max +240k).
+- Target: 90%+ straight paths, <5% escalations.
+- Bottlenecks resolved: Fixed exam sequence reduces variability; loop limits cut tail times.
+- Compliance: 100% exam coverage, 100% success verification.
+
+#### Key Improvements Made
+- **Reduced Variability**: Single exam sequence with one optional branch (vs. inclusive skips).
+- **Eliminated Risks**: No direct Discharge post-Treatment; mandatory success check.
+- **Controlled Rework**: Max 2 loops + escalation (vs. unlimited 3+ loops).
+- **Streamlined Flow**: Removed silent skips; enforced sequencing (exams → Diagnosis → Treatment).
+- **Efficiency Gains**: Shorter avg. time (target 260k), fewer bottlenecks at Treatment.
+- **Safety/Compliance**: Full triage mandatory, verified discharges; handles 99% variants conservatively.
+- **Scalability**: Predictable flow supports higher volumes without proportional delays.

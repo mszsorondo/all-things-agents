@@ -1,0 +1,207 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage the end-to-end flow from prospective tenant interest through property viewing, tenant screening, contracting, move-in, recurring rent payments, and potential termination (tenant-driven cancellation or eviction).
+- Scope covered by observed behavior: Inquiry-to-rejection path, inquiry-to-lease path, recurring rent cycle with late-payment handling, and closure outcomes.
+- Observed emphasis: Most cases end in rejection before contracting; a minority progress to move-in and the rent cycle. Late payments often recur with repeated warnings and late-payment acceptances.
+
+Key stakeholders and roles involved
+- Prospective Tenant/Tenant (explicitly present in actions such as Apply for Viewing Appointment, Hand In The Paperwork, Pay Rent, Tenant Cancels Appartment).
+- Internal property management/letting function (implicitly responsible for Set Appointment, Check Paperwork, Screen Prospective Tenant, Extensive Screening, Sign Contract, Issue Warning, Evict Tenant).
+- Note: Specific internal role titles are not provided in the source; responsibilities above are inferred from activity names.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Prospective tenant submits Apply for Viewing Appointment, which initiates a new process instance.
+
+Core activity sequence and decision points (as observed)
+1) Apply for Viewing Appointment
+   - Immediately followed by one of two observed outcomes:
+     a) Reject Prospective Tenant
+        - Direct rejection without any appointment or viewing (8% of cases; ~0.99 days average duration).
+        - End state: Application is closed as unsuccessful.
+     b) Set Appointment
+        - Proceeds to schedule a property viewing.
+
+2) Set Appointment -> View The Property
+   - After viewing, two outcomes are observed:
+     a) Reject Prospective Tenant
+        - Rejection post-viewing without proceeding to paperwork (17% of cases; ~3.0 days).
+        - End state: Application closed as unsuccessful.
+     b) Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant
+        - Paperwork submission and validation precede tenant screening.
+        - Screening outcomes:
+          i) Reject Prospective Tenant
+             - Most common observed end (28% of cases; ~4.7 days).
+             - End state: Application closed as unsuccessful.
+          ii) Extensive Screening -> (decision)
+              - A deeper vetting occurs in 18% of cases (average ~5.9 days) and most often still ends with Reject Prospective Tenant.
+              - Less frequently, “Extensive Screening” leads to Sign Contract.
+          iii) Sign Contract (no Extensive Screening)
+               - In a small minority of cases, standard screening proceeds to contract signing.
+
+3) Sign Contract -> Move In
+   - Marks transition from application to tenancy.
+
+4) Recurring rent cycle
+   - Pay Rent repeats many times during tenancy.
+   - Exception loop for nonpayment:
+     - Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent (loop)
+       - This loop can occur multiple times per tenancy, often repeatedly. Several long-running variants show many iterations of repeat late-payment cycles before the case ends (commonly with Tenant Cancels Appartment; rarely with Evict Tenant).
+     - Miss Rent Payment -> Issue Warning -> Evict Tenant (rare)
+       - Direct escalation to eviction appears but with much lower frequency than repeated acceptance of late payments.
+
+Synchronization and parallelism
+- No parallel activities are observed. Control flow is strictly sequential with loops in the rent payment phase.
+
+Exception handling and error paths
+- Direct rejections at multiple points: immediately after application, after viewing, and after screening (including after Extensive Screening).
+- Late payment handling repeatedly reverts to “Accept Late Payment” and returns to the normal Pay Rent cycle.
+- Eviction is a terminal exception path after “Issue Warning” when nonpayment persists.
+
+Rework loops and escalation procedures
+- The rent cycle contains a rework loop: Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent, which can repeat many times per tenancy.
+- Escalation from nonpayment: Issue Warning may lead to Evict Tenant (observed in rare variants).
+
+End conditions and outcomes (observed)
+- Reject Prospective Tenant (dominant outcome pre-contract; ~71% combined across pre-contract rejection points from the listed high-frequency variants).
+- Tenant Cancels Appartment (common tenancy termination outcome after multiple rent cycles; appears across many long-running variants).
+- Evict Tenant (rare end state, seen in a small share of tenancy cases after warnings).
+
+Process metrics and performance characteristics
+- Variant frequency highlights:
+  - Reject after screening (without extensive): 28% (~4.7 days average case duration).
+  - Extensive Screening then rejection: 18% (~5.9 days).
+  - Reject after viewing: 17% (~3.0 days).
+  - Immediate rejection after apply: 8% (~1.0 day).
+  - Proceeding to contract and move-in: fragmented into many low-frequency variants (2% or 1% each).
+- Overall pattern:
+  - Majority of cases end in rejection before contract.
+  - A minority proceed to tenancy, often exhibiting repeated late-payment loops prior to termination (commonly via Tenant Cancels Appartment).
+- Long-running cases:
+  - Tenancy-phase variants show very long end-to-end durations, e.g., 49–71+ days for cases with many rent cycles and multiple late-payment loops (per provided totals in seconds).
+
+Key challenges and pain points
+- High rejection rates post-viewing and post-screening:
+  - A significant portion of effort (scheduling and conducting viewings, performing checks) is spent on cases that ultimately end in rejection.
+  - Extensive Screening frequently results in rejection, adding ~1+ day on average without clear conversion uplift.
+- Late-payment churn:
+  - Many tenancies experience multiple Miss Rent Payment -> Issue Warning -> Accept Late Payment cycles before termination.
+  - Repeated acceptance of late payments increases handling effort and process duration; evictions are rare, implying limited deterrence or thresholds.
+- Inefficient ordering for qualification:
+  - Screening and paperwork occur after the viewing, which may lead to unnecessary viewings for unqualified applicants.
+- Process volatility and cycle time:
+  - The spread from fast rejections (~1 day) to protracted tenancy lifecycles (50–70+ days in the observed variants) complicates resource planning.
+- Lack of explicit control limits:
+  - No clear cap on the number of late-payment loops before stronger action; this leads to long-running, high-touch cases.
+
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Efficiently convert qualified interest into signed leases while minimizing wasted activity and managing tenancy with clear, enforceable late-payment handling and controlled termination paths.
+- Design intent: Move qualification earlier, constrain repetitive late-payment loops, and standardize decisions while preserving all observed legitimate end states.
+
+Key stakeholders and roles involved
+- Prospective Tenant/Tenant.
+- Internal property management/letting function (responsible for appointment scheduling, document checks, screening, contracting, and nonpayment handling).
+- Note: Specific internal role titles are not provided; responsibilities align to the activity names observed.
+
+Detailed step-by-step process flow (to-be)
+
+Start conditions and triggers
+- Trigger: Apply for Viewing Appointment.
+
+Proposed streamlined sequencing using existing activities (no new activities introduced)
+1) Apply for Viewing Appointment -> Hand In The Paperwork -> Check Paperwork
+   - Rationale: Move existing paperwork steps directly after the initial application to reduce unnecessary viewings for unqualified applicants.
+   - Outcome:
+     a) Paperwork complete and acceptable -> proceed to screening.
+     b) Paperwork incomplete/unacceptable -> Reject Prospective Tenant (end).
+       - Note: This uses the existing rejection outcome; the trigger is better-placed validation.
+
+2) Screen Prospective Tenant
+   - Standard screening performed before any viewing.
+   - Decision:
+     a) Pass -> proceed to appointment setting.
+     b) Borderline/risk flags -> Extensive Screening (existing deeper vetting activity).
+        - Outcome of Extensive Screening:
+          i) Pass -> proceed to appointment setting.
+          ii) Fail -> Reject Prospective Tenant (end).
+     c) Fail -> Reject Prospective Tenant (end).
+
+3) Set Appointment -> View The Property
+   - Only qualified applicants are scheduled for viewing.
+   - Decision post-view:
+     a) Applicant declines or withdraws interest -> Reject Prospective Tenant (end). 
+     b) Applicant agrees to proceed -> Sign Contract.
+
+4) Sign Contract -> Move In
+   - Transition to tenancy.
+
+5) Recurring rent cycle with defined control limits (using existing activities)
+   - Pay Rent repeats on a regular cadence.
+   - If payment is not received by due date:
+     a) Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent
+        - Allow this loop to occur up to a defined maximum count within a rolling window (e.g., “no more than N late-payment acceptances within M months”).
+        - After reaching the threshold, do not repeat the acceptance loop again.
+     b) Miss Rent Payment -> Issue Warning -> Evict Tenant
+        - Used when threshold is exceeded, or when policy dictates direct escalation (e.g., severe or continued nonpayment).
+   - Tenant-driven termination:
+     - Tenant Cancels Appartment remains a valid end state at any time during tenancy.
+
+Parallel activities and synchronization points
+- Process remains sequential. No parallel work is required given the observed model and the restructuring.
+
+Exception handling and error paths
+- Early rejection paths remain explicit and occur before viewing:
+  - Rejection after Check Paperwork (if unacceptable).
+  - Rejection after Screen Prospective Tenant or after Extensive Screening (if failed).
+- Post-viewing rejection remains possible if the applicant withdraws or fails a final business check before contracting.
+- Nonpayment exceptions:
+  - Single late event handled via the established warning/acceptance loop.
+  - Repeated late events limited by policy thresholds; escalation to eviction is clear and timely.
+
+Rework loops and escalation procedures (controlled)
+- Limited rework loop:
+  - Miss Rent Payment -> Issue Warning -> Accept Late Payment -> Pay Rent
+  - Built-in cap on repeated occurrences before escalation.
+- Escalation:
+  - Threshold-based escalation to Evict Tenant after repeated late payments.
+
+End conditions and outcomes
+- Reject Prospective Tenant (after paperwork checks, screening, or applicant post-view withdrawal).
+- Tenant Cancels Appartment (tenant-initiated termination).
+- Evict Tenant (escalated termination for nonpayment).
+
+Process metrics and performance characteristics (targeted)
+- Reduced time-to-decision pre-viewing:
+  - With paperwork and screening moved ahead of viewing, unqualified cases end earlier, targeting sub-2–4 day resolution for most rejections (based on observed 1–6 day bands).
+- Viewing efficiency:
+  - A higher share of scheduled viewings should convert to Sign Contract due to prior qualification.
+- Conversion rate:
+  - Target an increased proportion of cases reaching Sign Contract and Move In (compared with observed dominance of pre-contract rejections).
+- Tenancy stability:
+  - Reduced frequency and total count of late-payment loops per tenancy due to explicit thresholds.
+- End-to-end duration:
+  - Shorter average durations for rejected cases; controlled durations for tenancy cases due to minimized repeated late-payment cycles.
+
+Improvements made (relative to AS-IS)
+- Early qualification using existing steps:
+  - Reordered Hand In The Paperwork, Check Paperwork, and Screen Prospective Tenant to precede Set Appointment and View The Property, eliminating unproductive viewings.
+- Focused use of Extensive Screening:
+  - Reserved for flagged cases with explicit pass/fail outcomes to avoid unnecessary delay when standard screening suffices.
+- Clear nonpayment policy using existing activities:
+  - Retain the established warning and acceptance loop but apply a firm threshold to prevent indefinite repetition.
+  - Clear escalation path to eviction when policy thresholds are exceeded.
+- Predictability and resource efficiency:
+  - Less variance in cycle times.
+  - Higher effective utilization of appointments and screening capacity by avoiding work on ultimately unqualified applicants.
+- Governance and transparency:
+  - Decisions are earlier, criteria are explicit at each gateway, and outcomes are definitive, minimizing rework and long-running cases.
+
+""")

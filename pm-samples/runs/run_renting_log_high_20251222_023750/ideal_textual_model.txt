@@ -1,0 +1,91 @@
+IDEAL Process Model
+
+Process overview and purpose
+- A streamlined, governance-compliant leasing lifecycle: application → appointment → viewing → paperwork → screening (with risk-based extensive screening when needed) → decision (reject or sign) → move-in → controlled rent collection cycles with clear late-payment escalation and orderly termination (tenant cancellation or eviction). The goal is to reduce waste and risk, shorten lead times, and prevent uncontrolled skips or rework.
+
+Key stakeholders and roles involved (aligned with AS-IS inference)
+- Prospective Tenant: applies, views, submits paperwork, signs, moves in, pays rent, may cancel.
+- Property Management/Leasing Team: schedules, reviews paperwork, screens, decides, warns, accepts late payments per policy, evicts when necessary.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: “Apply for Viewing Appointment.”
+
+Governed pre-leasing pipeline (application to decision)
+1) Apply for Viewing Appointment
+   - Gateway: Early eligibility decision using existing outcomes
+     • If clearly ineligible or applicant withdraws interest, go to “Reject Prospective Tenant.”
+     • Else proceed to “Set Appointment.”
+   Rationale: Retains observed early rejections while making them explicit and criteria-driven.
+
+2) Set Appointment → 3) View The Property
+   - SLA: appointment offered within 24 hours; viewing within agreed window.
+
+4) Post-viewing decision (single merge + decision)
+   - If applicant not proceeding or fails basic criteria, terminate with “Reject Prospective Tenant.”
+   - Else continue to documentation.
+
+5) Hand In The Paperwork → 6) Check Paperwork → 7) Screen Prospective Tenant
+   - Policy: screening only proceeds when paperwork is complete and validated in the “Check Paperwork” step (no bypass).
+
+8) Risk-based screening decision (exclusive)
+   - Low/acceptable risk → “Sign Contract.”
+   - Uncertain/higher risk → “Extensive Screening,” then:
+       • If approved → “Sign Contract.”
+       • If not approved → “Reject Prospective Tenant.”
+   Governance rule: remove all control-flow skips that would allow “Sign Contract” without “Check Paperwork” and “Screen Prospective Tenant.”
+
+9) Sign Contract → 10) Move In
+   - SLA: decision (Reject/Sign) communicated within 48–72 hours from completed paperwork receipt; move-in scheduled promptly post-signature.
+
+Controlled post-leasing rent cycle
+11) Monthly rent cycle gateway (deterministic policy)
+   - On-time payment → “Pay Rent,” then loop to next cycle start date.
+   - Missed payment → “Miss Rent Payment” → “Issue Warning.”
+       • If paid within grace period → “Accept Late Payment” → return to “Pay Rent.”
+       • If repeated delinquency or unpaid beyond policy thresholds → “Evict Tenant.”
+   Policy clarifications:
+   - Cap rework: only one accepted late payment per defined period; repeated/consecutive misses trigger eviction per policy (e.g., 2 consecutive cycles or X days past due). This eliminates indefinite oscillation between “Accept Late Payment” and “Miss Rent Payment.”
+
+Orderly termination
+- “Tenant Cancels Appartment” permitted only at cycle boundaries when there are no outstanding missed payments; otherwise resolve via “Accept Late Payment” or escalate to “Evict Tenant” prior to termination. This ensures financial closure before cancellation.
+
+Decision points with criteria and outcomes
+- Early eligibility (after Apply): Reject vs. Set Appointment based on minimum criteria (credit/income/availability); uses existing “Reject Prospective Tenant.”
+- Post-viewing: Proceed vs. Reject based on applicant’s confirmation and basic checks.
+- Screening: Exclusive choice among Reject, Extensive Screening, or Sign; Extensive Screening resolves to Reject or Sign only.
+- Monthly cycle: Exclusive choice among Pay on time, Late but paid (via warning/acceptance), or Evict per thresholds.
+
+Parallel activities and synchronization points
+- The flow remains primarily sequential; no uncontrolled parallelism. Synchronization occurs at the decision points before “Sign Contract” and at the start of each rent cycle.
+
+Exception handling and escalation
+- Late payments: 1 grace-handling attempt (Issue Warning → Accept Late Payment). Beyond thresholds, escalate to eviction.
+- Eviction: standardized criteria and documentation; terminal.
+- Rejection: permitted only at defined gates (after Apply, after Screening/Extensive, or post-view if applicant declines), preventing ad-hoc midstream skips.
+
+End conditions and outcomes
+- Reject Prospective Tenant (terminal)
+- Tenant Cancels Appartment (terminal, post-clearance)
+- Evict Tenant (terminal)
+
+Process metrics and performance targets
+- Funnel performance targets
+  • Conversion (Apply → Sign → Move In): raise from ≈ 27.7% to ≥ 35% by eliminating late-stage waste and clarifying criteria early.
+  • Early rejection rate: concentrate rejections before viewing where possible (reduce View → Reject share from ≈ 1,710 to < 1,000 per 10,000 applies).
+- Cycle-time SLAs (units aligned with current measurements)
+  • Apply → Appointment offered ≤ 24 hours.
+  • Viewing scheduled within ≤ 3 days of application where feasible.
+  • Hand In → Check ≤ 24 hours; Check → Screen decision ≤ 24 hours.
+  • Complete decision (Reject/Sign) within ≤ 72 hours after paperwork receipt; Sign → Move In within agreed timeframe.
+- Post-move-in KPIs
+  • Miss Rent Payment rate < 5% of cycles; Evictions < 1% of active tenants.
+  • Late payment acceptance rate < 2% of cycles; zero indefinite late-payment loops.
+  • Time from Miss Rent Payment to resolution (Accept Late Payment or Evict) ≤ defined SLA (e.g., ≤ 10 days).
+
+Improvements made vs. AS-IS
+- Eliminated control-flow skips that could allow signing without complete paperwork and screening; reinforced exclusive gateways at critical points.
+- Shifted rejection earlier (post-Apply) to reduce wasted viewings/paperwork and shorten overall lead time.
+- Instituted clear, finite late-payment handling (one grace acceptance, then escalate) to break rework loops and reduce delinquency.
+- Guarded cancellation with a clearance check (no outstanding missed payments) to ensure financial closure before termination.
+- Set explicit SLAs across the funnel to compress cycle times (appointment scheduling, paperwork checking, screening, decision).

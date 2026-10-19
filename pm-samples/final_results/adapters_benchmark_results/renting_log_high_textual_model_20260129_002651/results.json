@@ -1,0 +1,109 @@
+{
+  "baseline": {
+    "metrics": {
+      "precision": 0.8928571428571429,
+      "recall": 1.0,
+      "f1": 0.9433962264150945,
+      "TP": 100,
+      "TN": 88,
+      "FP": 12,
+      "FN": 0,
+      "total_compute_time_seconds": 1470.006816148758,
+      "total_tokens": 602611,
+      "prompt_tokens": 529379,
+      "completion_tokens": 73232
+    },
+    "num_false_negatives": 0,
+    "num_false_positives": 12
+  },
+  "audiences": {
+    "executives": {
+      "metrics": {
+        "precision": 0.9803921568627451,
+        "recall": 1.0,
+        "f1": 0.99009900990099,
+        "TP": 100,
+        "TN": 98,
+        "FP": 2,
+        "FN": 0,
+        "total_compute_time_seconds": 33188.56071090698,
+        "total_tokens": 864619,
+        "prompt_tokens": 804379,
+        "completion_tokens": 60240
+      },
+      "adapted_model_length": 12873,
+      "num_false_negatives": 0,
+      "num_false_positives": 2
+    },
+    "children": {
+      "metrics": {
+        "precision": 0.8849557522123894,
+        "recall": 1.0,
+        "f1": 0.9389671361502347,
+        "TP": 100,
+        "TN": 87,
+        "FP": 13,
+        "FN": 0,
+        "total_compute_time_seconds": 7608.264689683914,
+        "total_tokens": 783659,
+        "prompt_tokens": 698779,
+        "completion_tokens": 84880
+      },
+      "adapted_model_length": 10925,
+      "num_false_negatives": 0,
+      "num_false_positives": 13
+    }
+  },
+  "comparison": {
+    "baseline_f1": 0.9433962264150945,
+    "audiences": {
+      "executives": {
+        "f1": 0.99009900990099,
+        "f1_delta": 0.046702783485895516,
+        "precision": 0.9803921568627451,
+        "recall": 1.0,
+        "TP": 100,
+        "FP": 2,
+        "TN": 98,
+        "FN": 0
+      },
+      "children": {
+        "f1": 0.9389671361502347,
+        "f1_delta": -0.004429090264859714,
+        "precision": 0.8849557522123894,
+        "recall": 1.0,
+        "TP": 100,
+        "FP": 13,
+        "TN": 87,
+        "FN": 0
+      }
+    },
+    "ranking": [
+      "children",
+      "executives"
+    ]
+  },
+  "config": {
+    "experiment_identifier": "renting_log_high_textual_model_20260129_002651",
+    "model_identifier": "renting_log_high_textual_model",
+    "timestamp": "20260129_002651",
+    "datetime": "2026-01-29T00:27:02.026763",
+    "xes_path": "benchmark/renting/renting_log_high.xes",
+    "xes_filename": "renting_log_high.xes",
+    "textual_model_path": "benchmark_runs/run_20251222_004259/renting_log_high_textual_model.txt",
+    "textual_model_filename": "renting_log_high_textual_model.txt",
+    "adapter_llm": "openai:gpt-5",
+    "validator_llm": "gpt-5-mini",
+    "k_valid": 100,
+    "k_invalid": 100,
+    "audiences_tested": [
+      "executives",
+      "children"
+    ],
+    "skip_adaptation": false,
+    "adapted_models_dir": null,
+    "skip_baseline": false,
+    "baseline_last": true,
+    "output_dir": "/home/marco/Escritorio/austral/all-things-agents/pm-samples/downstream/adapters_benchmark_results/renting_log_high_textual_model_20260129_002651"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "start_time": "2026-05-03T21:36:47.603235",
+    "end_time": null,
+    "config": {
+      "llm_model": "openai:gpt-5-mini",
+      "validator_model": "gpt-5-mini",
+      "k_valid": 100,
+      "k_invalid_per_type": 50,
+      "perturbation_types": [
+        "A1_random_swap",
+        "A3_dependency_aware_swap",
+        "B1_insert_out_of_alphabet",
+        "B2_insert_misplaced_existing",
+        "B3_insert_duplicate_unique",
+        "C1_delete_mandatory",
+        "C2_delete_start_or_end",
+        "D1_cross_role",
+        "E1_two_swaps",
+        "E2_swap_and_insert"
+      ],
+      "seed": 42,
+      "datasets": [
+        "benchmark/hiring/hiring_log_high.xes"
+      ]
+    },
+    "run_folder": "HARDER/run_20260503_213647",
+    "status": "running"
+  },
+  "hiring_log_high": {
+    "status": "in_progress",
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "traces": {
+      "valid_traces_path": "HARDER/run_20260503_213647/traces/hiring_log_high/valid_traces.pkl",
+      "invalid_folder": "HARDER/run_20260503_213647/traces/hiring_log_high/invalid_by_type",
+      "n_valid": 100,
+      "n_invalid_per_type": {
+        "A1_random_swap": 50,
+        "A3_dependency_aware_swap": 50,
+        "B1_insert_out_of_alphabet": 50,
+        "B2_insert_misplaced_existing": 50,
+        "B3_insert_duplicate_unique": 50,
+        "C1_delete_mandatory": 50,
+        "C2_delete_start_or_end": 50,
+        "D1_cross_role": 50,
+        "E1_two_swaps": 50,
+        "E2_swap_and_insert": 50
+      }
+    },
+    "textual_model_path": "HARDER/run_20260503_213647/hiring_log_high_textual_model.txt",
+    "mining_config": {
+      "representations": [
+        "petri_net_inductive",
+        "dfg",
+        "abstract_variants"
+      ],
+      "model_name": "openai:gpt-5-mini",
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt",
+      "model_folder": "HARDER/run_20260503_213647/model_generation/hiring_log_high"
+    }
+  }
+}

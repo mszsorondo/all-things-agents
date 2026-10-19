@@ -1,0 +1,229 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- This process covers the end-to-end lifecycle of a residential tenancy case as observed in the event log, from initial interest (Apply for Viewing Appointment) through pre-lease qualification (appointment, viewing, paperwork, screening), contracting and move-in, recurring rent payment cycles with late-payment handling, and termination outcomes (Tenant Cancels Appartment or Evict Tenant) or rejection before contracting (Reject Prospective Tenant).
+- The model is declarative in origin (Log Skeleton) but here is described procedurally to make ordering, decisions, loops, and end states explicit while preserving observed behaviors and constraints.
+
+Key stakeholders and roles involved
+- The source model does not specify roles or actors. Activities are therefore described without role assignments.
+
+Detailed step-by-step process flow
+
+Start conditions and trigger
+- Start: Apply for Viewing Appointment (exactly once per case; Activity Occurrences = 1).
+- Implicit case scope: A single case spans pre-lease, active tenancy, and termination in the observed data.
+
+Pre-lease preparation and property viewing
+1) Set Appointment (optional in the log overall; 0 or 1). Observed constraints:
+   - Always Before: If View The Property occurs, then Set Appointment occurred earlier.
+   - Directly-Follows: Set Appointment → View The Property (immediate next step when both occur).
+2) View The Property (0 or 1). Observed constraints:
+   - Always After: Set Appointment → View The Property (immediate).
+   - Always Before: If Hand In The Paperwork occurs, View The Property has already occurred.
+
+Paperwork intake and screening sequence (strict immediate chain when paperwork is present)
+3) Hand In The Paperwork (0 or 1). Observed constraints:
+   - Always After: Hand In The Paperwork → Check Paperwork and → Screen Prospective Tenant (both must happen later if hand-in occurs).
+4) Check Paperwork (0 or 1; occurs iff Hand In The Paperwork occurs). Observed constraints:
+   - Directly-Follows: Hand In The Paperwork → Check Paperwork (immediate).
+   - Always After: Check Paperwork → Screen Prospective Tenant (later in the trace; in observed traces, immediately next).
+5) Screen Prospective Tenant (0 or 1; occurs iff Hand In The Paperwork occurs). Observed constraints:
+   - Directly-Follows: Check Paperwork → Screen Prospective Tenant (immediate).
+   - Always Before: If Sign Contract occurs, screening has already occurred.
+6) Extensive Screening (0 or 1; conditional). Observed constraints:
+   - Always Before: If Extensive Screening occurs, Check Paperwork (and other pre-lease steps) have happened earlier.
+   - Placement: It occurs only in cases that have completed paperwork/check; it is an additional step within or following the screening phase. The log indicates it co-occurs with the screening chain in some cases, not in all.
+
+Decision point: Qualification outcome after screening
+- Exclusive outcomes (Never Together constraints enforce exclusivity):
+  A) Reject Prospective Tenant (0 or 1). Observed constraints:
+     - Never Together with Sign Contract, Move In, Pay Rent, Miss Rent Payment, Issue Warning, Accept Late Payment, Evict Tenant, and Tenant Cancels Appartment. Therefore, a rejection case ends the pre-lease path with no contracting or tenancy events.
+  B) Proceed to contract:
+     - Sign Contract (0 or 1). Observed constraints:
+       - Always Before Move In; also Always Before several pre-lease steps (i.e., contract does not occur without the pre-lease path).
+       - Often immediately followed by Move In (Directly-Follows: Sign Contract → Move In).
+
+Contract execution and occupancy
+7) Move In (0 or 1).
+   - Always Before: Requires Apply for Viewing Appointment, Set Appointment, View The Property, Hand In The Paperwork, Check Paperwork, Screen Prospective Tenant, and Sign Contract to have occurred.
+   - Directly-Follows: In observed traces, Move In immediately follows Sign Contract.
+
+Recurring rent cycle during active tenancy
+8) Pay Rent (0, 2, 3, ..., up to 63+ occurrences per case as observed).
+   - Represents periodic rent payments across the tenancy lifespan.
+9) Miss Rent Payment (0–6 times per case observed), with immediate follow-up:
+   - Directly-Follows and Equivalence: Miss Rent Payment ↔ Issue Warning (1:1; every miss is immediately followed by Issue Warning).
+10) Issue Warning (0–6 times per case observed).
+11) Accept Late Payment (0–6 times per case observed).
+   - May occur after a warning in the same general timeframe; the log allows multiple acceptances across a tenancy.
+
+Termination outcomes after move-in (exclusive)
+- Exactly one termination is observed per completed tenancy case in the log window; they do not co-exist:
+  A) Tenant Cancels Appartment (0 or 1)
+     - Always Before constraints imply it occurs only after Move In and after at least one Pay Rent (i.e., voluntary termination by the tenant during occupancy, not a pre-lease withdrawal).
+     - Never Together with Evict Tenant.
+  B) Evict Tenant (0 or 1)
+     - Always Before constraints: Evict Tenant occurs only in cases that previously completed the full pre-lease path and had Miss Rent Payment and Issue Warning earlier in the tenancy.
+     - Never Together with Tenant Cancels Appartment and with Reject Prospective Tenant.
+
+Synchronization points and control logic
+- Strict immediate sequence in the paperwork/screening chain: Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant.
+- Strict immediate sequence around move-in: Sign Contract → Move In.
+- Strict immediate sequence for delinquency handling: Miss Rent Payment → Issue Warning.
+- Optional branch for Extensive Screening after paperwork check (occurs only when prior checks are in place).
+- Exclusive gateway at qualification: Reject Prospective Tenant OR continue to Sign Contract (mutually exclusive).
+- Exclusive gateway at tenancy termination: Tenant Cancels Appartment OR Evict Tenant (mutually exclusive).
+
+Exception handling and error paths
+- Late-payment handling is the principal exception path:
+  - Each Miss Rent Payment triggers an Issue Warning immediately.
+  - Accept Late Payment may occur up to several times across the case; the log does not impose a fixed cap across the entire tenancy (up to 6 observed).
+  - Evict Tenant occurs only in cases with prior misses and warnings; it is not combined with voluntary cancellation.
+- No explicit pre-move-in withdrawal by the tenant is present in the log; cancellations are observed only post move-in.
+
+Rework loops and escalation procedures
+- Repeating loop: [Pay Rent] repeats across the tenancy.
+- Exception loop: [Miss Rent Payment → Issue Warning] may repeat, optionally followed by [Accept Late Payment]; this can recur multiple times across a case (0–6 observed). After repeated exceptions, some cases culminate in Evict Tenant.
+- There is no explicit rework loop in pre-lease screening beyond the optional Extensive Screening step.
+
+End conditions and outcomes
+- End states observed:
+  1) Rejected application (Reject Prospective Tenant).
+  2) Active tenancy continuing (implicit if neither Tenant Cancels Appartment nor Evict Tenant occurs within the log window).
+  3) Voluntary termination by tenant (Tenant Cancels Appartment) after occupancy and at least one rent payment.
+  4) Involuntary termination (Evict Tenant) following missed payments and warnings.
+
+Process metrics and performance characteristics (derived from constraints)
+- Activity cardinalities per case:
+  - Apply for Viewing Appointment: exactly 1.
+  - Set Appointment, View The Property, Hand In The Paperwork, Check Paperwork, Screen Prospective Tenant, Extensive Screening, Sign Contract, Move In: each 0 or 1 (present in accepted/contracting cases; absent in rejected/abandoned cases).
+  - Pay Rent: variable, often many occurrences (0 to 63+).
+  - Miss Rent Payment, Issue Warning, Accept Late Payment: each 0–6.
+  - Tenant Cancels Appartment, Reject Prospective Tenant, Evict Tenant: each 0 or 1.
+- Immediate follow relations with high confidence:
+  - Set Appointment → View The Property
+  - Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant
+  - Sign Contract → Move In
+  - Miss Rent Payment → Issue Warning
+- Observed exclusivities:
+  - Reject Prospective Tenant never co-exists with contracting, move-in, rent, late-payment handling, or eviction events.
+  - Tenant Cancels Appartment never co-exists with Evict Tenant (and vice versa).
+- Sequencing dependencies:
+  - Move In requires completion of the pre-lease chain including screening and contract signing.
+  - Evict Tenant requires prior tenancy with missed payments and warnings.
+  - Tenant Cancels Appartment occurs only after move-in and at least one rent payment.
+
+Key challenges and pain points
+- Sequential bottlenecks: The enforced immediate chain Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant prevents any overlap and can extend lead time if any step queues.
+- Contract-to-occupancy handoff: Sign Contract → Move In happens immediately in the observed traces, leaving no operational buffer for preparation and increasing failure risk if issues surface post-signing.
+- Late-payment policy leniency/variability: Up to six occurrences each of Miss Rent Payment, Issue Warning, and Accept Late Payment per case are observed without an explicit escalation rule encoded in the behavior (beyond eventual eviction in some cases). This can prolong delinquency resolution and increase losses.
+- Case scope spans entire tenancy: The log treats application, active tenancy, and termination as one case. Equivalence across far-apart life-cycle phases suggests that the log window often captures a full tenancy ending in either Tenant Cancels Appartment or Evict Tenant, but not both. This complicates lead-time analysis and can obscure distinctions between acquisition and in-life management.
+- Limited exception coverage: No pre-move-in tenant withdrawal is observed; therefore, operational handling of pre-lease cancellations (if they exist in reality) is not represented.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- This optimized model separates and clarifies the phases implicit in the log, enforces clean decision gateways, preserves all observed activities and legal exclusivities, and introduces governance improvements for sequencing and escalation without inventing new activities.
+- It aims to reduce lead time to decision, create a safer handoff from contract to occupancy, and make delinquency management predictable while preserving the same activity set.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source; the IDEAL model keeps activities role-agnostic while clarifying control flow and governance.
+
+Detailed step-by-step process flow
+
+Start conditions and trigger
+- Start: Apply for Viewing Appointment (exactly once per case).
+
+Phase 1 — Pre-lease engagement and evaluation
+1) Set Appointment
+   - Enforce as required when a viewing is planned; immediate next planned action is the viewing.
+2) View The Property
+   - Must follow Set Appointment (retain Directly-Follows).
+3) Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant
+   - Preserve the strict immediate sequence to maintain data integrity (as observed).
+   - Extensive Screening (conditional) may occur only after Check Paperwork and within the screening phase when risk indicators demand it; retain as an optional branch without parallelizing the core immediate checks.
+4) Decision gateway: Qualification outcome (exclusive)
+   - Reject Prospective Tenant (end state for the acquisition phase), or
+   - Proceed to contracting.
+
+Phase 2 — Contracting and occupancy onboarding
+5) Sign Contract
+   - Only after successful screening (and any Extensive Screening if performed).
+6) Move In
+   - Do not require immediate Move In after Sign Contract; allow scheduling flexibility while keeping the same two activities in sequence. This reduces operational risk caused by the immediate handoff observed in AS-IS.
+   - Control: Move In cannot occur before Sign Contract (retain Always Before).
+
+Phase 3 — In-life tenancy management (recurring cycle)
+7) Pay Rent (repeating loop)
+   - Continues for the duration of the tenancy.
+8) Exception handling sub-loop for delinquency (governed, repeatable)
+   - On Miss Rent Payment → Issue Warning (retain immediate follow and 1:1 relation).
+   - After a warning, either Accept Late Payment within the allowed grace or increment the delinquency counter towards escalation.
+   - Governance improvement: Define and enforce a clear, configurable threshold (e.g., a maximum number of Miss Rent Payment/Issue Warning cycles) after which the case must escalate if no sustained remediation occurs. The activity set stays the same; only the decision rule becomes explicit.
+
+Phase 4 — Termination (exclusive outcomes after move-in)
+9) Exclusive termination gateway
+   - Tenant Cancels Appartment
+     - Allowed only after Move In and after at least one Pay Rent (retains observed Always Before).
+     - Ends the case.
+   - Evict Tenant
+     - Allowed only after delinquency path with prior Miss Rent Payment and Issue Warning.
+     - Mutually exclusive with Tenant Cancels Appartment.
+   - If neither occurs within the observation window, the tenancy remains Active (implicit ongoing state).
+
+Parallel activities and synchronization points
+- Keep the observed immediate sequences intact where they express mandated order:
+  - Set Appointment → View The Property
+  - Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant
+  - Sign Contract → Move In (sequence preserved, immediate execution not mandated)
+  - Miss Rent Payment → Issue Warning
+- Extensive Screening remains an optional, conditional branch within the screening phase, executed only after Check Paperwork.
+
+Exception handling and error paths
+- Delinquency loop:
+  - Each Miss Rent Payment triggers an immediate Issue Warning (mandatory).
+  - Accept Late Payment may close the delinquency instance and return to Pay Rent.
+  - If the configurable escalation threshold is reached without sustained remediation, proceed to Evict Tenant.
+- No change to exclusivities:
+  - Reject Prospective Tenant remains mutually exclusive with signing/move-in and tenancy events.
+  - Tenant Cancels Appartment remains mutually exclusive with Evict Tenant.
+
+Rework loops and escalation procedures
+- Primary loop: Pay Rent repeats for the tenancy duration.
+- Exception sub-loop: [Miss Rent Payment → Issue Warning] repeats until either Accept Late Payment occurs or escalation threshold is reached.
+- Escalation: After threshold breaches, Evict Tenant ends the case (exclusive with Tenant Cancels Appartment).
+
+End conditions and outcomes
+- Rejected application (early end).
+- Active ongoing tenancy (no termination observed yet).
+- Voluntary termination after move-in (Tenant Cancels Appartment).
+- Involuntary termination after escalation (Evict Tenant).
+
+Process metrics and performance characteristics (targets and controls)
+- Lead time targets:
+  - Apply for Viewing Appointment → Decision (Reject or Sign Contract): minimize by preserving immediate paperwork/screening chain and eliminating unnecessary gaps.
+- Quality gates:
+  - No Move In before Sign Contract and before completing screening (enforced).
+- Operational buffer:
+  - Remove the requirement for immediate Move In after signing; schedule Move In deliberately to reduce failure risk.
+- Delinquency KPIs:
+  - Average number of Miss Rent Payment per tenancy before resolution or escalation.
+  - Warning-to-resolution rate (Issue Warning followed by Accept Late Payment).
+  - Escalation threshold adherence (percent of cases evicted only after the defined number of warning cycles).
+- Exclusivity compliance:
+  - Zero cases containing both Tenant Cancels Appartment and Evict Tenant; zero cases where Reject Prospective Tenant co-exists with post-contract events.
+
+Improvements made compared to AS-IS
+- Clarified phase boundaries: Acquisition (through decision), Contracting/Onboarding, In-life tenancy, and Termination. This removes ambiguity when analyzing performance across very different lifecycle stages.
+- Safer contract-to-occupancy handoff: Maintain Sign Contract → Move In ordering but remove the implicit immediacy; allow controlled scheduling while keeping the same activity set.
+- Predictable delinquency management: Keep the observed 1:1 Miss Rent Payment → Issue Warning and optional Accept Late Payment, but introduce a clear, configurable escalation rule so repeated exceptions do not linger indefinitely.
+- Decision gateways made explicit and exclusive:
+  - After screening: exactly one of Reject Prospective Tenant or Sign Contract.
+  - At termination: exactly one of Tenant Cancels Appartment or Evict Tenant.
+- Preservation of observed constraints:
+  - Immediate sequences and Always Before dependencies are retained where they express mandatory order.
+  - Never Together constraints are enforced as exclusive gateways.
+")

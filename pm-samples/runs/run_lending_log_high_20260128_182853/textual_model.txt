@@ -1,0 +1,117 @@
+Title: AS-IS Process Model
+
+Process overview and purpose
+- Purpose: This process describes the observed loan intake and approval variant discovered by the inductive miner Petri net. It covers the customer appointment request and scheduling, application submission, borrower verification, optional/conditional collateral visits, optional co-signer request, submission to underwriting, signing, and multiple denial/skip paths. The model captures all observed behaviors including skipped examinations, concurrent/parallel branches (co-signer request and collateral visit), looping visits to assess collateral, multiple skip transitions (representing optional or omitted activities), and several terminal denial states.
+
+Key stakeholders and roles involved (as implied by activity names)
+- Applicant / Borrower (implied by activities such as Request Appointment, Hand In Credit Application)
+- Branch/front-office staff (implied by Request Appointment, Set Appointment, Hand In Credit Application)
+- Field assessor (implied by Make Visit to Assess Colatteral)
+- Loan officer / processing staff (implied by Verify Borrowers Information, Request Co-Signer On Loan)
+- Underwriter (explicit: Submit File to Underwriter)
+- Signatory (implied by Sign Loan Agreement)
+- System places and invisible transitions represent routing, skips and synchronization points in the discovered model
+
+Detailed step-by-step process flow (AS-IS)
+Start conditions and trigger
+1. Start: The process begins when an applicant triggers "Request Appointment" (source -> Request Appointment). This is the explicit start event observed.
+
+Main sequence and branching
+2. Appointment handling
+   - Request Appointment completes and produces a token on a place representing the appointment stage (p_3).
+   - From p_3 there are two observed outcomes:
+     a) "Set Appointment" (normal path) -> next place p_4
+     b) "Appointment Denied" -> terminal sink (observed immediate denial outcome)
+
+3. Application submission
+   - If Set Appointment occurs, the applicant or branch staff performs "Hand In Credit Appliaction" (p_4 -> p_5).
+   - After hand-in, the process moves to "Verify Borrowers Information" (p_5 -> p_6).
+
+4. Verification outcomes (major decision)
+   - From p_6 (after verification) there are three observed outcomes:
+     a) "Application Rejected" -> terminal sink (immediate rejection)
+     b) An internal split (tauSplit_1) producing two concurrent tokens (places p_7 and p_9) — this represents parallel/independent work streams that are executed concurrently when verification does not produce an immediate rejection.
+     c) (No other visible transition from p_6)
+
+5. Branch A (p_7) — quick denial or bypass
+   - From p_7 the observed transitions are:
+     a) "Loan Denied" -> moves token to p_8, which then eventually flows to a synchronization (tauJoin_2) and to the final sink. This is a denial path after verification and an immediate terminal outcome.
+     b) "skip_3" (invisible skip) -> p_8, same place as Loan Denied path; in practice skip_3 represents cases where an expected activity on this branch is omitted but the case proceeds to the join/termination.
+   - Net effect: branch A often results in denial/termination or an omitted subtask but still contributes to the final join/termination.
+
+6. Branch B (p_9) — examination, underwriting preparation and conditional checks
+   - From p_9 three behaviors were observed (non-exclusive choices plus a sub-split):
+     a) "skipped_examination" (visible transition) -> p_11 — cases where an expected examination or check is omitted but the case moves directly into the pool that leads to signing (p_11).
+     b) "skip_4" (invisible skip) -> p_12 — cases that shortcut to the submit-to-underwriter flow.
+     c) An internal parallel split (tauSplit_5) producing p_13 and p_15 — this indicates the model observed two activities executed in parallel: possible co-signer assessment and collateral assessment (or their omissions).
+
+7. Parallel sub-branch: Co-signer decision (p_13)
+   - From p_13 there are two observed outcomes:
+     a) "Request Co-Signer On Loan" -> p_14
+     b) "skip_7" (invisible) -> p_14 (or directly to join) — representing that in many traces the co-signer activity is simply not executed.
+   - p_14 flows to a join (tauJoin_6) once the collateral assessment side also provides a token.
+
+8. Parallel sub-branch: Collateral assessment and loops (p_15 -> p_17 -> p_18)
+   - From p_15 the model shows three behaviors:
+     a) "init_loop_9" -> p_17: enters a loop that represents performing a field "Make Visit to Assess Colatteral" (p_17 -> Make Visit -> p_18). After a visit, p_18 can choose to either re-enter the loop (skip_11 -> p_17), or move forward (skip_12 -> p_16). This encodes observed repeated visits to assess collateral (potential rework/iterations). The loop can iterate zero or more times depending on the path taken.
+     b) "skip_8" (invisible) -> p_16 — collateral assessment omitted (skip) and the case proceeds without visits.
+   - p_16 represents the collateral branch ready to join; p_14 (co-signer branch) and p_16 join via tauJoin_6 producing p_12.
+
+9. Submission to Underwriter and signing
+   - p_12 flows to "Submit File to Underwriter" -> p_11.
+   - p_11 aggregates tokens from either Submit File or skipped_examination. From p_11 there are two observed outcomes:
+     a) "Sign Loan Agreement" -> p_10 -> (tauJoin_2) -> sink (final successful completion)
+     b) "skip_13" (invisible) -> p_10 -> (tauJoin_2) -> sink (cases where signing is omitted in the trace but the process reaches completion)
+
+10. Final joins and end states
+   - tauJoin_6 merges the collateral/co-signer sub-branches into p_12 for submission.
+   - tauJoin_2 merges the final signing path (p_10) and denial path (p_8) into the sink (final marking). As a result, the process ends in either a successful sign-and-complete outcome, or in a variety of denial/rejection outcomes observed at several points (Appointment Denied, Application Rejected, Loan Denied).
+
+Decision points with criteria and possible outcomes (as implied by the model)
+- Appointment decision: Request Appointment -> either Set Appointment (proceed) or Appointment Denied (immediate termination).
+- Verification outcome: Verify Borrowers Information -> either Application Rejected (terminate), or proceed to parallel verification/assessments (tauSplit_1).
+- Parallel checks after verification (concurrency): one branch may immediately reject (Loan Denied) or be skipped; the other branch handles examination/underwriter preparation and may split further into co-signer request and collateral visits.
+- Collateral assessment: may require multiple "Make Visit to Assess Colatteral" iterations (loop), or be skipped entirely according to observed traces.
+- Co-signer request: optionally requested if necessary, or skipped.
+- Underwriting: submit file or occasionally skip submission step (skip_4); once in submit/skipped_examination pool, either sign or skip signing (signing omitted in some traces) leads to completion.
+
+Parallel activities and synchronization points
+- tauSplit_1: creates two concurrent threads after verification (p_7 and p_9). Both threads must complete or reach the join points that funnel into terminal states.
+- tauSplit_5: within branch B, creates parallel co-signer and collateral assessment threads (p_13 and p_15). These synchronize via tauJoin_6 -> p_12 before submission to underwriting.
+- tauJoin_6: synchronizes co-signer and collateral branches before Submit File to Underwriter.
+- tauJoin_2: final synchronization that funnels successful signing and some denial paths into the final sink.
+
+Exception handling, error paths and rework loops
+- Multiple observed denial paths: Appointment Denied, Application Rejected, Loan Denied; these are terminal exceptions.
+- The model contains multiple "skip_*" invisible transitions indicating many optional/missing activities in traces; skipping can cause cases to bypass expected checks (risk and compliance issues).
+- The collateral assessment loop (init_loop_9 -> Make Visit -> p_18 -> skip_11 back to p_17) is an explicit rework loop allowing repeated field visits.
+- Skipped examination (skipped_examination) moves the case forward without the examination, often directly to the signing pool.
+
+End conditions and outcomes
+- Successful completion: Sign Loan Agreement -> token flows to p_10 -> tauJoin_2 -> sink. (Sign may be observed or omitted (skip_13), but the model reaches the final sink.)
+- Denied/rejected outcomes: Appointment Denied, Application Rejected, Loan Denied (all observed reaching sink through different paths).
+
+Process metrics and performance characteristics (observed / recommended from the model)
+- Observed behaviors to measure (metrics to collect):
+  - Frequency of appointment denials (early termination rate)
+  - Application rejection rate at verification stage
+  - Loan denial rate post-verification
+  - Percentage of traces where examination or collateral visits are skipped (skip_* and skipped_examination occurrences)
+  - Average number of collateral assessment visits per case (loop iterations on init_loop_9)
+  - Average time from Request Appointment to Sign Loan Agreement (end-to-end cycle time) – not available in model but recommended to capture
+  - Underwriter queue time (time spent between Submit File to Underwriter and Sign Loan Agreement)
+- Performance characteristics implied by structure:
+  - High variability due to parallel branches and optional skips
+  - Potentially unbounded loop for collateral visits (observed rework), increasing cycle time and cost
+  - Multiple early-exit denial points reduce throughput of successful cases
+
+Key challenges and pain points (AS-IS)
+- Inconsistent execution: many skip_* invisible transitions and a visible "skipped_examination" event indicate that required checks are frequently omitted in practice.
+- Uncontrolled rework: repeated collateral visits (loop) are observable and can be repeated multiple times, driving cost and delay.
+- Concurrency complexity: parallel branches (co-signer vs collateral assessment) cause synchronization complexity and coordination overhead.
+- Multiple denial points spread across the flow make root-cause analysis harder (rejections can occur early or late).
+- Potential compliance risk: skipping examinations or submission steps increases the risk of loans being approved without proper checks.
+- Poorly enforced sequencing: submit-to-underwriter sometimes skipped (skip_4) or signing skipped (skip_13), creating traces that do not follow a consistent, auditable lifecycle.
+
+Summary (AS-IS)
+- The discovered model shows a flexible but fragmented process with optional and skipped steps, parallel decision paths, and observed loops for collateral visits. The process yields successful signings but also many denial/rejection terminations; it shows potential compliance and efficiency issues (skipped checks, rework, and synchronization overhead). The model should be tightened to ensure required checks always occur, loops are bounded, and skip paths are eliminated or justified.

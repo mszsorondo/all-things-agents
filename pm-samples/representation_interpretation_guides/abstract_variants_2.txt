@@ -1,0 +1,136 @@
+# === ABSTRACT VARIANTS INTERPRETATION GUIDE (SEMANTIC) ===
+
+## WHAT THIS REPRESENTATION DESCRIBES
+
+The text lists the **main execution paths (process variants)** observed in a process log.
+Each variant corresponds to one distinct ordered sequence of activities followed by some cases.
+
+Only the most frequent variants are shown.
+
+---
+
+## OUTPUT FORM (CONCEPTUAL)
+
+```
+Activity A -> Activity B -> Activity C ( frequency = 32%  performance = 319390.265 )
+Activity A -> Activity D -> Activity E ( frequency = 21%  performance = 146345.624 )
+...
+```
+
+---
+
+## HOW TO READ EACH LINE
+
+Each line has the form:
+
+```
+Activity1 -> Activity2 -> ... -> ActivityN ( frequency = F%  performance = P )
+```
+
+Meaning:
+
+### 1. Activity sequence
+
+`Activity1 -> Activity2 -> ... -> ActivityN`
+= the exact order of activities executed in that variant.
+
+This is one distinct way the process is actually performed.
+
+---
+
+### 2. Frequency (relative)
+
+`frequency = F%`
+= the **proportion of all cases** that follow this exact activity sequence.
+
+Interpret as:
+
+> “Approximately F% of all process instances behave like this.”
+
+---
+
+### 3. Performance
+
+`performance = P`
+= the **typical duration of cases** that follow this variant.
+
+Interpret as:
+
+> “Cases that follow this path take about P time units from start to end.”
+
+Higher value = slower path
+Lower value = faster path
+
+(Units depend on the timestamps in the log.)
+
+---
+
+## GLOBAL MEANING
+
+Together, each line expresses:
+
+> **One way the process runs**,
+> **how often it happens**,
+> **and how long it typically takes.**
+
+So conceptually, each variant is:
+
+```
+(Execution path, Share of cases, Typical case duration)
+```
+
+---
+
+## HOW TO INTERPRET THE LIST AS A WHOLE
+
+### CONTROL-FLOW
+
+* Top variants = dominant process behavior
+* Shared prefixes = where the process diverges
+* Rare variants = exceptional or alternative flows
+
+### FREQUENCY
+
+* High frequency → core process logic
+* Medium frequency → common alternatives
+* Low frequency → edge cases or deviations
+
+### PERFORMANCE
+
+* High performance value → slow variant
+* Low performance value → fast variant
+* High frequency + high performance → strongest optimization candidate
+
+---
+
+## WHAT THIS REPRESENTATION IS FOR
+
+This representation is meant for:
+
+• Understanding how the process is really executed
+• Comparing different execution paths
+• Identifying slow or dominant paths
+• Explaining process behavior in natural language
+• Feeding structured process behavior into an LLM
+
+---
+
+## WHAT THIS REPRESENTATION IS NOT
+
+It is not:
+
+• A full list of all possible variants
+• A formal process model
+• A structured dataset
+• A resource or organizational analysis
+• A causal explanation
+
+It is a **behavioral summary** of the process.
+
+---
+
+## CORE SUMMARY
+
+Each line means:
+
+> “About F% of cases follow this path, and those cases typically take P time units to complete.”

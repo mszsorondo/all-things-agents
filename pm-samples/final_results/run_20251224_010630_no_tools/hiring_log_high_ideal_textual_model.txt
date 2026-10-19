@@ -1,0 +1,167 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, governed hiring/recruitment process that reliably moves candidates from application to final outcome (Make Job Offer or Application Rejected) with reduced cycle time, fewer data inconsistencies, and clearer decision criteria. The IDEAL model preserves all observed activities from the AS‑IS model but enforces correct sequencing, eliminates unnecessary repetitions and anomalous state changes, and optimizes parallel execution of independent technical interviews.
+
+Key stakeholders and roles involved
+- The source models did not assign named roles. This IDEAL description therefore organizes responsibilities by logical function without inventing new named actors:
+  - Recruiter/Screening Function: responsible for initial telephone screening and coordination.
+  - Screening/Compliance Function: responsible for Screening Interview and Background Check(s).
+  - Technical Interview Panel: responsible for Coding Interview and technical interviews (ML, Frontend, Backend).
+  - Hiring Decision Function: responsible for Behavioral Interview and final decision (Make Job Offer or Application Rejected).
+- Note: These functional responsibilities map to existing activities observed in the AS‑IS model; they are described here as logical responsibilities for clarity, not as newly invented activities.
+
+Start conditions and trigger
+- Start event: Hand In Job Application.
+  - Every case must begin with this observable event. No other activity is permitted to start a case.
+
+IDEAL step-by-step process flow (optimized sequence)
+
+1. Initial verification and gating
+- Activity: Telephonic Screening (mandatory)
+  - Trigger: Immediately after Hand In Job Application.
+  - Purpose: Quick verification of minimum eligibility, role interest, availability and basic fit.
+  - Decision outcomes:
+    - Fail (does not meet minimum criteria) → Application Rejected (terminal).
+    - Pass (meets criteria) → progress to Step 2.
+  - Performance target: complete within a short SLA (e.g., < 3 business days from Hand In Job Application).
+
+2. Concurrent but controlled screening and compliance checks (parallelized)
+- Activities:
+  - Screening Interview (structured, competency-focused)
+  - Background Check (standard checks: identity, employment history, education)
+- Execution policy:
+  - Both Screening Interview and Background Check are required for candidates who pass Telephonic Screening and are intended to proceed to technical evaluation.
+  - These two activities may be executed in parallel to reduce overall lead time; the workflow system must ensure both are completed (both must produce a documented “pass” or “flag” result) before the candidate moves to Step 3.
+- Decision points after these activities:
+  - If either Screening Interview or Background Check yields a blocking result (disqualifying information) → Application Rejected (terminal).
+  - If either produces a non-blocking but concerning finding, the case is escalated to Extensive Background Check (Step 2A) per explicit criteria (see criteria below).
+  - Only candidates with both Screening Interview completed and Background Check completed without blocking issues proceed to Coding Interview.
+
+2A. Extensive Background Check (escalation, conditional)
+- Activity: Extensive Background Check (optional, conditional)
+  - Trigger: Escalate only when explicit triggers are present:
+    - Background Check returns a flagged result (e.g., discrepancy, legal or security concern);
+    - Screening Interview uncovers concerns requiring verification;
+    - Role requires additional vetting by policy (high sensitivity role).
+  - Outcomes:
+    - Pass after escalation → return to Step 2 results; if Screening Interview and Background Check are otherwise OK, proceed to Step 3.
+    - Fail (disqualifying) → Application Rejected (terminal).
+- Execution policy: This activity is applied only when triggers exist; it is not a routine mandatory step for all candidates.
+
+3. Technical evaluation (ordered, optimized, parallelizable)
+- Activity: Coding Interview (mandatory for technical roles that reached this stage)
+  - Precondition: Both Screening Interview and Background Check completed without blocking outcomes (Extensive Background Check must have cleared if it was triggered).
+  - Purpose: Assess core coding skills; must be completed before proceeding to role‑specific technical interviews.
+  - Outcome: Pass/Fail or Pass with recommendations.
+  - Fail outcome → Application Rejected (terminal) or optionally a documented remediation plan that must re-trigger a fresh evaluation (see exception rules).
+- Activity cluster: Role‑specific technical interviews (ML Interview, Frontend Interview, Backend Interview)
+  - Policy:
+    - The set of technical interviews to be conducted is defined per job requisition (i.e., only required interviews for the role are scheduled). The IDEAL model does not mandate all three interviews for every candidate unless the role requires them.
+    - Required technical interviews are scheduled concurrently where feasible to reduce candidate and panel wait time.
+    - All required technical interviews must be completed (i.e., the hiring decision waits for their completion).
+  - Synchronization:
+    - The process uses a synchronization point (join) after the required technical interviews: the Hiring Decision Function receives all technical results together for a unified decision.
+  - Rework elimination:
+    - No ad-hoc back-and-forth between ML, Frontend, and Backend is allowed once technical interviews are completed; any identified need for follow-up must be recorded and scheduled as a single, documented follow-up step (not repeated loops).
+  - Outcome:
+    - If technical evaluation fails (per role requirements), Application Rejected (terminal).
+    - If pass, proceed to Behavioral Interview.
+
+4. Behavioral Interview (final assessment)
+- Activity: Behavioral Interview (single event)
+  - Purpose: Assess culture fit, soft skills, and finalize hiring recommendation.
+  - Execution policy:
+    - Conducted once per candidate at this stage (no repeated Behavioral Interview loops).
+    - If behavioral concerns arise that require reconsideration of technical findings, the Hiring Decision Function may request a single targeted follow-up (documented) — such follow-up must be limited in scope and count (policy: maximum one follow-up).
+  - Outcomes:
+    - Positive recommendation → proceed to Make Job Offer.
+    - Negative recommendation → Application Rejected.
+
+5. Finalization
+- Activity: Make Job Offer (single, finalization step)
+  - Policy:
+    - Only one documented Make Job Offer event is permitted per case. The system prevents duplicate or repeated offer-events for the same candidate record.
+    - Make Job Offer is final for a successful candidate; the case is closed after offer creation.
+  - Special handling:
+    - If an offer is declined by the candidate externally, the process records an outcome but does not allow the same case to re-enter interview stages — a new application cycle is required.
+
+6. Application Rejected (terminal outcome)
+- Policy:
+  - Application Rejected is a terminal event. Once a candidate is rejected, no further hiring activities are recorded on the same case.
+  - Reconsideration policy: any reconsideration must be handled as a fresh application or a controlled HR re-open action that creates a new case (not as further events appended to the rejected case). This prevents the AS‑IS anomaly where Rejected -> further interviews -> Offer occurred in the same case.
+
+Decision criteria and rules (explicit)
+- Telephonic Screening → Pass/Fail based on defined screening checklist (eligibility, minimal skill set, availability).
+- Background Check → Pass/Flag/Fail. Fail = disqualify. Flag = triggers Extensive Background Check.
+- Screening Interview → Pass/Flag/Fail. Flag = triggers Extensive Background Check or targeted verification.
+- Extensive Background Check → used only for flagged cases; default path avoids it to reduce unnecessary delay.
+- Coding Interview → Pass/Fail based on objective scoring rubric aligned to role.
+- Technical Interviews (ML/Frontend/Backend) → each evaluated against role-specific competency matrix; required interviews determined by job profile.
+- Behavioral Interview → Pass/Fail for cultural/soft-skill fit; used as final gating input.
+- Final decision combines technical and behavioral evaluations; a candidate must pass both to receive Make Job Offer.
+
+Parallel activities and synchronization points
+- Screening Interview and Background Check: allowed to run in parallel immediately after Telephonic Screening, but both must complete before Coding Interview.
+- Technical interviews (ML, Frontend, Backend): required subset for the role is scheduled in parallel where feasible; process synchronizes (join) results before Behavioral Interview and final decision.
+
+Streamlined exception handling
+- Escalation (Extensive Background Check): only for cases meeting defined triggers; documented decision and SLA applied.
+- Rework control:
+  - Disallow repeated Behavioral Interview and multiple Make Job Offer recordings.
+  - Any follow-up after a failed technical or behavioral assessment must be documented and limited to one targeted re-assessment; system enforces maximum one follow-up per stage.
+- Data-consistency enforcement:
+  - Prevent recording of further activities after Application Rejected in the same case.
+  - Prevent further offers after a single Make Job Offer event for the same case.
+
+End conditions and outcomes
+- Terminal outcomes:
+  - Application Rejected — recorded only once; terminal.
+  - Make Job Offer — single event; terminal.
+- Cases must be closed immediately after these terminal events and reconciled in the ATS (applicant tracking system) to ensure state consistency.
+
+Expected process metrics and performance improvements (targets and rationale)
+- Targets relative to AS‑IS behavior:
+  - Telephonic Screening lead time: target reduction of 50–70% (e.g., from observed average ~82,400 units to <25–40% of that), by enforcing SLAs and immediate scheduling.
+  - Overall lead time for standard candidates (Hand In -> Reject at early stages): significant reduction due to mandatory Telephonic Screening gate and enforced early rejection rules.
+  - Overall lead time for full-hire candidates (candidates that pass to technical and behavioral stages): target reduction of 40–60% relative to long AS‑IS traces (observed extreme lead times in long variants; reduction achieved by parallelizing independent checks and decoupling unnecessary escalations).
+  - Reduction in rework/duplicate events: target >90% reduction in repeated Behavioral Interview and duplicate Make Job Offer recordings by system enforcement.
+  - Reduction in anomalous state transitions (e.g., Application Rejected -> subsequent interviews -> Offer): target elimination (0% allowed).
+  - Fewer cases requiring Extensive Background Check (applied only on flagged triggers) — reduces unnecessary delay for the majority of candidates.
+- KPI examples to monitor:
+  - % cases ending at each stage (Telephonic pass/fail, Screening/Background pass/fail, technical pass/fail).
+  - Average cycle time Hand In -> Make Job Offer for successful hires.
+  - % of cases with rework events (should approach 0 in IDEAL).
+  - % of terminal Application Rejected cases that later have appended activity (should be 0).
+
+Key improvements made compared to the AS‑IS model
+- Enforced correct sequencing:
+  - Telephonic Screening is mandatory as the first gate; both Screening Interview and Background Check must be completed (either in parallel or sequentially but both required) before technical evaluation, preventing the inconsistent ordering seen in AS‑IS.
+- Reduced unnecessary variability:
+  - The technical interview cluster is controlled by role-specific requirements; only required interviews are scheduled and they are run in parallel when beneficial — this removes arbitrary interleavings and repeated back-and-forth that created delays in AS‑IS.
+- Eliminated anomalous state changes:
+  - Application Rejected is terminal; no further interviews or offers can be appended to the rejected case. Make Job Offer is permitted only once per case. This removes AS‑IS anomalies where rejects were followed by offers in the same trace.
+- Minimized rework and duplicate events:
+  - Behavioral Interview limited to a single round (with at most one targeted follow-up if necessary); Make Job Offer prevented from repeating. Self-loop behavior in AS‑IS is eliminated.
+- Targeted escalation:
+  - Extensive Background Check is applied only on explicit triggers, reducing unnecessary escalations and their associated delays.
+- Clear synchronization and decision points:
+  - The IDEAL model enforces joins after parallel activities so decisions are made on complete information, reducing ad-hoc or inconsistent decision-making.
+- Measurable SLAs and system-enforced constraints:
+  - The process should be implemented with system rules that enforce the allowed sequences and block invalid events, improving data quality and reporting reliability.
+
+Implementation considerations (practical steps)
+- Configure ATS/workflow system to:
+  - Enforce Telephonic Screening as the first post-application activity.
+  - Require completion of Screening Interview and Background Check (with pass/flag/fail statuses) before scheduling Coding Interview.
+  - Allow parallel execution of non-dependent activities but require synchronization before decision points.
+  - Block recording of further activities after Application Rejected and prevent duplicate Make Job Offer events.
+  - Route Extensive Background Check only when flagged.
+- Update documentation and training:
+  - Publish explicit decision criteria and scoring rubrics for screening, technical and behavioral stages.
+  - Define follow-up limits and re-evaluation rules to prevent open-ended rework loops.
+- Monitor KPIs and enforce continuous improvement:
+  - Track the KPIs listed above; use them to ensure the IDEAL process reduces cycle times and eliminates data anomalies.
+
+Final summary
+- The IDEAL Process Model retains all activities observed in the AS‑IS model but organizes them into a governed, deterministic flow: Hand In Job Application → Telephonic Screening (gate) → Screening Interview + Background Check (parallel, both required) → (conditional Extensive Background Check) → Coding Interview → Required technical interviews (parallelized by role) → Behavioral Interview (single) → Make Job Offer or Application Rejected (terminal). This model eliminates the AS‑IS issues of inconsistent ordering, repeated events, and post-rejection activity, while optimizing parallel execution and reducing cycle time.

@@ -1,0 +1,41 @@
+AS-IS Process Model — Application Intake
+============================================================
+
+Title: AS-IS Process Model — Application Intake
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Receive candidate applications and create the initial case in the hiring process.
+- Main responsibilities: record submission (online or in-person), route the new case to HR for screening, and (rarely) trigger an immediate rejection.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Hand In Job Application: record the candidate application (via Online System or Front Desk). This is the only activity performed by this role in the log.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation: This role is activated when a candidate submits an application (either through the Online System or at the Front Desk). Every observed case starts with Hand In Job Application (Initialization constraint in the log).
+- Immediately after Hand In Job Application the following observed behaviours happen (all are AS-IS and were observed in the log):
+  - Most common: Hand In Job Application -> Telephonic Screening (this is the primary next step for the majority of cases; DFG shows a very large frequency edge to Telephonic Screening).
+  - Alternative (observed ~12% of cases): Hand In Job Application -> Application Rejected (cases where the application is closed immediately after intake).
+  - Rare/very low-frequency: Hand In Job Application -> Senior Interviewer or other resources (small number of direct handoffs to Senior Partner in the handover network).
+- Decision points: The Application Intake role itself does not make selection or interviewing decisions; it only delivers the case to HR or marks the case as rejected (in the observed data the immediate rejection happens at or immediately after intake).
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+- Who hands work TO Application Intake: none (it is the case entry point; no upstream role observed).
+- Who Application Intake hands work TO (observed handovers and relative weights):
+  - HR-dummy (most frequent recipient; Online System -> HR-dummy and Front Desk -> HR-dummy observed).
+  - HR-pro (smaller but notable flow from Online System/Front Desk to HR-pro).
+  - Senior Partner (very small direct handoffs observed in the log).
+- In short: Application Intake creates the case and immediately passes it to HR (HR-dummy or HR-pro) in the observed data; sometimes the case is directly marked Application Rejected.
+
+Section 5: Variants and Exceptions (all observed paths)
+- Observed variants starting at this role (AS-IS):
+  1) Hand In Job Application -> Telephonic Screening -> ... (majority/happy-path prefix)
+  2) Hand In Job Application -> Application Rejected (observed ~12% of cases) — immediate rejection at intake.
+  3) Hand In Job Application -> (rare) direct handoff to Senior Partner or other roles.
+- No rework loops are performed by this role (it only appears at the start of the case).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Intake is effectively a single-step entry point; the main observation is that a sizeable fraction (~12%) of cases are closed immediately after intake, suggesting either a pre-filter at intake or automated mass rejections.
+- Most work is routed to HR-dummy; Online System and Front Desk appear to play the same role but route cases with slightly different recipient distributions (Online System also routes to HR-pro occasionally).
+- There is limited direct routing to senior interviewers, which suggests centralized routing through HR specialists.
+
+(End of AS-IS description for Application Intake)

@@ -1,0 +1,126 @@
+# AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end hiring pipeline from candidate application to either Application Rejected or Make Job Offer, reconstructed from an inductive-miner Petri net, directly-follows graph (DFG), and observed abstract variants.
+- Sources interpreted: Petri net with explicit silent splits/joins and loops; DFG frequencies and performance; top abstract variants. The model contains parallelism, optional paths, and rework loops.
+
+Key stakeholders and roles involved
+- Roles/lanes are not specified in the source material. Activities are described without explicit actor assignments.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Start: Candidate submits Hand In Job Application (start event inferred from Petri net source->Hand In Job Application).
+
+High-level stages and control logic
+1) Initial assessment (optional telephonic; early rejection possible)
+   - Hand In Job Application.
+   - Telephonic Screening is common (DFG: 8,799 transitions from application), but can be skipped entirely in the discovered model. For conformance, if Telephonic Screening occurs, it must occur before any Screening Interview or Background Check (i.e., Telephonic Screening never appears after either of those).
+   - Early direct rejection is allowed: Hand In Job Application -> Application Rejected occurs (DFG frequency 1,201). Telephonic Screening -> Application Rejected also occurs (990). For conformance, if an early Application Rejected occurs (after Application or after Telephonic Screening), the case must not continue with any further assessments (no Background Check, Screening Interview, Extensive Background Check, Coding Interview, or ML/Backend/Frontend Interview) and must not proceed to Behavioral Interview or Make Job Offer thereafter.
+
+2) Pre-technical evaluations in parallel
+   - From Telephonic Screening, a parallel split enables both Screening Interview and Background Check to run concurrently (Petri net tauSplit_4 with branches to Screening Interview and Background Check; DFG shows both directions: Telephonic Screening -> Background Check (3,961); Telephonic Screening -> Screening Interview (3,848); Screening Interview -> Background Check (3,848) and Background Check -> Screening Interview (3,961) with near-zero reordering times, consistent with concurrency). For conformance, Application Rejected does not interleave between these two activities; i.e., you may not perform Application Rejected and then continue with whichever of Screening/Background was not yet completed.
+   - Synchronization: A merge/join waits for both Screening Interview and Background Check to complete before proceeding (Petri net tauJoin_5).
+   - Optional Extensive Background Check may occur after the join; it can also be skipped (Extensive Background Check is observed from both Screening Interview path and Background Check path; DFG shows Background Check -> Extensive Background Check (1,044) and Screening Interview -> Extensive Background Check (1,055)). For conformance, Extensive Background Check (if it occurs) must take place after both Screening Interview and Background Check are completed and strictly before any technical interview (Coding/ML/Backend/Frontend); Extensive Background Check must never occur after an Application Rejected.
+   - Extensive Background Check may directly lead to Application Rejected (DFG: 1,125) or to further assessments (e.g., Coding Interview: 974). For conformance, when proceeding to Application Rejected based on the pre-technical phase, either an Extensive Background Check must have occurred immediately before rejection, or the case should continue to the technical stage; a rejection placed immediately after completing the Screening/Background pair without first performing Extensive Background Check is not permitted.
+
+3) Technical assessment
+   - Coding Interview is optional in the model (from the join, the process may either go to Coding Interview or skip ahead). Observed edges include Screening Interview -> Coding Interview (1,517) and Background Check -> Coding Interview (1,413).
+   - From Coding Interview, a parallel split offers up to three technical interviews: ML Interview, Backend Interview, and Frontend Interview. Each of the three can be individually skipped or executed, and they can occur in any order (Petri net tauSplit_9 with optional execution per branch via skips; tauJoin_10 synchronizes the three branches back).
+     • Observed DFG edges show interleaving among technical interviews consistent with concurrency and flexible ordering: Coding -> ML (1,304), Coding -> Backend (701), Coding -> Frontend (1,513). Zero-time edges between pairs (e.g., ML <-> Frontend, Frontend <-> Backend) appear, consistent with switching or parallelism. Some interviews may be omitted.
+     • For conformance: none of ML Interview, Backend Interview, or Frontend Interview may occur before a Coding Interview has taken place in the case (i.e., Coding Interview strictly precedes any of the three technical interview types).
+     • For conformance: Extensive Background Check must never occur after any technical interview has started.
+     • For conformance: Application Rejected is not permitted after any of ML/Backend/Frontend Interview has occurred.
+
+   - Post-technical, the process rejoins at a merge (tauJoin_10) and advances to the final decision stage.
+
+4) Final decision stage with concurrent outcomes and loops
+   - The model performs a parallel split into two end-phase branches (Petri net tauSplit_14):
+     A) Rejection branch:
+        • Loop structure enabling Application Rejected to occur one or multiple times (Petri net init_loop_17 with repeat via skip_19; DFG shows Application Rejected -> Application Rejected self-loop frequency 654). For conformance, Application Rejected may occur at most once in a case.
+        • Exit from the loop routes toward a final synchronization point.
+     B) Behavioral-and-offer branch:
+        • One or more Behavioral Interview occurrences allowed (loop via skip_24 back to Behavioral Interview; DFG: Behavioral Interview -> Behavioral Interview self-loop frequency 1,032). For conformance, Behavioral Interview may occur at most once in a case.
+        • Make Job Offer can occur and can repeat (loop via skip_29 back to Make Job Offer; DFG: Make Job Offer -> Make Job Offer self-loop frequency 861). For conformance, Make Job Offer may occur at most once in a case and must be preceded by at least one Behavioral Interview.
+        • This branch can be skipped entirely as well.
+   - Critically, because both A and B are executed in parallel (and each may loop), the following behaviors are possible and observed:
+     • Application Rejected -> Behavioral Interview (DFG: 740) and Application Rejected -> Make Job Offer (690).
+     • Make Job Offer -> Application Rejected (110). Thus a case may be both rejected and offered at different times.
+     • For conformance, the two outcomes are mutually exclusive: once any Application Rejected occurs, no Behavioral Interview or Make Job Offer may occur later; conversely, once any Make Job Offer occurs, Application Rejected may not occur later. Additionally, no Screening Interview, Background Check, Extensive Background Check, Coding Interview, or ML/Backend/Frontend Interview may occur after any Behavioral Interview or Make Job Offer has occurred.
+   - Final synchronization: Both branches (rejection branch and behavioral/offer branch) converge at a final join to the end event (tauJoin_15 -> sink). Due to optional skipping, a case may theoretically end without explicit rejection or offer; however, observed variants commonly feature at least one of these.
+
+Decision points with criteria and outcomes (as implied)
+- Optional decisions (skips) exist after Application, Telephonic Screening, the pre-technical join (to skip Coding), and per technical interview (ML/Backend/Frontend can be individually skipped).
+- A parallel decision splits Screening Interview and Background Check to run concurrently, then rejoins.
+- A parallel decision splits the final phase into the rejection loop branch and the behavioral/offer loop branch, which proceed concurrently until the process ends. For conformance, these final outcomes are mutually exclusive and each outcome activity occurs at most once, with Make Job Offer only after Behavioral Interview and with no further assessments after either outcome activity.
+
+Parallel activities and synchronization points
+- AND-split after Telephonic Screening: Screening Interview and Background Check executed in parallel; AND-join before moving on. For conformance, Application Rejected may not be interleaved between these two parallel activities, and if rejection occurs before the pair is complete, no further assessments may follow.
+- AND-split after technical assessment: Rejection branch and Behavioral/Offer branch in parallel; AND-join at process end. For conformance, treat these outcomes as exclusive (no mixing of Application Rejected and Make Job Offer within the same case, and no repetitions).
+- Within the technical assessment itself, an AND-split enables up to three parallel technical interview tracks, with per-branch skip options, followed by an AND-join. For conformance, Coding Interview strictly precedes any ML/Backend/Frontend Interview.
+
+Exception handling and error paths
+- Early rejection can occur immediately after application, after Telephonic Screening, or after background checks and interviews.
+- Rejection, Behavioral Interview, and Make Job Offer all permit rework/repetition loops. For conformance, these loops are not permitted; each of these activities may occur at most once, and Make Job Offer requires a prior Behavioral Interview.
+- The model allows contradictory outcomes (offer issued and later rejected, or rejecting then proceeding with behavioral/offer activities), which are treated as permitted behaviors rather than handled as exceptions. For conformance, contradictory outcomes are disallowed: once a rejection occurs, no behavioral/offer activities may occur, and once an offer occurs, no rejection may follow.
+
+Rework loops and escalation
+- Rework loops explicitly present:
+  • Application Rejected -> Application Rejected (654 occurrences).
+  • Behavioral Interview -> Behavioral Interview (1,032 occurrences).
+  • Make Job Offer -> Make Job Offer (861 occurrences).
+- Technical interviews are re-orderable and optionally repeatable per branch structure; DFG shows bidirectional edges among technical interview types.
+- For conformance, ignore these rework loops: Application Rejected, Behavioral Interview, and Make Job Offer must each occur at most once; ML/Backend/Frontend may be skipped or re-ordered but must all occur (if any occur) only after a Coding Interview.
+
+End conditions and outcomes
+- Formal end (sink) occurs after both final-phase branches reach their respective exits (either by skipping or completing their loops) and synchronize.
+- Business-visible end states observed:
+  • Application Rejected as last visible activity.
+  • Make Job Offer as last visible activity.
+  • Cases where both appear (order varies) prior to end.
+- For conformance, a case must not contain both Application Rejected and Make Job Offer, and no assessment activities may occur after the first occurrence of either Behavioral Interview or Make Job Offer.
+
+Process metrics and performance characteristics (from DFG and variants)
+- High-volume edges:
+  • Hand In Job Application -> Telephonic Screening: 8,799 (avg performance ~82,440).
+  • Telephonic Screening -> Background Check: 3,961 (~81,906); Telephonic Screening -> Screening Interview: 3,848 (~81,903).
+  • Screening Interview <-> Background Check each direction: ~3,848–3,961 (0 performance, consistent with reordering/concurrency).
+  • Screening Interview -> Coding Interview: 1,517 (~129,892); Background Check -> Coding Interview: 1,413 (~129,885).
+  • Behavioral Interview -> Make Job Offer: 1,850 (~80,430).
+- Rejections:
+  • Background Check -> Application Rejected: 1,391 (~155,320).
+  • Screening Interview -> Application Rejected: 1,389 (~155,969).
+  • Telephonic Screening -> Application Rejected: 990 (~143,282).
+  • Hand In Job Application -> Application Rejected: 1,201 (~146,346).
+- Cross-branch contradictions:
+  • Application Rejected -> Behavioral Interview: 740; Application Rejected -> Make Job Offer: 690; Make Job Offer -> Application Rejected: 110.
+- Representative variants (selected):
+  • Application -> Telephonic -> Screening -> Background -> Application Rejected: 1,391 (~319,390).
+  • Application -> Telephonic -> Background -> Screening -> Application Rejected: 1,389 (~320,030).
+  • Application -> Application Rejected directly: 1,201 (~146,346).
+  • Longer “successful-to-offer” variants with full technical stack and double behavioral/offer loops have performance ~530,000 units.
+- For conformance, despite their presence in mined data, loops and contradictory outcomes are not accepted, and outcome activities must follow the ordering constraints stated above.
+
+Key challenges and pain points
+- Contradictory outcomes permitted: The model allows issuing an offer and later rejecting, or rejecting then proceeding with behavioral/offer activities. This undermines governance and confuses candidates. For conformance, contradictory outcomes are disallowed (mutual exclusivity).
+- Excessive rework loops: Behavioral Interview and Make Job Offer loops are common, inflating cycle time and workload without clear control limits. For conformance, each occurs at most once.
+- Over-parallelization: Running Screening Interview and Background Check in parallel (pre-qualification) can cause unnecessary background checks for candidates later rejected; similarly, the final parallel split causes interleaving of rejection and offer activities. For conformance, final outcomes are exclusive and do not interleave with assessments.
+- Optionality without clear criteria: Many skips (Telephonic Screening, Coding Interview, individual technical interviews) reduce consistency and comparability across candidates. For conformance, strict ordering applies: Telephonic precedes Screening/Background; Coding precedes any ML/Backend/Frontend.
+- Long cycle times on complex paths: End-to-end durations around ~530,000 time units for offer paths; high waiting times between steps like Coding -> next interviews (~80,000+), Background/Screening -> Rejection (~155,000+).
+- Incomplete synchronization semantics for business meaning: The end join can complete even if neither an explicit offer nor rejection occurred (both branches skipped), which is ambiguous from a business standpoint.
+
+## Additional Constraints
+To ensure precise conformance checking against the observed process while avoiding over-permissiveness, the following ordering constraints apply:
+- Telephonic Screening ordering:
+  • If Telephonic Screening occurs, it must come before any Screening Interview or Background Check; Telephonic Screening must not occur after either.
+- Pre-technical phase integrity:
+  • Application Rejected must not be interleaved between Screening Interview and Background Check, and if a rejection happens before both are completed, no further assessments may follow.
+  • After completing Screening Interview and Background Check, Application Rejected is only allowed if immediately preceded by an Extensive Background Check; otherwise proceed to technical assessment.
+  • Extensive Background Check (if present) must occur only after both Screening Interview and Background Check, and strictly before any Coding/ML/Backend/Frontend Interview; it must never occur after Application Rejected.
+- Technical gating:
+  • Coding Interview must strictly precede any ML/Backend/Frontend Interview; none of these technical interviews may occur without a prior Coding Interview.
+  • Application Rejected is not permitted after any ML/Backend/Frontend Interview has occurred.
+- Outcome exclusivity and non-repetition:
+  • Application Rejected and Make Job Offer are mutually exclusive within a case; once one occurs, the other may not occur later.
+  • Behavioral Interview must precede Make Job Offer.
+  • Application Rejected, Behavioral Interview, and Make Job Offer each occur at most once (no self-loops).
+  • No Screening Interview, Background Check, Extensive Background Check, Coding Interview, or ML/Backend/Frontend Interview may occur after any Behavioral Interview or Make Job Offer has occurred.

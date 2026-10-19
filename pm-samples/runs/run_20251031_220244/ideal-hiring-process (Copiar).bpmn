@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://example.org/bpmn" exporter="BPMN Modeler" exporterVersion="1.0">
+  <bpmn:process id="IdealProcess" name="IDEAL Hiring Process" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_HandInApplication" name="Hand In Job Application">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_TelephoneScreen" name="Telephonic Screening">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_PhoneResult" name="Phone Screen Pass?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_PhoneReject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_BackgroundCheck" name="Background Check">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_BackgroundResult" name="Background Clear?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_BackgroundReject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_ScreeningInterview" name="Screening Interview">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ScreeningResult" name="Screening Pass?">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ScreeningReject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_CodingInterview" name="Coding Interview">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_CodingResult" name="Coding Pass?">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_CodingReject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_RoleDecision" name="Technical Role Type?">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_MLInterview" name="ML Interview">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_BackendInterview" name="Backend Interview">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_FrontendInterview" name="Frontend Interview">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_TechnicalJoin" name="Technical Result?">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+      <bpmn:outgoing>Flow_TechnicalReject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_BehavioralInterview" name="Behavioral Interview">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_BehavioralResult" name="Behavioral Pass?">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+      <bpmn:outgoing>Flow_BehavioralReject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_MakeOffer" name="Make Job Offer">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_OfferDecision" name="Offer Accepted?">
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+      <bpmn:outgoing>Flow_OfferDecline</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_ApplicationRejected" name="Application Rejected">
+      <bpmn:incoming>Flow_PhoneReject</bpmn:incoming>
+      <bpmn:incoming>Flow_BackgroundReject</bpmn:incoming>
+      <bpmn:incoming>Flow_ScreeningReject</bpmn:incoming>
+      <bpmn:incoming>Flow_CodingReject</bpmn:incoming>
+      <bpmn:incoming>Flow_TechnicalReject</bpmn:incoming>
+      <bpmn:incoming>Flow_BehavioralReject</bpmn:incoming>
+      <bpmn:incoming>Flow_OfferDecline</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Rejected" name="Candidate Rejected">
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Hired" name="Candidate Hired">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_HandInApplication"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_HandInApplication" targetRef="Task_TelephoneScreen"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_TelephoneScreen" targetRef="Gateway_PhoneResult"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Gateway_PhoneResult" targetRef="Task_BackgroundCheck"/>
+    <bpmn:sequenceFlow id="Flow_PhoneReject" sourceRef="Gateway_PhoneResult" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_BackgroundCheck" targetRef="Gateway_BackgroundResult"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Gateway_BackgroundResult" targetRef="Task_ScreeningInterview"/>
+    <bpmn:sequenceFlow id="Flow_BackgroundReject" sourceRef="Gateway_BackgroundResult" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_ScreeningInterview" targetRef="Gateway_ScreeningResult"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Gateway_ScreeningResult" targetRef="Task_CodingInterview"/>
+    <bpmn:sequenceFlow id="Flow_ScreeningReject" sourceRef="Gateway_ScreeningResult" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_CodingInterview" targetRef="Gateway_CodingResult"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Gateway_CodingResult" targetRef="Gateway_RoleDecision"/>
+    <bpmn:sequenceFlow id="Flow_CodingReject" sourceRef="Gateway_CodingResult" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Gateway_RoleDecision" targetRef="Task_MLInterview"/>
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Gateway_RoleDecision" targetRef="Task_BackendInterview"/>
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Gateway_RoleDecision" targetRef="Task_FrontendInterview"/>
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_MLInterview" targetRef="Gateway_TechnicalJoin"/>
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_BackendInterview" targetRef="Gateway_TechnicalJoin"/>
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_FrontendInterview" targetRef="Gateway_TechnicalJoin"/>
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Gateway_TechnicalJoin" targetRef="Task_BehavioralInterview"/>
+    <bpmn:sequenceFlow id="Flow_TechnicalReject" sourceRef="Gateway_TechnicalJoin" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_BehavioralInterview" targetRef="Gateway_BehavioralResult"/>
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Gateway_BehavioralResult" targetRef="Task_MakeOffer"/>
+    <bpmn:sequenceFlow id="Flow_BehavioralReject" sourceRef="Gateway_BehavioralResult" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Task_MakeOffer" targetRef="Gateway_OfferDecision"/>
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Gateway_OfferDecision" targetRef="EndEvent_Hired"/>
+    <bpmn:sequenceFlow id="Flow_OfferDecline" sourceRef="Gateway_OfferDecision" targetRef="Task_ApplicationRejected"/>
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="Task_ApplicationRejected" targetRef="EndEvent_Rejected"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="IdealProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="50" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandInApplication_di" bpmnElement="Task_HandInApplication">
+        <dc:Bounds x="150" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TelephoneScreen_di" bpmnElement="Task_TelephoneScreen">
+        <dc:Bounds x="300" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PhoneResult_di" bpmnElement="Gateway_PhoneResult" isMarkerVisible="true">
+        <dc:Bounds x="450" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BackgroundCheck_di" bpmnElement="Task_BackgroundCheck">
+        <dc:Bounds x="550" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_BackgroundResult_di" bpmnElement="Gateway_BackgroundResult" isMarkerVisible="true">
+        <dc:Bounds x="700" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ScreeningInterview_di" bpmnElement="Task_ScreeningInterview">
+        <dc:Bounds x="800" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ScreeningResult_di" bpmnElement="Gateway_ScreeningResult" isMarkerVisible="true">
+        <dc:Bounds x="950" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CodingInterview_di" bpmnElement="Task_CodingInterview">
+        <dc:Bounds x="1050" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CodingResult_di" bpmnElement="Gateway_CodingResult" isMarkerVisible="true">
+        <dc:Bounds x="1200" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_RoleDecision_di" bpmnElement="Gateway_RoleDecision" isMarkerVisible="true">
+        <dc:Bounds x="1300" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MLInterview_di" bpmnElement="Task_MLInterview">
+        <dc:Bounds x="1400" y="100" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BackendInterview_di" bpmnElement="Task_BackendInterview">
+        <dc:Bounds x="1400" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FrontendInterview_di" bpmnElement="Task_FrontendInterview">
+        <dc:Bounds x="1400" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_TechnicalJoin_di" bpmnElement="Gateway_TechnicalJoin" isMarkerVisible="true">
+        <dc:Bounds x="1550" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BehavioralInterview_di" bpmnElement="Task_BehavioralInterview">
+        <dc:Bounds x="1650" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_BehavioralResult_di" bpmnElement="Gateway_BehavioralResult" isMarkerVisible="true">
+        <dc:Bounds x="1800" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MakeOffer_di" bpmnElement="Task_MakeOffer">
+        <dc:Bounds x="1900" y="178" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_OfferDecision_di" bpmnElement="Gateway_OfferDecision" isMarkerVisible="true">
+        <dc:Bounds x="2050" y="193" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ApplicationRejected_di" bpmnElement="Task_ApplicationRejected">
+        <dc:Bounds x="1275" y="380" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Rejected_di" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="1307" y="500" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Hired_di" bpmnElement="EndEvent_Hired">
+        <dc:Bounds x="2150" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="86" y="218"/>
+        <di:waypoint x="150" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="250" y="218"/>
+        <di:waypoint x="300" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="400" y="218"/>
+        <di:waypoint x="450" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="500" y="218"/>
+        <di:waypoint x="550" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PhoneReject_di" bpmnElement="Flow_PhoneReject">
+        <di:waypoint x="475" y="243"/>
+        <di:waypoint x="475" y="420"/>
+        <di:waypoint x="1275" y="420"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="650" y="218"/>
+        <di:waypoint x="700" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="750" y="218"/>
+        <di:waypoint x="800" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_BackgroundReject_di" bpmnElement="Flow_BackgroundReject">
+        <di:waypoint x="725" y="243"/>
+        <di:waypoint x="725" y="400"/>
+        <di:waypoint x="1275" y="400"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="900" y="218"/>
+        <di:waypoint x="950" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1000" y="218"/>
+        <di:waypoint x="1050" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ScreeningReject_di" bpmnElement="Flow_ScreeningReject">
+        <di:waypoint x="975" y="243"/>
+        <di:waypoint x="975" y="410"/>
+        <di:waypoint x="1275" y="410"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1150" y="218"/>
+        <di:waypoint x="1200" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1250" y="218"/>
+        <di:waypoint x="1300" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CodingReject_di" bpmnElement="Flow_CodingReject">
+        <di:waypoint x="1225" y="243"/>
+        <di:waypoint x="1225" y="430"/>
+        <di:waypoint x="1275" y="430"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1325" y="193"/>
+        <di:waypoint x="1325" y="140"/>
+        <di:waypoint x="1400" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1350" y="218"/>
+        <di:waypoint x="1400" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1325" y="243"/>
+        <di:waypoint x="1325" y="300"/>
+        <di:waypoint x="1400" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1500" y="140"/>
+        <di:waypoint x="1575" y="140"/>
+        <di:waypoint x="1575" y="193"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1500" y="218"/>
+        <di:waypoint x="1550" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="1500" y="300"/>
+        <di:waypoint x="1575" y="300"/>
+        <di:waypoint x="1575" y="243"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="1600" y="218"/>
+        <di:waypoint x="1650" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_TechnicalReject_di" bpmnElement="Flow_TechnicalReject">
+        <di:waypoint x="1575" y="243"/>
+        <di:waypoint x="1575" y="440"/>
+        <di:waypoint x="1375" y="440"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1750" y="218"/>
+        <di:waypoint x="1800" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="1850" y="218"/>
+        <di:waypoint x="1900" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_BehavioralReject_di" bpmnElement="Flow_BehavioralReject">
+        <di:waypoint x="1825" y="243"/>
+        <di:waypoint x="1825" y="450"/>
+        <di:waypoint x="1375" y="450"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="2000" y="218"/>
+        <di:waypoint x="2050" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="2100" y="218"/>
+        <di:waypoint x="2150" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OfferDecline_di" bpmnElement="Flow_OfferDecline">
+        <di:waypoint x="2075" y="243"/>
+        <di:waypoint x="2075" y="460"/>
+        <di:waypoint x="1375" y="460"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <di:waypoint x="1325" y="460"/>
+        <di:waypoint x="1325" y="500"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

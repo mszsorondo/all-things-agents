@@ -1,0 +1,245 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage end-to-end candidate evaluation for technical roles, from application intake to either making a job offer or rejecting the application.
+- Scope observed: Activities present in the event log include Hand In Job Application, Telephonic Screening, Screening Interview, Background Check, Coding Interview, Frontend Interview, Backend Interview, ML Interview, Behavioral Interview, Extensive Background Check, Make Job Offer, and Application Rejected.
+- Time window and volume: The log spans 2015-01-05 to 2015-01-12 (UTC). There are 10,000 application events (one per case), suggesting ~10,000 cases in scope.
+
+Key stakeholders and roles involved
+- Online System: Receives applications and issues automated communications.
+- Front Desk: Supports scheduling/coordination and candidate handling around interviews.
+- HR staff (HR-pro, HR-dummy): Conduct Telephonic Screening and Screening Interview; initiate and review Background Check.
+- Senior Partner: Executive interviewer/reviewer; appears frequently in the log and participates in key decision-making, especially in Behavioral Interview contexts.
+- HR-pro and Senior Partner (joint panel): Conducts the Behavioral Interview together (panel-style).
+- Coding Interviewer: Runs technical interviews (sum of coding + track-specific interview frequencies matches the Coding Interviewer’s resource usage).
+- deepResearch Inc. (external vendor): Performs the Extensive Background Check on selected cases.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Candidate completes “Hand In Job Application” via the Online System.
+- Pre-conditions: None beyond application submission.
+
+2) Intake and initial screening
+- Activity: Telephonic Screening (HR staff)
+  - Typical outcome:
+    - Pass → proceed to Screening Interview.
+    - Fail → terminate with Application Rejected.
+  - Observed frequency: Telephonic Screening occurs in 8,799 events, implying most applicants receive a phone screen after applying.
+
+- Activity: Screening Interview (HR staff, on-site or virtual)
+  - Typical outcome:
+    - Pass → subsequent checks and technical evaluations are initiated.
+    - Fail → Application Rejected.
+  - Observed frequency: 7,809 events, closely aligned with Background Check activity frequency (suggesting frequent pairing).
+
+3) Background verification (baseline)
+- Activity: Background Check (HR staff coordinating)
+  - Timing: Commonly observed around the Screening Interview stage; in practice it may start right after the screening interview, and in some instances it overlaps with scheduling or execution of technical interviews.
+  - Outcome:
+    - Clear → continues process.
+    - Flag → typically leads to Application Rejected, though some flagged cases appear to proceed to additional interviews or later checks before final rejection.
+  - Observed frequency: 7,809 events (equal to Screening Interview frequency).
+
+4) Technical evaluation stream
+- Activity: Coding Interview (Coding Interviewer)
+  - Outcome:
+    - Pass → proceed to track-specific technical interviews and/or to Behavioral Interview.
+    - Fail → Application Rejected.
+  - Observed frequency: 3,904 events.
+
+- Inclusive decision: Track-specific technical interviews (one or more as needed)
+  - Frontend Interview (2,913 events) – Coding Interviewer
+  - Backend Interview (1,351 events) – Coding Interviewer
+  - ML Interview (2,334 events) – Coding Interviewer
+  - Control logic: Inclusive choice. Depending on the target role, candidates may have one or more of these interviews. Ordering is flexible and may occur in any sequence; scheduling may create practical overlap across candidates, though per-candidate concurrency is limited by availability.
+
+- Synchronization point (implicit)
+  - Before progressing to the behavioral panel, all required technical interviews for the candidate’s track should be completed. In the observed behavior, this synchronization is implied but not strictly enforced across all cases.
+
+5) Behavioral assessment
+- Activity: Behavioral Interview (joint panel: HR-pro and Senior Partner)
+  - Outcome:
+    - Pass → candidate becomes eligible for Make Job Offer (subject to any remaining checks).
+    - Fail → Application Rejected.
+  - Observed frequency: 3,796 events (nearly all who complete coding proceed here).
+
+6) Deep-dive verification (selective)
+- Activity: Extensive Background Check (deepResearch Inc. and/or HR coordination)
+  - Trigger: Applied to a subset of candidates (role sensitivity, risk indicators, or policy-based selection). The exact criteria are not explicit in the log.
+  - Timing: Inconsistent. In some cases it occurs pre-offer; in others, it occurs after Make Job Offer.
+  - Outcome:
+    - Clear → no change.
+    - Adverse finding → Application Rejected (even after an offer has been logged).
+  - Observed frequency: 2,099 events.
+
+7) Finalization and endings
+- Activity: Make Job Offer
+  - Observed frequency: 3,401 events.
+  - Current state: Offers are sometimes logged before completion of all checks, particularly the Extensive Background Check. This leads to occasional offer-then-reject sequences.
+
+- Activity: Application Rejected
+  - Observed frequency: 9,654 events.
+  - Occurs as an end state after:
+    - Telephonic Screening
+    - Screening Interview
+    - Background Check
+    - Any technical interview (coding or track-specific)
+    - Behavioral Interview
+    - Extensive Background Check (including after Make Job Offer in some cases)
+
+Decision points with criteria and possible outcomes
+- Telephonic Screening decision: Pass vs Fail → Fail leads to Application Rejected.
+- Screening Interview decision: Pass vs Fail → Fail leads to Application Rejected.
+- Background Check decision: Clear vs Flag → Flag generally leads to Application Rejected (though timing/consistency varies).
+- Technical interviews decisions (Coding, Frontend, Backend, ML): Pass vs Fail → Fail leads to Application Rejected; pass may branch to additional track interviews or Behavioral Interview.
+- Behavioral Interview decision: Pass vs Fail → Fail leads to Application Rejected; pass leads toward Make Job Offer (subject to checks).
+- Extensive Background Check decision: Clear vs Adverse → Adverse leads to Application Rejected; may occur after an offer has been made.
+
+Parallel activities and synchronization points
+- Potential parallelism:
+  - Background Check may run in parallel with scheduling and execution of some technical interviews (inferred from frequency alignment and practical operations).
+- Synchronization:
+  - Implicit join before offer: All required technical interviews and behavioral panel should be complete. In practice, the Extensive Background Check is not consistently synchronized before the offer, causing post-offer rejections.
+
+Exception handling and error paths
+- Scheduling constraints (Front Desk/HR) can delay interviews; process waits until the next slot is available.
+- Post-offer rejection: If the Extensive Background Check returns adverse results after Make Job Offer, the process terminates with Application Rejected even though an offer event exists in the same case.
+
+Rework loops and escalation procedures
+- Re-interviews are not explicitly observed as repeated activities in the log; no systematic rework loop is evident.
+- Escalation: Senior Partner involvement is explicit in Behavioral Interview (panel). Additional senior involvement in earlier stages is not directly visible.
+
+End conditions and outcomes
+- Primary end states:
+  - Application Rejected (may occur at multiple stages; sometimes after Make Job Offer).
+  - Make Job Offer (often final, but not guaranteed to be terminal due to late adverse findings).
+- No explicit “Offer Accepted” or “Hired” event is present in the log.
+
+Process metrics and performance characteristics (from observed counts; indicative)
+- Applications: 10,000.
+- At least reached Telephonic Screening: ~87.99%.
+- At least reached Screening Interview: ~78.09%.
+- Background Check (baseline): ~78.09%.
+- Coding Interview: ~39.04%.
+- Behavioral Interview: ~37.96%.
+- Offers logged: ~34.01%.
+- Rejections logged: 9,654 events; note that events can occur post-offer and counts are per-event, not per-unique-case, so conversion rates cannot be strictly inferred.
+- Data completeness: No missing attributes reported for the key fields shown.
+
+Key challenges and pain points
+- Out-of-sequence finalization: Offers are sometimes made before all checks (notably Extensive Background Check) conclude, leading to offer-then-reject cases.
+- Ambiguous end semantics: “Application Rejected” appears after “Make Job Offer” in some cases, muddying reporting and candidate experience.
+- Synchronization gaps: No strict join ensuring all required technical tracks and checks are complete prior to decision.
+- Potential bottleneck: Behavioral Interview depends on a joint panel (HR-pro and Senior Partner), risking scheduling delays and throughput constraints.
+- External dependency latency: Extensive Background Check performed by deepResearch Inc. introduces variable lead time and can occur late.
+- Governance risk: Presence of sensitive case attributes (e.g., citizenship, protected status) in the log highlights a need for strict compliance controls to prevent inappropriate decision use; the log does not evidence explicit misuse, but governance should be reinforced.
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, well-governed hiring process that ensures consistent sequencing, minimizes rescinded offers, and improves throughput while preserving rigorous evaluation.
+- Core improvement: Enforce a single, synchronized decision point where all required evaluations and checks are completed before issuing Make Job Offer.
+
+Key stakeholders and roles involved
+- Online System: Application intake and notifications; standardized templates for status updates.
+- Front Desk: Centralized interview scheduling and candidate coordination.
+- HR staff (HR-pro): Owns Telephonic Screening, Screening Interview, initiates and reviews Background Check; coordinates any Extensive Background Check requests.
+- Coding Interviewer: Conducts Coding Interview and track-specific technical interviews (Frontend, Backend, ML).
+- Panel: HR-pro and Senior Partner for Behavioral Interview (panel configuration remains, but scheduling is optimized).
+- deepResearch Inc. (external vendor): Executes Extensive Background Check when required; engaged early enough to avoid blocking the final decision.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Candidate completes Hand In Job Application via the Online System.
+- Immediate actions: Automated acknowledgment sent; candidate data prepared for screening.
+
+2) Initial screening stage gate
+- Activity: Telephonic Screening (HR-pro)
+  - Decision: Pass → proceed; Fail → Application Rejected (end).
+- Activity: Screening Interview (HR-pro)
+  - Decision: Pass → proceed; Fail → Application Rejected (end).
+
+3) Early verification and technical pipeline (controlled parallelism)
+- Activity: Background Check (baseline)
+  - Initiation: Start as soon as the candidate passes the Screening Interview to overlap with technical evaluations and compress cycle time.
+  - SLA: Complete by or before the final decision point; results available to the decision board.
+- Technical evaluation (inclusive per role, but with clear completion criteria)
+  - Activity: Coding Interview (Coding Interviewer).
+  - Activities: Track-specific interviews as applicable (Frontend Interview, Backend Interview, ML Interview). The set is defined by the requisition/role profile.
+  - Control logic: Inclusive gateway selects all required tracks for the role. These can be scheduled in any order. All selected tracks must be completed.
+  - Synchronization: A hard join ensures that all required technical interviews are completed before proceeding.
+
+4) Behavioral assessment
+- Activity: Behavioral Interview (panel: HR-pro and Senior Partner)
+  - Scheduling optimization: Use defined panel time blocks to reduce wait time, while maintaining the panel composition.
+  - Decision: Pass → candidate eligible for final consideration; Fail → Application Rejected (end).
+
+5) Deep-dive verification (risk-based, but ordered before decision)
+- Activity: Extensive Background Check (deepResearch Inc.)
+  - Triggering criteria: Role sensitivity or preliminary Background Check flags; criteria are codified and auditable.
+  - Ordering rule: If required, Extensive Background Check must be initiated as soon as the candidate clears technicals and is tentatively recommended by the panel, and must complete before Make Job Offer.
+  - SLA: Vendor turnaround time monitored; HR coordinates proactive submission to avoid delays.
+
+6) Final decision gate and endings (strict sequencing)
+- Hard synchronization point (single decision board or rule set):
+  - Preconditions required before proceeding to final decision:
+    - All required technical interviews complete.
+    - Behavioral Interview complete.
+    - Background Check complete and reviewed.
+    - If required, Extensive Background Check complete and reviewed.
+- Decision:
+  - If all checks clear and interview outcomes meet standards → Make Job Offer.
+  - Otherwise → Application Rejected.
+- Governance rule: Application Rejected cannot occur after Make Job Offer within this process. Any adverse information discovered post-offer must be handled under a separate HR governance process outside this pipeline (policy rule), preventing offer-then-reject sequences in this log.
+
+Decision points with criteria and possible outcomes
+- Each interview activity: Pass vs Fail, with documented criteria; Fail → Application Rejected.
+- Background Check: Clear vs Flag; Flag either triggers Extensive Background Check or leads to Application Rejected based on policy.
+- Inclusive technical decision: Select and complete all role-mandatory tracks; no progression to Behavioral Interview until completion.
+- Final decision gate: Offer only if all conditions are satisfied; else rejection.
+
+Parallel activities and synchronization points
+- Controlled parallelism:
+  - Background Check runs in parallel with technical interviews to reduce cycle time.
+- Mandatory synchronization:
+  - Join of all required technical interviews.
+  - Join of all verification checks (Background Check and, if applicable, Extensive Background Check) and Behavioral Interview before the final decision.
+- Result: Eliminates late-stage reversals and reduces idle time.
+
+Exception handling and error paths
+- Scheduling conflicts: Front Desk reschedules within defined SLAs; the case remains in the stage without advancing.
+- Vendor delays (Extensive Background Check): HR proactively escalates with deepResearch Inc.; no Make Job Offer until results are in.
+- Non-compliance triggers: If sensitive attributes are encountered, the decision logic explicitly excludes them; compliance checks are applied to ensure fairness and auditability (policy-level control; no new activities added).
+
+Rework loops and escalation procedures
+- No rework loops are introduced. If a panel deems evidence insufficient, the decision is Application Rejected to maintain process clarity; re-applications start as new cases.
+- Escalation is implicit in the panel composition (HR-pro and Senior Partner). Additional escalation is handled via scheduling priority, not through additional activities.
+
+End conditions and outcomes
+- Make Job Offer (only after all gates are satisfied).
+- Application Rejected (at any decision point before the final gate).
+- No post-offer rejections within this process by design.
+
+Process metrics and performance characteristics (targets and controls)
+- Quality/KPI targets:
+  - 0% offers rescinded within this pipeline (no “offer then rejection” sequences).
+  - >95% of Background Checks complete before or at the time of the final decision gate.
+  - 100% of required track interviews completed before Behavioral Interview (enforced by join).
+- Throughput:
+  - Shorter cycle time via parallel Background Check during technicals.
+  - Reduced waiting at the Behavioral Interview through block scheduling for the HR-pro and Senior Partner panel.
+- Data quality:
+  - Event semantics clarified: Make Job Offer is always a terminal “positive” outcome; Application Rejected is terminal and never follows an offer.
+
+Improvements made (compared to AS-IS)
+- Sequencing discipline: Offers no longer precede completion of checks, eliminating offer-then-reject patterns.
+- Clear synchronization: All required interviews and checks are complete before the final decision, preventing partial evidence decisions.
+- Risk-based but timely deep checks: Extensive Background Check starts early enough to finish before decision, avoiding downstream reversals.
+- Bottleneck mitigation: Behavioral panel scheduling is optimized to protect throughput without changing actors.
+- Governance and compliance: Sensitive attributes are not used in decision-making; decisions rely strictly on defined interview outcomes and background verification results with auditable criteria.
+""")

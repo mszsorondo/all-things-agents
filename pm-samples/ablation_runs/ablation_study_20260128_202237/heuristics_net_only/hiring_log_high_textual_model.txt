@@ -1,0 +1,230 @@
+write_AS_IS_comprehensive_textual_description(
+"AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Selection and hiring of candidates from application to either an offer or a rejection.
+- Source: Heuristics Net discovered from event logs with 12 activities. Start activity: Hand In Job Application. End activities: Make Job Offer, Application Rejected.
+- Observed behavior includes parallel pre-screening, early background checks, multiple re-interview loops, repeated offer issuance, and occasional reversal from rejection to offer.
+
+Key stakeholders and roles involved
+- Roles were not specified in the source. Activities are described without role assignments.
+
+Detailed step-by-step process flow
+1) Start conditions and trigger
+- Trigger: Candidate performs Hand In Job Application (start).
+- Immediate decision after submission:
+  - Path A: Application Rejected directly (observed frequency 1,201).
+  - Path B: Proceed to Telephonic Screening (observed frequency 8,799).
+
+2) Telephonic Screening
+- Outcomes after telephonic screening:
+  - Reject after phone screen: Application Rejected (990).
+  - Enable pre-screening branches: both Background Check (3,961) and Screening Interview (3,848) are commonly initiated from here with very strong causal links (dependency=1.000 for each). These branches often co-occur and are not strictly ordered, indicating an inclusive/parallel split.
+- Note on control: No explicit synchronization is enforced before moving forward; downstream steps may begin when either branch completes.
+
+3) Parallel/inclusive pre-screening branches (unsynchronized)
+- Branch B1: Background Check
+  - If negative: Application Rejected (1,391).
+  - If positive/neutral:
+    - Option to proceed directly to Coding Interview (1,413).
+    - Or route to Extensive Background Check (1,044).
+
+- Branch B2: Screening Interview
+  - If negative: Application Rejected (1,389).
+  - If positive/neutral:
+    - Option to proceed directly to Coding Interview (1,517).
+    - Or route to Extensive Background Check (1,055).
+
+- Extensive Background Check (when triggered from either branch)
+  - If negative: Application Rejected (1,125).
+  - If positive/neutral: Proceed to Coding Interview (974).
+
+4) Coding Interview
+- If negative: Application Rejected (386).
+- If positive: Route to specialized technical interviews. The model shows strong dependencies from Coding Interview to Backend Interview (701), Frontend Interview (1,513), and ML Interview (1,304).
+  - Interpretation: Routing is based on role fit; while typical behavior suggests one specialization per candidate, the discovered model allows for one or more specialized interviews to occur (inclusive choice), potentially sequentially.
+
+5) Specialized technical interviews
+- Frontend Interview
+  - Outcomes: Application Rejected (653) OR Behavioral Interview (853).
+
+- ML Interview
+  - Outcomes: Application Rejected (546) OR Behavioral Interview (754).
+
+- Backend Interview
+  - Outcomes: Application Rejected (295) OR Behavioral Interview (417).
+
+- Merge behavior: Candidates who pass any required specialized interview(s) converge to Behavioral Interview. No explicit synchronization is enforced in the log; if multiple specialized interviews are scheduled, Behavioral Interview may follow after whichever completes (observationally).
+
+6) Behavioral Interview (with rework loop)
+- Outcomes:
+  - Behavioral Interview may repeat (self-loop observed 1,032 times), indicating re-interview rounds or panel reshuffles.
+  - If concluded positively: Make Job Offer (1,850).
+- Notably absent in discovered strong relations: a direct Behavioral Interview -> Application Rejected edge (if it exists, it did not pass the dependency threshold and is not represented).
+
+7) Offer handling and end states
+- Make Job Offer is an end activity, but exhibits a self-loop (861), indicating repeated offer events per candidate (revisions/renegotiations/duplicate logging).
+- Application Rejected is an end activity but also exhibits:
+  - Self-loop (654), indicating repeated rejection updates or status toggling.
+  - A reversal path to Make Job Offer (dependency=0.724, frequency=690), showing that after marking a candidate as rejected, the process sometimes proceeds to issue an offer.
+
+Parallel activities and synchronization points
+- Parallel/inclusive split after Telephonic Screening into Background Check and Screening Interview, with no clear synchronization before transitioning to Coding Interview or Extensive Background Check. Observed counts cross-align (e.g., Background Check and Screening Interview flows interleave), supporting partial parallelism without an enforced join.
+
+Exception handling and error paths
+- Multiple rejection points throughout pre-screening, screening, extensive background checking, coding, and specialized interviews.
+- Reversal exception: Application Rejected -> Make Job Offer (690), indicating post-rejection rescues or erroneous status corrections leading to offer issuance.
+- High rework loops at Behavioral Interview and Make Job Offer suggest exception-driven repeats (e.g., panel availability issues, offer negotiation cycles).
+
+Rework loops and escalation procedures
+- Behavioral Interview -> Behavioral Interview loop (1,032): repeated behavioral rounds prior to decision.
+- Make Job Offer -> Make Job Offer loop (861): multiple offer iterations.
+- Application Rejected -> Application Rejected loop (654): repeated status updates or rejections.
+- No explicit escalation activities are logged; escalation is implicit in repeated cycles.
+
+End conditions and outcomes
+- End: Application Rejected (potentially after multiple loops) or Make Job Offer (potentially after multiple iterations).
+- The model permits movement from Rejected to Offer, which weakens the notion of a terminal rejection state.
+
+Process metrics and performance characteristics (as observed)
+- Volume at start: 10,000 submissions (inferred from 8,799 + 1,201).
+- Early triage:
+  - 12.0% immediate rejection at application (1,201/10,000).
+  - 88.0% proceed to Telephonic Screening (8,799/10,000).
+- Post-telephonic:
+  - 11.3% rejected at telephonic (990/8,799).
+  - Parallelization: Background Check (3,961) and Screening Interview (3,848) commonly initiated.
+- Coding Interview inflow (approximate): 3,904 (1,413 + 1,517 + 974).
+  - Distribution post-coding: Frontend (1,513), ML (1,304), Backend (701), Rejected (386).
+- Behavioral Interview inflow (initial passes to behavioral): 2,024 (853 + 754 + 417).
+  - Behavioral re-interview cycles: 1,032.
+  - Transitions to offer: 1,850.
+- Loops indicating waste:
+  - Offer iterations: 861.
+  - Rejection status repetitions: 654.
+- Strongest causal relations (dependency near 1.0) identify main paths; moderate relation observed for Rejected -> Offer (0.724), highlighting an irregular but frequent exception.
+
+Key challenges and pain points
+- Early and unsynchronized background checks: Background Check and Extensive Background Check frequently occur before technical sufficiency is established, creating cost and delay on candidates likely to be rejected later.
+- Lack of synchronization: Downstream steps can start after only one of the pre-screening branches completes, increasing rework risk.
+- Ambiguous routing to specialized interviews: Model permits multiple specialized tracks without explicit control, risking unnecessary interviews.
+- Rework loops:
+  - Behavioral Interview repeats, elongating cycle time and consuming capacity.
+  - Multiple offers per candidate, indicating negotiation or data-quality issues.
+  - Rejection status repeats.
+- Governance/compliance signal: Path from Application Rejected to Make Job Offer undermines the finality and auditability of rejection decisions.
+- Candidate experience risks: Early background checks and repeated interviews/offers can degrade experience and employer brand.
+
+"
+)
+
+write_IDEAL_comprehensive_textual_description(
+"IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A controlled, efficient, and auditable hiring workflow from application to a definitive conclusion, minimizing unnecessary checks and rework while preserving all essential decision points.
+- Design principles:
+  - Gate expensive checks until candidate viability is established.
+  - Enforce clear gateway logic (exclusive vs inclusive) with explicit synchronization.
+  - Eliminate irregular state reversals and unbounded loops.
+  - Keep activities identical to the discovered set; improve sequencing and control-flow only.
+
+Key stakeholders and roles involved
+- Roles were not specified in the source; the model defines responsibility as process steps without swimlane assignments.
+
+Detailed step-by-step process flow
+1) Start conditions and trigger
+- Start: Hand In Job Application.
+- Decision G1 (exclusive):
+  - If basic criteria are not met: Application Rejected (terminal).
+  - Else: proceed to Telephonic Screening.
+
+2) Telephonic Screening
+- Decision G2 (exclusive):
+  - If not suitable after telephonic: Application Rejected (terminal).
+  - Else: proceed to Screening Interview.
+- Rationale: Remove unsynchronized parallelization at this point to streamline and avoid premature background checks.
+
+3) Screening Interview
+- Decision G3 (exclusive):
+  - If not suitable: Application Rejected (terminal).
+  - Else: proceed to Coding Interview.
+- Rationale: Technical assessment should follow only for candidates who pass initial screening.
+
+4) Coding Interview
+- Decision G4 (exclusive routing to specialization):
+  - Route the candidate to exactly one specialized technical interview track aligned with the requisition: Frontend Interview OR ML Interview OR Backend Interview.
+  - Exception (controlled inclusive): If the requisition explicitly requires multi-track capability, conduct multiple specialized interviews sequentially; define this as a planned exception that must be documented and approved.
+- Decision within each specialized interview:
+  - If the candidate fails the specialized interview: Application Rejected (terminal).
+  - If the candidate passes the planned specialized track(s): proceed to Behavioral Interview.
+- Synchronization J1:
+  - If multiple specialized interviews were planned, all must be completed and passed before moving to Behavioral Interview.
+
+5) Behavioral Interview
+- Controlled re-interview policy:
+  - Allow at most one additional Behavioral Interview (optional) only if a specific criterion is met (e.g., incomplete panel quorum). No open-ended looping.
+- Decision G5 (exclusive):
+  - If not suitable culturally/behaviorally: Application Rejected (terminal).
+  - Else: proceed to Background checks.
+
+6) Background checks (deferred and staged)
+- Background Check (standard):
+  - If negative: Application Rejected (terminal).
+  - If positive/neutral: evaluate need for Extensive Background Check.
+- Decision G6 (exclusive):
+  - If risk factors or role requirements demand: perform Extensive Background Check.
+    - If Extensive Background Check negative: Application Rejected (terminal).
+    - If positive/neutral: proceed to Make Job Offer.
+  - Else (no extensive check needed): proceed directly to Make Job Offer.
+- Rationale: Move both Background Check and Extensive Background Check after technical and behavioral clearance to reduce waste and protect candidate experience. This preserves activities but changes ordering to a value-maximizing sequence.
+
+7) Offer issuance
+- Make Job Offer:
+  - Single-offer event per candidate. Negotiations and minor changes are handled within the same offer stage without logging repeated Make Job Offer events.
+  - No transition is permitted from Application Rejected to Make Job Offer. If a reversal is necessary, it must be treated as a new, separate case (outside the scope of this process instance).
+- End state: Make Job Offer (terminal).
+
+Parallel activities and synchronization points
+- Parallelization eliminated in early stages. Synchronization J1 ensures that if multiple specialized interviews are explicitly planned, all must complete before advancing.
+- Background checks are staged sequentially: Background Check, then Extensive Background Check if required.
+
+Exception handling and error paths
+- Rejection can occur at: application triage, telephonic, screening, coding, specialized interview(s), behavioral, background check, or extensive background check.
+- Behavioral re-interview allowed once under controlled conditions to address panel exceptions; otherwise, proceed to decision.
+- No irregular state reversal: Application Rejected is terminal within an instance.
+
+Rework loops and escalation procedures
+- Rework loops removed except a single, policy-controlled re-interview at Behavioral Interview when clearly justified.
+- Offer iterations removed; negotiation is absorbed within a single Make Job Offer activity (no repeat logging).
+- Escalation (if needed) is handled via governance rules associated with each decision (e.g., approval to schedule multi-track interviews); no extra activities are introduced.
+
+End conditions and outcomes
+- Terminal outcomes:
+  - Application Rejected (at any defined gate).
+  - Make Job Offer (after passing checks).
+- Each instance must end in exactly one terminal state; no path from Rejected to Offer.
+
+Process metrics and performance targets
+- Early waste reduction:
+  - 0% background checks initiated before passing screening and technical/behavioral stages.
+- Rework containment:
+  - Behavioral re-interview rate ≤ 5% of cases; maximum of one additional round.
+  - Make Job Offer occurrences = 1 per hired candidate (no logged repeats).
+  - Application Rejected status changes recorded once (no status-loop).
+- Throughput and cycle time:
+  - Expected reduction in total time-to-offer by eliminating early parallel checks and repeated interviews.
+  - Background-check start is now late-stage, concentrating effort on viable candidates; target ≥ 50% reduction in background-check workload on ultimately rejected candidates.
+- Quality and control:
+  - 0 cases of Application Rejected -> Make Job Offer within the same instance.
+  - Explicit routing to one specialization by default; multi-track interviews must be pre-authorized and synchronized.
+
+Improvements made (summary)
+- Sequencing corrected: technical and behavioral suitability precede all background checks.
+- Gateway logic clarified: exclusive routing at key points; inclusive multi-track interviews only by exception with synchronization.
+- Rework loops eliminated or tightly bounded: no unlimited behavioral repeats, no multiple offers.
+- Governance strengthened: terminal states are final; no rejection-to-offer reversals.
+- Candidate experience and cost-to-hire improved: fewer unnecessary checks and interviews; cleaner, faster path to decision.
+
+"
+)

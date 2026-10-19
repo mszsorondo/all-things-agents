@@ -1,0 +1,83 @@
+
+============================================================
+REPRESENTATION 1: ABSTRACT_VARIANTS
+============================================================
+
+
+=== ABSTRACT VARIANTS INTERPRETATION GUIDE ===
+
+Process variants show the distinct execution paths observed in the event log.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 1391  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 1201  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 990  performance = 229938.161 )
+..."
+
+READING THE OUTPUT:
+- Each line: " Activity1 -> Activity2 -> ... -> ActivityN ( frequency = N  performance = T )"
+- The arrow (->) sequence shows the exact order of activities in that variant
+- frequency: Number of cases (process instances) that followed this exact path
+- performance: Average total duration of cases following this path (in seconds)
+- Variants are sorted by frequency (most common first)
+
+INTERPRETATION:
+1. HIGH FREQUENCY VARIANTS (>20% of cases): Main "happy path" - optimize for efficiency
+2. MEDIUM FREQUENCY (5-20%): Common alternative paths - monitor regularly
+3. LOW FREQUENCY (<5%): Exceptions or edge cases - investigate if problematic
+4. PERFORMANCE COMPARISON:
+   - Compare performance across variants to identify slow paths
+   - High performance value = longer duration (potential bottleneck)
+
+VARIANT ANALYSIS:
+- Count unique activities: More activities = longer/complex variant
+- Identify common prefixes: Shows where processes diverge
+- Look for unexpected paths: May indicate process deviations
+
+USE FOR:
+- Understanding main vs alternative process paths
+- Identifying which paths are most/least efficient
+- Detecting process deviations or exceptions
+- Simplifying complex processes by focusing on high-frequency variants
+
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Loan Denied ( frequency = 29\%  performance = 337686.652 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 16\%  performance = 339453.858 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Application Rejected ( frequency = 16\%  performance = 236355.016 )
+ Request Appointment -> Appointment Denied ( frequency = 9\%  performance = 86227.410 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Submit File to Underwriter -> Loan Denied ( frequency = 4\%  performance = 372495.693 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 3\%  performance = 376774.320 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement ( frequency = 3\%  performance = 260013.446 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 2\%  performance = 385560.498 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 2\%  performance = 384900.285 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 2\%  performance = 346180.276 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Submit File to Underwriter -> Loan Denied ( frequency = 2\%  performance = 342147.446 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 469827.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 449982.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 449964.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 449889.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 430006.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 429899.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 429893.333 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 429754.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 427126.429 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 410029.333 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 409964.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 409935.600 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 390119.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 390055.423 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 390019.875 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 390019.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 390000.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 389997.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 382844.032 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 374989.778 )
+
+
+

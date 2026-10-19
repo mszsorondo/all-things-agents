@@ -1,0 +1,682 @@
+
+============================================================
+REPRESENTATION 1: ABSTRACT_VARIANTS
+============================================================
+
+
+=== ABSTRACT VARIANTS INTERPRETATION GUIDE ===
+
+Process variants show the distinct execution paths observed in the event log.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 1391  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 1201  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 990  performance = 229938.161 )
+..."
+
+READING THE OUTPUT:
+- Each line: " Activity1 -> Activity2 -> ... -> ActivityN ( frequency = N  performance = T )"
+- The arrow (->) sequence shows the exact order of activities in that variant
+- frequency: Number of cases (process instances) that followed this exact path
+- performance: Average total duration of cases following this path (in seconds)
+- Variants are sorted by frequency (most common first)
+
+INTERPRETATION:
+1. HIGH FREQUENCY VARIANTS (>20% of cases): Main "happy path" - optimize for efficiency
+2. MEDIUM FREQUENCY (5-20%): Common alternative paths - monitor regularly
+3. LOW FREQUENCY (<5%): Exceptions or edge cases - investigate if problematic
+4. PERFORMANCE COMPARISON:
+   - Compare performance across variants to identify slow paths
+   - High performance value = longer duration (potential bottleneck)
+
+VARIANT ANALYSIS:
+- Count unique activities: More activities = longer/complex variant
+- Identify common prefixes: Shows where processes diverge
+- Look for unexpected paths: May indicate process deviations
+
+USE FOR:
+- Understanding main vs alternative process paths
+- Identifying which paths are most/least efficient
+- Detecting process deviations or exceptions
+- Simplifying complex processes by focusing on high-frequency variants
+
+
+
+
+# === ABSTRACT VARIANTS INTERPRETATION GUIDE (pm4py.llm) ===
+
+## WHAT THIS OUTPUT REPRESENTS
+
+This output describes the **distinct execution paths (process variants)** observed in an event log.
+Each variant corresponds to a unique ordered sequence of activities executed by cases in the process.
+
+The variants shown are the **most frequent ones**, listed in descending order of frequency, and truncated if needed to respect the maximum output length (`max_len`).
+
+---
+
+## OUTPUT FORMAT (TYPICAL)
+
+```
+If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 32.5%  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 28.1%  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 21.4%  performance = 229938.161 )
+ ...
+```
+
+The initial sentence may be present if `response_header=True`.
+
+---
+
+## HOW TO READ EACH LINE
+
+Each line has the form:
+
+```
+Activity1 -> Activity2 -> ... -> ActivityN ( frequency = F  performance = P )
+```
+
+Meaning:
+
+• `Activity1 -> Activity2 -> ... -> ActivityN`
+= the exact ordered sequence of activities executed in that variant (control-flow path)
+
+• `frequency = F`
+= the **relative frequency** (proportion or percentage of cases) that follow this exact path
+(because `relative_frequency=True`)
+
+• `performance = P`
+= the **aggregated case duration** (throughput time) of cases that follow this variant
+computed using the selected aggregation method
+(default: mean of case durations)
+
+Units depend on the timestamp resolution in the log (e.g., seconds, minutes, milliseconds).
+
+If a secondary aggregation is configured, performance may appear as:
+
+```
+performance = P (secondary = Q)
+```
+
+---
+
+## IMPORTANT BEHAVIORAL DETAILS
+
+• Variants are sorted by decreasing frequency
+• Only the most frequent variants fitting within `max_len` are shown
+• Rare variants may be omitted
+• Performance refers to **whole-case duration**, not individual activity durations
+• Performance is computed only if `include_performance=True`
+• Frequencies are **relative proportions**, not absolute counts
+• Header text may be present if `response_header=True`
+
+---
+
+## INTERPRETATION PRINCIPLES
+
+### 1. CONTROL-FLOW ANALYSIS
+
+* Variants with the highest frequency represent the dominant execution paths (“happy paths”)
+* Shared prefixes across variants indicate where the process diverges
+* Unusual or rare paths indicate exceptions or deviations
+
+### 2. FREQUENCY ANALYSIS
+
+Using relative frequency:
+
+* High frequency variants (e.g., >20%) → core process behavior
+* Medium frequency (5–20%) → common alternatives
+* Low frequency (<5%) → edge cases or exceptional behavior
+
+These thresholds are heuristic and should be interpreted relative to the domain.
+
+### 3. PERFORMANCE ANALYSIS
+
+* Compare performance values across variants
+* Higher performance value = longer average case duration
+* Variants with both:
+
+  * high frequency
+  * high performance
+    are prime candidates for optimization
+
+### 4. STRUCTURAL COMPLEXITY
+
+* More activities in a variant generally imply higher structural complexity
+* Long variants with high performance may indicate rework or loops
+* Short variants with low performance often represent fast completion paths
+
+---
+
+## WHAT THIS OUTPUT IS SUITABLE FOR
+
+This abstraction is designed for **human or LLM reasoning**, not for direct machine parsing.
+
+It is suitable for:
+
+• Identifying main vs alternative process paths
+• Explaining process behavior in natural language
+• Detecting deviations or exceptional flows
+• Comparing efficiency of different execution paths
+• Summarizing complex event logs
+• Serving as structured input for LLM-based process analysis
+
+---
+
+## WHAT THIS OUTPUT IS NOT
+
+• It is not a complete list of all variants (due to truncation)
+• It is not a formal process model (Petri net, BPMN)
+• It is not a structured dataset
+• It does not include resource, data, or organizational perspectives
+• It does not show intra-activity waiting times
+
+---
+
+## SUMMARY
+
+This output encodes:
+
+```
+Variant = (Activity Sequence, Relative Frequency, Aggregated Case Duration)
+```
+
+Serialized as natural language for LLM-based interpretation.
+
+
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Loan Denied ( frequency = 29\%  performance = 337686.652 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 16\%  performance = 339453.858 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Application Rejected ( frequency = 16\%  performance = 236355.016 )
+ Request Appointment -> Appointment Denied ( frequency = 9\%  performance = 86227.410 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Submit File to Underwriter -> Loan Denied ( frequency = 4\%  performance = 372495.693 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 3\%  performance = 376774.320 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement ( frequency = 3\%  performance = 260013.446 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 2\%  performance = 385560.498 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 2\%  performance = 384900.285 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 2\%  performance = 346180.276 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Submit File to Underwriter -> Loan Denied ( frequency = 2\%  performance = 342147.446 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 469827.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 449982.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 449964.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 449889.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 430006.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 429899.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 429893.333 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 429754.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 427126.429 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 410029.333 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 409964.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 409935.600 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 390119.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 390055.423 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 390019.875 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 390019.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 390000.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 389997.000 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Loan Denied ( frequency = 1\%  performance = 382844.032 )
+ Request Appointment -> Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral -> Submit File to Underwriter -> Sign Loan Agreement ( frequency = 1\%  performance = 374989.778 )
+
+
+
+
+
+============================================================
+REPRESENTATION 2: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Set Appointment -> Hand In Credit Appliaction ( frequency = 9038  performance = 82658.872 )
+Request Appointment -> Set Appointment ( frequency = 9038  performance = 82658.194 )
+Hand In Credit Appliaction -> Verify Borrowers Information ( frequency = 9038  performance = 42027.519 )
+Submit File to Underwriter -> Loan Denied ( frequency = 4787  performance = 82666.413 )
+Verify Borrowers Information -> Submit File to Underwriter ( frequency = 4623  performance = 48326.675 )
+Submit File to Underwriter -> Sign Loan Agreement ( frequency = 2295  performance = 80724.983 )
+Verify Borrowers Information -> Application Rejected ( frequency = 1624  performance = 32266.345 )
+Make Visit to Assess Colatteral -> Submit File to Underwriter ( frequency = 1420  performance = 33926.961 )
+Verify Borrowers Information -> Request Co-Signer On Loan ( frequency = 1233  performance = 35838.067 )
+Verify Borrowers Information -> Make Visit to Assess Colatteral ( frequency = 1226  performance = 35269.232 )
+Request Co-Signer On Loan -> Submit File to Underwriter ( frequency = 1039  performance = 37792.042 )
+Request Appointment -> Appointment Denied ( frequency = 962  performance = 86227.410 )
+Request Co-Signer On Loan -> Make Visit to Assess Colatteral ( frequency = 733  performance = 4966.044 )
+Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral ( frequency = 563  performance = 22399.107 )
+Make Visit to Assess Colatteral -> Request Co-Signer On Loan ( frequency = 539  performance = 0.000 )
+skipped_examination -> Sign Loan Agreement ( frequency = 332  performance = 0.000 )
+Verify Borrowers Information -> skipped_examination ( frequency = 332  performance = 50001.380 )
+
+
+
+
+
+============================================================
+REPRESENTATION 3: PROCESS_TREE
+============================================================
+
+
+=== PROCESS TREE INTERPRETATION GUIDE ===
+
+A Process Tree is a hierarchical representation of process behavior.
+
+OUTPUT FORMAT:
+--------------
+"->( 'Activity A', X( tau, ->( 'Activity B', *( 'Activity C', tau ) ) ), +( 'Activity D', 'Activity E' ) )"
+
+OPERATORS (prefix notation):
+- ->(...): SEQUENCE - Execute children left-to-right in order
+- X(...): EXCLUSIVE CHOICE - Execute exactly one child
+- +(...): PARALLEL - Execute all children concurrently (interleaved)
+- *(...): LOOP - First child is body, second is exit condition
+- tau: SILENT activity (invisible, used for optional/skip paths)
+
+READING THE OUTPUT:
+- Operators are written as: OPERATOR( child1, child2, ... )
+- Activity names are in single quotes: 'Activity Name'
+- tau (without quotes) represents silent/skip transitions
+- Nesting shows hierarchical structure
+
+EXAMPLE INTERPRETATIONS:
+- ->( 'A', 'B', 'C' ): Do A, then B, then C (sequence)
+- X( 'A', 'B' ): Do either A or B (exclusive choice)
+- +( 'A', 'B' ): Do A and B in parallel (any interleaving)
+- *( 'A', tau ): Repeat A zero or more times (loop with silent exit)
+- X( tau, 'A' ): Optionally do A (can skip)
+- ->( 'A', X( tau, 'B' ), 'C' ): Do A, optionally B, then C
+
+COMPLEX EXAMPLE:
+"->( 'Start', X( tau, *( 'Review', tau ) ), +( 'Approve', 'Notify' ), 'End' )"
+Means: Start, then optionally review (repeatable), then approve AND notify in parallel, then End
+
+INDUCTIVE MINER PROPERTIES:
+- Always produces sound (properly completing) models
+- May introduce tau for fitness to observed behavior
+- Block-structured (properly nested, no arbitrary jumps)
+
+
+--- DISCOVERED MODEL ---
+->( 'Request Appointment', X( 'Appointment Denied', ->( 'Set Appointment', 'Hand In Credit Appliaction', 'Verify Borrowers Information', X( 'Application Rejected', +( X( tau, 'Loan Denied' ), ->( X( 'skipped_examination', ->( X( tau, +( X( tau, 'Request Co-Signer On Loan' ), X( tau, *( 'Make Visit to Assess Colatteral', tau ) ) ) ), 'Submit File to Underwriter' ) ), X( tau, 'Sign Loan Agreement' ) ) ) ) ) ) )
+
+
+============================================================
+REPRESENTATION 4: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Request Appointment; freq. 10000) (Verify Borrowers Information; freq. 9038) (Set Appointment; freq. 9038) (Hand In Credit Appliaction; freq. 9038) (Submit File to Underwriter; freq. 7082) (Loan Denied; freq. 4787) (Sign Loan Agreement; freq. 2627) (Make Visit to Assess Colatteral; freq. 2522) (Request Co-Signer On Loan; freq. 1772) (Application Rejected; freq. 1624) (Appointment Denied; freq. 962) (skipped_examination; freq. 332)
+case:citizen  empty: 0 values: (True; freq. 34517) (False; freq. 24305)
+case:gender  empty: 0 values: (True; freq. 33889) (False; freq. 24933)
+case:german speaking  empty: 0 values: (True; freq. 34261) (False; freq. 24561)
+case:protected  empty: 0 values: (False; freq. 41441) (True; freq. 17381)
+concept:name  empty: 0 values: (Request Appointment; freq. 10000) (Verify Borrowers Information; freq. 9038) (Set Appointment; freq. 9038) (Hand In Credit Appliaction; freq. 9038) (Submit File to Underwriter; freq. 7082) (Loan Denied; freq. 4787) (Sign Loan Agreement; freq. 2627) (Make Visit to Assess Colatteral; freq. 2522) (Request Co-Signer On Loan; freq. 1772) (Application Rejected; freq. 1624) (Appointment Denied; freq. 962) (skipped_examination; freq. 332)
+resource  empty: 0 values: (Online System; freq. 9038) (Loan Officer 5; freq. 4531) (Loan Officer 4; freq. 4470) (Loan Officer 1; freq. 4458) (Loan Officer 2; freq. 4457) (Loan Officer 3; freq. 4454) (Hotline; freq. 4001) (Resource 4; freq. 3259) (Resource 3; freq. 3218) (Resource 1; freq. 3188) (Resource 5; freq. 3187) (Resource 2; freq. 3147) (Chill UW2; freq. 1681) (Chill UW1; freq. 1566) (Chill UW3; freq. 1545) (Strict UW1; freq. 786) (Strict UW3; freq. 753) (Strict UW2; freq. 751) (MostChillUW; freq. 332)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:14:40+0000', tz='UTC'), 0.5: Timestamp('2015-01-07 07:32:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:13:06+0000', tz='UTC'), 1.0: Timestamp('2015-01-10 16:07:59+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:14:40+0000', tz='UTC'), 0.5: Timestamp('2015-01-07 07:32:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:13:06+0000', tz='UTC'), 1.0: Timestamp('2015-01-10 16:07:59+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:14:40+0000', tz='UTC'), 0.5: Timestamp('2015-01-07 07:32:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:13:06+0000', tz='UTC'), 1.0: Timestamp('2015-01-10 16:07:59+0000', tz='UTC')}
+
+
+============================================================
+REPRESENTATION 5: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (07471b4c-0254-44b5-9033-351af50a8c42, 'Request Co-Signer On Loan'), (0b126d36-c9e7-43f4-a469-63abe553eeb7, 'skipped_examination'), (1d87dad5-b703-4d96-84e3-1454a3837a4e, 'Loan Denied'), (39e573b3-7782-4cf4-8096-6eccd8d939fc, 'Verify Borrowers Information'), (8be0d61b-f677-42a5-a74f-baddfe7bcd86, 'Request Appointment'), (9246dc79-3c89-4e78-a5ea-c9bef78548cc, 'Make Visit to Assess Colatteral'), (a02d3dd0-99a4-48a5-a3fe-2d15dd4f0f61, 'Application Rejected'), (ac4f4ccf-59e3-4612-9094-d0b4e29c43b4, 'Submit File to Underwriter'), (b9e83b5c-de48-4549-a21c-756407a92126, 'Sign Loan Agreement'), (c0ba9f20-e90b-4e84-a8d7-ae12fccffc66, 'Appointment Denied'), (d440fbc4-ae4c-4a19-8f74-5080eea02d7d, 'Hand In Credit Appliaction'), (efff2791-5a9d-4cfc-8740-24f09de60b15, 'Set Appointment'), (init_loop_9, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_3, None), (skip_4, None), (skip_7, None), (skip_8, None), (tauJoin_2, None), (tauJoin_6, None), (tauSplit_1, None), (tauSplit_5, None) ]
+arcs: [ (07471b4c-0254-44b5-9033-351af50a8c42, 'Request Co-Signer On Loan')->p_14, (0b126d36-c9e7-43f4-a469-63abe553eeb7, 'skipped_examination')->p_11, (1d87dad5-b703-4d96-84e3-1454a3837a4e, 'Loan Denied')->p_8, (39e573b3-7782-4cf4-8096-6eccd8d939fc, 'Verify Borrowers Information')->p_6, (8be0d61b-f677-42a5-a74f-baddfe7bcd86, 'Request Appointment')->p_3, (9246dc79-3c89-4e78-a5ea-c9bef78548cc, 'Make Visit to Assess Colatteral')->p_18, (a02d3dd0-99a4-48a5-a3fe-2d15dd4f0f61, 'Application Rejected')->sink, (ac4f4ccf-59e3-4612-9094-d0b4e29c43b4, 'Submit File to Underwriter')->p_11, (b9e83b5c-de48-4549-a21c-756407a92126, 'Sign Loan Agreement')->p_10, (c0ba9f20-e90b-4e84-a8d7-ae12fccffc66, 'Appointment Denied')->sink, (d440fbc4-ae4c-4a19-8f74-5080eea02d7d, 'Hand In Credit Appliaction')->p_5, (efff2791-5a9d-4cfc-8740-24f09de60b15, 'Set Appointment')->p_4, (init_loop_9, None)->p_17, (skip_11, None)->p_17, (skip_12, None)->p_16, (skip_13, None)->p_10, (skip_3, None)->p_8, (skip_4, None)->p_12, (skip_7, None)->p_14, (skip_8, None)->p_16, (tauJoin_2, None)->sink, (tauJoin_6, None)->p_12, (tauSplit_1, None)->p_7, (tauSplit_1, None)->p_9, (tauSplit_5, None)->p_13, (tauSplit_5, None)->p_15, p_10->(tauJoin_2, None), p_11->(b9e83b5c-de48-4549-a21c-756407a92126, 'Sign Loan Agreement'), p_11->(skip_13, None), p_12->(ac4f4ccf-59e3-4612-9094-d0b4e29c43b4, 'Submit File to Underwriter'), p_13->(07471b4c-0254-44b5-9033-351af50a8c42, 'Request Co-Signer On Loan'), p_13->(skip_7, None), p_14->(tauJoin_6, None), p_15->(init_loop_9, None), p_15->(skip_8, None), p_16->(tauJoin_6, None), p_17->(9246dc79-3c89-4e78-a5ea-c9bef78548cc, 'Make Visit to Assess Colatteral'), p_18->(skip_11, None), p_18->(skip_12, None), p_3->(c0ba9f20-e90b-4e84-a8d7-ae12fccffc66, 'Appointment Denied'), p_3->(efff2791-5a9d-4cfc-8740-24f09de60b15, 'Set Appointment'), p_4->(d440fbc4-ae4c-4a19-8f74-5080eea02d7d, 'Hand In Credit Appliaction'), p_5->(39e573b3-7782-4cf4-8096-6eccd8d939fc, 'Verify Borrowers Information'), p_6->(a02d3dd0-99a4-48a5-a3fe-2d15dd4f0f61, 'Application Rejected'), p_6->(tauSplit_1, None), p_7->(1d87dad5-b703-4d96-84e3-1454a3837a4e, 'Loan Denied'), p_7->(skip_3, None), p_8->(tauJoin_2, None), p_9->(0b126d36-c9e7-43f4-a469-63abe553eeb7, 'skipped_examination'), p_9->(skip_4, None), p_9->(tauSplit_5, None), source->(8be0d61b-f677-42a5-a74f-baddfe7bcd86, 'Request Appointment') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+
+
+
+============================================================
+REPRESENTATION 6: DECLARE
+============================================================
+
+
+=== DECLARE INTERPRETATION GUIDE ===
+
+DECLARE is a declarative process modeling language based on temporal logic constraints.
+
+OUTPUT FORMAT:
+--------------
+The output starts with constraint explanations, then lists discovered constraints:
+"I have a DECLARE declarative process model containing the following constraints:
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given (A, B), if A occurs then B also occurs.
+Co-Existence: given (A, B), if A occurs then B also occurs.
+Response: given (A, B), if A occurs then B also occurs in the future.
+Precedence: given (A, B), if B occurs then A occurs in the past.
+Succession: both response and precedence are satisfied.
+...
+
+These are the constraints of the model:
+Existence: Activity1, Activity2, ...
+Responded Existence: ('A', 'B'), ('C', 'D'), ...
+Response: ('A', 'B'), ...
+Initialization: Activity1
+Exactly 1: Activity1, Activity2, ..."
+
+CONSTRAINT CATEGORIES:
+
+EXISTENCE CONSTRAINTS:
+- Existence: Activity must occur at least once
+- Absence: Activity must not occur
+- Exactly 1: Activity occurs exactly once
+- Initialization: Trace must start with this activity
+
+RELATION CONSTRAINTS:
+- Responded Existence: If A occurs, B must occur (anywhere)
+- Co-Existence: A and B always occur together or both absent
+- Response: If A occurs, B must occur afterwards
+- Precedence: B can only occur if A occurred before
+- Succession: Both response and precedence
+
+CHAIN CONSTRAINTS (immediate succession):
+- Chain Response: B must immediately follow A
+- Chain Precedence: A must immediately precede B
+- Chain Succession: Both chain response and precedence
+
+NEGATIVE CONSTRAINTS:
+- Non Co-Existence: A and B cannot both occur
+- Non Succession: B cannot follow A
+- Non Chain Succession: B cannot immediately follow A
+
+PHILOSOPHY:
+- "Everything not forbidden is allowed"
+- Specifies constraints that must hold
+- Any execution path satisfying constraints is valid
+
+USE FOR:
+- Knowledge-intensive processes
+- Compliance requirements
+- Flexible workflow modeling
+- Understanding what MUST happen vs what CAN happen
+
+
+--- DISCOVERED MODEL ---
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Alternate response: ('Request Appointment', 'Hand In Credit Appliaction'), ('Request Appointment', 'Verify Borrowers Information'), ('Set Appointment', 'Verify Borrowers Information'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information'), ('Request Appointment', 'Set Appointment')
+Responded Existence: ('Hand In Credit Appliaction', 'Request Appointment'), ('Verify Borrowers Information', 'Set Appointment'), ('Verify Borrowers Information', 'Request Appointment'), ('Set Appointment', 'Verify Borrowers Information'), ('Verify Borrowers Information', 'Hand In Credit Appliaction'), ('Request Appointment', 'Set Appointment'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Set Appointment'), ('Request Appointment', 'Verify Borrowers Information'), ('Set Appointment', 'Request Appointment'), ('Hand In Credit Appliaction', 'Verify Borrowers Information'), ('Request Appointment', 'Hand In Credit Appliaction')
+Response: ('Set Appointment', 'Verify Borrowers Information'), ('Request Appointment', 'Hand In Credit Appliaction'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information'), ('Request Appointment', 'Set Appointment'), ('Request Appointment', 'Verify Borrowers Information')
+Existence: Hand In Credit Appliaction, Request Appointment, Set Appointment, Verify Borrowers Information
+Precedence: ('Request Appointment', 'Set Appointment'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information'), ('Request Appointment', 'Verify Borrowers Information'), ('Request Appointment', 'Hand In Credit Appliaction'), ('Set Appointment', 'Verify Borrowers Information')
+Initialization: Request Appointment
+Exactly 1: Hand In Credit Appliaction, Request Appointment, Verify Borrowers Information, Set Appointment
+Alternate precedence: ('Set Appointment', 'Hand In Credit Appliaction'), ('Set Appointment', 'Verify Borrowers Information'), ('Request Appointment', 'Set Appointment'), ('Request Appointment', 'Verify Borrowers Information'), ('Hand In Credit Appliaction', 'Verify Borrowers Information'), ('Request Appointment', 'Hand In Credit Appliaction')
+Chain precedence: ('Request Appointment', 'Set Appointment'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information')
+Chain response: ('Request Appointment', 'Set Appointment'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information')
+Absence: Appointment Denied, Request Co-Signer On Loan, Make Visit to Assess Colatteral, Application Rejected, skipped_examination
+Succession: ('Set Appointment', 'Verify Borrowers Information'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Request Appointment', 'Verify Borrowers Information'), ('Request Appointment', 'Set Appointment'), ('Request Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information')
+Alternate succession: ('Set Appointment', 'Verify Borrowers Information'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Request Appointment', 'Verify Borrowers Information'), ('Request Appointment', 'Set Appointment'), ('Request Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information')
+Chain succession: ('Set Appointment', 'Hand In Credit Appliaction'), ('Request Appointment', 'Set Appointment'), ('Hand In Credit Appliaction', 'Verify Borrowers Information')
+Co-Existence: ('Verify Borrowers Information', 'Set Appointment'), ('Verify Borrowers Information', 'Request Appointment'), ('Verify Borrowers Information', 'Hand In Credit Appliaction'), ('Set Appointment', 'Verify Borrowers Information'), ('Set Appointment', 'Request Appointment'), ('Set Appointment', 'Hand In Credit Appliaction'), ('Request Appointment', 'Verify Borrowers Information'), ('Request Appointment', 'Set Appointment'), ('Request Appointment', 'Hand In Credit Appliaction'), ('Hand In Credit Appliaction', 'Verify Borrowers Information'), ('Hand In Credit Appliaction', 'Set Appointment'), ('Hand In Credit Appliaction', 'Request Appointment')
+
+
+
+============================================================
+REPRESENTATION 7: LOG_SKELETON
+============================================================
+
+
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model capturing behavioral constraints
+observed in an event log.
+
+OUTPUT FORMAT:
+--------------
+The output starts with an explanation, then lists constraints:
+"The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence: ('A', 'B') ('C', 'D') ...
+Always Before: ('A', 'B') ...
+Always After: ('A', 'B') ...
+Never Together: ('A', 'B') ...
+Directly-Follows: ('A', 'B') ..."
+
+CONSTRAINT TYPES:
+1. Equivalence: Activities A and B always occur the same number of times
+2. Always Before: If A occurs, B must have occurred before
+3. Always After: If A occurs, B must occur afterwards
+4. Never Together: A and B cannot both occur in the same case
+5. Activity Occurrences: Bounds on how many times an activity occurs
+6. Directly-Follows: B must immediately follow A
+
+READING THE CONSTRAINTS:
+- Tuples ('A', 'B'): Constraint relates activity A to activity B
+- Multiple tuples: Each represents one constraint instance
+- Order matters: First activity triggers the constraint
+
+USE FOR:
+- Compliance checking
+- Process auditing
+- Anomaly detection
+- Understanding mandatory relationships
+- Validating process instances
+
+COMPARISON:
+- vs Petri Net: Declarative vs procedural
+- vs DECLARE: Log skeleton is simpler subset
+- vs DFG: Captures more than direct follows
+
+
+--- DISCOVERED MODEL ---
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('Set Appointment', 'Request Appointment') ('Request Co-Signer On Loan', 'Set Appointment') ('Request Co-Signer On Loan', 'Verify Borrowers Information') ('Sign Loan Agreement', 'Hand In Credit Appliaction') ('Loan Denied', 'Request Appointment') ('Set Appointment', 'Hand In Credit Appliaction') ('Hand In Credit Appliaction', 'Request Appointment') ('Loan Denied', 'Hand In Credit Appliaction') ('Application Rejected', 'Request Appointment') ('skipped_examination', 'Set Appointment') ('skipped_examination', 'Verify Borrowers Information') ('Submit File to Underwriter', 'Request Appointment') ('Verify Borrowers Information', 'Request Appointment') ('Appointment Denied', 'Request Appointment') ('Request Co-Signer On Loan', 'Request Appointment') ('Loan Denied', 'Submit File to Underwriter') ('Sign Loan Agreement', 'Set Appointment') ('Submit File to Underwriter', 'Hand In Credit Appliaction') ('Verify Borrowers Information', 'Hand In Credit Appliaction') ('Sign Loan Agreement', 'Verify Borrowers Information') ('Application Rejected', 'Hand In Credit Appliaction') ('Set Appointment', 'Verify Borrowers Information') ('skipped_examination', 'Sign Loan Agreement') ('Request Co-Signer On Loan', 'Hand In Credit Appliaction') ('Loan Denied', 'Set Appointment') ('Loan Denied', 'Verify Borrowers Information') ('skipped_examination', 'Request Appointment') ('Hand In Credit Appliaction', 'Set Appointment') ('Hand In Credit Appliaction', 'Verify Borrowers Information') ('Request Co-Signer On Loan', 'Submit File to Underwriter') ('Submit File to Underwriter', 'Set Appointment') ('Verify Borrowers Information', 'Set Appointment') ('Submit File to Underwriter', 'Verify Borrowers Information') ('Application Rejected', 'Set Appointment') ('Application Rejected', 'Verify Borrowers Information') ('skipped_examination', 'Hand In Credit Appliaction') ('Sign Loan Agreement', 'Request Appointment')
+
+Always Before:  ('Set Appointment', 'Request Appointment') ('Request Co-Signer On Loan', 'Verify Borrowers Information') ('Request Co-Signer On Loan', 'Set Appointment') ('Sign Loan Agreement', 'Hand In Credit Appliaction') ('Loan Denied', 'Request Appointment') ('Hand In Credit Appliaction', 'Request Appointment') ('Loan Denied', 'Hand In Credit Appliaction') ('Application Rejected', 'Request Appointment') ('skipped_examination', 'Set Appointment') ('skipped_examination', 'Verify Borrowers Information') ('Submit File to Underwriter', 'Request Appointment') ('Verify Borrowers Information', 'Request Appointment') ('Appointment Denied', 'Request Appointment') ('Request Co-Signer On Loan', 'Request Appointment') ('Loan Denied', 'Submit File to Underwriter') ('Sign Loan Agreement', 'Set Appointment') ('Submit File to Underwriter', 'Hand In Credit Appliaction') ('Verify Borrowers Information', 'Hand In Credit Appliaction') ('Sign Loan Agreement', 'Verify Borrowers Information') ('Application Rejected', 'Hand In Credit Appliaction') ('Request Co-Signer On Loan', 'Hand In Credit Appliaction') ('Loan Denied', 'Set Appointment') ('Loan Denied', 'Verify Borrowers Information') ('skipped_examination', 'Request Appointment') ('Hand In Credit Appliaction', 'Set Appointment') ('Submit File to Underwriter', 'Set Appointment') ('Verify Borrowers Information', 'Set Appointment') ('Submit File to Underwriter', 'Verify Borrowers Information') ('Application Rejected', 'Set Appointment') ('Application Rejected', 'Verify Borrowers Information') ('skipped_examination', 'Hand In Credit Appliaction') ('Sign Loan Agreement', 'Request Appointment')
+
+Always After:  ('Hand In Credit Appliaction', 'Verify Borrowers Information') ('Request Co-Signer On Loan', 'Submit File to Underwriter') ('Set Appointment', 'Verify Borrowers Information') ('skipped_examination', 'Sign Loan Agreement') ('Set Appointment', 'Hand In Credit Appliaction')
+
+Never Together:  ('Submit File to Underwriter', 'skipped_examination') ('skipped_examination', 'Make Visit to Assess Colatteral') ('Appointment Denied', 'Set Appointment') ('Appointment Denied', 'Verify Borrowers Information') ('Loan Denied', 'Sign Loan Agreement') ('Appointment Denied', 'skipped_examination') ('skipped_examination', 'Submit File to Underwriter') ('Request Co-Signer On Loan', 'skipped_examination') ('Submit File to Underwriter', 'Application Rejected') ('skipped_examination', 'Loan Denied') ('Appointment Denied', 'Application Rejected') ('Request Co-Signer On Loan', 'Application Rejected') ('skipped_examination', 'Appointment Denied') ('Application Rejected', 'Sign Loan Agreement') ('Appointment Denied', 'Sign Loan Agreement') ('Sign Loan Agreement', 'Loan Denied') ('Sign Loan Agreement', 'Appointment Denied') ('Set Appointment', 'Appointment Denied') ('skipped_examination', 'Application Rejected') ('Make Visit to Assess Colatteral', 'Appointment Denied') ('Application Rejected', 'Request Co-Signer On Loan') ('Loan Denied', 'Appointment Denied') ('Application Rejected', 'Make Visit to Assess Colatteral') ('Hand In Credit Appliaction', 'Appointment Denied') ('Application Rejected', 'Submit File to Underwriter') ('Appointment Denied', 'Hand In Credit Appliaction') ('Appointment Denied', 'Request Co-Signer On Loan') ('Make Visit to Assess Colatteral', 'skipped_examination') ('Application Rejected', 'Loan Denied') ('Sign Loan Agreement', 'Application Rejected') ('Appointment Denied', 'Make Visit to Assess Colatteral') ('Loan Denied', 'skipped_examination') ('Make Visit to Assess Colatteral', 'Application Rejected') ('Appointment Denied', 'Submit File to Underwriter') ('Application Rejected', 'Appointment Denied') ('Submit File to Underwriter', 'Appointment Denied') ('Verify Borrowers Information', 'Appointment Denied') ('Appointment Denied', 'Loan Denied') ('Loan Denied', 'Application Rejected') ('Request Co-Signer On Loan', 'Appointment Denied') ('Application Rejected', 'skipped_examination') ('skipped_examination', 'Request Co-Signer On Loan')
+
+Activity Occurrences:  Request Appointment: 1; Set Appointment: 0, 1; Hand In Credit Appliaction: 0, 1; Verify Borrowers Information: 0, 1; Make Visit to Assess Colatteral: 0, 1, 2, 3, 4, 5, 6, 7, 8; Request Co-Signer On Loan: 0, 1; Submit File to Underwriter: 0, 1; Sign Loan Agreement: 0, 1; Loan Denied: 0, 1; Application Rejected: 0, 1; Appointment Denied: 0, 1; skipped_examination: 0, 1;
+
+Directly-Follows Constraints:  ('Hand In Credit Appliaction', 'Verify Borrowers Information') ('Set Appointment', 'Hand In Credit Appliaction') ('skipped_examination', 'Sign Loan Agreement')
+
+

@@ -1,0 +1,76 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_ILP
+============================================================
+
+
+=== PETRI NET (ILP MINER) INTERPRETATION GUIDE ===
+
+The ILP (Integer Linear Programming) Miner constructs Petri nets that perfectly
+fit the observed behavior by solving an optimization problem.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ 3, 4, 5, ..., sink, source ]
+transitions: [ (Activity, 'Activity'), (■, None), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+PLACE NAMING:
+- Numeric identifiers (3, 4, 5, ...) for intermediate places
+- 'source' and 'sink' for start/end
+- Minimized number of places (optimization objective)
+
+SPECIAL TRANSITIONS:
+- (■, None) or similar: Silent/tau transitions for routing
+- Visible activities: (ActivityName, 'ActivityName')
+
+KEY CHARACTERISTICS:
+- Perfect fitness: ALL observed traces can replay
+- Minimal structure: Fewest places/arcs that explain behavior
+- May include silent transitions for complex routing
+- Numerically named places (optimization result)
+
+OPTIMIZATION OBJECTIVE:
+- Minimize structural complexity
+- Subject to: All traces must be replayable
+- Token flow conservation at each step
+
+ADVANTAGES:
+- Guaranteed perfect fitness
+- Mathematically rigorous
+- No heuristic parameters to tune
+- Finds minimal explaining structure
+
+LIMITATIONS:
+- Computationally expensive for large logs
+- May overfit to observed behavior
+- Does not handle noise well
+- Scalability issues with many activities
+
+WHEN TO USE:
+- Small to medium-sized logs
+- When perfect fitness is required
+- Clean logs without noise
+- Understanding exact behavioral boundaries
+
+
+--- DISCOVERED MODEL ---
+[ILP Miner]
+
+
+If I have a Petri net:
+
+places: [ 10, 3, 4, 5, 6, 7, 8, 9, sink, source ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Appointment Denied, 'Appointment Denied'), (Hand In Credit Appliaction, 'Hand In Credit Appliaction'), (Loan Denied, 'Loan Denied'), (Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral'), (Request Appointment, 'Request Appointment'), (Request Co-Signer On Loan, 'Request Co-Signer On Loan'), (Set Appointment, 'Set Appointment'), (Sign Loan Agreement, 'Sign Loan Agreement'), (Submit File to Underwriter, 'Submit File to Underwriter'), (Verify Borrowers Information, 'Verify Borrowers Information'), (skipped_examination, 'skipped_examination'), (■, None) ]
+arcs: [ (Application Rejected, 'Application Rejected')->9, (Appointment Denied, 'Appointment Denied')->9, (Hand In Credit Appliaction, 'Hand In Credit Appliaction')->5, (Loan Denied, 'Loan Denied')->9, (Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral')->6, (Request Appointment, 'Request Appointment')->3, (Request Co-Signer On Loan, 'Request Co-Signer On Loan')->7, (Set Appointment, 'Set Appointment')->4, (Sign Loan Agreement, 'Sign Loan Agreement')->9, (Submit File to Underwriter, 'Submit File to Underwriter')->8, (Verify Borrowers Information, 'Verify Borrowers Information')->10, (Verify Borrowers Information, 'Verify Borrowers Information')->6, (Verify Borrowers Information, 'Verify Borrowers Information')->7, (skipped_examination, 'skipped_examination')->8, (■, None)->sink, 10->(Application Rejected, 'Application Rejected'), 10->(Submit File to Underwriter, 'Submit File to Underwriter'), 10->(skipped_examination, 'skipped_examination'), 3->(Appointment Denied, 'Appointment Denied'), 3->(Set Appointment, 'Set Appointment'), 4->(Hand In Credit Appliaction, 'Hand In Credit Appliaction'), 5->(Verify Borrowers Information, 'Verify Borrowers Information'), 6->(Application Rejected, 'Application Rejected'), 6->(Make Visit to Assess Colatteral, 'Make Visit to Assess Colatteral'), 6->(Submit File to Underwriter, 'Submit File to Underwriter'), 6->(skipped_examination, 'skipped_examination'), 7->(Application Rejected, 'Application Rejected'), 7->(Request Co-Signer On Loan, 'Request Co-Signer On Loan'), 7->(Submit File to Underwriter, 'Submit File to Underwriter'), 7->(skipped_examination, 'skipped_examination'), 8->(Loan Denied, 'Loan Denied'), 8->(Sign Loan Agreement, 'Sign Loan Agreement'), 9->(■, None), source->(Request Appointment, 'Request Appointment') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

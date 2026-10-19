@@ -1,0 +1,172 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Coordinate property viewings initiated by a prospective tenant, ensure paperwork is submitted immediately after the viewing, and complete two mandatory back-office activities: checking the paperwork and screening the prospective tenant.
+- Modeling basis: Declarative (DECLARE) constraints define what must/ must not occur and in what relative order. Everything not forbidden is allowed.
+
+Key stakeholders and roles involved
+- Prospective tenant (explicitly referenced in activity labels).
+- Internal staff (role names not specified in the source) responsible for setting the appointment, checking paperwork, and conducting the screening.
+- No additional actors are specified; rent-collection or enforcement roles are explicitly out of scope.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Apply for Viewing Appointment.
+- Initialization constraint: The process must start with Apply for Viewing Appointment.
+- Multiplicity: Apply for Viewing Appointment occurs exactly once per case.
+
+Core sequential backbone (all three steps occur exactly once and directly follow one another with no intervening activities)
+1) Apply for Viewing Appointment (start)
+   - Must occur first and exactly once.
+
+2) Set Appointment
+   - Must occur and must come immediately after Apply for Viewing Appointment (chain succession).
+   - Occurs exactly once.
+
+3) View The Property
+   - Must occur and must come immediately after Set Appointment (chain succession).
+   - Occurs exactly once.
+
+Immediate post-viewing submission
+4) Hand In The Paperwork
+   - Must occur and must come immediately after View The Property (chain succession).
+   - Because View The Property occurs exactly once and Hand In The Paperwork must be immediately preceded and followed as a pair, Hand In The Paperwork effectively occurs exactly once and cannot occur before or without a viewing.
+
+Post-submission mandatory activities (order not fixed)
+5) Check Paperwork
+6) Screen Prospective Tenant
+   - Both are mandatory: whenever View The Property (and Set Appointment) occur, each of these must occur later (succession/response/co-existence constraints).
+   - Ordering: There is no fixed sequence between Check Paperwork and Screen Prospective Tenant. Either may occur first.
+   - Concurrency: The model permits them to be performed in any order and does not prevent overlap; operationally they may be run sequentially or concurrently if resources allow.
+   - Repetition: The constraints do not forbid repeating these activities; they may occur one or multiple times. At least one execution of each is required.
+
+Decision points and gateways
+- No explicit decision points are mandated by the constraints. The process logic is predominantly sequential for the first four activities and then inclusive for the two mandatory post-submission activities (both must occur, in any order).
+
+Parallel activities and synchronization points
+- Potential parallelism: Check Paperwork and Screen Prospective Tenant may proceed independently after Hand In The Paperwork.
+- Synchronization/implicit completion: The case can complete once both Check Paperwork and Screen Prospective Tenant have occurred at least once (the model provides no further mandatory tasks after these are done).
+
+Exception handling and error paths
+- Explicitly disallowed/absent activities: Issue Warning, Evict Tenant, Miss Rent Payment, Accept Late Payment do not occur in this process (they are outside scope and forbidden by the model).
+- No explicit rejection, cancellation, or rescheduling paths are modeled.
+- No explicit handling for missing or incorrect paperwork is modeled; re-submission is not possible because Hand In The Paperwork is bound to occur exactly once immediately after viewing.
+
+Rework loops and escalation procedures
+- Allowed rework: Check Paperwork and Screen Prospective Tenant can repeat, unconstrained by the model, potentially creating rework cycles.
+- Not allowed: Repeating Apply for Viewing Appointment, Set Appointment, View The Property, or Hand In The Paperwork (immediate and exact-one constraints effectively prevent repeats of these core steps).
+- No escalation activities are modeled.
+
+End conditions and outcomes
+- Completion: The process may end after both Check Paperwork and Screen Prospective Tenant have occurred at least once.
+- There is no modeled outcome classification (e.g., pass/fail); the model stops once the two mandatory post-submission activities have happened.
+- No explicit end event is named, but termination is implied by satisfying all constraints.
+
+Process metrics and performance characteristics
+- Throughput time: From Apply for Viewing Appointment to completion after both post-submission activities.
+- Handover timing: Chain successions indicate no intervening activities between Apply → Set Appointment → View The Property → Hand In The Paperwork (there may be waiting time, but no other recorded activities in between).
+- Work-in-progress: Up to two active post-submission activities can be in progress concurrently.
+- Rework intensity: Potentially high for Check Paperwork and Screen Prospective Tenant due to lack of repetition bounds.
+- Conformance anchors: 
+  - Exactly once for Apply for Viewing Appointment, Set Appointment, and View The Property.
+  - Immediate adjacency for Apply → Set, Set → View, and View → Hand In.
+  - Mandatory occurrence of Check Paperwork and Screen Prospective Tenant after viewing.
+
+Key challenges and pain points
+- Overly rigid adjacency: Forbids any intervening operational steps (e.g., communications, reminders) between the core backbone activities; the paperwork must immediately follow the viewing.
+- No re-submission path: If paperwork is incomplete, there is no modeled route to Hand In The Paperwork again, yet Check Paperwork can repeat—risking repeated checks without updated documents.
+- No explicit decision outcome: The process lacks a clear acceptance/denial end state after screening and checking, making completion criteria opaque beyond mere occurrence.
+- No rescheduling/no-show handling: Set Appointment and View The Property are fixed to exactly-once with immediate succession; there is no modeled way to handle cancellations or no-shows.
+- Potential for unbounded rework: Screening and paperwork checking can repeat indefinitely, risking delays without formal stop criteria.
+- Scope exclusions: Downstream tenancy lifecycle events (warnings, eviction, payments) are excluded and cannot be used to represent outcomes.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a controlled, efficient pathway from a viewing request to a completed application pre-assessment by ensuring timely appointment setting and viewing, structured paperwork intake, and streamlined parallel completion of paperwork checks and tenant screening with clear outcomes.
+- Design philosophy: Retain the essential activities from the discovered model; remove undue rigidity; add necessary control logic (without new activities) to support realistic handling, rework only where value-adding, and unambiguous completion.
+
+Key stakeholders and roles involved
+- Prospective tenant (applies, views, submits paperwork).
+- Internal staff (role names not specified) responsible for appointment setting, paperwork checking, and screening.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: Apply for Viewing Appointment (one per case; must be the first activity).
+
+Controlled sequencing of core activities (remove unnecessary immediate constraints while preserving order)
+1) Apply for Viewing Appointment (start)
+   - Must occur first.
+
+2) Set Appointment
+   - Must occur after Apply for Viewing Appointment (no immediate adjacency required; allows internal communications or confirmations as needed).
+   - Exactly once by design to minimize administrative overhead; (optional rescheduling can be handled by cancel/recreate at the case level if required by policy, but not modeled as a separate activity).
+
+3) View The Property
+   - Must occur after Set Appointment (no immediate adjacency required).
+
+Structured paperwork intake with targeted rework
+4) Hand In The Paperwork
+   - Must occur after the viewing (not necessarily immediately).
+   - Rework is allowed only when Check Paperwork identifies deficiencies; this creates a controlled loop back to Hand In The Paperwork for re-submission. Limit the number of re-submissions per policy (e.g., max N attempts)—the loop uses existing activities only.
+
+Parallel mandatory back-office processing with synchronization
+5) In parallel (inclusive-parallel split; both branches required):
+   - Branch A: Check Paperwork
+     - Execute once per satisfactory submission. If issues are found, provide feedback and return to Hand In The Paperwork for re-submission, then re-execute Check Paperwork.
+   - Branch B: Screen Prospective Tenant
+     - Execute once. Re-execution only if screening expires or requires refresh per policy (otherwise avoid repeats to limit waste).
+6) Synchronization (parallel join)
+   - Proceed only when both Check Paperwork (passed) and Screen Prospective Tenant are completed.
+
+Decision points with clear outcomes (end states, not new activities)
+- Outcome evaluation (implicit gateway at the join):
+  - If Check Paperwork passed and Screen Prospective Tenant completed satisfactorily: case ends as Pre-assessment Complete.
+  - If maximum re-submission attempts reached without passing checks, or screening cannot be completed or fails per policy: case ends as Pre-assessment Not Completed/Not Eligible.
+  - If paperwork not submitted within a defined time window after the viewing: case ends as Incomplete (Timed Out).
+
+Exception handling and error paths
+- Missing paperwork: Timeout leads to Incomplete end state.
+- Incomplete or incorrect paperwork: Controlled rework loop between Check Paperwork and Hand In The Paperwork until pass or limits reached.
+- Screening exceptions (e.g., unable to obtain data): Terminate with Not Completed/Not Eligible end state.
+- Activities unrelated to this pre-assessment (Issue Warning, Evict Tenant, Miss Rent Payment, Accept Late Payment) remain out of scope and are not permitted in this process.
+
+Rework loops and escalation procedures
+- Rework loop: Hand In The Paperwork ↔ Check Paperwork, capped by a policy-defined maximum attempts to prevent unbounded cycles.
+- Screening re-run: Allowed only by explicit policy triggers (e.g., expiration), otherwise exactly once to avoid waste.
+- Escalation (policy-based): If nearing attempt/time limits, internal staff may prioritize or expedite checks; no new activities are introduced—this is governance over existing steps.
+
+Parallel activities and synchronization points
+- Explicit parallelization of Check Paperwork and Screen Prospective Tenant to reduce cycle time.
+- Join requires both branches to complete before outcome determination.
+
+End conditions and outcomes
+- Pre-assessment Complete (success): Both checks completed (and paperwork passed) within limits.
+- Pre-assessment Not Completed/Not Eligible (unsuccessful): Failure to pass checks or complete screening.
+- Incomplete (Timed Out): Paperwork not submitted in time after viewing.
+
+Process metrics and performance characteristics
+- Lead time: Apply for Viewing Appointment to View The Property.
+- Intake latency: View The Property to first Hand In The Paperwork.
+- First-pass yield: Percentage of cases passing Check Paperwork without re-submission.
+- Rework rate: Average number of re-submissions per case (should be low under target).
+- Parallel efficiency: Overlap time between Check Paperwork and Screen Prospective Tenant; target high concurrency.
+- SLA adherence: 
+  - Appointment setting within target window after application.
+  - Paperwork submission within target window after viewing.
+  - Screening and paperwork check completion within defined SLAs.
+- Completion ratio by outcome: Complete vs Not Completed/Not Eligible vs Incomplete (Timed Out).
+
+Improvements made (vs discovered behavior)
+- Removed unnecessary immediate adjacency constraints between Apply → Set Appointment → View → Hand In to allow operational flexibility while preserving correct ordering.
+- Introduced a controlled, value-adding rework loop limited to the Hand In The Paperwork and Check Paperwork pair, enabling corrections without unbounded repetition.
+- Enforced parallel execution of Check Paperwork and Screen Prospective Tenant with a clear synchronization point to reduce cycle time.
+- Clarified explicit end states (success, not completed/not eligible, timeout) to make outcomes unambiguous without adding new activities.
+- Limited repetition of screening (once, unless policy requires refresh) to eliminate wasteful rework.
+- Maintained scope discipline: excluded rent enforcement/payment activities remain out of process, ensuring focus on pre-assessment.
+")

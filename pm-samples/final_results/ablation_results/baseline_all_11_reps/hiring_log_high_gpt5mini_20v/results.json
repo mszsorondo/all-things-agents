@@ -1,0 +1,349 @@
+{
+  "_meta": {
+    "xes_path": "benchmark/hiring/hiring_log_high.xes",
+    "start_time": "2026-01-26T15:04:45.233477",
+    "config": {
+      "model_name": "openai:gpt-5-mini",
+      "validator_model": "gpt-5-mini",
+      "k_valid": 10,
+      "k_invalid": 10,
+      "prompt_file": "GENERATE_AS_IS_MODEL.txt"
+    },
+    "end_time": "2026-01-26T16:11:47.460051"
+  },
+  "baseline": {
+    "representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5882352941176471,
+      "recall": 1.0,
+      "f1": 0.7407407407407407,
+      "TP": 10,
+      "TN": 3,
+      "FP": 7,
+      "FN": 0,
+      "total_compute_time_seconds": 196.78554701805115,
+      "total_tokens": 123585
+    },
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/baseline_all_representations"
+  },
+  "ablation_petri_net_inductive": {
+    "removed_representation": "petri_net_inductive",
+    "remaining_representations": [
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8,
+      "TP": 10,
+      "TN": 5,
+      "FP": 5,
+      "FN": 0,
+      "total_compute_time_seconds": 160.16406679153442,
+      "total_tokens": 118069
+    },
+    "f1_delta": 0.059259259259259345,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_petri_net_inductive"
+  },
+  "ablation_dfg": {
+    "removed_representation": "dfg",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8,
+      "TP": 10,
+      "TN": 5,
+      "FP": 5,
+      "FN": 0,
+      "total_compute_time_seconds": 167.0482370853424,
+      "total_tokens": 107297
+    },
+    "f1_delta": 0.059259259259259345,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_dfg"
+  },
+  "ablation_heuristics_net": {
+    "removed_representation": "heuristics_net",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "TP": 10,
+      "TN": 2,
+      "FP": 8,
+      "FN": 0,
+      "total_compute_time_seconds": 154.87688612937927,
+      "total_tokens": 110181
+    },
+    "f1_delta": -0.026455026455026398,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_heuristics_net"
+  },
+  "ablation_process_tree": {
+    "removed_representation": "process_tree",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "TP": 10,
+      "TN": 2,
+      "FP": 8,
+      "FN": 0,
+      "total_compute_time_seconds": 141.50918841362,
+      "total_tokens": 105485
+    },
+    "f1_delta": -0.026455026455026398,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_process_tree"
+  },
+  "ablation_abstract_variants": {
+    "removed_representation": "abstract_variants",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5882352941176471,
+      "recall": 1.0,
+      "f1": 0.7407407407407407,
+      "TP": 10,
+      "TN": 3,
+      "FP": 7,
+      "FN": 0,
+      "total_compute_time_seconds": 153.0900285243988,
+      "total_tokens": 106637
+    },
+    "f1_delta": 0.0,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_abstract_variants"
+  },
+  "ablation_petri_net_alpha": {
+    "removed_representation": "petri_net_alpha",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5882352941176471,
+      "recall": 1.0,
+      "f1": 0.7407407407407407,
+      "TP": 10,
+      "TN": 3,
+      "FP": 7,
+      "FN": 0,
+      "total_compute_time_seconds": 210.54041051864624,
+      "total_tokens": 111301
+    },
+    "f1_delta": 0.0,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_petri_net_alpha"
+  },
+  "ablation_petri_net_heuristics": {
+    "removed_representation": "petri_net_heuristics",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "TP": 10,
+      "TN": 2,
+      "FP": 8,
+      "FN": 0,
+      "total_compute_time_seconds": 208.21930813789368,
+      "total_tokens": 119625
+    },
+    "f1_delta": -0.026455026455026398,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_petri_net_heuristics"
+  },
+  "ablation_petri_net_ilp": {
+    "removed_representation": "petri_net_ilp",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "log_skeleton",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5882352941176471,
+      "recall": 1.0,
+      "f1": 0.7407407407407407,
+      "TP": 10,
+      "TN": 3,
+      "FP": 7,
+      "FN": 0,
+      "total_compute_time_seconds": 206.96329927444458,
+      "total_tokens": 119549
+    },
+    "f1_delta": 0.0,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_petri_net_ilp"
+  },
+  "ablation_log_skeleton": {
+    "removed_representation": "log_skeleton",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "declare",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "TP": 10,
+      "TN": 2,
+      "FP": 8,
+      "FN": 0,
+      "total_compute_time_seconds": 146.98795795440674,
+      "total_tokens": 98645
+    },
+    "f1_delta": -0.026455026455026398,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_log_skeleton"
+  },
+  "ablation_declare": {
+    "removed_representation": "declare",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "log_attributes"
+    ],
+    "metrics": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "TP": 10,
+      "TN": 2,
+      "FP": 8,
+      "FN": 0,
+      "total_compute_time_seconds": 137.50000500679016,
+      "total_tokens": 118933
+    },
+    "f1_delta": -0.026455026455026398,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_declare"
+  },
+  "ablation_log_attributes": {
+    "removed_representation": "log_attributes",
+    "remaining_representations": [
+      "petri_net_inductive",
+      "dfg",
+      "heuristics_net",
+      "process_tree",
+      "abstract_variants",
+      "petri_net_alpha",
+      "petri_net_heuristics",
+      "petri_net_ilp",
+      "log_skeleton",
+      "declare"
+    ],
+    "metrics": {
+      "precision": 0.5555555555555556,
+      "recall": 1.0,
+      "f1": 0.7142857142857143,
+      "TP": 10,
+      "TN": 2,
+      "FP": 8,
+      "FN": 0,
+      "total_compute_time_seconds": 158.6680691242218,
+      "total_tokens": 110069
+    },
+    "f1_delta": -0.026455026455026398,
+    "folder": "ablation_results/ablation_hiring_log_high_20260126_150426/ablation_without_log_attributes"
+  }
+}

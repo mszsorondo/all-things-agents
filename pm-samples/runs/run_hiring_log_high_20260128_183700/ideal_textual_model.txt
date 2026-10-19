@@ -1,0 +1,115 @@
+IDEAL Process Model
+
+1. Process overview and purpose
+
+- Purpose: Define a streamlined, well-governed hiring process based on the observed AS-IS behavior. The IDEAL model enforces clear sequencing, reduces rework, eliminates inconsistent re-openings of closed cases, and minimizes waiting time. It prescribes a standard gating policy for checks and interviews to shorten time-to-hire while maintaining quality control.
+- Target start event: Hand In Job Application.
+- Target end events: Make Job Offer (successful hire) and Application Rejected (definitive rejection). These are enforced as terminal states unless an explicit, auditable re-opening procedure is triggered.
+
+2. Key stakeholders and roles
+
+- No explicit roles were provided in the input; assignable roles in an implementation would typically include: Recruiter (coordination), Screener (Telephonic Screening), Background Check Team, Technical Interviewers (Coding / Frontend / Backend / ML), Behavioral Interviewer / Hiring Manager, Offer Approver. Because the source model did not specify actors, this IDEAL description describes responsibilities in role-aligned terms but notes they are inferred for improvement purposes only.
+
+3. High-level IDEAL flow and policy decisions
+
+- Default sequencing: After Hand In Job Application the candidate is (A) queued for a Telephonic Screening and (B) a Background Check is initiated in parallel where permitted by policy and candidate consent. Telephonic Screening establishes fit and role alignment; Background Check runs concurrently to avoid unnecessary delays.
+- If Telephonic Screening fails, the candidate is moved directly to Application Rejected (terminal) unless the recruiter requests escalation for special review.
+- If Telephonic Screening passes, candidate proceeds to Screening Interview (structured behavioral interview) and then to a single coordinated Technical Interview track.
+- Technical Interview routing: Based on the role profile, candidates are routed to a primary technical track (Coding → then one specialist as required). Multiple specialist interviews (Frontend/Backend/ML) are scheduled in parallel or as a single consolidated technical panel to avoid rework loops.
+- Behavioral Interview is conducted once after technical panel and before final decision.
+- Final decision: Hiring Committee consolidates results and either Make Job Offer or Application Rejected. Both are terminal; any re-opening requires a documented business case and audit trail.
+
+4. Detailed IDEAL step-by-step flow
+
+Start condition: Candidate submits application (Hand In Job Application).
+
+1) Initial intake (Recruiter)
+   - Validate application completeness and candidate consent for background check.
+   - Trigger Telephonic Screening and parallel Background Check (if policy permits). Parallelization is used to shorten lead time but subject to privacy/compliance gating.
+
+2) Telephonic Screening (Screener)
+   - Criteria: basic role fit, minimal qualification, interest. Outcomes:
+     - Pass → proceed to Screening Interview.
+     - Fail → Application Rejected (terminal).
+     - Borderline → Recruiter review for escalation (possible Screening Interview by exception).
+
+3) Background Check (Background Check Team)
+   - Because it runs in parallel, its result does not block Screening Interview scheduling unless a disqualifying red flag is found.
+   - Outcomes:
+     - Clear → no action required.
+     - Flag found → escalate to Extensive Background Check (only if flag meets predefined criteria) and notify Recruiter.
+     - Disqualifying result → Application Rejected (terminal).
+
+4) Screening Interview (Behavioral/Technical screener)
+   - Structured interview for culture and core skills. Outcomes:
+     - Pass → proceed to Technical Interview Panel.
+     - Fail → Application Rejected (terminal).
+     - Conditional → candidate may be placed under final review by Hiring Committee.
+
+5) Technical Interview Panel (coordinated)
+   - One coordinated panel (panel-based or tightly scheduled sequence) that evaluates coding/role-specific skills. For cross-discipline roles schedule relevant specialists as a single session or parallel sessions completed in a single coordinated block.
+   - Outcomes:
+     - Pass → proceed to Behavioral Interview (if not already done) and Hiring Committee consolidation.
+     - Fail → Application Rejected (terminal) unless there is a justified re-assessment request (rare, with approval).
+
+6) Behavioral Interview (single occurrence)
+   - A single behavioral interview occurs either before or after the technical panel but is conducted at most once to avoid loops.
+   - Outcomes: pass/fail input to Hiring Committee.
+
+7) Hiring Committee Decision (final)
+   - Consolidates technical, screening, behavioral, and background results.
+   - Decision rules:
+     - If background check has unresolved flags, the committee defers or rejects depending on severity.
+     - If majority of interviewers recommend hire → Make Job Offer (terminal).
+     - Otherwise → Application Rejected (terminal).
+   - Re-opening a closed case requires a formal exceptions process with written rationale and approval from Hiring Manager and HR.
+
+8) Post-decision activities (offer acceptance, onboarding) are out of scope for the immediate pipeline but should be handled as separate controlled flows.
+
+5. Decision points and criteria (explicit)
+
+- Telephonic Screening: pass/fail/borderline based on objective checklist (skills, availability, salary expectations).
+- Background Check: clear/flag/disqualifying based on predefined, documented criteria.
+- Screening Interview: pass/fail based on scoring rubric.
+- Technical Panel: pass/fail with minimum score thresholds and consensus rules.
+- Final Decision: majority rule with mandatory check for background clearance.
+
+6. Parallel activities and synchronization
+
+- Background Check runs in parallel with Telephonic Screening and Screening Interview when candidate consent is provided. Synchronization point: Hiring Committee requires a background check status (clear or flagged) before final decision.
+- Technical specialist interviews are consolidated into a single panel or scheduled in a single synchronized session to avoid multi-step re-routing.
+
+7. Exception handling and rework control
+
+- Explicit escalation path for Background Check → Extensive Background Check with defined criteria and SLA.
+- Re-assessment requests for technical failures permitted only with documented new evidence and Manager/HR approval; such requests are limited and audited.
+- Re-opening a closed case requires an exceptions form with approval; otherwise the end states are terminal.
+
+8. Process metrics and target performance characteristics
+
+- Target time-to-hire (lead time): reduce median Hand In Job Application → Decision to below observed median by parallelizing background checks and consolidating interviews. Suggested target: 30-50% reduction from AS-IS median.
+- SLAs:
+   - Telephonic Screening: complete within 3 business days of application.
+   - Background Check: initial result within 5 business days; extensive checks resolved within 7 additional business days.
+   - Technical Panel: scheduled within 7 business days after Screening Interview.
+   - Final Decision: within 2 business days after last interview and background clearance.
+- Quality metrics:
+   - Re-open rate: target <1% (AS-IS shows substantial re-openings).
+   - Re-interview rate (same interview type): target <5%.
+   - Escalation rate to Extensive Background Check: quantifiable and kept low by clear criteria.
+
+9. Improvements made (IDEAL) vs AS-IS pain points
+
+- Stabilizes end states (no spontaneous reversing of Application Rejected or Make Job Offer without a formal exception), eliminating measurement noise and governance problems.
+- Reduces long delays by parallelizing background checks and consolidating technical interviews into a single panel.
+- Removes interview oscillation by routing to a single technical panel instead of repeated back-and-forth between specialists.
+- Removes repeated behavioral interviews by enforcing a single behavioral interview occurrence.
+- Introduces clear decision criteria, SLAs, and audit trails for exceptions, improving compliance and traceability.
+
+10. Governance and implementation notes
+
+- Implement role-based permissions in the ATS to prevent adding new steps after a terminal decision without creating a formal re-open case record.
+- Use structured interview templates and scoring rubrics to reduce subjective re-interviews.
+- Review data quality to avoid timestamp artifacts and ensure event logging is accurate.
+
+Summary (IDEAL): A parallelized, gate-controlled hiring pipeline with single-occurrence interviews for behavioral and technical evaluation (implemented as panels), strict terminal state enforcement, and explicit exception handling. These measures reduce lead time, limit rework, and improve measurement and governance.

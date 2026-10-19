@@ -1,0 +1,45 @@
+
+=== PETRI NET (ALPHA MINER) INTERPRETATION GUIDE ===
+
+The Alpha Miner discovers Petri nets based on ordering relations in the event log.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ place1, place2, ... ]
+transitions: [ (id, 'Label'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+KEY DIFFERENCES FROM INDUCTIVE MINER:
+- Places are often named as tuples like ({'A'}, {'B'}) representing the activities they connect
+- No silent/tau transitions (Alpha miner doesn't handle invisible transitions)
+- May produce disconnected or incomplete nets for complex logs
+
+ORDERING RELATIONS USED:
+1. Direct succession (>): A directly followed by B in some trace
+2. Causality (->): A > B and not B > A
+3. Parallelism (||): A > B and B > A (both orders observed)
+4. Choice (#): A and B never directly follow each other
+
+READING THE OUTPUT:
+- Places named as {A}, {B} tuples: Connect activity A to activity B
+- 'start' and 'end' places: Process entry/exit points
+- All transitions are visible (labeled activities)
+- Arcs show flow: Activity->place or place->Activity
+
+LIMITATIONS:
+- Cannot handle loops of length 1 or 2
+- Sensitive to noise
+- Assumes complete event logs
+- May miss implicit dependencies
+
+WHEN TO USE:
+- Simple, well-structured processes
+- Educational purposes
+- Quick initial discovery
+- Logs with clear sequential patterns

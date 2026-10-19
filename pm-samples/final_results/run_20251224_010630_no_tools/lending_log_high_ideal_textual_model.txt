@@ -1,0 +1,179 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Efficient, low-risk loan-application processing that reliably determines borrower eligibility, completes necessary collateral and co-signer checks, minimizes unnecessary work (especially repeated field visits and avoidable underwriting submissions), and delivers faster, more predictable decisions (Sign Loan Agreement, Loan Denied, Application Rejected, or Appointment Denied).
+- Scope: From initial customer request for appointment through application intake, verification, optional collateral/co-signer handling, submission to underwriting and final decision/signing.
+- Primary goals:
+  - Reduce the volume of submissions that are denied by underwriting.
+  - Eliminate unnecessary repeated Make Visit actions.
+  - Enforce correct sequencing so that files arrive at underwriting complete and consistent.
+  - Maintain compliance by restricting bypasses (skipped_examination) to tightly defined, auditable cases.
+
+Key stakeholders and roles
+- Applicant / Customer: initiates process, supplies documents, attends appointment/visits.
+- Appointment / Front-desk staff: handles Request Appointment, Set Appointment; performs initial triage for eligibility.
+- Intake Officer / Branch Staff: accepts application (Hand In Credit Application) and executes Verify Borrowers Information including a mandatory pre-submission checklist.
+- Field / Valuation Officer: performs Make Visit to Assess Collateral (field visits — limited and scoped).
+- Case Owner / Loan Operations: coordinates co-signer requests, tracks outstanding tasks, enforces pre-submission completion and prepares the file for underwriting.
+- Underwriter: receives completed files via Submit File to Underwriter and issues final decision (Sign Loan Agreement or Loan Denied).
+- Supervisor / Compliance Officer: reviews and authorizes any skipped_examination exceptions.
+
+High-level swimlane responsibilities
+- Applicant: Request Appointment, attend Set Appointment, Hand In Credit Application, respond to co-signer requests, host site visits if required.
+- Front-desk: initial triage at Request Appointment and Set Appointment (eligibility & documentation completeness).
+- Intake Officer: Verify Borrowers Information (includes mandatory checklist), request co-signer if needed, confirm readiness for submission.
+- Field/Valuation: Make Visit to Assess Collateral (execute up to allowed number of visits and report findings).
+- Case Owner: coordinate tasks, ensure synchronization and completeness prior to Submit File to Underwriter.
+- Underwriter: final decision making; only accepts complete files that meet submission criteria.
+- Supervisor: approve any exceptions (skipped_examination) and elevated escalations.
+
+Detailed optimized process flow
+
+Start conditions and triggers
+- Trigger: Applicant initiates by Request Appointment.
+- Preconditions at Request Appointment: applicant provides basic contact information and initial documents (ID, contact, basic application intent). Front-desk performs an initial triage to determine whether an appointment should be set or denied based on eligibility exclusion rules (see Decision rules).
+
+Step 1 — Request Appointment (Front-desk)
+1. Request Appointment received.
+   - Decision: Eligibility triage (quick automated/manual check)
+     - If clear exclusion criteria found (e.g., previously blacklisted, incomplete contact, obviously ineligible under documented business rules), outcome: Appointment Denied (end).
+     - Otherwise: outcome: Set Appointment.
+   - Expected behavior: front-desk must perform triage within a short SLA (e.g., same day) to avoid unnecessary scheduling.
+
+Step 2 — Set Appointment -> Hand In Credit Application (Applicant / Intake)
+2. Set Appointment scheduled and attended.
+3. Applicant hands in application (Hand In Credit Application).
+   - Intake Officer performs initial document completeness check and registers the case.
+
+Step 3 — Enhanced Verify Borrowers Information (Intake Officer) — central mandatory step
+4. Verify Borrowers Information becomes a controlled, comprehensive task with the following enforced components (no new activity names are introduced; this is an enhanced Verify task):
+   - Mandatory pre-submission checklist (items that must be satisfied before Submit File to Underwriter):
+     a) Identity documents verified and captured.
+     b) Income and employment documentation verified to minimum acceptable threshold.
+     c) Credit bureau check performed and automated score included.
+     d) Collateral requirement assessment completed (yes/no).
+     e) Co-signer assessment completed (yes/no).
+     f) All required forms completed and signed.
+   - Decision outcomes from Verify:
+     - Application Rejected (end) — only if critical disqualifying issues are found during verification (fraud, missing mandatory docs, ineligibility per policy).
+     - Proceed to conditional branch(s) — when verification identifies additional required actions:
+       * Request Co-Signer On Loan (if borrower creditworthiness requires co-signer based on policy)
+       * Make Visit to Assess Collateral (if collateral assessment is required)
+       * Direct Submit File to Underwriter (only if no additional required actions are triggered and checklist is complete)
+       * Permit skipped_examination (rare, exception-only) — see exception rules below.
+   - Policy enforcement: Verify must determine which of the optional branches (co-signer, visit) are required; optional branches cannot be triggered arbitrarily.
+
+Step 4 — Controlled parallel handling of optional branches (Case Owner coordinates)
+5. Parallel execution model (optimized):
+   - Request Co-Signer On Loan and Make Visit to Assess Collateral may run in parallel when both are required, but both must be completed and their outcomes documented before Submit File to Underwriter occurs.
+   - Both branches are optional: zero, one, or both may be executed depending on Verify outcome (as in AS-IS), but sequencing and repetition controls now apply.
+   - Ordering flexibility remains (either can start first), but both must complete before submission to underwriter; parallel execution is encouraged to shorten lead time.
+
+Step 5 — Rules for Request Co-Signer On Loan
+6. Request Co-Signer On Loan:
+   - Triggered only when Verify indicates borrower needs co-signer.
+   - Case Owner manages co-signer identification and documentation collection.
+   - Outcome:
+     - Co-signer secured (documents verified) — update checklist.
+     - Co-signer not secured within maximum allowed attempts/time window — case escalated to Supervisor/Underwriter for decision (either rejection or special handling).
+   - Constraint: Request Co-Signer should not be repeatedly re-opened indefinitely; policy sets a maximum number of co-signer solicitation attempts and a strict SLA.
+
+Step 6 — Rules for Make Visit to Assess Collateral (Field/Valuation Officer)
+7. Make Visit to Assess Collateral:
+   - Triggered only when Verify indicates collateral assessment required.
+   - Visit scope: standard assessment form with clear acceptance criteria and scoring.
+   - Repetition policy:
+     - Maximum allowed visits per case: 2 (primary visit + one follow-up) under normal circumstances.
+     - If initial visit fails to produce conclusive assessment and a second visit also fails, escalate to Supervisor/Underwriter (no uncontrolled repeat visits).
+   - Objective: eliminate the common unbounded repeat loop of Make Visit observed in AS-IS while still allowing one reasonable follow-up.
+   - Reporting: each visit produces a formal valuation report which becomes part of the submission package.
+
+Step 7 — Synchronization and completion check (Case Owner / Intake)
+8. Submission readiness check:
+   - Case Owner runs a mandatory "submission-complete" verification using the enhanced checklist in Verify:
+     - All required documents present.
+     - Co-signer status resolved if requested.
+     - Collateral assessment complete (report attached) if required.
+     - No outstanding items older than SLA.
+   - Only after checklist is complete and quality-checked does the Case Owner issue Submit File to Underwriter.
+
+Step 8 — Submit File to Underwriter (Underwriter)
+9. Submit File to Underwriter receives a consistent, complete file:
+   - Underwriter evaluates and issues final decisions:
+     - Sign Loan Agreement (approval)
+     - Loan Denied (rejection)
+   - Underwriter decisions are to be accompanied by coded reasons to feed back into Verify (continuous improvement).
+
+Exception handling and skipped_examination rules
+- skipped_examination (formerly observed bypass) is retained but tightly constrained:
+  - It is permitted only when Verify Borrowers Information satisfies strict low-risk conditions (e.g., high credit score threshold, fully documented income, low LTV with standard collateral, no co-signer required).
+  - skipped_examination requires Supervisor sign-off and audit trail; it is strictly an exception, not routine.
+  - Cases using skipped_examination are sampled for compliance review at defined rates.
+- Escalation rules:
+  - If co-signer solicitation or collateral assessment fails to resolve within prescribed attempts/SLA, escalate case to Supervisor/Underwriter for an exception decision (approve/reject/escalate).
+  - Any attempt to submit to Underwriter before checklist completion is automatically rejected by the Case Owner and returned for completion.
+
+End conditions and outcomes
+- Final outcomes remain the same but with improved quality of transition:
+  - Appointment Denied — early termination where pre-specified exclusion criteria apply.
+  - Application Rejected — clear, documented verification fail (final).
+  - Loan Denied — underwriter decision following a complete submission or supervisor escalated decision.
+  - Sign Loan Agreement — successful approval and signing.
+- Guarantee: Submit File to Underwriter should only be reached with a completed submission package, reducing avoidable denials.
+
+Decision points with clear criteria (summary)
+- Appointment Denied: if initial triage finds exclusion criteria (incomplete contact details, blacklisted applicant, or other business-rule exclusion).
+- Application Rejected at Verify: missing mandatory documents, fraud suspicion, or failing core eligibility thresholds.
+- Request Co-Signer On Loan: triggered if credit score, debt-to-income (or other defined metric) falls within a pre-defined range requiring co-signer per policy.
+- Make Visit to Assess Collateral: triggered if collateral is required per Verify or if property valuation cannot be determined from documentation alone.
+- skipped_examination: only when Verify criteria indicate low risk AND Supervisor approves.
+
+Parallel activities and synchronization points
+- Parallel allowed: Request Co-Signer On Loan and Make Visit to Assess Collateral may proceed concurrently to shorten total elapsed time.
+- Synchronization: both optional branches (if triggered) must be completed and evidence attached before Submit File to Underwriter; Case Owner performs mandatory synchronization check.
+
+Expected process metrics and performance improvements (targets)
+- Reduced underwriter denial rate:
+  - AS-IS observed heavy denial rate for submitted files (approx. 4,787 denials vs. 2,295 signings).
+  - IDEAL target: reduce underwriter denial rate by 30–40% relative to AS-IS by enforcing the pre-submission checklist and preventing incomplete files reaching underwriter.
+  - Expected outcome: higher approval ratio at underwriting (improved Sign Loan Agreement / Submit ratio).
+- Reduced number of Make Visit repetitions:
+  - AS-IS had frequent Make Visit repeats (many cases with 2+ visits and some with many repeats).
+  - IDEAL target: reduce average number of visits per case by ~60–80% (limit to max 2 visits and better upfront assessment).
+  - Expected benefit: lower field costs and lead time.
+- Reduced total lead time and variability:
+  - By enabling parallel execution of co-signer request and collateral visit, and by eliminating uncontrolled repeats, total cycle time is expected to decrease by 30–50% on average for cases requiring optional branches.
+  - SLA enforcement on triage and checklist tasks reduces waiting times and rework cycles.
+- Reduced submissions to underwriter that are returned/rejected for incompleteness:
+  - IDEAL target: near-zero submission-return rate for incompleteness (all rejections should be substantive).
+- Improved predictability:
+  - Fewer variants and interleavings due to enforced limits on repeats and explicit synchronization.
+- Quality / compliance improvements:
+  - Lower unauthorized skipped_examination incidence (now exception-only with audit), reducing compliance risk.
+
+Key improvements made compared to the AS-IS model
+- Enforced pre-submission checklist within Verify Borrowers Information prevents incomplete or weak cases from reaching underwriter, addressing the main cause of the high denial rate.
+- Controlled and limited repetition of Make Visit to Assess Collateral (max 2 visits) eliminates wasteful, repeated field visits and imposes clear escalation rather than unlimited retries.
+- Formalized parallelism: co-signer solicitation and collateral visits can run concurrently but must be synchronized and completed before submission; this reduces lead time without sacrificing completeness.
+- Skipped_examination changed from an observed bypass to an auditable exception with strict criteria and supervisor approval — reduces compliance exposure.
+- Clear escalation and SLA rules for co-signer solicitation and collateral assessment reduce open loops and unbounded interleavings.
+- Case Owner responsibility for a mandatory submission-complete gate ensures only high-quality files reach underwriting, turning underwriting into a true decision point rather than a cleanup stage.
+- Better data capture of reasons for underwriting decisions enables continuous improvement (feedback loop into Verify rules), reducing future denials.
+
+Streamlined exception handling, rework and escalation
+- Rework loops limited and controlled: repeated Make Visit loops are prevented; unsatisfactory results trigger escalation rather than unlimited repetition.
+- Co-signer cycles limited: finite attempts and SLA; if unresolved, escalate rather than repeat indefinitely.
+- Exception handling is auditable: any skip_examination requires supervisor sign-off and is logged.
+
+Governance and implementation notes (operational constraints)
+- Update Verify Borrowers Information to include the mandatory checklist and implement a digital gate that prevents Submit File to Underwriter until the checklist is marked complete.
+- Configure case management system to:
+  - Allow concurrent tasks for co-signer and visits, but enforce checklist completion rule.
+  - Enforce maximum attempts for visits and co-signer requests and route escalation automatically.
+  - Require supervisor approval for skipped_examination and record rationale.
+- Train intake, field, and case owner teams on the new sequencing, thresholds, and SLAs; monitor KPIs and denial reasons to continuously refine the Verify rules.
+
+Summary — business impact
+- The IDEAL process preserves the original activities and business purpose but applies strict sequencing, completeness gates, limited repetition, and parallelism where beneficial.
+- Expected benefits: fewer underwriting denials, drastic reduction in wasted repeated field visits, faster cycle times, improved compliance and auditability, and clearer responsibilities across roles.
+- Outcomes remain the same business-wise (Sign Loan Agreement, Loan Denied, Application Rejected, Appointment Denied), but the path to those outcomes is optimized, auditable, and efficient.

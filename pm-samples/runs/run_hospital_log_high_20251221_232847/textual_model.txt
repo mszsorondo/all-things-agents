@@ -1,0 +1,76 @@
+# AS-IS Process Model
+
+## Process Overview and Purpose
+The current process represents the patient treatment workflow in a healthcare setting, detailing the sequence of actions taken from patient registration to discharge. This model captures the decision-making points, variations in treatment, and the potential for rework or examination based on both successful and unsuccessful treatment outcomes.
+
+## Key Stakeholders and Roles Involved
+- **Patients**: Individuals seeking medical treatment who initiate the process.
+- **Front Desk (FD)**: Responsible for registering patients and directing them to appropriate examinations or expert evaluations.
+- **Emergency Room (ER)**: Alternative registration point that directs patients to evaluations and examinations.
+- **Healthcare Professionals**: Staff involved in conducting examinations, diagnosing patients, and administering treatment.
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+The process begins when a patient registers either at the Front Desk (FD) or the Emergency Room (ER).
+
+### Process Activities/Tasks in Sequence
+
+1. **Registration**:
+   - **Register at FD** (optional)
+   - **Register at ER** (optional)
+
+2. **Examinations**:
+   - After registration, the patient undergoes either:
+     - **Expert Examination**
+     - **Examination**
+   
+3. **Further Evaluation**:
+   - From both *Expert Examination* and *Examination*, the following may occur:
+     - **Thorough Examination** (mandatory following initial examinations)
+     - **Diagnosis** (follows Thorough Examination)
+     - **Skipping examinations or evaluations** is allowed; this can lead directly to subsequent steps but may impact treatment quality.
+
+4. **Treatment**:
+   - Upon diagnosis, the patient progresses to **Treatment**.
+     - Here, the treatment can lead to:
+       - **Treatment successful**: Transition to discharge.
+       - **Treatment unsuccessful**: May result in re-diagnosis and the necessity of further treatment.
+
+5. **Discharge**:
+   - Successful treatment leads directly to **Discharge**.
+   - If treatment is unsuccessful, it may necessitate returning to **Diagnosis** and looping back into further treatment actions, potentially repeating the Treatment until successful.
+
+### Decision Points with Criteria and Possible Outcomes
+- **After Diagnosis**:
+  - if Treatment is **Successful**: Proceed to Discharge.
+  - if Treatment is **Unsuccessful**: 
+    - Revert to Diagnosis for reevaluation, then return to Treatment.
+  
+### Parallel Activities and Synchronization Points
+- The model allows patients to undertake both the registration at FD and ER simultaneously, as well as to engage in examinations and expert evaluations in parallel. 
+- Both types of examinations can lead into thorough examinations and subsequently into diagnosis.
+
+### Exception Handling and Error Paths
+- Paths can split into several outcomes based on the treatment success:
+  - Emergency scenarios may escalate directly to advanced examinations and treatments without initial examinations if warranted.
+  - Unsuccessful treatments require looping back to diagnosis.
+
+### Rework Loops and Escalation Procedures
+- Repeat Diagnosis after unsuccessful Treatment.
+- Option to undergo additional assessments during the treatment phase if initial diagnostics are not conclusive.
+
+### End Conditions and Outcomes
+- The process officially ends once the patient is discharged after a successful treatment unless complications arise requiring reevaluation.
+
+## Process Metrics and Performance Characteristics
+- Documented frequencies of each task completion, highlighting common paths taken:
+  - For instance, high instances of "Register at FD" leading to "Expert Examination" and high-performance metrics on treatment timelines were observed.
+- Overall, the process demonstrates several common treatment pathways, where the average completion metrics show variability based on the route taken - fluctuations noted further differentiate between successful and unsuccessful treatment durations.
+
+## Key Challenges and Pain Points Observed in the Current Process
+- High frequency of treatment unsuccessful cases indicating a need for a more rigorous diagnostic path.
+- Potential for significant delays caused by rework loops, particularly when unsuccessful treatments lead to repeated diagnosis and treatment.
+- Variability in patient experience based on choice of registration point (FD vs. ER) leading to differing wait times and treatment outcomes.
+
+This AS-IS process model captures all observed variants ensuring full fidelity to the actual process behaviors and needs while providing insights into performance and potential areas for improvement.

@@ -1,0 +1,537 @@
+
+============================================================
+REPRESENTATION 1: PROCESS_TREE
+============================================================
+
+
+=== PROCESS TREE INTERPRETATION GUIDE ===
+
+A Process Tree is a hierarchical representation of process behavior.
+
+OUTPUT FORMAT:
+--------------
+"->( 'Activity A', X( tau, ->( 'Activity B', *( 'Activity C', tau ) ) ), +( 'Activity D', 'Activity E' ) )"
+
+OPERATORS (prefix notation):
+- ->(...): SEQUENCE - Execute children left-to-right in order
+- X(...): EXCLUSIVE CHOICE - Execute exactly one child
+- +(...): PARALLEL - Execute all children concurrently (interleaved)
+- *(...): LOOP - First child is body, second is exit condition
+- tau: SILENT activity (invisible, used for optional/skip paths)
+
+READING THE OUTPUT:
+- Operators are written as: OPERATOR( child1, child2, ... )
+- Activity names are in single quotes: 'Activity Name'
+- tau (without quotes) represents silent/skip transitions
+- Nesting shows hierarchical structure
+
+EXAMPLE INTERPRETATIONS:
+- ->( 'A', 'B', 'C' ): Do A, then B, then C (sequence)
+- X( 'A', 'B' ): Do either A or B (exclusive choice)
+- +( 'A', 'B' ): Do A and B in parallel (any interleaving)
+- *( 'A', tau ): Repeat A zero or more times (loop with silent exit)
+- X( tau, 'A' ): Optionally do A (can skip)
+- ->( 'A', X( tau, 'B' ), 'C' ): Do A, optionally B, then C
+
+COMPLEX EXAMPLE:
+"->( 'Start', X( tau, *( 'Review', tau ) ), +( 'Approve', 'Notify' ), 'End' )"
+Means: Start, then optionally review (repeatable), then approve AND notify in parallel, then End
+
+INDUCTIVE MINER PROPERTIES:
+- Always produces sound (properly completing) models
+- May introduce tau for fitness to observed behavior
+- Block-structured (properly nested, no arbitrary jumps)
+
+
+--- DISCOVERED MODEL ---
+->( X( 'Register at FD', 'Register at ER' ), X( tau, 'Expert Examination', 'Examination' ), X( tau, 'Thorough Examination' ), *( ->( 'Diagnosis', 'Treatment' ), 'Treatment unsuccessful' ), X( tau, 'Treatment successful' ), 'Discharge' )
+
+
+============================================================
+REPRESENTATION 2: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Diagnosis -> Treatment ( frequency = 11746  performance = 60000.515 )
+Treatment successful -> Discharge ( frequency = 9005  performance = 40000.809 )
+Treatment -> Treatment successful ( frequency = 9005  performance = 60000.920 )
+Thorough Examination -> Diagnosis ( frequency = 5922  performance = 60000.484 )
+Expert Examination -> Thorough Examination ( frequency = 3637  performance = 60000.837 )
+Register at FD -> Expert Examination ( frequency = 2888  performance = 40000.311 )
+Register at ER -> Expert Examination ( frequency = 2866  performance = 39999.839 )
+Expert Examination -> Diagnosis ( frequency = 2117  performance = 60001.158 )
+Examination -> Thorough Examination ( frequency = 1968  performance = 60001.727 )
+Register at ER -> Examination ( frequency = 1826  performance = 39999.967 )
+Register at FD -> Examination ( frequency = 1783  performance = 40000.349 )
+Treatment unsuccessful -> Diagnosis ( frequency = 1746  performance = 40000.741 )
+Treatment -> Treatment unsuccessful ( frequency = 1746  performance = 60001.635 )
+Examination -> Diagnosis ( frequency = 1641  performance = 60001.797 )
+Treatment -> Discharge ( frequency = 995  performance = 100002.807 )
+Register at FD -> Diagnosis ( frequency = 163  performance = 80001.325 )
+Register at ER -> Thorough Examination ( frequency = 159  performance = 79999.434 )
+Register at FD -> Thorough Examination ( frequency = 158  performance = 80001.253 )
+Register at ER -> Diagnosis ( frequency = 157  performance = 80003.134 )
+
+
+
+
+
+============================================================
+REPRESENTATION 3: ABSTRACT_VARIANTS
+============================================================
+
+
+=== ABSTRACT VARIANTS INTERPRETATION GUIDE ===
+
+Process variants show the distinct execution paths observed in the event log.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 1391  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 1201  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 990  performance = 229938.161 )
+..."
+
+READING THE OUTPUT:
+- Each line: " Activity1 -> Activity2 -> ... -> ActivityN ( frequency = N  performance = T )"
+- The arrow (->) sequence shows the exact order of activities in that variant
+- frequency: Number of cases (process instances) that followed this exact path
+- performance: Average total duration of cases following this path (in seconds)
+- Variants are sorted by frequency (most common first)
+
+INTERPRETATION:
+1. HIGH FREQUENCY VARIANTS (>20% of cases): Main "happy path" - optimize for efficiency
+2. MEDIUM FREQUENCY (5-20%): Common alternative paths - monitor regularly
+3. LOW FREQUENCY (<5%): Exceptions or edge cases - investigate if problematic
+4. PERFORMANCE COMPARISON:
+   - Compare performance across variants to identify slow paths
+   - High performance value = longer duration (potential bottleneck)
+
+VARIANT ANALYSIS:
+- Count unique activities: More activities = longer/complex variant
+- Identify common prefixes: Shows where processes diverge
+- Look for unexpected paths: May indicate process deviations
+
+USE FOR:
+- Understanding main vs alternative process paths
+- Identifying which paths are most/least efficient
+- Detecting process deviations or exceptions
+- Simplifying complex processes by focusing on high-frequency variants
+
+
+
+
+# === ABSTRACT VARIANTS INTERPRETATION GUIDE (pm4py.llm) ===
+
+## WHAT THIS OUTPUT REPRESENTS
+
+This output describes the **distinct execution paths (process variants)** observed in an event log.
+Each variant corresponds to a unique ordered sequence of activities executed by cases in the process.
+
+The variants shown are the **most frequent ones**, listed in descending order of frequency, and truncated if needed to respect the maximum output length (`max_len`).
+
+---
+
+## OUTPUT FORMAT (TYPICAL)
+
+```
+If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 32.5%  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 28.1%  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 21.4%  performance = 229938.161 )
+ ...
+```
+
+The initial sentence may be present if `response_header=True`.
+
+---
+
+## HOW TO READ EACH LINE
+
+Each line has the form:
+
+```
+Activity1 -> Activity2 -> ... -> ActivityN ( frequency = F  performance = P )
+```
+
+Meaning:
+
+• `Activity1 -> Activity2 -> ... -> ActivityN`
+= the exact ordered sequence of activities executed in that variant (control-flow path)
+
+• `frequency = F`
+= the **relative frequency** (proportion or percentage of cases) that follow this exact path
+(because `relative_frequency=True`)
+
+• `performance = P`
+= the **aggregated case duration** (throughput time) of cases that follow this variant
+computed using the selected aggregation method
+(default: mean of case durations)
+
+Units depend on the timestamp resolution in the log (e.g., seconds, minutes, milliseconds).
+
+If a secondary aggregation is configured, performance may appear as:
+
+```
+performance = P (secondary = Q)
+```
+
+---
+
+## IMPORTANT BEHAVIORAL DETAILS
+
+• Variants are sorted by decreasing frequency
+• Only the most frequent variants fitting within `max_len` are shown
+• Rare variants may be omitted
+• Performance refers to **whole-case duration**, not individual activity durations
+• Performance is computed only if `include_performance=True`
+• Frequencies are **relative proportions**, not absolute counts
+• Header text may be present if `response_header=True`
+
+---
+
+## INTERPRETATION PRINCIPLES
+
+### 1. CONTROL-FLOW ANALYSIS
+
+* Variants with the highest frequency represent the dominant execution paths (“happy paths”)
+* Shared prefixes across variants indicate where the process diverges
+* Unusual or rare paths indicate exceptions or deviations
+
+### 2. FREQUENCY ANALYSIS
+
+Using relative frequency:
+
+* High frequency variants (e.g., >20%) → core process behavior
+* Medium frequency (5–20%) → common alternatives
+* Low frequency (<5%) → edge cases or exceptional behavior
+
+These thresholds are heuristic and should be interpreted relative to the domain.
+
+### 3. PERFORMANCE ANALYSIS
+
+* Compare performance values across variants
+* Higher performance value = longer average case duration
+* Variants with both:
+
+  * high frequency
+  * high performance
+    are prime candidates for optimization
+
+### 4. STRUCTURAL COMPLEXITY
+
+* More activities in a variant generally imply higher structural complexity
+* Long variants with high performance may indicate rework or loops
+* Short variants with low performance often represent fast completion paths
+
+---
+
+## WHAT THIS OUTPUT IS SUITABLE FOR
+
+This abstraction is designed for **human or LLM reasoning**, not for direct machine parsing.
+
+It is suitable for:
+
+• Identifying main vs alternative process paths
+• Explaining process behavior in natural language
+• Detecting deviations or exceptional flows
+• Comparing efficiency of different execution paths
+• Summarizing complex event logs
+• Serving as structured input for LLM-based process analysis
+
+---
+
+## WHAT THIS OUTPUT IS NOT
+
+• It is not a complete list of all variants (due to truncation)
+• It is not a formal process model (Petri net, BPMN)
+• It is not a structured dataset
+• It does not include resource, data, or organizational perspectives
+• It does not show intra-activity waiting times
+
+---
+
+## SUMMARY
+
+This output encodes:
+
+```
+Variant = (Activity Sequence, Relative Frequency, Aggregated Case Duration)
+```
+
+Serialized as natural language for LLM-based interpretation.
+
+
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 15\%  performance = 320005.308 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 14\%  performance = 320000.149 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 8\%  performance = 260003.388 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 7\%  performance = 320005.279 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 7\%  performance = 320002.117 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 7\%  performance = 260006.129 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 5\%  performance = 260006.629 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 5\%  performance = 260003.204 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 2\%  performance = 480006.979 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 1120042.000 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 960004.000 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 959995.000 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 900005.500 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 800026.000 )
+ Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 800022.500 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 799988.400 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 799977.833 )
+ Register at FD -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 780172.000 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 740164.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 740142.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740134.500 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740051.667 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740045.500 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 740011.500 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 739836.000 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 640023.562 )
+ Register at ER -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 640020.308 )
+ Register at ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 639989.000 )
+ Register at FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 639971.474 )
+ Register at FD -> Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 639936.500 )
+ Register at ER -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 619981.000 )
+ Register at FD -> Thorough Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 619973.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 580077.200 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 580022.650 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 580016.000 )
+ Register at ER -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Discharge ( frequency = 1\%  performance = 580006.500 )
+ Register at FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 579996.000 )
+ Register at ER -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 579980.778 )
+ Register at FD -> Examination -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> Treatment successful -> Discharge ( frequency = 1\%  performance = 579943.500 )
+
+
+
+
+
+============================================================
+REPRESENTATION 4: DECLARE
+============================================================
+
+
+=== DECLARE INTERPRETATION GUIDE ===
+
+DECLARE is a declarative process modeling language based on temporal logic constraints.
+
+OUTPUT FORMAT:
+--------------
+The output starts with constraint explanations, then lists discovered constraints:
+"I have a DECLARE declarative process model containing the following constraints:
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given (A, B), if A occurs then B also occurs.
+Co-Existence: given (A, B), if A occurs then B also occurs.
+Response: given (A, B), if A occurs then B also occurs in the future.
+Precedence: given (A, B), if B occurs then A occurs in the past.
+Succession: both response and precedence are satisfied.
+...
+
+These are the constraints of the model:
+Existence: Activity1, Activity2, ...
+Responded Existence: ('A', 'B'), ('C', 'D'), ...
+Response: ('A', 'B'), ...
+Initialization: Activity1
+Exactly 1: Activity1, Activity2, ..."
+
+CONSTRAINT CATEGORIES:
+
+EXISTENCE CONSTRAINTS:
+- Existence: Activity must occur at least once
+- Absence: Activity must not occur
+- Exactly 1: Activity occurs exactly once
+- Initialization: Trace must start with this activity
+
+RELATION CONSTRAINTS:
+- Responded Existence: If A occurs, B must occur (anywhere)
+- Co-Existence: A and B always occur together or both absent
+- Response: If A occurs, B must occur afterwards
+- Precedence: B can only occur if A occurred before
+- Succession: Both response and precedence
+
+CHAIN CONSTRAINTS (immediate succession):
+- Chain Response: B must immediately follow A
+- Chain Precedence: A must immediately precede B
+- Chain Succession: Both chain response and precedence
+
+NEGATIVE CONSTRAINTS:
+- Non Co-Existence: A and B cannot both occur
+- Non Succession: B cannot follow A
+- Non Chain Succession: B cannot immediately follow A
+
+PHILOSOPHY:
+- "Everything not forbidden is allowed"
+- Specifies constraints that must hold
+- Any execution path satisfying constraints is valid
+
+USE FOR:
+- Knowledge-intensive processes
+- Compliance requirements
+- Flexible workflow modeling
+- Understanding what MUST happen vs what CAN happen
+
+
+--- DISCOVERED MODEL ---
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Response: ('Diagnosis', 'Treatment successful'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Discharge'), ('Diagnosis', 'Treatment'), ('Treatment', 'Treatment successful'), ('Treatment', 'Discharge')
+Alternate precedence: ('Diagnosis', 'Discharge'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment'), ('Treatment', 'Treatment successful'), ('Treatment', 'Discharge'), ('Diagnosis', 'Treatment successful')
+Precedence: ('Diagnosis', 'Treatment'), ('Treatment', 'Treatment successful'), ('Treatment', 'Discharge'), ('Diagnosis', 'Treatment successful'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Discharge')
+Responded Existence: ('Diagnosis', 'Treatment successful'), ('Diagnosis', 'Discharge'), ('Treatment successful', 'Discharge'), ('Discharge', 'Diagnosis'), ('Treatment successful', 'Diagnosis'), ('Treatment', 'Treatment successful'), ('Discharge', 'Treatment'), ('Treatment successful', 'Treatment'), ('Diagnosis', 'Treatment'), ('Discharge', 'Treatment successful'), ('Treatment', 'Discharge'), ('Treatment', 'Diagnosis')
+Alternate response: ('Diagnosis', 'Discharge'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment'), ('Treatment', 'Discharge')
+Exactly 1: Treatment successful, Discharge, Diagnosis, Treatment
+Chain response: ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment')
+Chain precedence: ('Treatment', 'Treatment successful'), ('Diagnosis', 'Treatment'), ('Treatment successful', 'Discharge')
+Existence: Treatment successful, Discharge, Diagnosis, Treatment
+Absence: Treatment unsuccessful
+Succession: ('Treatment', 'Treatment successful'), ('Treatment', 'Discharge'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment'), ('Diagnosis', 'Treatment successful'), ('Diagnosis', 'Discharge')
+Alternate succession: ('Treatment', 'Discharge'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment'), ('Diagnosis', 'Discharge')
+Chain succession: ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment')
+Co-Existence: ('Treatment', 'Treatment successful'), ('Treatment', 'Diagnosis'), ('Treatment', 'Discharge'), ('Treatment successful', 'Treatment'), ('Treatment successful', 'Diagnosis'), ('Treatment successful', 'Discharge'), ('Diagnosis', 'Treatment'), ('Diagnosis', 'Treatment successful'), ('Diagnosis', 'Discharge'), ('Discharge', 'Treatment'), ('Discharge', 'Treatment successful'), ('Discharge', 'Diagnosis')
+
+
+
+============================================================
+REPRESENTATION 5: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Treatment; freq. 11746) (Diagnosis; freq. 11746) (Discharge; freq. 10000) (Treatment successful; freq. 9005) (Thorough Examination; freq. 5922) (Expert Examination; freq. 5754) (Register at ER; freq. 5008) (Register at FD; freq. 4992) (Examination; freq. 3609) (Treatment unsuccessful; freq. 1746)
+case:citizen  empty: 0 values: (True; freq. 40477) (False; freq. 29051)
+case:gender  empty: 0 values: (True; freq. 40738) (False; freq. 28790)
+case:german speaking  empty: 0 values: (False; freq. 35062) (True; freq. 34466)
+case:private_insurance  empty: 0 values: (False; freq. 35036) (True; freq. 34492)
+case:underlying_condition  empty: 0 values: (True; freq. 35270) (False; freq. 34258)
+concept:name  empty: 0 values: (Treatment; freq. 11746) (Diagnosis; freq. 11746) (Discharge; freq. 10000) (Treatment successful; freq. 9005) (Thorough Examination; freq. 5922) (Expert Examination; freq. 5754) (Register at ER; freq. 5008) (Register at FD; freq. 4992) (Examination; freq. 3609) (Treatment unsuccessful; freq. 1746)
+protected  empty: 0 values: (False; freq. 52458) (True; freq. 17070)
+resource  empty: 0 values: (Doc. Low; freq. 27075) (Doc. Pro; freq. 20707) (Nurse 3; freq. 7310) (Nurse 2; freq. 4957) (Nurse 1; freq. 4797) (Nurse 4; freq. 2356) (Nurse 5; freq. 2326)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 11:08:17+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:27:34+0000', tz='UTC'), 0.75: Timestamp('2015-01-08 00:15:19.249999872+0000', tz='UTC'), 1.0: Timestamp('2015-01-17 23:09:51+0000', tz='UTC')}

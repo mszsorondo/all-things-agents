@@ -1,0 +1,86 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Overview: The IDEAL model proposes a streamlined, governed version of the observed AS-IS flow. It keeps the same visible activities but tightens routing rules, reduces unnecessary handoffs and rework, standardizes outcome logging, and implements clinical decision support to reduce unsuccessful treatments. The IDEAL flow aims to minimize rework, shorten cycle times, reduce queues at expert/thorough examination, and improve data quality for monitoring.
+- Purpose: Define how the process should run under improved governance, clearer triage rules and targeted operational improvements so that patient throughput, quality and predictability improve.
+
+Key stakeholders and roles (kept aligned with AS-IS)
+- Patient (implicit).
+- Registration/Reception (FD and ER) — responsible for triage and correct routing according to standardized criteria.
+- Triage nurse/clinical coordinator — responsible for quick assessment and routing to appropriate examination level.
+- Examiner / Nurse / General clinician — conducts Examination.
+- Expert clinician / Specialist — conducts Expert Examination when indicated by triage or examination.
+- Specialist / Senior clinician — conducts Thorough Examination when required.
+- Diagnosing clinician / Doctor — performs Diagnosis.
+- Treatment team / Clinician — delivers Treatment and records outcome using standardized codes.
+- Discharge staff / Care coordinator — handles discharge when treatment episode completes.
+
+Detailed step-by-step IDEAL process flow
+Start conditions and triggers
+1. Start event: patient arrival and registration at either Register at FD or Register at ER. Immediately on registration a standardized triage assessment (short checklist) is performed by the triage nurse/registration staff.
+
+2. Standardized triage and routing (decision point)
+  - Decisions are made using a defined triage protocol (clinical criteria) that maps patients into 3 routing lanes:
+    a) Direct-to-Diagnosis lane (low-complexity, clear-cut presentations).
+    b) Examination lane (general exam) with option to escalate.
+    c) Expert/Thorough lane (high acuity or specialist suspicion) where Expert Examination is scheduled.
+  - The triage decision is logged in the system and drives immediate resource allocation (minimizes arbitrary or ad-hoc routing).
+
+3. Examination sequencing (minimize redundant steps)
+  - Default: Register → Triage → Examination (if triage suggests examination) → Decision: either Diagnose & treat or escalate to Thorough/Expert Examination.
+  - Expert Examination is invoked only when triage or initial Examination indicates specialist input is required. Expert Examination and Thorough Examination are coordinated to reduce redundant handoffs: where possible, schedule Expert and Thorough as a combined single consultation (same clinician/consult) or a single synchronized appointment in the system.
+  - Bypass to Diagnosis is allowed only when triage criteria explicitly indicate no exam required.
+
+4. Diagnosis and treatment plan (first-time-right approach)
+  - Diagnosis should be completed with decision support (checklists, recommended tests) to reduce misdiagnosis risk.
+  - Treatment plan is defined with clear success criteria and expected duration. The plan includes a mandatory post-treatment assessment timeout and decision point to confirm outcome.
+
+5. Treatment outcome handling (eliminate unlogged outcomes and shorten rework)
+  - After treatment, the clinician must record Treatment outcome using structured codes: "Treatment successful" or "Treatment unsuccessful". Direct Treatment→Discharge without an explicit success code is disallowed in the IDEAL model (ensures traceability).
+  - If Treatment unsuccessful is recorded, a time-boxed re-assessment is triggered: the patient goes to rapid re-diagnosis within a defined SLA (e.g., within X hours). Rework is limited by clinical protocol that includes escalation steps (senior review) after the first unsuccessful attempt to avoid repeated, unresolved loops.
+  - Escalation path: after one unsuccessful re-treatment, require senior/specialist consultation (Expert Examination) before further repeat treatment cycles.
+
+6. Discharge and post-discharge follow-up
+  - Discharge occurs only after the treatment outcome is explicitly recorded as successful or after documented clinical decision to discharge despite lack of recorded success (allowed only with justification and senior sign-off). The IDEAL model mandates automated data capture of outcome and length of stay for monitoring.
+
+Synchronization and parallelism
+- Where parallel activities are clinically appropriate (e.g., diagnostics tests run in parallel with Examination or Expert Consultation), these are modeled as parallel branches with a synchronization point before final Diagnosis. The IDEAL model formalizes parallel diagnostics to reduce blocking waiting times.
+
+Exception handling and error paths
+- Missing outcome logging: system prevents discharge until outcome recorded or senior override is provided (audit logged).
+- Repeated unsuccessful cycles: after the first unsuccessful treatment, require escalation to senior clinician; after second unsuccessful attempt, initiate multidisciplinary review and consider alternative treatments or transfer.
+- Triage failures (e.g., patient routed incorrectly): monitor exceptions and route retrospective audit and correction; implement training/feedback loops for registration staff.
+
+End conditions and outcomes
+- End event: Discharge with structured outcome recorded (successful or documented exception). The system records whether case was resolved, escalated or closed for other reasons.
+
+Process metrics and performance targets (measurable)
+- Key metrics to monitor (with target examples):
+  - Diagnosis → Treatment lead time: target reduce by 15% from AS-IS baseline (AS-IS observed DFG = 60,000.515; target = 51,000 or better depending on unit).
+  - Treatment success rate: target increase from ~76.7% → ≥85% within 12 months, by improving initial diagnosis and escalation.
+  - Treatment rework rate (Treatment unsuccessful → Diagnosis): target reduce from ~14.9% → ≤5% for routine cases; escalate complex patients to specialist pathway.
+  - Average end-to-end case duration (Register → Discharge): target reduce for typical variants (e.g., common variants with ~320k units reduced by 20% via fewer handoffs and fewer rework loops).
+  - First-time-right diagnosis rate: monitor and aim to increase (requires clinical KPI tracking).
+  - Compliance: 100% of discharges must have an outcome code in the system; direct Treatment→Discharge without a success code should be 0%.
+  - SLA for re-diagnosis after unsuccessful treatment: e.g., 95% re-assessed within target window.
+
+Improvements made (comparison to AS-IS)
+- Reduced rework through standardized triage and decision support: by directing complex patients earlier to experts and enforcing escalation rules, the model reduces the proportion of unsuccessful treatments.
+- Fewer unnecessary handoffs and skips: skip transitions are controlled; bypass-to-diagnosis only when triage criteria met.
+- Improved data quality: explicit outcome logging eliminates ambiguous direct Treatment→Discharge cases and enables accurate monitoring.
+- Controlled escalation: unsuccessful treatments trigger senior review, reducing repeated unsuccessful cycles and very long-case tails.
+- Queue management and combined consultations: synchronize Expert and Thorough examinations into fewer encounters, reducing waiting and duplicate assessments.
+- Parallelize diagnostics where safe: allow tests to run concurrently with other activities to reduce total cycle time.
+
+Operational notes for implementation (practical steps)
+- Implement structured triage forms at registration; embed routing rules into registration/EMR system.
+- Add mandatory structured outcome codes and block discharge without outcome unless override with audit.
+- Provide clinical decision support templates for Diagnosis and initial Treatment planning.
+- Define explicit escalation policies and SLAs for re-assessment after unsuccessful treatment.
+- Monitor the key metrics on a dashboard and run weekly reviews for high-duration or repeated-loop cases.
+
+IDEAL summary (concise)
+- Start: Register at FD/ER → standardized triage → directed Examination/Expert path or Direct-to-Diagnosis when appropriate.
+- Mandatory outcome logging and time-boxed re-assessment for unsuccessful treatments with enforced escalation.
+- Goals: reduce rework from ~15% to ≤5%, improve treatment success rate, shorten common variant cycle times, eliminate unlogged discharges and long repeated-loop outliers.
+

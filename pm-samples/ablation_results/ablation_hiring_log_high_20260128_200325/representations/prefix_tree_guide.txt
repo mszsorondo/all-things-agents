@@ -1,0 +1,85 @@
+=== PREFIX TREE (TRIE) INTERPRETATION GUIDE ===
+
+A Prefix Tree (Trie) represents all observed trace prefixes in a compact tree structure.
+
+1. CORE CONCEPT:
+   - Root node represents the start of all traces
+   - Each edge represents an activity
+   - Each path from root represents a trace prefix
+   - Nodes may contain frequency information
+
+2. STRUCTURE:
+   - Root: Starting point (empty prefix)
+   - Internal nodes: Intermediate states after some activities
+   - Leaves: End of traces (complete sequences)
+   - Edges: Labeled with activity names
+
+3. PROPERTIES:
+   - Shared prefixes: Common beginnings share nodes
+   - Frequency counts: Each node knows how many traces pass through
+   - Complete representation: All observed behavior preserved
+   - No abstraction: Exact record of what happened
+
+4. READING THE TREE:
+   - Depth = Position in trace (how many activities executed)
+   - Branching = Different continuations from same prefix
+   - Node count at depth n = Number of different prefixes of length n
+   - Path frequency = How many traces took that exact path
+
+5. EXAMPLE STRUCTURE:
+   ```
+   [ROOT]
+     |
+     +--[A: 100]
+     |    |
+     |    +--[B: 60]
+     |    |    |
+     |    |    +--[C: 40] (end)
+     |    |    +--[D: 20] (end)
+     |    |
+     |    +--[C: 40]
+     |         |
+     |         +--[B: 40] (end)
+     |
+     +--[B: 20]
+          |
+          +--[A: 20] (end)
+   ```
+   Interpretation: 100 traces start with A, 60 continue A->B, 40 go A->B->C, etc.
+
+6. USE FOR:
+   - Exact trace reproduction
+   - Prefix-based prediction
+   - Sequence analysis
+   - Understanding process variants
+   - Building more complex models
+
+7. ADVANTAGES:
+   - Complete behavioral record
+   - Efficient prefix queries
+   - Natural for prediction tasks
+   - No information loss
+
+8. LIMITATIONS:
+   - Can be very large for varied logs
+   - No abstraction or summarization
+   - Hard to visualize for complex processes
+   - Storage intensive
+
+9. COMPARISON:
+   - vs DFG: Trie preserves full sequences, DFG only pairs
+   - vs Variants: Trie is structured, variants are flat lists
+   - vs Petri Net: Trie is descriptive, Petri Net is prescriptive
+
+10. DERIVED INSIGHTS:
+    - Common prefixes: Identify standardized process starts
+    - Branching points: Where processes diverge
+    - Rare branches: Exceptional behavior
+    - Prefix frequencies: Process flow statistics
+
+11. APPLICATIONS:
+    - Next activity prediction
+    - Process monitoring
+    - Anomaly detection
+    - Recommendation systems
+    - Conformance checking

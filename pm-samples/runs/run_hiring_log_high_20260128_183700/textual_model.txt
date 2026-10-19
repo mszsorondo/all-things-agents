@@ -1,0 +1,126 @@
+AS-IS Process Model
+
+1. Process overview and purpose
+
+- Purpose: The observed process describes the candidate selection and hiring lifecycle starting when a candidate hands in a job application and terminating in either a formal job offer or an application rejection. The captured behavior is a mined (DFG) abstraction of a hiring process that includes multiple screening and interview steps, background checks (including an "extensive" variant), and significant rework, oscillation between interview types, and inconsistent decision paths.
+- Observed start event: Hand In Job Application (explicit in the data).
+- Observed end events (as recorded in the logs): Make Job Offer and Application Rejected. Both are terminal in some traces, but the logs also show non-terminal activity after these events (see problems below).
+
+2. Key stakeholders and roles
+
+- No explicit role/department assignments are present in the input. The model will therefore describe activities without assigning specific responsible roles. (Do NOT invent new actors.)
+
+3. High-level observed flow and behavior
+
+- Start: Hand In Job Application.
+- From telephonic screening the process diverges into three major observed outcomes: background check, screening interview, or direct rejection.
+- Background checks can lead into screening interviews or escalate to an extensive background check.
+- Screening interviews feed into coding interviews, extensive background checks, or rejection. There is a bidirectional relationship recorded between screening interview and background check (both orders observed).
+- Technical interviews (Coding Interview → ML/Frontend/Backend Interview) form a network of frequent transitions, including back-and-forth loops between Frontend, Backend and ML interviews (bidirectional transitions exist in the log). These loops indicate rework, interviewer disagreement, or switching of evaluation focus.
+- Final disposition events (Make Job Offer / Application Rejected) are not stable end-only states: the logs show transitions out of both states back into interviews or the other final state, indicating re-opening of cases or inconsistent recording.
+- Several self-loops are observed on Behavioral Interview and Make Job Offer and Application Rejected (the same activity recorded repeatedly).
+
+4. Detailed step-by-step observed flow (with decision points and major branches)
+
+Start condition: Candidate submits an application (Hand In Job Application).
+
+1) Immediately after submission: two clear observed outgoing behaviors:
+   - Hand In Job Application -> Telephonic Screening (very high frequency recorded) — treated as the normal first active screening step.
+   - Hand In Job Application -> Application Rejected (some candidates are rejected immediately without screening).
+
+2) Telephonic Screening (frequently executed; 8799 instances in the DFG): a branching point with at least three observed outcomes:
+   - Telephonic Screening -> Background Check (3961 cases)
+   - Telephonic Screening -> Screening Interview (3848 cases)
+   - Telephonic Screening -> Application Rejected (990 cases)
+   Decision criteria are not recorded explicitly in the log; observed decisions imply: pass to in-depth checks, pass to interviewing stage, or immediate reject.
+
+3) Background Check (multiple roles/steps in background verification observed):
+   - Background Check -> Screening Interview (3961 cases) — i.e., background checks often precede screening interviews in many traces.
+   - Background Check -> Coding Interview (1413 cases) — background check followed directly by a technical interview in some traces.
+   - Background Check -> Extensive Background Check (1044 cases) — escalation to a deeper check.
+   - Background Check -> Application Rejected (1391 cases) — failure of background check leads to rejection.
+
+4) Screening Interview (screening-level behavioral/fit interview):
+   - Screening Interview -> Coding Interview (1517 cases)
+   - Screening Interview -> Background Check (3848 cases / reverse ordering present)
+   - Screening Interview -> Extensive Background Check (1055 cases)
+   - Screening Interview -> Application Rejected (1389 cases)
+   Observed: Screening Interview both precedes and follows Background Check (bidirectional behavior), indicating inconsistent sequencing across cases.
+
+5) Extensive Background Check:
+   - Extensive Background Check -> Coding Interview (974 cases)
+   - Extensive Background Check -> Application Rejected (1125 cases)
+   Observed: Extensive check is both an escalation and often leads to rejection or return to technical interviewing.
+
+6) Technical interview network and rework:
+   - Coding Interview -> Frontend Interview (1513 cases)
+   - Coding Interview -> ML Interview (1304 cases)
+   - Coding Interview -> Backend Interview (701 cases)
+   - Coding Interview -> Application Rejected (386 cases)
+   - Frontend Interview -> ML Interview (878 cases)
+   - ML Interview -> Frontend Interview (913 cases)
+   - Frontend Interview -> Backend Interview (529 cases)
+   - Backend Interview -> Frontend Interview (487 cases)
+   - Backend Interview -> ML Interview (152 cases)
+   - ML Interview -> Backend Interview (121 cases)
+   Observed: strong bidirectional transitions between specialized interviews (Frontend, Backend, ML) — suggests candidates are frequently cycled between tracks or re-interviewed by different specialists. These transitions often show performance values of 0 which suggests immediate subsequent events or timestamp artifacts.
+
+7) Behavioral Interview and its anomalies:
+   - Behavioral Interview -> Make Job Offer (1850 cases)
+   - Behavioral Interview -> Behavioral Interview (1032 cases self-loop)
+   - Behavioral Interview -> Application Rejected (914 cases)
+   There are many instances where a Behavioral Interview is repeated in sequence (self-loop) and leads to both offers and rejections, so its exact position relative to technical interviews varies across traces.
+
+8) Final disposition anomalies (non-terminal behavior observed):
+   - Make Job Offer -> Make Job Offer (861 self-loop)
+   - Make Job Offer -> Application Rejected (110 cases)
+   - Application Rejected -> Make Job Offer (690 cases)
+   - Application Rejected -> Behavioral Interview (740 cases)
+   - Application Rejected -> Application Rejected (654 self-loop)
+   These transitions indicate that cases recorded as "rejected" or as "offer made" are sometimes re-opened, reversed, or repeatedly recorded. This is a major data/process problem.
+
+End conditions observed in the log: Make Job Offer and Application Rejected — however because of the re-opening transitions these are not strictly terminal in the current observed system.
+
+5. Performance and frequency metrics (selected key flows from the DFG)
+
+- Telephonic Screening total occurrences: 8799 (telephonic -> background: 3961; telephonic -> screening interview: 3848; telephonic -> reject: 990).
+- Telephonic Screening -> Background Check average performance: 81906.4 (time measure as recorded by the mining tool — indicates a relatively long average time between events; exact time units are as in source logs).
+- Hand In Job Application -> Application Rejected (early reject): frequency 1201, performance 146345.6 (long delay on average between application and recorded rejection in early-reject cases).
+- Background Check -> Application Rejected: 1391 occurrences, performance 155319.6 (very long delays indicate background checks are a major time sink).
+- Screening Interview -> Coding Interview: 1517, performance 129892.2 (substantial delay between screening and coding interview in many traces).
+- Technical interview transitions (e.g. Coding -> ML: 1304 freq, performance 80808.6) show varying delays; several transitions show performance = 0 which likely indicates immediate next events or timestamp/output artifacts.
+
+Note: performance numbers in the DFG appear large and variable; they likely represent average elapsed time between the two directly-following events (units depend on original logs — e.g., seconds/milliseconds). Where performance = 0 appears it may be due to coincident timestamps or rounding.
+
+6. Exception handling, rework loops, and escalation paths (observed)
+
+- Rework loops between ML, Frontend, Backend interviews; repeated Behavioral Interview instances; self-loops on Make Job Offer and Application Rejected.
+- Escalation from Background Check -> Extensive Background Check.
+- Post-decision re-opening: Application Rejected -> Behavioral Interview / Make Job Offer and Make Job Offer -> Application Rejected.
+- These behaviors indicate weak gating, inconsistent recording practices, and potential manual re-openings without proper state management.
+
+7. Key challenges and pain points (AS-IS)
+
+- Inconsistent sequencing: Background checks and screening interviews occur in multiple orders across traces (both Background Check -> Screening Interview and Screening Interview -> Background Check are frequent), causing unpredictable waiting times.
+- Long delays: many transitions have very large average performance values (evidence of long waiting times between steps, especially around background checks and between screening and coding interviews).
+- Rework and oscillation: the network of interviews (Frontend/Backend/ML/Coding) contains frequent bidirectional edges and loops, indicating repeated evaluations and candidate re-routing.
+- Decision instability: transitions out of end states (Application Rejected / Make Job Offer) show that decisions are sometimes reversed or re-opened — this is a governance and data-quality problem.
+- Multiple terminal states used inconsistently: both "Make Job Offer" and "Application Rejected" are recorded many times, sometimes repeatedly, which inflates cycle counts and complicates measurement of time-to-hire.
+- Noise and timestamp artifacts: several performance = 0 transitions and self-loops point to recording artifacts or immediate successive logging.
+
+8. Metrics and KPIs to monitor (AS-IS)
+
+- Frequency of re-openings: count of transitions from Application Rejected or Make Job Offer to any non-terminal activity.
+- Average time per stage: Telephonic Screening → Screening Interview, Background Check → Decision, Screening Interview → Coding Interview.
+- End-to-end lead time: average time from Hand In Job Application to final decision (noting the ambiguity of final decisions in current data).
+- Re-interview rate: frequency and share of candidates who are interviewed more than once in the same interview type (Behavioral Interview self-loop and technical interview cycles).
+- Escalation rate: share of Background Check instances that escalate to Extensive Background Check.
+
+9. Immediate recommendations (AS-IS observations to be addressed)
+
+- Treat Make Job Offer and Application Rejected as true terminal states and prevent downstream activities without explicit case re-opening.
+- Standardize the sequencing of screening vs. background checks (choose one default order or permit parallel execution with a clear gating rule for offer issuance).
+- Reduce rework by defining a clear technical-interview routing policy (based on the job profile) and by introducing a synchronization step (final technical review) before re-routing.
+- Investigate data quality/timestamp issues that produce performance = 0 and repeated identical event records.
+
+Summary (AS-IS): The mined model shows a hiring process with substantial branching, long delays (especially around background checks), frequent rework among technical interviews, and unstable terminal decisions (re-openings and reversals). This creates high and unpredictable time-to-hire and poor process governance. The IDEAL model should remove oscillations, enforce stable terminal states, and streamline sequencing and parallelism to reduce lead time.

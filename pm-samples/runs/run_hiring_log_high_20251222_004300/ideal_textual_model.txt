@@ -1,0 +1,89 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, controlled hiring process that eliminates contradictory outcomes, reduces unnecessary work, limits rework, and enforces clear stage gates while preserving the valid behaviors needed to evaluate candidates.
+- Design principles applied: Single-source-of-truth outcome (exclusive end state), minimized loops, selective parallelism only where value-adding, and explicit stage criteria.
+
+Key stakeholders and roles involved
+- Roles/lanes are not specified in the source; the IDEAL model describes the flow and control logic without assigning activities to specific actors.
+
+Detailed step-by-step process flow
+Start conditions and trigger
+- Start: Hand In Job Application.
+
+1) Initial screening (mandatory)
+- Telephonic Screening is required for all cases (remove the skip). Decision:
+  • If fails criteria -> Application Rejected (end).
+  • If passes -> proceed to initial interviews.
+
+2) Sequential pre-technical evaluation with targeted checks
+- Screening Interview followed by Background Check (sequence instead of full parallelization to avoid unnecessary checks on unqualified candidates).
+  • Decision after Screening Interview:
+    – If obviously not a fit -> Application Rejected (end), bypassing Background Check.
+    – If promising -> perform Background Check (basic level).
+  • Decision after Background Check:
+    – If disqualifying findings -> Application Rejected (end).
+    – Else -> proceed to technical assessment.
+- Extensive Background Check performed only when needed and only after candidate passes technical assessment and behavioral interview, immediately before offer issuance. This preserves the activity but limits it to cases with high likelihood of hire.
+
+3) Technical assessment with selective interviews
+- Coding Interview is required for technical tracks; for non-technical tracks (if any), this stage may be bypassed by policy, but the activity set remains unchanged.
+- Based on role requirements, select a subset of ML Interview, Backend Interview, and Frontend Interview using an inclusive decision (OR-join semantics on completion):
+  • If multiple tracks are relevant, schedule up to one round of each, optionally in parallel to reduce lead time.
+  • No uncontrolled rework: cap at one completed round per selected track; any exceptional re-interview requires explicit approval and is recorded as a re-open of the same task instance rather than additional iterations.
+- Technical decision gate:
+  • If the candidate fails required technical criteria -> Application Rejected (end).
+  • If passes -> proceed to behavioral assessment.
+
+4) Behavioral assessment (controlled, non-looping)
+- Conduct one Behavioral Interview (remove general looping). If inconclusive, allow at most one additional behavioral interview with justification; treat it as an update to the same stage rather than an unbounded loop.
+- Behavioral decision gate:
+  • If fails -> Application Rejected (end).
+  • If passes -> proceed to pre-offer checks.
+
+5) Pre-offer checks and offer issuance (single outcome per case)
+- Perform Extensive Background Check only if required by policy and only at this point (no early EBC on unqualified candidates).
+- Make Job Offer occurs at most once per case; if terms change, update within the same offer issuance step (no separate repeat events). Exclusive outcome rule applies:
+  • If offer is prepared -> Make Job Offer (end state for the process model).
+  • If the case is withdrawn or fails pre-offer checks -> Application Rejected (end).
+
+Decision points and control logic
+- Exclusive decisions at every gate ensure only one terminal outcome per case (Application Rejected OR Make Job Offer), never both.
+- Inclusive selection of technical interview tracks based on role requirements; optional parallel execution of selected tracks to shorten elapsed time.
+- Removal of the final parallel split: Replace the AS-IS parallel split into rejection and behavioral/offer branches with a single, exclusive decision sequence: technical gate -> behavioral gate -> (optional) extensive check -> offer OR rejection.
+
+Parallel activities and synchronization points
+- Limited, purposeful parallelism:
+  • Optional parallel execution among the selected technical interview tracks only (ml/backend/frontend), synchronized at a single join before the technical gate decision.
+- No parallel flows between rejection and offer activities; these are mutually exclusive outcomes.
+
+Exception handling and error paths
+- Early rejection permitted at defined gates: after Telephonic Screening, after Screening Interview, after Background Check, after technical assessment, and after behavioral assessment.
+- Cancellation policy: upon rejection at any gate, all downstream activities, interviews, or checks are canceled; no further activity (including Make Job Offer) may occur in the same case.
+- Re-interviews are exceptions requiring explicit approval; they amend the existing task rather than creating new iterations.
+
+Rework loops and escalation procedures
+- Remove unbounded loops:
+  • Behavioral Interview: at most one additional pass with justification.
+  • Make Job Offer: single issuance; updates treated as amendments within the same step.
+  • Application Rejected: single terminal event; no self-loops.
+- Escalation: if a gate decision is overdue, escalate to process owner; decisions pause downstream scheduling.
+
+End conditions and outcomes
+- Exactly one terminal outcome per case:
+  • Application Rejected (at any defined gate), or
+  • Make Job Offer (after successful behavioral assessment and any required extensive check).
+- The process ends immediately upon reaching either terminal outcome; no final synchronization of separate branches is needed.
+
+Process metrics and performance characteristics (expected)
+- Cycle time reduction by eliminating unnecessary parallel background checks and unbounded loops (Behavioral Interview self-loop of 1,032 and Make Job Offer self-loop of 861 removed; Application Rejected self-loop of 654 removed).
+- Fewer contradictory transitions (e.g., Application Rejected -> Make Job Offer (690) and Make Job Offer -> Application Rejected (110) eliminated by exclusivity).
+- More consistent funnel: all candidates pass through a comparable sequence of gates, improving fairness and enabling benchmarking.
+- Throughput gain from parallelizing only the necessary technical tracks while limiting to one round each.
+
+Improvements made versus AS-IS
+- Converted the final concurrent rejection/offer branches into a single exclusive path with clear stage gates, preventing contradictory outcomes.
+- Removed unbounded rework loops on Behavioral Interview, Make Job Offer, and Application Rejected; introduced controlled, at-most-once re-interview policy where warranted.
+- Reordered pre-technical evaluations to avoid performing background checks on obviously unqualified candidates; deferred Extensive Background Check to just before offer.
+- Made Telephonic Screening and Coding Interview (for technical roles) mandatory to improve consistency; technical tracks selected inclusively by role rather than ad hoc.
+- Clarified synchronization: a single join after technical tracks; no ambiguous end-join that allows completion without a visible terminal business outcome.

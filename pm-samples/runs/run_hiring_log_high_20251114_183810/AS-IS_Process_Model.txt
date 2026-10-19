@@ -1,0 +1,534 @@
+AS-IS PROCESS MODEL: RECRUITMENT AND HIRING PROCESS
+
+================================================================================
+1. PROCESS OVERVIEW AND PURPOSE
+================================================================================
+
+The AS-IS recruitment and hiring process represents the observed behavior of candidate evaluation and selection within an organization. This process begins when a candidate submits a job application and progresses through multiple screening and interview stages before culminating in either a job offer or application rejection.
+
+The process demonstrates significant complexity with multiple decision points, parallel evaluation paths, extensive rework loops, and inconsistent sequencing of activities. The observed behavior reveals substantial process inefficiencies, compliance issues, and quality problems that result in prolonged cycle times (average end-to-end performance exceeding 500,000 time units for successful hires) and high rejection rates after significant resource investment.
+
+Primary Purpose:
+- Evaluate candidate qualifications and fit for open positions
+- Conduct background verification and screening activities
+- Assess technical competencies through various interview types
+- Make hiring decisions and extend job offers to qualified candidates
+
+================================================================================
+2. KEY STAKEHOLDERS AND ROLES
+================================================================================
+
+Based on the activities observed in the process, the following roles are involved:
+
+• Candidates: Submit applications and participate in screening and interviews
+• HR Recruitment Team: Manages telephonic screening, application processing, and coordination
+• Background Check Team: Conducts standard and extensive background verification
+• Screening Interviewers: Conducts initial screening interviews to assess basic qualifications
+• Technical Interviewers: Specialized interviewers for different technical domains:
+  - Coding/Algorithm Interviewers
+  - Frontend Development Interviewers
+  - Backend Development Interviewers
+  - Machine Learning/Data Science Interviewers
+• Behavioral Interviewers: Assess cultural fit and soft skills
+• Hiring Managers: Make final hiring decisions and extend job offers
+• Process Systems: Automated or semi-automated systems managing workflow routing
+
+================================================================================
+3. DETAILED STEP-BY-STEP PROCESS FLOW
+================================================================================
+
+3.1 START CONDITIONS AND TRIGGERS
+----------------------------------
+
+Start Event: Process initiates when a candidate submits a job application
+Trigger: "Hand In Job Application" activity
+Initial Marking: Source place activated with one token
+Volume: 8,799 applications observed entering the process
+
+3.2 INITIAL SCREENING PHASE (Activities after Application Submission)
+-----------------------------------------------------------------------
+
+After application submission, the process exhibits three distinct observed paths:
+
+Path A: Telephonic Screening (Most Common - 8,799 cases)
+• Activity: "Telephonic Screening" conducted by HR
+• Average Performance Time: 82,440 time units from application
+• Purpose: Initial phone-based assessment of candidate qualifications
+• Decision Point: HR determines if candidate should proceed
+• Observed Frequency: 8,799 occurrences
+
+Path B: Immediate Rejection (Early Exit - 1,201 cases)
+• Activity: "Application Rejected" immediately after submission
+• Average Performance Time: 146,346 time units
+• Reason: Resume screening failure, lack of basic qualifications, or administrative issues
+• This represents 13.6% of applications rejected without any screening
+• Observed Frequency: 1,201 direct rejections
+
+Path C: Skip Telephonic Screening (Process Deviation)
+• Some cases bypass telephonic screening entirely
+• This represents process non-compliance or exception handling
+• Creates immediate branching to subsequent activities
+
+3.3 BACKGROUND CHECK PHASE (Parallel/Sequential Variations)
+------------------------------------------------------------
+
+Following telephonic screening, the process shows inconsistent sequencing between background checks and screening interviews:
+
+Configuration 1: Background Check BEFORE Screening Interview (3,961 cases)
+• Flow: Telephonic Screening → Background Check → Screening Interview
+• Average Performance: 81,906 time units between telephonic and background check
+• Background check conducted proactively before detailed evaluation
+• Zero time gap between background check completion and screening interview
+• Observed in 45% of cases proceeding past telephonic screening
+
+Configuration 2: Screening Interview BEFORE Background Check (3,848 cases)
+• Flow: Telephonic Screening → Screening Interview → Background Check
+• Average Performance: 81,903 time units between telephonic and screening interview
+• Interview conducted first, background check follows
+• Zero time gap between screening interview and background check
+• Observed in 44% of cases proceeding past telephonic screening
+
+Configuration 3: Telephonic Screening → Immediate Rejection (990 cases)
+• Average Performance: 143,282 time units
+• Candidates rejected after telephonic screening without further evaluation
+• Represents 11% of candidates who completed telephonic screening
+
+CRITICAL ISSUE: The interchangeable ordering of Background Check and Screening Interview indicates:
+- Lack of standardized process flow
+- No clear dependency requirement between these activities
+- Process mining shows bidirectional flow between these steps
+- Both activities appear to function as independent gates rather than sequential dependencies
+
+Background Check Activity Details:
+• Standard Background Check: Verification of employment history, education, references
+• Extensive Background Check: Additional deeper investigation triggered in subset of cases
+  - Occurs after standard background check or screening interview
+  - Flow: Background Check/Screening Interview → Extensive Background Check
+  - Frequency: 1,055 cases from screening interview, 1,044 from background check
+  - Average delay: 84,418 and 84,234 time units respectively
+  - Leads to rejection in 1,125 cases (average 171,097 time units to rejection)
+
+3.4 REJECTION DECISION POINTS (Multiple Exit Points)
+-----------------------------------------------------
+
+The process demonstrates numerous rejection points throughout the flow:
+
+Rejection Point 1: After Application Submission
+• Direct rejection: 1,201 cases (146,346 time units average)
+
+Rejection Point 2: After Telephonic Screening
+• Post-screening rejection: 990 cases (143,282 time units average)
+
+Rejection Point 3: After Background Check
+• Background check failure: 1,391 cases (155,320 time units average)
+
+Rejection Point 4: After Screening Interview
+• Screening interview failure: 1,389 cases (155,969 time units average)
+
+Rejection Point 5: After Extensive Background Check
+• Extensive background failure: 1,125 cases (171,097 time units average)
+• Most frequent variant: Application → Telephonic → Background → Screening → Extensive Background → Rejection (572 cases)
+
+Rejection Point 6: Throughout Technical Interview Phase
+• After Coding Interview: 386 cases (80,727 time units)
+• After Frontend Interview: 653 cases (81,263 time units)
+• After Backend Interview: 295 cases (81,404 time units)
+• After ML Interview: 546 cases (81,266 time units)
+
+Rejection Point 7: After Behavioral Interview
+• Post-behavioral rejection: 914 cases (17,086 time units)
+• Indicates cultural fit or soft skills failure late in process
+
+Rejection Point 8: After Job Offer Extended (Critical Issue)
+• Offer retraction or candidate withdrawal: 110 cases (67 time units)
+• Represents failed offer acceptance or last-minute disqualification
+
+3.5 TECHNICAL INTERVIEW PHASE (Complex Parallel and Sequential Patterns)
+--------------------------------------------------------------------------
+
+After passing initial screening and background checks, candidates enter a technical evaluation phase with significant variability:
+
+Entry Point to Technical Interviews:
+• Primary entry: "Coding Interview" (most common first technical interview)
+  - From Background Check: 1,413 cases (129,885 time units)
+  - From Screening Interview: 1,517 cases (129,892 time units)
+  - From Extensive Background Check: 974 cases (124,295 time units)
+
+Coding Interview:
+• Activity: Algorithmic and coding competency assessment
+• Duration indicators: ~130,000 time units from prior screening activities
+• Outcomes:
+  - Proceed to ML Interview: 1,304 cases (80,809 time units)
+  - Proceed to Frontend Interview: 1,513 cases (80,785 time units)
+  - Proceed to Backend Interview: 701 cases (80,655 time units)
+  - Direct rejection: 386 cases (80,727 time units)
+• Observable pattern: Coding interview acts as a split point to specialized technical interviews
+
+CRITICAL ISSUE - Circular Dependencies and Rework Loops:
+
+Loop 1: ML Interview ↔ Frontend Interview (Bidirectional Flow)
+• ML Interview → Frontend Interview: 913 cases (0 time gap)
+• Frontend Interview → ML Interview: 878 cases (0 time gap)
+• Indicates candidates cycling between these interviews
+• Zero time gap suggests immediate re-routing rather than scheduled rework
+• Possible causes: Unclear role requirements, interviewer disagreement, or process confusion
+
+Loop 2: Frontend Interview ↔ Backend Interview (Bidirectional Flow)
+• Frontend Interview → Backend Interview: 529 cases (0 time gap)
+• Backend Interview → Frontend Interview: 487 cases (0 time gap)
+• Candidates oscillate between frontend and backend evaluations
+• Suggests role ambiguity or attempts to fit candidate to different positions
+
+Loop 3: ML Interview ↔ Backend Interview (Bidirectional Flow)
+• Backend Interview → ML Interview: 152 cases (0 time gap)
+• ML Interview → Backend Interview: 121 cases (0 time gap)
+• Smaller volume but indicates continued role confusion
+
+Technical Interview Specialist Roles:
+• Frontend Interview: UI/UX, JavaScript, React/Angular/Vue assessment
+• Backend Interview: Server-side, databases, API design assessment
+• ML Interview: Machine learning, data science, AI algorithms assessment
+
+The observed pattern suggests:
+- No clear interview sequence is enforced
+- Candidates are routed between interviews based on unclear criteria
+- Immediate (zero-delay) transitions indicate system-driven routing rather than scheduled appointments
+- Significant waste from repeated technical evaluations
+
+3.6 BEHAVIORAL INTERVIEW PHASE (Self-Loop and Repeated Execution)
+------------------------------------------------------------------
+
+Following technical interviews, candidates proceed to behavioral assessment:
+
+Entry to Behavioral Interview:
+• From Frontend Interview: 853 cases (80,295 time units)
+• From ML Interview: 754 cases (80,355 time units)
+• From Backend Interview: 417 cases (80,439 time units)
+• From Application Rejected status (!): 740 cases (46 time units) - CRITICAL ANOMALY
+
+Behavioral Interview Self-Loop (Major Process Issue):
+• Behavioral Interview → Behavioral Interview: 1,032 cases (47 time units average)
+• Represents candidates undergoing multiple behavioral interviews
+• Very short cycle time (47 time units) suggests rapid re-evaluation
+• Possible causes:
+  - Multiple interviewers conducting separate behavioral assessments
+  - Failed first attempt requiring immediate retry
+  - Panel interview modeled as sequential individual interviews
+  - Process mining artifact from concurrent sub-activities
+
+CRITICAL ANOMALY - Rejection to Behavioral Interview Flow:
+• Application Rejected → Behavioral Interview: 740 cases (46 time units)
+• Candidates previously marked as rejected proceeding to behavioral interviews
+• Indicates:
+  - Process reversal or appeal mechanism
+  - Incorrect rejection status assignment
+  - Parallel evaluation paths where rejection is provisional
+  - Data quality issues in event log
+
+Behavioral Interview Outcomes:
+• Proceed to Make Job Offer: 1,850 cases (80,430 time units)
+• Proceed to Application Rejected: 914 cases (17,086 time units)
+• Loop back to Behavioral Interview: 1,032 cases (47 time units)
+
+3.7 JOB OFFER PHASE (Self-Loop and Complex Outcomes)
+-----------------------------------------------------
+
+The final phase involves extending job offers, with unexpected complexity:
+
+Make Job Offer Activity:
+• Primary entry from Behavioral Interview: 1,850 cases (80,430 time units)
+• Entry from Application Rejected (!): 690 cases (68,184 time units) - CRITICAL ANOMALY
+
+Make Job Offer Self-Loop (Process Issue):
+• Make Job Offer → Make Job Offer: 861 cases (71 time units)
+• Represents multiple offer iterations to same candidate
+• Possible reasons:
+  - Salary negotiation rounds
+  - Offer modifications or amendments
+  - Multiple approval signatures
+  - Counter-offers and re-negotiations
+  - Process mining artifact from offer workflow sub-steps
+
+CRITICAL ANOMALY - Rejection to Offer Flow:
+• Application Rejected → Make Job Offer: 690 cases (68,184 time units)
+• Candidates previously rejected receiving job offers
+• Indicates:
+  - Appeal or reconsideration process
+  - Rejection was provisional or conditional
+  - Multiple concurrent applications for different roles
+  - Significant process control failure
+
+Make Job Offer → Application Rejected Flow:
+• 110 cases where offer is extended then retracted (67 time units)
+• Possible causes:
+  - Failed background check after conditional offer
+  - Candidate declined offer
+  - Budget freeze or position eliminated
+  - Reference check failure post-offer
+
+3.8 APPLICATION REJECTION PHASE (Self-Loop and Terminal State)
+---------------------------------------------------------------
+
+Application Rejected serves as both a terminal state and intermediate state:
+
+Application Rejected Self-Loop (Data Quality Issue):
+• Application Rejected → Application Rejected: 654 cases (9,901 time units)
+• Represents multiple rejection notifications or status updates
+• May indicate:
+  - Rejection confirmation workflow
+  - Multiple rejection reasons logged sequentially
+  - System artifacts from status propagation
+  - Candidate reapplication within same tracking period
+
+Application Rejected as Non-Terminal State:
+• To Behavioral Interview: 740 cases (46 time units)
+• To Make Job Offer: 690 cases (68,184 time units)
+• Indicates rejection is not always final
+• Suggests weak process control and unclear decision authority
+
+3.9 END CONDITIONS AND OUTCOMES
+--------------------------------
+
+Terminal End States:
+1. Successful Hire: Make Job Offer accepted (leading to sink)
+2. Unsuccessful Application: Application Rejected (leading to sink)
+
+However, due to loops and reversals, end conditions are ambiguous:
+• Self-loops on terminal activities prevent clean termination
+• Rejection-to-offer flows create non-deterministic outcomes
+• Multiple iterations extend process duration significantly
+
+Process Completion Patterns:
+• Simple rejection variants: Complete in 146,000-320,000 time units
+• Successful hire variants with multiple interviews: 530,000+ time units average
+• Rework loops add 50-10,000 time units per iteration
+
+================================================================================
+4. PROCESS METRICS AND PERFORMANCE CHARACTERISTICS
+================================================================================
+
+Volume Metrics:
+• Total applications processed: 8,799 (based on telephonic screening frequency)
+• Immediate rejections: 1,201 (13.6% of applications)
+• Post-telephonic rejections: 990 (11.2% of screened candidates)
+• Post-background/screening rejections: ~2,780 combined
+• Successful offers (estimated): ~1,850 primary behavioral-to-offer flows
+
+Cycle Time Metrics:
+• Application to telephonic screening: 82,440 time units average
+• Early screening phase: 80,000-85,000 time units
+• Background check processing: 0 time units (immediate) to 84,000 units (extensive)
+• Technical interview phase: 80,000-130,000 time units per interview
+• Behavioral interview phase: 80,000+ time units
+• Total time for successful hire: 530,000+ time units average (most common variants)
+• Simple rejection paths: 146,000-320,000 time units
+
+Rework and Loop Metrics:
+• Behavioral interview loops: 1,032 occurrences (47 time units per loop)
+• Job offer loops: 861 occurrences (71 time units per loop)
+• Application rejected loops: 654 occurrences (9,901 time units per loop)
+• ML ↔ Frontend interview cycles: 1,791 total transitions
+• Frontend ↔ Backend interview cycles: 1,016 total transitions
+• ML ↔ Backend interview cycles: 273 total transitions
+
+Rejection Rate Analysis:
+• Stage 1 (Pre-screening): 13.6% rejected immediately
+• Stage 2 (Post-telephonic): 11.2% rejected after phone screen
+• Stage 3 (Post-initial evaluation): 31.6% rejected after background/screening
+• Stage 4 (Post-extensive background): 12.8% rejected after deeper checks
+• Stage 5 (During technical interviews): Multiple rejection points throughout
+• Stage 6 (Post-behavioral): 10.4% rejected after behavioral assessment
+• Stage 7 (Post-offer): 1.3% offers retracted or declined
+
+Process Efficiency Issues:
+• Average 3.8 technical interviews per candidate (based on flow patterns)
+• 1.56 behavioral interviews per candidate on average (due to self-loop)
+• 1.25 job offers per successful hire (due to self-loop)
+• Estimated 40%+ of process time spent in rework activities
+
+Throughput Bottlenecks:
+• Coding interview serves as primary bottleneck (130,000 time units delay)
+• Extensive background check adds 84,000-171,000 time units
+• Technical interview routing decisions cause significant delays
+• Behavioral interview repetition extends cycle time
+
+================================================================================
+5. KEY CHALLENGES AND PAIN POINTS (AS-IS STATE)
+================================================================================
+
+5.1 STRUCTURAL AND DESIGN ISSUES
+---------------------------------
+
+Issue 1: Inconsistent Process Sequencing
+• Background Check and Screening Interview have no fixed order
+• Creates confusion about when verification should occur
+• 50% of cases use one sequence, 50% use the opposite
+• Indicates lack of process standardization and governance
+
+Issue 2: Excessive Rework Loops
+• Three bidirectional technical interview flows (ML↔Frontend, Frontend↔Backend, ML↔Backend)
+• Zero time gaps suggest automated routing without clear criteria
+• Candidates cycle through interviews without clear progression logic
+• Wastes interviewer time and creates poor candidate experience
+
+Issue 3: Self-Referential Activities
+• Behavioral Interview loops back to itself 1,032 times
+• Make Job Offer loops back to itself 861 times
+• Application Rejected loops back to itself 654 times
+• Suggests either subprocess complexity not properly modeled or actual process chaos
+
+Issue 4: Terminal State Violations
+• Application Rejected state has outgoing flows to Behavioral Interview (740) and Make Job Offer (690)
+• Rejected candidates being reinstated without clear appeal process
+• Undermines process integrity and decision authority
+• Creates potential compliance and fairness issues
+
+5.2 PERFORMANCE AND EFFICIENCY ISSUES
+--------------------------------------
+
+Issue 5: Extremely Long Cycle Times
+• Average 530,000+ time units for successful hires
+• Comparable processes should complete in <50% of observed time
+• Extended duration increases risk of candidate drop-off
+• Competitive disadvantage in talent acquisition market
+
+Issue 6: Late-Stage Rejections
+• 31.6% rejection after background/screening (post significant investment)
+• 10.4% rejection after behavioral interview (very late stage)
+• Technical interview rejections occur after 400,000+ time units invested
+• Indicates poor early filtering and qualification assessment
+
+Issue 7: Resource Waste from Technical Interview Chaos
+• Candidates undergo average 3-4 technical interviews with cycling between types
+• No clear interview sequence or stopping criteria
+• Interviewer capacity wasted on redundant assessments
+• Zero time gaps suggest system issues rather than thoughtful scheduling
+
+Issue 8: Extensive Background Check Overuse
+• 1,125 rejections after extensive background check
+• This deep investigation occurs after 400,000+ time units already invested
+• Should be triggered earlier or used more selectively
+• 100% rejection rate after extensive check indicates it's a "fail" signal
+
+5.3 QUALITY AND COMPLIANCE ISSUES
+----------------------------------
+
+Issue 9: Inconsistent Decision-Making
+• Same activities lead to different outcomes with no clear criteria
+• Background check routing is non-deterministic
+• Technical interview sequencing appears random
+• No visible decision rules or gates controlling flow
+
+Issue 10: Offer Integrity Problems
+• 110 cases where offers are extended then retracted
+• 690 cases where rejected candidates receive offers
+• Undermines organizational credibility
+• Potential legal and ethical implications
+
+Issue 11: High Early Rejection Rate Without Screening
+• 13.6% rejected immediately without telephonic screening
+• Suggests poor job description, unrealistic requirements, or ineffective sourcing
+• Wastes candidate time and damages employer brand
+
+Issue 12: Process Transparency and Auditability Issues
+• Complex loops and reversals make process state unclear
+• Difficult to determine current candidate status
+• Audit trail is convoluted with self-loops and reversals
+• Compliance reporting would be extremely difficult
+
+5.4 CANDIDATE EXPERIENCE ISSUES
+--------------------------------
+
+Issue 13: Excessive Interview Burden
+• Candidates undergo 3-4+ technical interviews with unclear purpose
+• Behavioral interview may repeat multiple times
+• Total process duration of 500,000+ time units is excessive
+• Creates frustration and candidate withdrawal risk
+
+Issue 14: Unclear Process Status
+• Rejection followed by continued evaluation (740 cases to behavioral interview)
+• Offer iterations without clear communication pattern
+• Candidates uncertain about their standing in process
+
+Issue 15: Late Rejections After Significant Time Investment
+• Candidates rejected after 400,000-500,000 time units of process time
+• Multiple interview rounds followed by rejection
+• Damages employer brand and candidate perception
+
+5.5 BUSINESS IMPACT ISSUES
+---------------------------
+
+Issue 16: Low Conversion Efficiency
+• Estimated <25% conversion from application to offer
+• High rejection rates at every stage
+• Indicates either poor sourcing or overly stringent/unclear criteria
+
+Issue 17: Extended Time-to-Fill
+• 530,000+ time unit average for successful hires
+• Positions remain open longer than necessary
+• Business units suffer from prolonged vacancies
+• Increased risk of losing top candidates to competitors
+
+Issue 18: High Cost-per-Hire
+• Multiple redundant interviews consume significant interviewer time
+• Extensive background checks on candidates who fail later stages
+• Rework loops multiply resource consumption
+• Administrative overhead from process complexity
+
+Issue 19: Interviewer Burnout Risk
+• Excessive interview volume from rework loops
+• Unclear interview outcomes leading to repeated assessments
+• Technical interviewers conducting redundant evaluations
+• Reduced interview quality due to fatigue
+
+Issue 20: Data Quality and Process Mining Challenges
+• Self-loops may indicate event log quality issues
+• Rejection state reversals suggest incomplete or incorrect status tracking
+• Process mining reveals behavior that may not match intended design
+• Difficult to distinguish actual process from data artifacts
+
+================================================================================
+6. PROCESS VARIANTS ANALYSIS
+================================================================================
+
+Most Common Rejection Variants:
+1. Telephonic → Screening → Background → Rejected (1,391 cases, 319,390 time units)
+2. Telephonic → Background → Screening → Rejected (1,389 cases, 320,030 time units)
+3. Immediate Rejection (1,201 cases, 146,346 time units)
+4. Telephonic → Rejected (990 cases, 229,938 time units)
+
+Most Common Success Variants (with double behavioral and offer loops):
+• All successful variants show pattern: ...→ Behavioral → Behavioral → Make Offer → Make Offer
+• Indicates these loops are systematic rather than exceptional
+• Variants differ primarily in technical interview sequences (ML→Frontend vs Frontend→ML)
+• All successful variants average 530,000 time units total duration
+
+Variant Complexity:
+• 43 distinct variants shown in top patterns
+• Actual variant count likely much higher
+• High variant count indicates low process standardization
+• Most variants include rework or loop patterns
+
+================================================================================
+7. SUMMARY OF AS-IS STATE
+================================================================================
+
+The AS-IS recruitment process is characterized by:
+
+✗ Severe structural inefficiencies with inconsistent activity sequencing
+✗ Extensive rework loops causing 40%+ time waste
+✗ Self-referential activities indicating subprocess chaos or data quality issues
+✗ Terminal state violations where rejections are reversed without clear governance
+✗ Excessive cycle times (530,000+ time units) making the organization uncompetitive
+✗ Late-stage rejections wasting organizational resources and damaging candidate experience
+✗ Technical interview chaos with circular dependencies and no clear progression
+✗ Poor early-stage filtering allowing unqualified candidates to consume resources
+✗ Inconsistent decision-making with no visible criteria or gates
+✗ High process variant count indicating lack of standardization
+✗ Significant compliance, auditability, and transparency challenges
+
+The process requires comprehensive redesign to establish clear sequencing, eliminate rework loops, improve early filtering, streamline technical interviews, and restore process integrity. The current state represents significant organizational risk and competitive disadvantage in talent acquisition.
+
+================================================================================
+END OF AS-IS PROCESS MODEL DESCRIPTION
+================================================================================

@@ -1,0 +1,174 @@
+write_AS_IS_comprehensive_textual_description(content: """
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Accept a request for a credit-related appointment, schedule it, receive the borrower’s credit application, and verify the borrower’s information.
+- Scope covered by the discovered model: Only the four observed activities and their strict order. No rejections, denials, collateral assessments, or requests for co-signers are present in the observed behavior.
+
+Key stakeholders and roles involved
+- Roles and systems are not specified in the source model. Responsibility assignments are therefore not stated.
+
+Structural interpretation from the DECLARE model
+- Activities (all occur exactly once):
+  1) Request Appointment (initialization and start)
+  2) Set Appointment
+  3) Hand In Credit Appliaction (label preserved as in source; likely “Application”)
+  4) Verify Borrowers Information
+- Absolute order enforced by chain succession:
+  Request Appointment → Set Appointment → Hand In Credit Appliaction → Verify Borrowers Information
+- Initialization: The process starts with Request Appointment.
+- Exactly 1: Each of the four activities occurs exactly once per case.
+- Co-existence and responded existence: If any of the four occurs, all occur; in practice, all four always occur.
+- Absence (explicitly forbidden/never observed): Appointment Denied, Request Co-Signer On Loan, Application Rejected, Make Visit to Assess Colatteral, skipped_examination.
+
+Detailed step-by-step process flow
+1) Start conditions and triggers
+   - Start event: Receipt of Request Appointment. This is the mandatory first event.
+
+2) Sequential activities
+   - Activity 1: Request Appointment
+     - Intake of an appointment request for a credit-related meeting.
+     - Output: A request record that must be immediately followed by scheduling.
+   - Activity 2: Set Appointment
+     - The appointment is scheduled. By chain constraints, it directly follows Request Appointment with no other logged activities in between.
+     - Output: A scheduled appointment slot; the next logged step must be the borrower handing in the application.
+   - Activity 3: Hand In Credit Appliaction
+     - The borrower submits the credit application (documents/forms).
+     - Must immediately precede verification (chain succession).
+   - Activity 4: Verify Borrowers Information
+     - Verification of the borrower’s information based on the submitted application.
+     - This is the last observed activity; process ends after this.
+
+3) Decision points with criteria and possible outcomes
+   - None are modeled in the observed behavior. There are no exclusive, inclusive, or parallel gateways; no alternate outcomes are recorded.
+
+4) Parallel activities and synchronization points
+   - None. The process is purely sequential with no concurrency.
+
+5) Exception handling and error paths
+   - None represented in the discovered model. Explicit “Absence” constraints indicate that activities such as Appointment Denied, Request Co-Signer On Loan, Application Rejected, Make Visit to Assess Colatteral, and skipped_examination do not occur.
+
+6) Rework loops and escalation procedures
+   - None. Exactly-1 constraints and alternating/chain constraints disallow repetition or rework of the four activities.
+
+7) End conditions and outcomes
+   - End event: Completion of Verify Borrowers Information.
+   - There are no modeled outcomes such as approval/denial; the process terminates at verification.
+
+Process metrics and performance characteristics
+- Structural determinism: Single linear path with four activities, exactly once each.
+- Number of activities per case: 4.
+- Variants: 1 (strictly constrained by chain succession and exactly-1).
+- Concurrency: 0 (no parallelism).
+- Rework rate: 0 by design (loops are disallowed).
+- Flexibility: Very low; chain constraints require immediate direct-following relationships, preventing any additional recorded steps between the core activities.
+- Compliance tightness: High relative to the observed steps; only this straight-through sequence is compliant.
+
+Key challenges and pain points
+- Over-constrained flow:
+  - Chain response/succession requires each step to be immediately followed by the next, leaving no room for any auxiliary or supportive activities to be recorded between them.
+- No modeled outcomes or decisions:
+  - Despite real-world plausibility, denial/rejection, collateral assessment, or co-signer requests are absent and thus not captured in-system.
+- No exception paths or rework:
+  - Missing/incorrect documentation cannot be represented as rework; any such handling would happen outside the logged process or not be captured.
+- Limited auditability:
+  - The strict direct-follow patterns may lead to off-system workarounds if additional checks, clarifications, or communications are needed, reducing traceability.
+- Potential operational bottleneck at verification:
+  - Since verification is always the last mandatory step and no buffering or pre-check steps are recorded, any delay here stalls completion without a modeled mitigation path.
+
+""")
+
+write_IDEAL_comprehensive_textual_description(content: """
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: Provide a controlled, auditable, and efficient flow for requesting and scheduling an appointment, submitting the credit application, and verifying borrower information.
+- Design principle: Preserve the same four activities and their logical order while removing unnecessary immediacy constraints, clarifying inputs/outputs, and defining clear completion states and performance expectations—without introducing new activities.
+
+Key stakeholders and roles involved
+- Roles are not given in the source. Activities remain unassigned to specific actors to avoid inventing roles.
+
+Targeted improvements (relative to AS-IS)
+- Maintain the same four activities and sequence but relax “immediate” (chain) constraints to ordinary ordering:
+  - Request Appointment must precede Set Appointment;
+  - Set Appointment must precede Hand In Credit Appliaction;
+  - Hand In Credit Appliaction must precede Verify Borrowers Information.
+  This allows necessary non-logged wait times or system handoffs without violating the model, and avoids forcing off-system workarounds.
+- Keep Exactly-1 cardinality for the four activities to preserve simplicity and prevent uncontrolled rework, but allow time between steps.
+- Clarify step inputs/outputs and acceptance criteria within each existing activity to increase first-time-right quality and reduce hidden rework within the same step.
+- Define explicit end-state semantics (as statuses, not new activities): “Verification Completed—Success” and “Verification Completed—Not Verified,” enabling reporting and governance without adding tasks.
+- Establish performance expectations (SLAs/targets) for each transition, while keeping the activity set unchanged.
+
+Detailed step-by-step process flow
+1) Start conditions and triggers
+   - Start event: Request Appointment received.
+
+2) Sequential activities and rules
+   - Activity 1: Request Appointment
+     - Purpose: Capture an appointment request and minimal required information to enable scheduling.
+     - Inputs: Request details (e.g., contact, preferred times, basic purpose).
+     - Outputs: Confirmed request record, queued for scheduling.
+     - Rule: Must occur before Set Appointment (no requirement to be immediate).
+
+   - Activity 2: Set Appointment
+     - Purpose: Schedule the appointment using the information captured.
+     - Inputs: Valid request record.
+     - Outputs: Scheduled appointment slot and confirmation.
+     - Rule: Must occur after Request Appointment and before Hand In Credit Appliaction; no immediacy enforced, allowing asynchronous scheduling and confirmation.
+
+   - Activity 3: Hand In Credit Appliaction (label preserved as in source)
+     - Purpose: Borrower submits the credit application and supporting materials.
+     - Inputs: Scheduled appointment; applicant-provided forms and documents.
+     - Outputs: A complete application package ready for verification.
+     - Quality criteria within the step: Check for completeness/legibility and that required data fields are present; deficiencies are corrected within the same activity before moving on.
+     - Rule: Must occur after Set Appointment and before Verify Borrowers Information; no immediacy enforced.
+
+   - Activity 4: Verify Borrowers Information
+     - Purpose: Validate the borrower’s information against the submitted application and available sources.
+     - Inputs: Completed application package.
+     - Outputs: A verification result (status only, not a new activity): “Verification Completed—Success” or “Verification Completed—Not Verified.”
+     - Rule: Must occur after Hand In Credit Appliaction.
+
+3) Decision points with criteria and possible outcomes
+   - Post-verification outcome (as end-state status):
+     - If verification passes: End state = Verification Completed—Success.
+     - If verification cannot be confirmed or fails: End state = Verification Completed—Not Verified.
+   - Note: No new activities are introduced; outcomes are statuses used for reporting and governance.
+
+4) Parallel activities and synchronization points
+   - None required. The process remains sequential.
+
+5) Exception handling and error paths
+   - Missing or incomplete application information is addressed within Activity 3 before proceeding (contained within the existing step, avoiding new tasks).
+   - Scheduling delays or communication lags are absorbed by relaxing the chain constraints; the model allows time between activities without breaking compliance.
+   - Verification issues lead to the “Not Verified” end status; no additional tasks are introduced.
+
+6) Rework loops and escalation procedures
+   - No explicit rework loops are added to stay within the original activity set.
+   - If deficiencies exist, they are resolved within the relevant activity before moving to the next step (e.g., document corrections within Activity 3), preserving Exactly-1 per activity at the case level.
+
+7) End conditions and outcomes
+   - End event: Completion of Verify Borrowers Information with one of two statuses:
+     - Verification Completed—Success
+     - Verification Completed—Not Verified
+
+Process metrics and performance characteristics (targets and governance)
+- Throughput and timeliness:
+  - Time from Request Appointment to Set Appointment: measurable with a defined SLA target.
+  - Time from Set Appointment to Hand In Credit Appliaction: measurable target (e.g., documents submitted before or at the appointment).
+  - Time from Hand In Credit Appliaction to completion of Verify Borrowers Information: measurable target.
+- Quality:
+  - First-time-right rate within Hand In Credit Appliaction (completeness/accuracy before verification).
+  - Verification completion rate (percentage resulting in “Success” vs “Not Verified”).
+- Compliance/conformance:
+  - Ordering conformance: no violations of the sequence constraints (no activity occurs out of order, each occurs exactly once).
+- Operational stability:
+  - Process remains single-variant by design (one primary path), enabling predictable performance while allowing natural waiting times between steps.
+
+Improvements made (summary)
+- Removed unnecessary immediacy (chain) constraints to avoid forcing off-system work.
+- Preserved the same four activities and their order to maintain clarity and control.
+- Introduced explicit end-state statuses to enable outcome reporting without adding tasks.
+- Clarified input/output and quality criteria within steps to reduce hidden rework and improve first-time-right outcomes.
+- Defined measurable performance expectations across the same activity set, supporting better governance and continuous improvement.
+""")

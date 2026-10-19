@@ -1,0 +1,116 @@
+================================================================================
+AGENT RUN LOG
+Timestamp: 2025-12-30T22:15:17.333705
+Dataset: hiring_log_high
+Model: deepseek:deepseek-reasoner
+================================================================================
+
+USER PROMPT:
+--------------------------------------------------------------------------------
+
+Process Mining Representations: 
+    1. Petri Net from inductive miner: places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (20a3925d-c167-4a67-b01b-67c2fde2850a, 'Extensive Background Check'), (220e11de-b0c1-4f33-b158-59a2a26b24f3, 'Background Check'), (32cca298-e9f3-4690-964c-828de469bb87, 'ML Interview'), (71c12c97-c0e8-4e64-970c-e70fb9e78361, 'Behavioral Interview'), (8e2135d1-fc0c-45e7-8910-55e24c5fe728, 'Make Job Offer'), (9e098c0e-60c2-460a-b176-f32128a329b7, 'Screening Interview'), (a1169aa1-2adc-498b-bf74-7005f3171384, 'Hand In Job Application'), (aa0ab8c0-822c-45c6-824c-ae456143060b, 'Telephonic Screening'), (acb2cf78-9f64-497d-a062-ba90a89dbd8f, 'Backend Interview'), (d1b92463-a467-45e4-889c-cc9bb0d2ece4, 'Frontend Interview'), (dac78f5e-7ba3-4e6e-96f3-20a4ba76e8e8, 'Application Rejected'), (ea684bbd-4872-4b47-8e75-0a1edaedc251, 'Coding Interview'), (init_loop_17, None), (init_loop_22, None), (init_loop_27, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_16, None), (skip_19, None), (skip_2, None), (skip_20, None), (skip_21, None), (skip_24, None), (skip_25, None), (skip_26, None), (skip_29, None), (skip_3, None), (skip_30, None), (skip_6, None), (skip_7, None), (skip_8, None), (tauJoin_10, None), (tauJoin_15, None), (tauJoin_5, None), (tauSplit_14, None), (tauSplit_4, None), (tauSplit_9, None) ]
+arcs: [ (20a3925d-c167-4a67-b01b-67c2fde2850a, 'Extensive Background Check')->p_12, (220e11de-b0c1-4f33-b158-59a2a26b24f3, 'Background Check')->p_9, (32cca298-e9f3-4690-964c-828de469bb87, 'ML Interview')->p_15, (71c12c97-c0e8-4e64-970c-e70fb9e78361, 'Behavioral Interview')->p_29, (8e2135d1-fc0c-45e7-8910-55e24c5fe728, 'Make Job Offer')->p_32, (9e098c0e-60c2-460a-b176-f32128a329b7, 'Screening Interview')->p_11, (a1169aa1-2adc-498b-bf74-7005f3171384, 'Hand In Job Application')->p_4, (aa0ab8c0-822c-45c6-824c-ae456143060b, 'Telephonic Screening')->p_6, (acb2cf78-9f64-497d-a062-ba90a89dbd8f, 'Backend Interview')->p_17, (d1b92463-a467-45e4-889c-cc9bb0d2ece4, 'Frontend Interview')->p_19, (dac78f5e-7ba3-4e6e-96f3-20a4ba76e8e8, 'Application Rejected')->p_23, (ea684bbd-4872-4b47-8e75-0a1edaedc251, 'Coding Interview')->p_13, (init_loop_17, None)->p_22, (init_loop_22, None)->p_28, (init_loop_27, None)->p_31, (skip_11, None)->p_15, (skip_12, None)->p_17, (skip_13, None)->p_19, (skip_16, None)->p_21, (skip_19, None)->p_22, (skip_2, None)->p_5, (skip_20, None)->p_21, (skip_21, None)->p_26, (skip_24, None)->p_28, (skip_25, None)->p_27, (skip_26, None)->p_26, (skip_29, None)->p_31, (skip_3, None)->p_5, (skip_30, None)->p_26, (skip_6, None)->p_12, (skip_7, None)->p_5, (skip_8, None)->p_5, (tauJoin_10, None)->p_5, (tauJoin_15, None)->sink, (tauJoin_5, None)->p_7, (tauSplit_14, None)->p_20, (tauSplit_14, None)->p_25, (tauSplit_4, None)->p_10, (tauSplit_4, None)->p_8, (tauSplit_9, None)->p_14, (tauSplit_9, None)->p_16, (tauSplit_9, None)->p_18, p_10->(9e098c0e-60c2-460a-b176-f32128a329b7, 'Screening Interview'), p_11->(tauJoin_5, None), p_12->(ea684bbd-4872-4b47-8e75-0a1edaedc251, 'Coding Interview'), p_12->(skip_7, None), p_13->(skip_8, None), p_13->(tauSplit_9, None), p_14->(32cca298-e9f3-4690-964c-828de469bb87, 'ML Interview'), p_14->(skip_11, None), p_15->(tauJoin_10, None), p_16->(acb2cf78-9f64-497d-a062-ba90a89dbd8f, 'Backend Interview'), p_16->(skip_12, None), p_17->(tauJoin_10, None), p_18->(d1b92463-a467-45e4-889c-cc9bb0d2ece4, 'Frontend Interview'), p_18->(skip_13, None), p_19->(tauJoin_10, None), p_20->(init_loop_17, None), p_20->(skip_16, None), p_21->(tauJoin_15, None), p_22->(dac78f5e-7ba3-4e6e-96f3-20a4ba76e8e8, 'Application Rejected'), p_23->(skip_19, None), p_23->(skip_20, None), p_25->(init_loop_22, None), p_25->(skip_21, None), p_26->(tauJoin_15, None), p_27->(init_loop_27, None), p_27->(skip_26, None), p_28->(71c12c97-c0e8-4e64-970c-e70fb9e78361, 'Behavioral Interview'), p_29->(skip_24, None), p_29->(skip_25, None), p_31->(8e2135d1-fc0c-45e7-8910-55e24c5fe728, 'Make Job Offer'), p_32->(skip_29, None), p_32->(skip_30, None), p_4->(aa0ab8c0-822c-45c6-824c-ae456143060b, 'Telephonic Screening'), p_4->(skip_2, None), p_5->(tauSplit_14, None), p_6->(skip_3, None), p_6->(tauSplit_4, None), p_7->(20a3925d-c167-4a67-b01b-67c2fde2850a, 'Extensive Background Check'), p_7->(skip_6, None), p_8->(220e11de-b0c1-4f33-b158-59a2a26b24f3, 'Background Check'), p_9->(tauJoin_5, None), source->(a1169aa1-2adc-498b-bf74-7005f3171384, 'Hand In Job Application') ] 
+with initial marking ['source:1'], final marking ['sink:1'],
+    2. DFG (Directly-Follows Graph) abstraction: If I have a process with flow:
+
+Hand In Job Application -> Telephonic Screening ( frequency = 8799  performance = 82439.794 )
+Telephonic Screening -> Background Check ( frequency = 3961  performance = 81906.421 )
+Background Check -> Screening Interview ( frequency = 3961  performance = 0.000 )
+Telephonic Screening -> Screening Interview ( frequency = 3848  performance = 81903.291 )
+Screening Interview -> Background Check ( frequency = 3848  performance = 0.000 )
+Behavioral Interview -> Make Job Offer ( frequency = 1850  performance = 80430.348 )
+Screening Interview -> Coding Interview ( frequency = 1517  performance = 129892.231 )
+Coding Interview -> Frontend Interview ( frequency = 1513  performance = 80785.480 )
+Background Check -> Coding Interview ( frequency = 1413  performance = 129884.902 )
+Background Check -> Application Rejected ( frequency = 1391  performance = 155319.566 )
+Screening Interview -> Application Rejected ( frequency = 1389  performance = 155969.168 )
+Coding Interview -> ML Interview ( frequency = 1304  performance = 80808.637 )
+Hand In Job Application -> Application Rejected ( frequency = 1201  performance = 146345.624 )
+Extensive Background Check -> Application Rejected ( frequency = 1125  performance = 171097.167 )
+Screening Interview -> Extensive Background Check ( frequency = 1055  performance = 84418.059 )
+Background Check -> Extensive Background Check ( frequency = 1044  performance = 84234.989 )
+Behavioral Interview -> Behavioral Interview ( frequency = 1032  performance = 47.047 )
+Telephonic Screening -> Application Rejected ( frequency = 990  performance = 143281.671 )
+Extensive Background Check -> Coding Interview ( frequency = 974  performance = 124295.087 )
+Behavioral Interview -> Application Rejected ( frequency = 914  performance = 17085.635 )
+ML Interview -> Frontend Interview ( frequency = 913  performance = 0.000 )
+Frontend Interview -> ML Interview ( frequency = 878  performance = 0.000 )
+Make Job Offer -> Make Job Offer ( frequency = 861  performance = 70.746 )
+Frontend Interview -> Behavioral Interview ( frequency = 853  performance = 80294.558 )
+ML Interview -> Behavioral Interview ( frequency = 754  performance = 80355.227 )
+Application Rejected -> Behavioral Interview ( frequency = 740  performance = 46.485 )
+Coding Interview -> Backend Interview ( frequency = 701  performance = 80655.317 )
+Application Rejected -> Make Job Offer ( frequency = 690  performance = 68184.068 )
+Application Rejected -> Application Rejected ( frequency = 654  performance = 9901.235 )
+Frontend Interview -> Application Rejected ( frequency = 653  performance = 81262.502 )
+ML Interview -> Application Rejected ( frequency = 546  performance = 81266.427 )
+Frontend Interview -> Backend Interview ( frequency = 529  performance = 0.000 )
+Backend Interview -> Frontend Interview ( frequency = 487  performance = 0.000 )
+Backend Interview -> Behavioral Interview ( frequency = 417  performance = 80439.149 )
+Coding Interview -> Application Rejected ( frequency = 386  performance = 80727.324 )
+Backend Interview -> Application Rejected ( frequency = 295  performance = 81404.454 )
+Backend Interview -> ML Interview ( frequency = 152  performance = 0.000 )
+ML Interview -> Backend Interview ( frequency = 121  performance = 0.000 )
+Make Job Offer -> Application Rejected ( frequency = 110  performance = 67.309 )
+
+
+
+    3. ABSTRACT_VARIANTS: Abstract Variants:If I have a process with the following process variants:
+
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected ( frequency = 1391  performance = 319390.265 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected ( frequency = 1389  performance = 320030.472 )
+ Hand In Job Application -> Application Rejected ( frequency = 1201  performance = 146345.624 )
+ Hand In Job Application -> Telephonic Screening -> Application Rejected ( frequency = 990  performance = 229938.161 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Application Rejected ( frequency = 572  performance = 427833.163 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Application Rejected ( frequency = 553  performance = 427705.756 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Application Rejected ( frequency = 156  performance = 370088.269 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Application Rejected ( frequency = 129  performance = 370179.543 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 93  performance = 530053.312 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 92  performance = 530069.663 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Behavioral Interview -> Make Job Offer ( frequency = 88  performance = 530037.295 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Behavioral Interview -> Make Job Offer ( frequency = 87  performance = 530035.678 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 86  performance = 530051.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 81  performance = 530063.259 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 69  performance = 530056.145 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 64  performance = 530003.406 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Application Rejected ( frequency = 62  performance = 450708.339 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 61  performance = 530064.328 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Application Rejected ( frequency = 61  performance = 450373.492 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 59  performance = 530559.864 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> ML Interview -> Application Rejected ( frequency = 59  performance = 450374.271 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Application Rejected ( frequency = 55  performance = 453682.327 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Application Rejected ( frequency = 55  performance = 450064.927 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 54  performance = 530019.426 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 54  performance = 529999.352 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 51  performance = 530060.118 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 50  performance = 530078.900 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Application Rejected ( frequency = 48  performance = 450455.792 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 46  performance = 530732.370 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Backend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 46  performance = 530048.543 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 46  performance = 530023.891 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Application Rejected ( frequency = 46  performance = 456532.957 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 45  performance = 530058.378 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 39  performance = 530039.462 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 38  performance = 530074.947 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 38  performance = 529994.553 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 37  performance = 530081.135 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Backend Interview -> Behavioral Interview -> Make Job Offer ( frequency = 36  performance = 530042.194 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Application Rejected ( frequency = 36  performance = 450620.722 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Frontend Interview -> Application Rejected ( frequency = 35  performance = 450030.714 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 32  performance = 530026.188 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 31  performance = 530040.548 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 31  performance = 530015.452 )
+
+
+
+
+================================================================================
+AGENT RESPONSE STREAM:
+================================================================================
+
+================================================================================
+END OF RUN
+Timestamp: 2025-12-30T22:16:31.955510
+================================================================================

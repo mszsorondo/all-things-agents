@@ -1,0 +1,100 @@
+
+============================================================
+REPRESENTATION 1: HEURISTICS_NET
+============================================================
+
+
+=== HEURISTICS NET INTERPRETATION GUIDE ===
+
+A Heuristics Net improves on DFG by using dependency measures to identify
+true causal relationships between activities.
+
+OUTPUT FORMAT:
+--------------
+"Heuristics Net:
+
+Activities (N): Activity1, Activity2, ...
+
+Start activities: StartActivity1, StartActivity2, ...
+End activities: EndActivity1, EndActivity2, ...
+
+Dependency relations (activity -> activity: dependency_value):
+  ActivityA -> ActivityB: dependency=0.999, frequency=1234
+  ActivityC -> ActivityD: dependency=0.850, frequency=567
+  ..."
+
+READING THE OUTPUT:
+
+1. ACTIVITIES: List of all activities in the process
+
+2. START/END ACTIVITIES: Entry and exit points of the process
+
+3. DEPENDENCY RELATIONS:
+   - Source -> Target: Causal relationship from source to target
+   - dependency: Measure from 0 to 1 (higher = stronger causality)
+   - frequency: How many times this succession was observed
+
+DEPENDENCY MEASURE FORMULA:
+- dependency(A,B) = (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1 (we show only positive, strong dependencies)
+- Near 1.0: Very strong causal relationship
+- Near 0.5: Moderate relationship
+- Below 0.5: Usually filtered out as noise
+
+INTERPRETING DEPENDENCY VALUES:
+- 0.9-1.0: Almost always A causes B (main flow)
+- 0.7-0.9: Strong relationship (common path)
+- 0.5-0.7: Moderate relationship (alternative path)
+- <0.5: Weak/coincidental (typically noise)
+
+ADVANTAGES OVER DFG:
+- Filters noise using dependency thresholds
+- Identifies true causal vs coincidental relationships
+- Handles loops of length 1 and 2
+- Shows strength of each dependency
+
+USE FOR:
+- Understanding main process flow
+- Identifying strong vs weak paths
+- Filtering out noise in event logs
+- Process analysis before formal modeling
+
+
+--- DISCOVERED MODEL ---
+Heuristics Net:
+
+Activities (12): Hand In Job Application, Application Rejected, Telephonic Screening, Screening Interview, Background Check, Coding Interview, Behavioral Interview, Make Job Offer, Frontend Interview, ML Interview, Extensive Background Check, Backend Interview
+
+Start activities: Hand In Job Application
+End activities: Make Job Offer, Application Rejected
+
+
+Dependency relations (activity -> activity: dependency_value):
+  Application Rejected -> Application Rejected: dependency=0.998, frequency=654
+  Application Rejected -> Make Job Offer: dependency=0.724, frequency=690
+  Backend Interview -> Application Rejected: dependency=0.997, frequency=295
+  Backend Interview -> Behavioral Interview: dependency=0.998, frequency=417
+  Background Check -> Application Rejected: dependency=0.999, frequency=1391
+  Background Check -> Coding Interview: dependency=0.999, frequency=1413
+  Background Check -> Extensive Background Check: dependency=0.999, frequency=1044
+  Behavioral Interview -> Behavioral Interview: dependency=0.999, frequency=1032
+  Behavioral Interview -> Make Job Offer: dependency=0.999, frequency=1850
+  Coding Interview -> Application Rejected: dependency=0.997, frequency=386
+  Coding Interview -> Backend Interview: dependency=0.999, frequency=701
+  Coding Interview -> Frontend Interview: dependency=0.999, frequency=1513
+  Coding Interview -> ML Interview: dependency=0.999, frequency=1304
+  Extensive Background Check -> Application Rejected: dependency=0.999, frequency=1125
+  Extensive Background Check -> Coding Interview: dependency=0.999, frequency=974
+  Frontend Interview -> Application Rejected: dependency=0.998, frequency=653
+  Frontend Interview -> Behavioral Interview: dependency=0.999, frequency=853
+  Hand In Job Application -> Application Rejected: dependency=0.999, frequency=1201
+  Hand In Job Application -> Telephonic Screening: dependency=1.000, frequency=8799
+  ML Interview -> Application Rejected: dependency=0.998, frequency=546
+  ML Interview -> Behavioral Interview: dependency=0.999, frequency=754
+  Make Job Offer -> Make Job Offer: dependency=0.999, frequency=861
+  Screening Interview -> Application Rejected: dependency=0.999, frequency=1389
+  Screening Interview -> Coding Interview: dependency=0.999, frequency=1517
+  Screening Interview -> Extensive Background Check: dependency=0.999, frequency=1055
+  Telephonic Screening -> Application Rejected: dependency=0.999, frequency=990
+  Telephonic Screening -> Background Check: dependency=1.000, frequency=3961
+  Telephonic Screening -> Screening Interview: dependency=1.000, frequency=3848

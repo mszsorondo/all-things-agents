@@ -1,0 +1,48 @@
+
+=== PETRI NET (HEURISTICS MINER) INTERPRETATION GUIDE ===
+
+The Heuristics Miner produces Petri nets using frequency-based dependency measures,
+making it more robust to noise than Alpha Miner.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ intplace_Activity, pre_Activity, splace_in_A_B_0, ... ]
+transitions: [ (Activity, 'Activity'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source0:1']
+final marking: ['sink0:1']"
+
+PLACE NAMING CONVENTIONS:
+- intplace_X: Internal place for activity X
+- pre_X: Pre-condition place for activity X
+- splace_in_A_B_N: Split place connecting A to B (N is index)
+- source0, sink0: Start and end places
+
+DEPENDENCY MEASURE:
+- Calculated as: (|A>B| - |B>A|) / (|A>B| + |B>A| + 1)
+- Range: -1 to +1
+- Values close to 1: Strong causal dependency A->B
+- Values close to 0: No clear dependency
+- Used with thresholds to filter noise
+
+ADVANTAGES:
+- Handles noisy event logs
+- Detects loops of length 1 and 2
+- Identifies long-distance dependencies
+- Produces cleaner models than Alpha miner
+
+READING THE OUTPUT:
+- More places than Alpha miner (intermediary routing places)
+- All visible activities become transitions
+- Complex routing structures for varied behavior
+- Split places (splace) indicate choice or parallel patterns
+
+WHEN TO USE:
+- Real-world event logs with noise
+- When Alpha miner produces poor results
+- Complex processes with loops
+- When you need to filter infrequent behavior

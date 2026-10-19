@@ -1,0 +1,40 @@
+
+=== BPMN INTERPRETATION GUIDE ===
+Business Process Model and Notation (BPMN) is a graphical notation for business processes:
+
+1. EVENTS:
+   - Start Event (thin circle): Process initiation point
+   - End Event (thick circle): Process termination point
+   - Intermediate Events (double circle): Events during execution
+
+2. ACTIVITIES:
+   - Task (rounded rectangle): Atomic unit of work
+   - Sub-process (rounded rectangle with +): Compound activity
+   - Call Activity (thick border): Reference to another process
+
+3. GATEWAYS (diamonds):
+   - Exclusive (X or empty): XOR logic - one path only
+   - Parallel (+): AND logic - all paths simultaneously
+   - Inclusive (O): OR logic - one or more paths
+   - Event-based (pentagon inside): Wait for events
+
+4. FLOWS:
+   - Sequence Flow (solid arrow): Order of execution
+   - Default Flow (slash mark): Taken when no other condition is true
+   - Conditional Flow (mini diamond): Has a condition expression
+
+5. INDUCTIVE MINER BPMN SPECIFICS:
+   - May contain process trees encoded as nested sub-processes
+   - Silent transitions become empty gateways
+   - Guarantees proper block structure
+   - Loop structures are explicit with backward flows
+
+6. SWIMLANES (if present):
+   - Pools: Different organizations/systems
+   - Lanes: Different roles within organization
+
+READING THE XML:
+- <bpmn:task id="..." name="...">: Activities to perform
+- <bpmn:sequenceFlow sourceRef="..." targetRef="...">: Connections
+- <bpmn:exclusiveGateway>: Decision points
+- <bpmn:parallelGateway>: Concurrent execution points

@@ -1,0 +1,775 @@
+
+============================================================
+REPRESENTATION 1: ABSTRACT_VARIANTS
+============================================================
+
+
+=== ABSTRACT VARIANTS INTERPRETATION GUIDE ===
+
+Process variants show the distinct execution paths observed in the event log.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 1391  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 1201  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 990  performance = 229938.161 )
+..."
+
+READING THE OUTPUT:
+- Each line: " Activity1 -> Activity2 -> ... -> ActivityN ( frequency = N  performance = T )"
+- The arrow (->) sequence shows the exact order of activities in that variant
+- frequency: Number of cases (process instances) that followed this exact path
+- performance: Average total duration of cases following this path (in seconds)
+- Variants are sorted by frequency (most common first)
+
+INTERPRETATION:
+1. HIGH FREQUENCY VARIANTS (>20% of cases): Main "happy path" - optimize for efficiency
+2. MEDIUM FREQUENCY (5-20%): Common alternative paths - monitor regularly
+3. LOW FREQUENCY (<5%): Exceptions or edge cases - investigate if problematic
+4. PERFORMANCE COMPARISON:
+   - Compare performance across variants to identify slow paths
+   - High performance value = longer duration (potential bottleneck)
+
+VARIANT ANALYSIS:
+- Count unique activities: More activities = longer/complex variant
+- Identify common prefixes: Shows where processes diverge
+- Look for unexpected paths: May indicate process deviations
+
+USE FOR:
+- Understanding main vs alternative process paths
+- Identifying which paths are most/least efficient
+- Detecting process deviations or exceptions
+- Simplifying complex processes by focusing on high-frequency variants
+
+
+
+
+# === ABSTRACT VARIANTS INTERPRETATION GUIDE (pm4py.llm) ===
+
+## WHAT THIS OUTPUT REPRESENTS
+
+This output describes the **distinct execution paths (process variants)** observed in an event log.
+Each variant corresponds to a unique ordered sequence of activities executed by cases in the process.
+
+The variants shown are the **most frequent ones**, listed in descending order of frequency, and truncated if needed to respect the maximum output length (`max_len`).
+
+---
+
+## OUTPUT FORMAT (TYPICAL)
+
+```
+If I have a process with the following process variants:
+
+ Activity A -> Activity B -> Activity C -> Activity D ( frequency = 32.5%  performance = 319390.265 )
+ Activity A -> Activity B -> Activity E ( frequency = 28.1%  performance = 146345.624 )
+ Activity A -> Activity F -> Activity G -> Activity H ( frequency = 21.4%  performance = 229938.161 )
+ ...
+```
+
+The initial sentence may be present if `response_header=True`.
+
+---
+
+## HOW TO READ EACH LINE
+
+Each line has the form:
+
+```
+Activity1 -> Activity2 -> ... -> ActivityN ( frequency = F  performance = P )
+```
+
+Meaning:
+
+• `Activity1 -> Activity2 -> ... -> ActivityN`
+= the exact ordered sequence of activities executed in that variant (control-flow path)
+
+• `frequency = F`
+= the **relative frequency** (proportion or percentage of cases) that follow this exact path
+(because `relative_frequency=True`)
+
+• `performance = P`
+= the **aggregated case duration** (throughput time) of cases that follow this variant
+computed using the selected aggregation method
+(default: mean of case durations)
+
+Units depend on the timestamp resolution in the log (e.g., seconds, minutes, milliseconds).
+
+If a secondary aggregation is configured, performance may appear as:
+
+```
+performance = P (secondary = Q)
+```
+
+---
+
+## IMPORTANT BEHAVIORAL DETAILS
+
+• Variants are sorted by decreasing frequency
+• Only the most frequent variants fitting within `max_len` are shown
+• Rare variants may be omitted
+• Performance refers to **whole-case duration**, not individual activity durations
+• Performance is computed only if `include_performance=True`
+• Frequencies are **relative proportions**, not absolute counts
+• Header text may be present if `response_header=True`
+
+---
+
+## INTERPRETATION PRINCIPLES
+
+### 1. CONTROL-FLOW ANALYSIS
+
+* Variants with the highest frequency represent the dominant execution paths (“happy paths”)
+* Shared prefixes across variants indicate where the process diverges
+* Unusual or rare paths indicate exceptions or deviations
+
+### 2. FREQUENCY ANALYSIS
+
+Using relative frequency:
+
+* High frequency variants (e.g., >20%) → core process behavior
+* Medium frequency (5–20%) → common alternatives
+* Low frequency (<5%) → edge cases or exceptional behavior
+
+These thresholds are heuristic and should be interpreted relative to the domain.
+
+### 3. PERFORMANCE ANALYSIS
+
+* Compare performance values across variants
+* Higher performance value = longer average case duration
+* Variants with both:
+
+  * high frequency
+  * high performance
+    are prime candidates for optimization
+
+### 4. STRUCTURAL COMPLEXITY
+
+* More activities in a variant generally imply higher structural complexity
+* Long variants with high performance may indicate rework or loops
+* Short variants with low performance often represent fast completion paths
+
+---
+
+## WHAT THIS OUTPUT IS SUITABLE FOR
+
+This abstraction is designed for **human or LLM reasoning**, not for direct machine parsing.
+
+It is suitable for:
+
+• Identifying main vs alternative process paths
+• Explaining process behavior in natural language
+• Detecting deviations or exceptional flows
+• Comparing efficiency of different execution paths
+• Summarizing complex event logs
+• Serving as structured input for LLM-based process analysis
+
+---
+
+## WHAT THIS OUTPUT IS NOT
+
+• It is not a complete list of all variants (due to truncation)
+• It is not a formal process model (Petri net, BPMN)
+• It is not a structured dataset
+• It does not include resource, data, or organizational perspectives
+• It does not show intra-activity waiting times
+
+---
+
+## SUMMARY
+
+This output encodes:
+
+```
+Variant = (Activity Sequence, Relative Frequency, Aggregated Case Duration)
+```
+
+Serialized as natural language for LLM-based interpretation.
+
+
+
+--- DISCOVERED MODEL ---
+If I have a process with the following process variants:
+
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Application Rejected ( frequency = 13\%  performance = 320030.472 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Application Rejected ( frequency = 13\%  performance = 319390.265 )
+ Hand In Job Application -> Application Rejected ( frequency = 12\%  performance = 146345.624 )
+ Hand In Job Application -> Telephonic Screening -> Application Rejected ( frequency = 9\%  performance = 229938.161 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Application Rejected ( frequency = 5\%  performance = 427833.163 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Application Rejected ( frequency = 5\%  performance = 427705.756 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> ML Interview -> Backend Interview -> Frontend Interview -> Application Rejected -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 1\%  performance = 650275.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 650256.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected ( frequency = 1\%  performance = 650247.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 1\%  performance = 650231.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> ML Interview -> Backend Interview -> Frontend Interview -> Application Rejected -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 1\%  performance = 650186.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Application Rejected -> Application Rejected ( frequency = 1\%  performance = 650150.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Application Rejected ( frequency = 1\%  performance = 650143.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview -> Behavioral Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer -> Application Rejected ( frequency = 1\%  performance = 650070.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview -> Application Rejected -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Make Job Offer ( frequency = 1\%  performance = 650066.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview -> Application Rejected -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 1\%  performance = 650057.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 649849.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Backend Interview -> ML Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 649846.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Backend Interview -> Application Rejected -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 649833.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 649740.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> ML Interview -> Application Rejected -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 1\%  performance = 630216.500 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Backend Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 630188.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Application Rejected ( frequency = 1\%  performance = 630157.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Backend Interview -> Behavioral Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 630046.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> ML Interview -> Backend Interview -> Frontend Interview -> Application Rejected -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 630044.500 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> ML Interview -> Backend Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 629964.000 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Backend Interview -> Application Rejected -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 629943.500 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Application Rejected ( frequency = 1\%  performance = 629927.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Behavioral Interview -> Application Rejected -> Application Rejected ( frequency = 1\%  performance = 629919.000 )
+ Hand In Job Application -> Telephonic Screening -> Screening Interview -> Background Check -> Extensive Background Check -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Application Rejected -> Application Rejected ( frequency = 1\%  performance = 629910.500 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Application Rejected -> Behavioral Interview -> Make Job Offer ( frequency = 1\%  performance = 625453.308 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Behavioral Interview -> Make Job Offer -> Application Rejected ( frequency = 1\%  performance = 623491.333 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> ML Interview -> Application Rejected -> Behavioral Interview -> Application Rejected ( frequency = 1\%  performance = 623366.667 )
+ Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> Coding Interview -> Frontend Interview -> Backend Interview -> Behavioral Interview -> Application Rejected -> Make Job Offer ( frequency = 1\%  performance = 623360.500 )
+
+
+
+
+
+============================================================
+REPRESENTATION 2: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Hand In Job Application -> Telephonic Screening ( frequency = 8799  performance = 82439.794 )
+Telephonic Screening -> Background Check ( frequency = 3961  performance = 81906.421 )
+Background Check -> Screening Interview ( frequency = 3961  performance = 0.000 )
+Telephonic Screening -> Screening Interview ( frequency = 3848  performance = 81903.291 )
+Screening Interview -> Background Check ( frequency = 3848  performance = 0.000 )
+Behavioral Interview -> Make Job Offer ( frequency = 1850  performance = 80430.348 )
+Screening Interview -> Coding Interview ( frequency = 1517  performance = 129892.231 )
+Coding Interview -> Frontend Interview ( frequency = 1513  performance = 80785.480 )
+Background Check -> Coding Interview ( frequency = 1413  performance = 129884.902 )
+Background Check -> Application Rejected ( frequency = 1391  performance = 155319.566 )
+Screening Interview -> Application Rejected ( frequency = 1389  performance = 155969.168 )
+Coding Interview -> ML Interview ( frequency = 1304  performance = 80808.637 )
+Hand In Job Application -> Application Rejected ( frequency = 1201  performance = 146345.624 )
+Extensive Background Check -> Application Rejected ( frequency = 1125  performance = 171097.167 )
+Screening Interview -> Extensive Background Check ( frequency = 1055  performance = 84418.059 )
+Background Check -> Extensive Background Check ( frequency = 1044  performance = 84234.989 )
+Behavioral Interview -> Behavioral Interview ( frequency = 1032  performance = 47.047 )
+Telephonic Screening -> Application Rejected ( frequency = 990  performance = 143281.671 )
+Extensive Background Check -> Coding Interview ( frequency = 974  performance = 124295.087 )
+Behavioral Interview -> Application Rejected ( frequency = 914  performance = 17085.635 )
+ML Interview -> Frontend Interview ( frequency = 913  performance = 0.000 )
+Frontend Interview -> ML Interview ( frequency = 878  performance = 0.000 )
+Make Job Offer -> Make Job Offer ( frequency = 861  performance = 70.746 )
+Frontend Interview -> Behavioral Interview ( frequency = 853  performance = 80294.558 )
+ML Interview -> Behavioral Interview ( frequency = 754  performance = 80355.227 )
+Application Rejected -> Behavioral Interview ( frequency = 740  performance = 46.485 )
+Coding Interview -> Backend Interview ( frequency = 701  performance = 80655.317 )
+Application Rejected -> Make Job Offer ( frequency = 690  performance = 68184.068 )
+Application Rejected -> Application Rejected ( frequency = 654  performance = 9901.235 )
+Frontend Interview -> Application Rejected ( frequency = 653  performance = 81262.502 )
+ML Interview -> Application Rejected ( frequency = 546  performance = 81266.427 )
+Frontend Interview -> Backend Interview ( frequency = 529  performance = 0.000 )
+Backend Interview -> Frontend Interview ( frequency = 487  performance = 0.000 )
+Backend Interview -> Behavioral Interview ( frequency = 417  performance = 80439.149 )
+Coding Interview -> Application Rejected ( frequency = 386  performance = 80727.324 )
+Backend Interview -> Application Rejected ( frequency = 295  performance = 81404.454 )
+Backend Interview -> ML Interview ( frequency = 152  performance = 0.000 )
+ML Interview -> Backend Interview ( frequency = 121  performance = 0.000 )
+Make Job Offer -> Application Rejected ( frequency = 110  performance = 67.309 )
+
+
+
+
+
+============================================================
+REPRESENTATION 3: PROCESS_TREE
+============================================================
+
+
+=== PROCESS TREE INTERPRETATION GUIDE ===
+
+A Process Tree is a hierarchical representation of process behavior.
+
+OUTPUT FORMAT:
+--------------
+"->( 'Activity A', X( tau, ->( 'Activity B', *( 'Activity C', tau ) ) ), +( 'Activity D', 'Activity E' ) )"
+
+OPERATORS (prefix notation):
+- ->(...): SEQUENCE - Execute children left-to-right in order
+- X(...): EXCLUSIVE CHOICE - Execute exactly one child
+- +(...): PARALLEL - Execute all children concurrently (interleaved)
+- *(...): LOOP - First child is body, second is exit condition
+- tau: SILENT activity (invisible, used for optional/skip paths)
+
+READING THE OUTPUT:
+- Operators are written as: OPERATOR( child1, child2, ... )
+- Activity names are in single quotes: 'Activity Name'
+- tau (without quotes) represents silent/skip transitions
+- Nesting shows hierarchical structure
+
+EXAMPLE INTERPRETATIONS:
+- ->( 'A', 'B', 'C' ): Do A, then B, then C (sequence)
+- X( 'A', 'B' ): Do either A or B (exclusive choice)
+- +( 'A', 'B' ): Do A and B in parallel (any interleaving)
+- *( 'A', tau ): Repeat A zero or more times (loop with silent exit)
+- X( tau, 'A' ): Optionally do A (can skip)
+- ->( 'A', X( tau, 'B' ), 'C' ): Do A, optionally B, then C
+
+COMPLEX EXAMPLE:
+"->( 'Start', X( tau, *( 'Review', tau ) ), +( 'Approve', 'Notify' ), 'End' )"
+Means: Start, then optionally review (repeatable), then approve AND notify in parallel, then End
+
+INDUCTIVE MINER PROPERTIES:
+- Always produces sound (properly completing) models
+- May introduce tau for fitness to observed behavior
+- Block-structured (properly nested, no arbitrary jumps)
+
+
+--- DISCOVERED MODEL ---
+->( 'Hand In Job Application', X( tau, ->( 'Telephonic Screening', X( tau, ->( +( 'Background Check', 'Screening Interview' ), X( tau, 'Extensive Background Check' ), X( tau, ->( 'Coding Interview', X( tau, +( X( tau, 'ML Interview' ), X( tau, 'Backend Interview' ), X( tau, 'Frontend Interview' ) ) ) ) ) ) ) ) ), +( X( tau, *( 'Application Rejected', tau ) ), X( tau, ->( *( 'Behavioral Interview', tau ), X( tau, *( 'Make Job Offer', tau ) ) ) ) ) )
+
+
+============================================================
+REPRESENTATION 4: LOG_ATTRIBUTES
+============================================================
+
+
+=== LOG ATTRIBUTES INTERPRETATION GUIDE ===
+
+Log attributes provide statistical metadata about the event log,
+offering a high-level overview before detailed process mining.
+
+OUTPUT FORMAT:
+--------------
+Each line describes one attribute:
+"attribute_name  empty: N values: (value1; freq. X) (value2; freq. Y) ..."
+
+For timestamp attributes:
+"attribute_name  empty: N  quantiles: {0.0: Timestamp(...), 0.25: ..., 0.5: ..., 0.75: ..., 1.0: ...}"
+
+EXAMPLE OUTPUT:
+"activity  empty: 0 values: (Submit; freq. 1000) (Review; freq. 850) (Approve; freq. 500)
+case:region  empty: 0 values: (North; freq. 5000) (South; freq. 3000)
+resource  empty: 0 values: (John; freq. 2000) (Mary; freq. 1500)
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2024-01-01'), 0.5: Timestamp('2024-06-15'), 1.0: Timestamp('2024-12-31')}"
+
+READING THE OUTPUT:
+
+1. ATTRIBUTE NAME:
+   - 'activity' or 'concept:name': The activity/event type
+   - 'case:XXX': Case-level attributes
+   - 'resource': Who performed the activity
+   - 'time' or 'time:timestamp': Temporal information
+
+2. EMPTY COUNT:
+   - Number of events missing this attribute
+   - 0 means complete data
+
+3. VALUES (categorical):
+   - Lists unique values with frequencies
+   - Format: (value; freq. count)
+   - Sorted by frequency (most common first)
+
+4. QUANTILES (temporal):
+   - 0.0: Earliest timestamp (min)
+   - 0.25: First quartile
+   - 0.5: Median timestamp
+   - 0.75: Third quartile
+   - 1.0: Latest timestamp (max)
+
+USE FOR:
+- Initial log exploration
+- Data quality assessment
+- Understanding process scope
+- Identifying filtering needs
+- Resource analysis
+
+IMPLICATIONS FOR MODELING:
+- High activity frequencies: Core process activities
+- Low frequencies: Exceptions or edge cases
+- Many resources: Consider organizational perspective
+- Wide time range: Look for temporal patterns
+
+
+--- DISCOVERED MODEL ---
+activity  empty: 0 values: (Hand In Job Application; freq. 10000) (Application Rejected; freq. 9654) (Telephonic Screening; freq. 8799) (Screening Interview; freq. 7809) (Background Check; freq. 7809) (Coding Interview; freq. 3904) (Behavioral Interview; freq. 3796) (Make Job Offer; freq. 3401) (Frontend Interview; freq. 2913) (ML Interview; freq. 2334) (Extensive Background Check; freq. 2099) (Backend Interview; freq. 1351)
+case:citizen  empty: 0 values: (True; freq. 39611) (False; freq. 24258)
+case:gender  empty: 0 values: (True; freq. 39461) (False; freq. 24408)
+case:german speaking  empty: 0 values: (False; freq. 32248) (True; freq. 31621)
+case:protected  empty: 0 values: (False; freq. 50613) (True; freq. 13256)
+case:religious  empty: 0 values: (True; freq. 39683) (False; freq. 24186)
+concept:name  empty: 0 values: (Hand In Job Application; freq. 10000) (Application Rejected; freq. 9654) (Telephonic Screening; freq. 8799) (Screening Interview; freq. 7809) (Background Check; freq. 7809) (Coding Interview; freq. 3904) (Behavioral Interview; freq. 3796) (Make Job Offer; freq. 3401) (Frontend Interview; freq. 2913) (ML Interview; freq. 2334) (Extensive Background Check; freq. 2099) (Backend Interview; freq. 1351)
+resource  empty: 0 values: (HR-dummy; freq. 18126) (Senior Partner; freq. 10680) (Coding Interviewer; freq. 10502) (HR-pro; freq. 9509) (Online System; freq. 5083) (Front Desk; freq. 4917) (HR-pro and Senior Partner; freq. 3796) (deepResearch Inc.; freq. 1256)
+start_timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+time  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+time:timestamp  empty: 0  quantiles: {0.0: Timestamp('2015-01-05 00:00:00+0000', tz='UTC'), 0.25: Timestamp('2015-01-05 22:15:55+0000', tz='UTC'), 0.5: Timestamp('2015-01-06 20:30:13+0000', tz='UTC'), 0.75: Timestamp('2015-01-09 06:48:29+0000', tz='UTC'), 1.0: Timestamp('2015-01-12 12:39:58+0000', tz='UTC')}
+
+
+============================================================
+REPRESENTATION 5: PETRI_NET_INDUCTIVE
+============================================================
+
+
+=== PETRI NET INTERPRETATION GUIDE ===
+
+A Petri net is a mathematical model for distributed systems.
+
+OUTPUT FORMAT:
+--------------
+"If I have a Petri net:
+
+places: [ p_1, p_2, p_3, ..., sink, source ]
+transitions: [ (id1, 'Activity Name'), (id2, 'Activity Name'), (skip_1, None), ... ]
+arcs: [ source->(Activity, 'Activity'), (Activity, 'Activity')->p_1, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+READING THE OUTPUT:
+- places: List of place names (p_N for internal, source/sink for start/end)
+- transitions: Tuples of (internal_id, 'Label') where None = silent transition
+- arcs: Connections as source->target (both directions Place↔Transition)
+- initial/final marking: Token distribution at start/end
+
+PETRI NET CONCEPTS:
+
+1. PLACES (circles): Represent states or conditions in the process
+   - Initial marking: Places with tokens at the start (process entry points)
+   - Final marking: Places with tokens at the end (process exit points)
+   - Empty places: Intermediate states
+
+2. TRANSITIONS (rectangles): Represent activities or events
+   - Labeled transitions: Visible activities (e.g., "Submit Application")
+   - Silent/tau transitions: Internal logic without visible activity
+   - Parallel transitions: Can fire simultaneously (concurrent activities)
+
+3. ARCS (arrows): Connect places and transitions
+   - Place→Transition: Precondition (transition needs token in place to fire)
+   - Transition→Place: Postcondition (transition produces token in place)
+   - Arc weight: Number of tokens consumed/produced
+
+4. BEHAVIORAL SEMANTICS:
+   - A transition is ENABLED when all input places contain tokens
+   - Firing consumes tokens from input places, produces in output places
+   - Multiple tokens in a place indicate multiple process instances
+   - Deadlocks occur when no transition can fire
+   - Loops indicate repetitive behavior
+
+5. INDUCTIVE MINER SPECIFICS:
+   - Guarantees sound workflow nets (proper completion)
+   - May introduce silent transitions for control flow
+   - Handles noise and incomplete behavior in logs
+
+
+--- DISCOVERED MODEL ---
+[Inductive Miner]
+
+
+If I have a Petri net:
+
+places: [ p_10, p_11, p_12, p_13, p_14, p_15, p_16, p_17, p_18, p_19, p_20, p_21, p_22, p_23, p_25, p_26, p_27, p_28, p_29, p_31, p_32, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]
+transitions: [ (016be0bf-2086-42de-adc9-bc4333ccfdf7, 'Screening Interview'), (2b10555e-dda8-428f-9391-90c337b2791e, 'Backend Interview'), (5561273f-665f-4ade-b091-93dd5b67841b, 'Hand In Job Application'), (664c5959-68e1-439c-a2cd-2d31761eee13, 'Behavioral Interview'), (ba53f49b-e580-4d1e-950c-5c9cdc0526cc, 'Background Check'), (c32d6f0d-9c66-4e57-a2a7-c8262b83a36a, 'ML Interview'), (cb8e7aed-9d91-41f7-a878-4147ca210190, 'Application Rejected'), (d36b2885-1be2-466c-bd86-d264d22aa059, 'Coding Interview'), (e31e3e67-a184-4e48-8890-051d720b22b2, 'Extensive Background Check'), (ec7c6277-7747-4eb9-bce4-097e06385b3c, 'Make Job Offer'), (f73a8496-6b98-4446-8309-4c11d458725d, 'Telephonic Screening'), (fde4ab47-8504-4cd2-8586-4840c462b122, 'Frontend Interview'), (init_loop_17, None), (init_loop_22, None), (init_loop_27, None), (skip_11, None), (skip_12, None), (skip_13, None), (skip_16, None), (skip_19, None), (skip_2, None), (skip_20, None), (skip_21, None), (skip_24, None), (skip_25, None), (skip_26, None), (skip_29, None), (skip_3, None), (skip_30, None), (skip_6, None), (skip_7, None), (skip_8, None), (tauJoin_10, None), (tauJoin_15, None), (tauJoin_5, None), (tauSplit_14, None), (tauSplit_4, None), (tauSplit_9, None) ]
+arcs: [ (016be0bf-2086-42de-adc9-bc4333ccfdf7, 'Screening Interview')->p_11, (2b10555e-dda8-428f-9391-90c337b2791e, 'Backend Interview')->p_17, (5561273f-665f-4ade-b091-93dd5b67841b, 'Hand In Job Application')->p_4, (664c5959-68e1-439c-a2cd-2d31761eee13, 'Behavioral Interview')->p_29, (ba53f49b-e580-4d1e-950c-5c9cdc0526cc, 'Background Check')->p_9, (c32d6f0d-9c66-4e57-a2a7-c8262b83a36a, 'ML Interview')->p_15, (cb8e7aed-9d91-41f7-a878-4147ca210190, 'Application Rejected')->p_23, (d36b2885-1be2-466c-bd86-d264d22aa059, 'Coding Interview')->p_13, (e31e3e67-a184-4e48-8890-051d720b22b2, 'Extensive Background Check')->p_12, (ec7c6277-7747-4eb9-bce4-097e06385b3c, 'Make Job Offer')->p_32, (f73a8496-6b98-4446-8309-4c11d458725d, 'Telephonic Screening')->p_6, (fde4ab47-8504-4cd2-8586-4840c462b122, 'Frontend Interview')->p_19, (init_loop_17, None)->p_22, (init_loop_22, None)->p_28, (init_loop_27, None)->p_31, (skip_11, None)->p_15, (skip_12, None)->p_17, (skip_13, None)->p_19, (skip_16, None)->p_21, (skip_19, None)->p_22, (skip_2, None)->p_5, (skip_20, None)->p_21, (skip_21, None)->p_26, (skip_24, None)->p_28, (skip_25, None)->p_27, (skip_26, None)->p_26, (skip_29, None)->p_31, (skip_3, None)->p_5, (skip_30, None)->p_26, (skip_6, None)->p_12, (skip_7, None)->p_5, (skip_8, None)->p_5, (tauJoin_10, None)->p_5, (tauJoin_15, None)->sink, (tauJoin_5, None)->p_7, (tauSplit_14, None)->p_20, (tauSplit_14, None)->p_25, (tauSplit_4, None)->p_10, (tauSplit_4, None)->p_8, (tauSplit_9, None)->p_14, (tauSplit_9, None)->p_16, (tauSplit_9, None)->p_18, p_10->(016be0bf-2086-42de-adc9-bc4333ccfdf7, 'Screening Interview'), p_11->(tauJoin_5, None), p_12->(d36b2885-1be2-466c-bd86-d264d22aa059, 'Coding Interview'), p_12->(skip_7, None), p_13->(skip_8, None), p_13->(tauSplit_9, None), p_14->(c32d6f0d-9c66-4e57-a2a7-c8262b83a36a, 'ML Interview'), p_14->(skip_11, None), p_15->(tauJoin_10, None), p_16->(2b10555e-dda8-428f-9391-90c337b2791e, 'Backend Interview'), p_16->(skip_12, None), p_17->(tauJoin_10, None), p_18->(fde4ab47-8504-4cd2-8586-4840c462b122, 'Frontend Interview'), p_18->(skip_13, None), p_19->(tauJoin_10, None), p_20->(init_loop_17, None), p_20->(skip_16, None), p_21->(tauJoin_15, None), p_22->(cb8e7aed-9d91-41f7-a878-4147ca210190, 'Application Rejected'), p_23->(skip_19, None), p_23->(skip_20, None), p_25->(init_loop_22, None), p_25->(skip_21, None), p_26->(tauJoin_15, None), p_27->(init_loop_27, None), p_27->(skip_26, None), p_28->(664c5959-68e1-439c-a2cd-2d31761eee13, 'Behavioral Interview'), p_29->(skip_24, None), p_29->(skip_25, None), p_31->(ec7c6277-7747-4eb9-bce4-097e06385b3c, 'Make Job Offer'), p_32->(skip_29, None), p_32->(skip_30, None), p_4->(f73a8496-6b98-4446-8309-4c11d458725d, 'Telephonic Screening'), p_4->(skip_2, None), p_5->(tauSplit_14, None), p_6->(skip_3, None), p_6->(tauSplit_4, None), p_7->(e31e3e67-a184-4e48-8890-051d720b22b2, 'Extensive Background Check'), p_7->(skip_6, None), p_8->(ba53f49b-e580-4d1e-950c-5c9cdc0526cc, 'Background Check'), p_9->(tauJoin_5, None), source->(5561273f-665f-4ade-b091-93dd5b67841b, 'Hand In Job Application') ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+
+
+
+============================================================
+REPRESENTATION 6: DECLARE
+============================================================
+
+
+=== DECLARE INTERPRETATION GUIDE ===
+
+DECLARE is a declarative process modeling language based on temporal logic constraints.
+
+OUTPUT FORMAT:
+--------------
+The output starts with constraint explanations, then lists discovered constraints:
+"I have a DECLARE declarative process model containing the following constraints:
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given (A, B), if A occurs then B also occurs.
+Co-Existence: given (A, B), if A occurs then B also occurs.
+Response: given (A, B), if A occurs then B also occurs in the future.
+Precedence: given (A, B), if B occurs then A occurs in the past.
+Succession: both response and precedence are satisfied.
+...
+
+These are the constraints of the model:
+Existence: Activity1, Activity2, ...
+Responded Existence: ('A', 'B'), ('C', 'D'), ...
+Response: ('A', 'B'), ...
+Initialization: Activity1
+Exactly 1: Activity1, Activity2, ..."
+
+CONSTRAINT CATEGORIES:
+
+EXISTENCE CONSTRAINTS:
+- Existence: Activity must occur at least once
+- Absence: Activity must not occur
+- Exactly 1: Activity occurs exactly once
+- Initialization: Trace must start with this activity
+
+RELATION CONSTRAINTS:
+- Responded Existence: If A occurs, B must occur (anywhere)
+- Co-Existence: A and B always occur together or both absent
+- Response: If A occurs, B must occur afterwards
+- Precedence: B can only occur if A occurred before
+- Succession: Both response and precedence
+
+CHAIN CONSTRAINTS (immediate succession):
+- Chain Response: B must immediately follow A
+- Chain Precedence: A must immediately precede B
+- Chain Succession: Both chain response and precedence
+
+NEGATIVE CONSTRAINTS:
+- Non Co-Existence: A and B cannot both occur
+- Non Succession: B cannot follow A
+- Non Chain Succession: B cannot immediately follow A
+
+PHILOSOPHY:
+- "Everything not forbidden is allowed"
+- Specifies constraints that must hold
+- Any execution path satisfying constraints is valid
+
+USE FOR:
+- Knowledge-intensive processes
+- Compliance requirements
+- Flexible workflow modeling
+- Understanding what MUST happen vs what CAN happen
+
+
+--- DISCOVERED MODEL ---
+
+I have a DECLARE declarative process model containing the following constraints (here we provide a short explanation):
+Existence: the activity is executed at least once.
+Absence: the activity is not executed.
+Exactly 1: the activity is executed exactly one time.
+Initialization: the trace starts with one of the given activities.
+Responded existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Co-Existence: given a couple of activities (A, B), if A occurs then B also occurs.
+Response: given a couple of activities (A, B), if A occurs then B also occurs in the future of the trace.
+Precedence: given a couple of activities (A, B), if B occurs then also A occurs in the past of the trace.
+Succession: given a couple of activities (A, B), both the response and precedence constraints are satisfied.
+Alternate response, alternate precedence, alternate succession: as the constraints mentioned above, but strenghtened by specifying that the events must alternate without repetitions.
+Chain response, chain precedence, chain succession: as the constraints mentioned above, strenghtened by imposing the directly-follows relation.
+Non Co-Existence: given a couple of activities (A, B), if A occurs then B should not occur.
+Non Succession and non Chain succession: given a couple of activities (A, B), B should not follow A.
+
+
+These are the constraints of the model:
+Responded Existence: ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected'), ('Application Rejected', 'Hand In Job Application'), ('Telephonic Screening', 'Application Rejected'), ('Application Rejected', 'Telephonic Screening'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview'), ('Telephonic Screening', 'Hand In Job Application')
+Precedence: ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening')
+Exactly 1: Hand In Job Application, Telephonic Screening, Application Rejected
+Initialization: Hand In Job Application
+Response: ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected'), ('Telephonic Screening', 'Application Rejected')
+Existence: Telephonic Screening, Application Rejected, Hand In Job Application
+Alternate response: ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview')
+Chain response: ('Hand In Job Application', 'Telephonic Screening')
+Alternate precedence: ('Hand In Job Application', 'Telephonic Screening'), ('Hand In Job Application', 'Application Rejected')
+Chain precedence: ('Hand In Job Application', 'Telephonic Screening')
+Absence: Backend Interview
+Succession: ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Application Rejected'), ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening')
+Alternate succession: ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening')
+Chain succession: ('Hand In Job Application', 'Telephonic Screening')
+Co-Existence: ('Background Check', 'Telephonic Screening'), ('Application Rejected', 'Hand In Job Application'), ('Telephonic Screening', 'Background Check'), ('Telephonic Screening', 'Hand In Job Application'), ('Telephonic Screening', 'Screening Interview'), ('Hand In Job Application', 'Application Rejected'), ('Hand In Job Application', 'Telephonic Screening'), ('Screening Interview', 'Telephonic Screening')
+
+
+
+============================================================
+REPRESENTATION 7: LOG_SKELETON
+============================================================
+
+
+=== LOG SKELETON INTERPRETATION GUIDE ===
+
+A Log Skeleton is a declarative process model capturing behavioral constraints
+observed in an event log.
+
+OUTPUT FORMAT:
+--------------
+The output starts with an explanation, then lists constraints:
+"The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence: ('A', 'B') ('C', 'D') ...
+Always Before: ('A', 'B') ...
+Always After: ('A', 'B') ...
+Never Together: ('A', 'B') ...
+Directly-Follows: ('A', 'B') ..."
+
+CONSTRAINT TYPES:
+1. Equivalence: Activities A and B always occur the same number of times
+2. Always Before: If A occurs, B must have occurred before
+3. Always After: If A occurs, B must occur afterwards
+4. Never Together: A and B cannot both occur in the same case
+5. Activity Occurrences: Bounds on how many times an activity occurs
+6. Directly-Follows: B must immediately follow A
+
+READING THE CONSTRAINTS:
+- Tuples ('A', 'B'): Constraint relates activity A to activity B
+- Multiple tuples: Each represents one constraint instance
+- Order matters: First activity triggers the constraint
+
+USE FOR:
+- Compliance checking
+- Process auditing
+- Anomaly detection
+- Understanding mandatory relationships
+- Validating process instances
+
+COMPARISON:
+- vs Petri Net: Declarative vs procedural
+- vs DECLARE: Log skeleton is simpler subset
+- vs DFG: Captures more than direct follows
+
+
+--- DISCOVERED MODEL ---
+
+
+The Log Skeleton process model contains the following declarative constraints:
+- Equivalence (if the first activity occurs, then it has the same occurrences as the second one)
+- Always Before (if the first activity occur, then the second activity should have been executed previously)
+- Always After (if the first activity occur, then the second activity is executed in one of the following events)
+- Never Together (the two activities cannot co-exist inside the same case)
+- Activity Occurrences (bounds the number of occurrences for an activity in a case)
+- Directly-Follows Constraints (if the first activity occurs, then the second activity shall occur immediately after)
+    
+
+I have a Log Skeleton process model containing the following declarative constraints:
+
+Equivalence:  ('Backend Interview', 'Coding Interview') ('Frontend Interview', 'Telephonic Screening') ('Background Check', 'Screening Interview') ('ML Interview', 'Background Check') ('Coding Interview', 'Telephonic Screening') ('Extensive Background Check', 'Background Check') ('ML Interview', 'Hand In Job Application') ('Screening Interview', 'Telephonic Screening') ('Background Check', 'Hand In Job Application') ('Extensive Background Check', 'Hand In Job Application') ('Frontend Interview', 'Background Check') ('Backend Interview', 'Telephonic Screening') ('Coding Interview', 'Background Check') ('Frontend Interview', 'Hand In Job Application') ('ML Interview', 'Screening Interview') ('Screening Interview', 'Background Check') ('Telephonic Screening', 'Hand In Job Application') ('Extensive Background Check', 'Screening Interview') ('Coding Interview', 'Hand In Job Application') ('Background Check', 'Telephonic Screening') ('ML Interview', 'Coding Interview') ('Backend Interview', 'Background Check') ('Screening Interview', 'Hand In Job Application') ('Frontend Interview', 'Screening Interview') ('Backend Interview', 'Hand In Job Application') ('Coding Interview', 'Screening Interview') ('Frontend Interview', 'Coding Interview') ('ML Interview', 'Telephonic Screening') ('Backend Interview', 'Screening Interview') ('Extensive Background Check', 'Telephonic Screening')
+
+Always Before:  ('Backend Interview', 'Coding Interview') ('Frontend Interview', 'Telephonic Screening') ('ML Interview', 'Telephonic Screening') ('ML Interview', 'Background Check') ('Coding Interview', 'Telephonic Screening') ('Extensive Background Check', 'Background Check') ('ML Interview', 'Hand In Job Application') ('Screening Interview', 'Telephonic Screening') ('Frontend Interview', 'Background Check') ('Extensive Background Check', 'Hand In Job Application') ('Backend Interview', 'Telephonic Screening') ('Coding Interview', 'Background Check') ('Frontend Interview', 'Hand In Job Application') ('ML Interview', 'Screening Interview') ('Telephonic Screening', 'Hand In Job Application') ('Extensive Background Check', 'Screening Interview') ('Coding Interview', 'Hand In Job Application') ('Background Check', 'Telephonic Screening') ('ML Interview', 'Coding Interview') ('Backend Interview', 'Background Check') ('Screening Interview', 'Hand In Job Application') ('Frontend Interview', 'Screening Interview') ('Backend Interview', 'Hand In Job Application') ('Coding Interview', 'Screening Interview') ('Frontend Interview', 'Coding Interview') ('Background Check', 'Hand In Job Application') ('Backend Interview', 'Screening Interview') ('Extensive Background Check', 'Telephonic Screening')
+
+Always After: 
+
+Never Together: 
+
+Activity Occurrences:  Hand In Job Application: 1; Telephonic Screening: 0, 1; Screening Interview: 0, 1; Background Check: 0, 1; Extensive Background Check: 0, 1; Coding Interview: 0, 1; ML Interview: 0, 1; Frontend Interview: 0, 1; Behavioral Interview: 0, 1, 2, 3; Make Job Offer: 0, 1, 2, 3; Application Rejected: 0, 1, 2, 3; Backend Interview: 0, 1;
+
+Directly-Follows Constraints: 
+
+
+
+
+
+============================================================
+ORGANIZATIONAL CONTEXT
+============================================================
+
+Resource-Activity Mapping (which resources perform which activities):
+  Coding Interviewer: Backend Interview, Coding Interview, Frontend Interview, ML Interview
+  Front Desk: Hand In Job Application
+  HR-dummy: Application Rejected, Background Check, Screening Interview, Telephonic Screening
+  HR-pro: Background Check, Extensive Background Check, Make Job Offer, Telephonic Screening
+  HR-pro and Senior Partner: Behavioral Interview
+  Online System: Hand In Job Application
+  Senior Partner: Application Rejected, Screening Interview
+  deepResearch Inc.: Extensive Background Check
+
+Handover of Work Network (resource → resource: weight):
+  Coding Interviewer → Coding Interviewer: 0.1225
+  HR-dummy → Senior Partner: 0.0941
+  HR-dummy → HR-dummy: 0.0920
+  Online System → HR-dummy: 0.0659
+  Front Desk → HR-dummy: 0.0641
+  HR-pro → HR-dummy: 0.0540
+  Senior Partner → HR-dummy: 0.0424
+  HR-dummy → HR-pro: 0.0415
+  Coding Interviewer → HR-pro and Senior Partner: 0.0376
+  HR-pro and Senior Partner → HR-pro: 0.0343
+  HR-pro → Senior Partner: 0.0337
+  HR-pro → HR-pro: 0.0293
+  HR-dummy → Coding Interviewer: 0.0265
+  Online System → HR-pro: 0.0251
+  Coding Interviewer → Senior Partner: 0.0246
+  Front Desk → HR-pro: 0.0242
+  Senior Partner → Coding Interviewer: 0.0223
+  Senior Partner → HR-pro: 0.0220
+  Senior Partner → Senior Partner: 0.0195
+  HR-pro and Senior Partner → HR-pro and Senior Partner: 0.0192
+  deepResearch Inc. → Coding Interviewer: 0.0126
+  HR-pro and Senior Partner → Senior Partner: 0.0125
+  HR-dummy → deepResearch Inc.: 0.0120
+  HR-pro → Coding Interviewer: 0.0111
+  Coding Interviewer → HR-dummy: 0.0103
+  Senior Partner → HR-pro and Senior Partner: 0.0100
+  Senior Partner → deepResearch Inc.: 0.0079
+  deepResearch Inc. → Senior Partner: 0.0073
+  HR-pro and Senior Partner → HR-dummy: 0.0044
+  HR-dummy → HR-pro and Senior Partner: 0.0038
+  deepResearch Inc. → HR-dummy: 0.0034
+  Online System → Senior Partner: 0.0034
+  HR-pro → deepResearch Inc.: 0.0033
+  Front Desk → Senior Partner: 0.0030
+
+Resource Event Frequency (how many events each resource performs):
+  HR-dummy: 18126 events
+  Senior Partner: 10680 events
+  Coding Interviewer: 10502 events
+  HR-pro: 9509 events
+  Online System: 5083 events
+  Front Desk: 4917 events
+  HR-pro and Senior Partner: 3796 events
+  deepResearch Inc.: 1256 events
+
+IMPORTANT: Some resources above may represent individual instances of the same
+logical role (e.g., "Loan Officer 1", "Loan Officer 2" are both "Loan Officer").
+You must cluster resources into logical roles based on their activity patterns
+and names before generating role models.

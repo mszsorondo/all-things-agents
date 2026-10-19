@@ -1,0 +1,83 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This process describes the observed patient flow from registration through examination, diagnosis, treatment (with possible repetitions), and discharge as reconstructed from the inductive-miner Petri net. The purpose of the AS-IS description is to capture all observed behavioral variants in the mined model, including optional/skipped activities, invisible routing choices, loops caused by treatment failures, and multiple registration entry points.
+
+Key stakeholders and roles involved
+- Roles are not explicitly labeled in the source Petri net. The source model contains activities that correspond to registration, several types of examinations, diagnosis, treatment, and discharge. The source does not assign responsibilities; therefore no actor names are invented here.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+1. Start event: the process begins when a patient is registered. The Petri net shows two distinct registration transitions as start options:
+   - Register at ER (emergency room registration)
+   - Register at FD (family doctor / front desk registration)
+   These two transitions are alternative start points in the model; either one produces the initial token that enters the main flow.
+
+Main sequence of activities and flow logic
+2. After registration the process reaches place p_3. From p_3 there are three observed alternatives (mutually exclusive choices in a single case):
+   - Expert Examination (transition labeled 'Expert Examination') -> leads to place p_4
+   - Examination (transition labeled 'Examination') -> leads to place p_4
+   - An invisible skip (skip_1) -> directly to p_4 (this represents cases where no examination is recorded)
+   Thus, examination may be performed by an expert, by general examination, or be skipped entirely in the observed data.
+
+3. From place p_4 (post-examination) there are two observed alternatives:
+   - Thorough Examination (transition 'Thorough Examination') -> leads to place p_5
+   - An invisible skip (skip_2) -> directly to p_5 (cases where a thorough exam is not recorded)
+   The existence of the skip transition indicates that thorough examination is optional/omitted in some traces.
+
+4. After p_5, an invisible transition init_loop_3 fires and moves the token to place p_7. (This series — p_5 -> init_loop_3 -> p_7 — functions as the handoff from examination to the diagnostic/treatment loop.)
+
+5. From p_7 the observed next step is Diagnosis (transition 'Diagnosis') -> leads to place p_9.
+
+6. From p_9 the observed next step is Treatment (transition 'Treatment') -> leads to place p_8.
+
+7. From place p_8 (post-treatment) the model shows two alternatives:
+   - Treatment unsuccessful (transition 'Treatment unsuccessful') -> returns the token to place p_7 (back to Diagnosis). This is the principal rework/loop: failed treatment leads to another diagnosis and another treatment attempt.
+   - An invisible skip (skip_5) -> moves token to place p_6 (represents cases where the unsuccessful outcome is not recorded or the explicit unsuccessful transition is omitted)
+
+8. From p_6 there are two alternatives:
+   - Treatment successful (transition 'Treatment successful') -> leads to place p_11
+   - An invisible skip (skip_6) -> moves the token to place p_11 (cases where success is not recorded explictly, or success is inferred)
+
+9. From p_11 the final business activity is Discharge (transition 'Discharge') -> ends at sink (final marking). This is the observed end event.
+
+Decision points with criteria and possible outcomes (inferred)
+- Registration choice (start): patient is registered at ER vs FD. The source model allows both without further branching logic recorded.
+- Examination performed? (p_3 outgoing): choices are Expert Examination, Examination, or no recorded exam (skip_1). The Petri net does not encode criteria for choosing; the choice is observed variability.
+- Thorough Examination? (p_4 outgoing): either Thorough Examination or skip_2. Again, criteria are not encoded — variability exists in observed traces.
+- Treatment outcome (post-treatment): success (explicit or implicit via skip_6), or failure (Treatment unsuccessful). Failure returns case to Diagnosis for another cycle.
+
+Parallel activities and synchronization points
+- The mined Petri net shows a largely sequential flow; there are no explicit parallel split/join constructs in the net. The presence of invisible transitions (skip_*) can create the appearance of parallelism but in the observed model the flow is serial: registration -> exam(s) -> diagnosis -> treatment -> discharge.
+
+Exception handling and error paths
+- Treatment unsuccessful is the primary exception/rework path. When treatment fails, the token is routed back to the Diagnosis place (p_7), causing a new diagnosis and new treatment attempts. Because the unsuccessful transition loops back, repeated failures can produce multiple cycles between Diagnosis and Treatment.
+- Invisible skip transitions (skip_1, skip_2, skip_5, skip_6) represent missing recorded activities or deliberate omissions. These create alternate paths that bypass expected activities and are effectively exception/omission paths in the observed process.
+
+Rework loops and escalation procedures
+- The loop formed by p_7 -> Diagnosis -> p_9 -> Treatment -> p_8 -> Treatment unsuccessful -> p_7 is the core rework loop. It can repeat multiple times until Treatment successful (or an invisible skip forces progress).
+- No explicit escalation activities (e.g., referral to expert or supervisor) are recorded in the mined net beyond the presence of an 'Expert Examination' as one of the initial examination options. The model does not show a systematic escalation action when treatments repeatedly fail.
+
+End conditions and outcomes
+- Normal observed completion: token reaches p_11, Discharge fires, and process terminates in sink.
+- Cases may also reach p_11 via invisible skips that bypass explicit 'Treatment successful', then discharge. The final marking is sink:1.
+
+Process metrics and performance characteristics (what can be measured from the AS-IS model)
+- Registration distribution: proportion of cases starting at 'Register at ER' vs 'Register at FD'.
+- Exam coverage: percentage of cases that execute 'Examination' or 'Expert Examination' vs those that take skip_1.
+- Thorough examination coverage: percentage that execute 'Thorough Examination' vs skip_2.
+- Treatment loop rate (rework rate): percentage of treatments that lead to 'Treatment unsuccessful' and thus a return to Diagnosis (rework frequency per case).
+- Cycle time contributors: number of diagnosis-treatment iterations per case, number of missing activities (skips) that reduce recorded process time but may indicate noncompliance.
+- Throughput to Discharge: counts and average path length (number of transitions executed before Discharge).
+
+Key challenges and pain points (observed)
+- Optional/skipped examinations: invisible skip transitions show that examinations and thorough examinations are often omitted from traces. This can indicate noncompliance with clinical protocols or poor recording quality.
+- Uncontrolled rework loop: Treatment unsuccessful routes back to Diagnosis with no recorded limit or escalation; repeated cycles can extend patient length-of-stay and resource consumption.
+- Ambiguity from invisible transitions: skip_* and init_loop_3 are invisible in the mined model, making it hard to interpret why steps were skipped — omission vs alternative legitimate path.
+- Lack of explicit decision criteria: The model shows choices (e.g., Expert vs Examination vs skip) without encoded decision rules; this leads to variance and unpredictable routing.
+- No explicit escalation for repeated failures: the net does not show a pathway that moves a repeatedly failing case to a higher-level review or alternative treatment path.
+- Data/recording issues: many skip transitions suggest missing event logging or inconsistent naming leading to invisible behaviors.
+
+Summary of AS-IS behavior
+- The observed patient flow begins at registration (ER or FD), may or may not include an examination or thorough examination, then proceeds to diagnosis and treatment. Treatment can succeed (leading to discharge) or fail (loop back to diagnosis), potentially many times. Several invisible skip transitions indicate omitted or unrecorded steps; no explicit escalation or limit on rework is present.
+

@@ -1,0 +1,85 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This process describes the observed life-cycle for prospective tenants applying to view and rent apartments, through screening, contracting, move-in, rent-payment cycles and potential contract termination (tenant cancellation or eviction). The mining artifacts (Petri net, DFG, and observed variants) show the full AS-IS behavior including optional/hidden paths (skip transitions), repeated payment cycles, late-payment handling, and low-frequency eviction outcomes.
+
+Key stakeholders and roles involved
+- Prospective Tenant / Tenant (actor observed implicitly by activities such as Apply for Viewing Appointment, View The Property, Hand In The Paperwork, Move In, Pay Rent, Miss Rent Payment, Tenant Cancels Appartment)
+- Leasing Office / Property Management (responsible for Set Appointment, Check Paperwork, Screen Prospective Tenant, Extensive Screening, Reject Prospective Tenant, Sign Contract, Issue Warning, Accept Late Payment, Evict Tenant)
+- Systems (scheduling and payment recording systems implicitly present via repeated Pay Rent events; silent "skip" and loop transitions indicate optional system-controlled branches)
+
+Detailed step-by-step process flow (AS-IS)
+Start conditions and triggers
+1. Start: a prospective tenant initiates the flow by performing Apply for Viewing Appointment (the Petri-net source flows to this transition). This is the observed start event in the logs and nets.
+
+Main observed sequence variants (high level)
+- The dominant entry sequence is: Apply for Viewing Appointment -> Set Appointment -> View The Property -> Hand In The Paperwork -> Check Paperwork -> Screen Prospective Tenant -> {Reject Prospective Tenant | Extensive Screening | Sign Contract}...
+- If Sign Contract occurs: Sign Contract -> Move In -> Pay Rent -> (Pay Rent)* -> possibly Miss Rent Payment -> Issue Warning -> Accept Late Payment or Evict Tenant; Tenant Cancels Appartment may occur at many stages, commonly after several Pay Rent cycles.
+
+Detailed step sequence with decisions, branching and joins
+1. Apply for Viewing Appointment (start). Observed frequency for Apply->Set is 9151.
+2. Set Appointment occurs (e.g., scheduling by leasing staff). Observed Set Appointment -> View The Property frequency = 9151.
+3. View The Property (prospective tenant visits): View -> Hand In The Paperwork (frequency 7441) or View -> Reject Prospective Tenant directly (frequency 1710). This shows two observed outcomes after a viewing: immediate rejection or continued application.
+4. Hand In The Paperwork (applicant submits required documents). From here the observed path is to Check Paperwork (frequency 7441).
+5. Check Paperwork (initial verification): outcomes:
+   - Screen Prospective Tenant (frequency 7441) — normal path.
+   - Possible skip paths in the Petri net (skip transitions) indicate sometimes checks are omitted or automated (skip_2, skip_3, skip_6 etc.).
+6. Screen Prospective Tenant (decision point). Observed outgoing outcomes and frequencies:
+   - Reject Prospective Tenant (frequency 2856).
+   - Extensive Screening (frequency 2793) — when additional checks are required.
+   - Sign Contract (frequency 1792) — cleared for tenancy.
+   Decision criteria (inferred from structure): mutual exclusivity between immediate Reject, Extensive Screening, or immediate sign; skip transitions indicate that some checks/screenings may be bypassed.
+7. Extensive Screening: outcomes:
+   - Reject Prospective Tenant (frequency 1815).
+   - Sign Contract after extensive checks (frequency 978).
+   Note: Extensive Screening is performed when the standard screen flags issues; it increases time and reduces throughput (longer performance numbers in DFG).
+8. If Reject Prospective Tenant occurs: the case ends (Petri net arcs to sink for rejection). Observed variant frequencies show rejection occurs at several points: immediately after Apply (849), after viewing (1710), or after screening (2856/1815).
+9. If Sign Contract: the next steps are Move In (frequency 2770 where Sign Contract -> Move In) and then the tenant begins paying rent.
+10. Move In -> Pay Rent: observed frequency 2656. After move-in, the process enters a recurrent payment loop: Pay Rent events repeat frequently (self-loop Pay Rent -> Pay Rent, frequency 14819). The DFG and variants show many cases with a high number of Pay Rent events prior to case termination.
+
+Payment-related branches and exception handling
+- Normal payment: Pay Rent occurs repeatedly. The Pay Rent self-loop frequency (14819) indicates recurring monthly payments are recorded as repeated Pay Rent events in traces.
+- Missed payment: Pay Rent -> Miss Rent Payment is observed (frequency 770) and Move In -> Miss Rent Payment also occurs (114), indicating tenants sometimes miss payments shortly after move-in or later.
+- After Miss Rent Payment: the process typically moves to Issue Warning (frequency 945) and then to either Accept Late Payment (frequency 855) or Evict Tenant (frequency 90). Accept Late Payment then often leads back to Pay Rent (frequency 794), allowing the tenant to return to normal payment cycles. There are also paths Accept Late Payment -> Miss Rent Payment (frequency 61) indicating repeated delinquency.
+- Tenant Cancels Appartment: Many variants end with Tenant Cancels Appartment. DFG shows Pay Rent -> Tenant Cancels Appartment (frequency 2680). In variants, Tenant Cancels occurs after many numbers of Pay Rent occurrences; variants enumerate sequences with 1..many Pay Rent repetitions then Tenant Cancels.
+- Eviction is low-frequency (Issue Warning -> Evict Tenant frequency 90, Evict Tenant transitions to final sink in Petri net).
+
+Loops, optional/hidden paths, and skips
+- The Petri net contains many skip_* and init_loop transitions: these represent optional branches and internal routing that allow bypassing activities (e.g., skip extensive screening or skip check steps). In the AS-IS model these skips cause non-uniform handling — some applications skip checks or screenings.
+- Repeated Pay Rent events manifest as long-lived cases with multiple payments; the variants show cases with dozens of Pay Rent events.
+
+End conditions and observed outcomes
+- Observed final outcomes (sink marking): Reject Prospective Tenant, Tenant Cancels Appartment (tenant-initiated termination), Evict Tenant (formal termination by landlord), or (implicitly) ongoing tenancy where traces continue with Pay Rent entries. The Petri net final marking points to sink for cancellation/eviction/rejection.
+
+Process metrics and performance characteristics (observed)
+- High-volume flows:
+  - Pay Rent self-loop frequency: 14,819 (largest observed frequency; this is monthly/recurring payments recorded many times).
+  - Set Appointment -> View The Property and Apply for Viewing Appointment -> Set Appointment: both frequency 9,151 (common entry funnel).
+  - Full screening chain (Apply -> ... -> Reject via screening): 2,856 occurrences.
+- Screening branch performance (edge-level average observed values provided by DFG): many edges show large performance numbers (e.g., Set Appointment -> View The Property performance = 82,730; Apply -> Set performance = 82,731; these are the mined average inter-event times — the absolute units correspond to the log timestamps provided in the source; they consistently show long lead-times across the process). Extensive Screening edges often have higher performance values indicating longer processing times.
+- Missed-payment handling: Miss Rent Payment -> Issue Warning frequency 945; Issue Warning -> Accept Late Payment frequency 855; Issue Warning -> Evict Tenant frequency 90. Accept Late Payment -> Pay Rent frequency 794.
+- Tenant cancellation: Pay Rent -> Tenant Cancels Appartment frequency 2,680 — many tenants cancel after a number of payment cycles.
+- Variant distribution: The mined variants enumerate a large number of sequences where the only difference is the number of Pay Rent repetitions before Tenant Cancels — many long-lived traces exist (variants listing sequences with up to very large counts of Pay Rent events). This yields very long case durations.
+
+Key challenges and pain points (AS-IS)
+- High variability and optional skipping: The presence of many skip_* transitions and multiple routes through screening and checking indicates inconsistent application of rules (some applicants experience full checks, others bypass them), leading to compliance risk and inconsistent tenant quality.
+- Long lead-times and slow throughput: DFG performance numbers are large for many edges, especially around appointment scheduling, viewing, and screening; extensive screening causes additional delay.
+- Payment-loop noise and lifecycle length: The Pay Rent self-loop dominates the log and creates very long traces; this makes process monitoring difficult and hides other signals. Frequent Pay Rent repetitions before termination create long case lifetimes.
+- Reactive late-payment handling and small eviction throughput: The process reacts to missed payments after they occur (Miss Rent Payment -> Issue Warning), but eviction is a rarely applied remedy (low frequency), which may reduce deterrence and encourage repeated delinquencies. Accept Late Payment paths are used frequently, some tenants repeatedly miss payments even after acceptance.
+- Multiple rework and hand-offs: Paperwork checks, screening, and extensive screening indicate manual rework and possible back-and-forth with applicants (hand-ins, resubmissions). The presence of skip transitions suggests inconsistent use of required steps.
+- Lack of explicit automated pre-emptive measures: No mined activity corresponds to a formal pre-missed-payment reminder or automated validation step — the process is largely reactive as mined.
+
+Conservative interpretation notes and uncertainties
+- Roles and precise decision criteria are not explicitly named in the mining artifacts; the described responsibilities above are inferred but not specified in the data.
+- Performance numbers are the averages provided by the DFG edges and variants; units are the log's elapsed time units (kept as observed values).
+
+Summary of observed behavior
+- The AS-IS process is a typical leasing workflow with an entry funnel for viewings and heavy manual screening. After signing and move-in, tenants enter long recurring payment cycles; missed payments trigger warnings and possible acceptance of late payments; eviction occurs rarely. The process exhibits high variability, optional bypassed checks, long case durations due to repeated Pay Rent events, and occasional rework via extensive screening or paperwork checks.
+
+Key quantitative highlights (selected)
+- Apply -> Set -> View -> Hand In -> Check -> Screen chain frequency (successful screening decisions and rejections): several thousands (e.g., 7,441 for the base path to screening).
+- Pay Rent self-loop: 14,819 occurrences.
+- Pay Rent -> Tenant Cancels Appartment: 2,680 occurrences.
+- Miss Rent Payment -> Issue Warning: 945; Issue Warning -> Accept Late Payment: 855; Issue Warning -> Evict Tenant: 90.
+
+End of AS-IS model description.

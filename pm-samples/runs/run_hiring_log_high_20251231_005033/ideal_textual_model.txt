@@ -1,0 +1,77 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is a streamlined, efficient version of the recruitment process for technical positions. It eliminates loops, skips, redundant repeats, and excessive variability observed in the AS-IS model. The process enforces a logical, sequential progression with clear decision gateways at key stages, minimizing waste from rework and late rejections. The purpose is to reliably identify and hire qualified candidates through standardized screening, technical validation, and final approval, reducing cycle time and improving candidate experience.
+
+#### Key Stakeholders and Roles Involved
+- **Applicant/Candidate**: Submits application and participates in all required stages.
+- **HR/Recruiter**: Manages initial application handling, telephonic screening, screening interview, and background checks.
+- **Technical Interviewers**: Conduct standardized technical interviews (coding, frontend/backend, ML).
+- **Behavioral Interviewer/Hiring Manager**: Performs behavioral interview and decides on job offer.
+Roles are assigned logically based on activity type for clarity and accountability.
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers**: Process triggered by job application submission. Single start event.
+
+1. **Hand In Job Application** (HR): Receive and log application.
+
+2. **Telephonic Screening** (HR): Quick phone check for basic fit. 
+   - Decision: Qualified? (Yes: 80% threshold based on AS-IS frequencies).
+     - No -> **Application Rejected** (end).
+
+3. **Screening Interview** (HR): Video/depth initial interview.
+   - Mandatory after telephonic.
+
+4. **Background Check** (HR): Standard verification (combines normal/extensive; no variant).
+   - Decision after screening + background: Proceed?
+     - No -> **Application Rejected**.
+
+5. **Coding Interview** (Technical Interviewer): Assess coding skills.
+   - Gateway: Pass coding?
+     - No -> Reject.
+
+6. **Technical Interviews Block** (Technical Interviewers, sequential):
+   - **Frontend Interview**.
+   - **Backend Interview**.
+   - **ML Interview**.
+   - Synchronization: All must complete successfully.
+   - Decision: All technical pass?
+     - No (any fail) -> **Application Rejected**.
+   - Removed interleaving/loops; fixed order to prevent rework.
+
+7. **Behavioral Interview** (Hiring Manager): Assess soft skills/culture fit.
+   - Single execution, no loops.
+   - Decision: Suitable?
+     - No -> **Application Rejected**.
+
+8. **Make Job Offer** (Hiring Manager): Final approval and offer extension.
+   - No post-offer rejection; assume acceptance or renegotiation outside process.
+
+**Parallel Activities and Synchronization Points**: None; fully sequential to enforce order and reduce complexity. Decisions act as XOR gateways.
+
+**Exception Handling and Error Paths**: 
+   - Rejections only at gateways after each major stage.
+   - No mid-process rejections without completion.
+   - Escalation: If any interviewer flags issue, route to Hiring Manager review (pre-behavioral).
+
+**Rework Loops and Escalation Procedures**: Eliminated all loops. Single pass per activity. Escalation only for borderline cases pre-offer.
+
+**End Conditions and Outcomes**:
+   - **Hired**: Successful completion of all stages -> Make Job Offer -> End (positive outcome).
+   - **Rejected**: At any decision gateway -> Application Rejected -> End (with reason logged).
+
+#### Process Metrics and Performance Characteristics (Projected)
+- Reduced variants: ~10 paths max (rejects at 6 points).
+- Cycle time: ~300k-400k time units for successful hires (cut loops/repeats).
+- Rejection rate: Front-loaded (target 70% early, 20% technical).
+- Throughput: Higher due to standardization.
+- Bottlenecks fixed: Fixed interview order, combined backgrounds.
+
+#### Key Improvements Made
+- **Streamlined Flow**: Fixed sequence eliminates interleaving (e.g., screening before background always).
+- **Removed Waste**: No skips/loops/repeats (saved ~100k+ time from AS-IS loops).
+- **Front-loaded Rejections**: Early decisions prevent deep progression of unfit candidates.
+- **Consistency**: Mandatory steps reduce variability; clear pass/fail criteria at gateways.
+- **No Post-Offer Rejects**: Final decision before offer.
+- **Efficiency Gains**: Shorter cycle (from 530k to ~350k), better candidate experience, lower rework costs.
+- **Compliance**: Standardized to good governance; auditable decisions.

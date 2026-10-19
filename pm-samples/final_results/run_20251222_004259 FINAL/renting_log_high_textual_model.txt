@@ -1,0 +1,96 @@
+AS-IS Process Model
+
+Process overview and purpose
+- This process describes the end-to-end residential leasing lifecycle as mined from event data: from a prospective tenant applying for a viewing, through property viewing, paperwork, screening, decision (sign or reject), move-in, and recurring rent collection, up to termination (tenant cancellation or eviction). The model captures both the mainline flow and all observed deviations and loops, including late payments and warnings.
+
+Key stakeholders and roles involved (inferred from activity names)
+- Prospective Tenant: applies, views the property, submits paperwork, signs, moves in, pays rent, can cancel.
+- Property Management/Leasing Team: sets appointments, checks paperwork, screens, rejects or accepts, issues warnings, accepts late payments, performs evictions.
+(Note: Roles are inferred from activity names; actual organizational titles may vary.)
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: A prospective tenant initiates the process by submitting “Apply for Viewing Appointment” (start place → Apply for Viewing Appointment).
+
+Pre-leasing pipeline (application to decision)
+1) Apply for Viewing Appointment
+   - Primary observed path: to “Set Appointment” (frequency ≈ 9,151).
+   - Alternate early-exit path: directly to “Reject Prospective Tenant” without appointment (frequency ≈ 849). This captures pre-appointment screening/eligibility checks implicitly represented by a gateway (via silent transitions in the Petri net).
+
+2) Set Appointment → 3) View The Property
+   - Observed frequency: Set Appointment → View The Property ≈ 9,151.
+
+4) Post-viewing decision
+   - Branch A (stop): “Reject Prospective Tenant” directly after viewing (frequency ≈ 1,710).
+   - Branch B (continue): proceed to documentation.
+
+5) Hand In The Paperwork (frequency from View → Hand In ≈ 7,441)
+6) Check Paperwork → 7) Screen Prospective Tenant
+   - Hand In → Check Paperwork (≈ 7,441)
+   - Check Paperwork → Screen Prospective Tenant (≈ 7,441)
+
+8) Screening decision
+   - Option 1: Reject Prospective Tenant (directly after screening) (≈ 2,856)
+   - Option 2: Extensive Screening (≈ 2,793) then
+       • Extensive Screening → Reject Prospective Tenant (≈ 1,815), or
+       • Extensive Screening → Sign Contract (≈ 978)
+   - Option 3: Screen Prospective Tenant → Sign Contract (≈ 1,792)
+   Notes about structural skips (from Petri net): silent transitions allow bypassing some intermediate steps to reach the decision place. While logs do not prominently show “Apply → Sign Contract” directly, the mined control-flow allows such bypasses. We treat them as permitted but rare.
+
+9) Sign Contract → 10) Move In
+   - Sign Contract → Move In (≈ 2,770)
+
+Post-leasing recurring rent cycle (repeats until termination)
+11) Recurring month-to-month gateway (implicit via loop transitions)
+   - Path A: Pay Rent
+       • Move In → Pay Rent (≈ 2,656)
+       • Pay Rent → Pay Rent (self-loop, very frequent: ≈ 14,819) indicating repeated rent cycles.
+       • From Pay Rent, a termination branch to “Tenant Cancels Appartment” (≈ 2,680) ends the case.
+   - Path B: Miss Rent Payment
+       • From Move In, a smaller fraction goes to Miss Rent Payment (≈ 114), and from ongoing cycles Pay Rent → Miss Rent Payment (≈ 770).
+       • Miss Rent Payment → Issue Warning (≈ 945)
+       • Issue Warning branches:
+           – Accept Late Payment (≈ 855), typically → Pay Rent (≈ 794), but can → Miss Rent Payment again (≈ 61), creating a rework loop.
+           – Evict Tenant (≈ 90) → end.
+   - Structural notes (from Petri net): after Accept Late Payment, silent routing allows either returning to the regular payment place or re-entering the miss-payment branch, enabling repeated late cycles. After each paid cycle, a silent choice can lead either to another Pay Rent, to cancellation, or (less commonly) to a missed payment in the next cycle.
+
+Exception handling and error paths
+- Early rejections: permissible at multiple points (after Apply; after View; after Screening; after Extensive Screening).
+- Late payments: handled via Issue Warning, with possible acceptance of late payment or escalation to eviction.
+- Evictions: rare but terminal (≈ 90 after warning).
+- Tenant cancellations: occur after paid cycles (observed Pay Rent → Tenant Cancels Appartment ≈ 2,680) and terminate the process.
+
+Rework loops and escalation procedures
+- Rent cycle rework: Accept Late Payment → Pay Rent, with occasional return to Miss Rent Payment (61), indicating repeated delinquency for some tenants.
+- Ongoing Pay Rent self-loop (14,819) captures normal monthly recurrence.
+
+End conditions and outcomes
+- Reject Prospective Tenant (terminal) — can occur after Apply, View, Screen, or Extensive Screening.
+- Tenant Cancels Appartment (terminal) — most commonly after one or more paid rent cycles.
+- Evict Tenant (terminal) — after Miss Rent Payment → Issue Warning, if unresolved.
+
+Process metrics and performance characteristics (from DFG)
+- Volume and conversion (approximate):
+  • Applications observed: ≈ 9,151 (Apply → Set Appointment) + 849 (Apply → Reject) ≈ 10,000 starts.
+  • Signed & moved-in: ≈ 2,770 (≈ 27.7% of starts).
+  • Rejected (pre-contract): ≈ 7,230 (≈ 72.3% of starts) via various points.
+- Funnel details:
+  • Set Appointment → View: ≈ 9,151.
+  • View → Hand In: ≈ 7,441 (≈ 81.4% of viewers continue).
+  • Screening mix: Extensive Screening in ≈ 2,793 of ≈ 7,441 screened cases (≈ 37.5%).
+  • Acceptance routes: ≈ 1,792 direct after screening; ≈ 978 after extensive screening (total ≈ 2,770 accepted of ≈ 7,441 screened ≈ 37.2%).
+- Post-move-in lifecycle:
+  • Move In → Pay Rent: ≈ 2,656 (initial payment after move-in).
+  • Pay Rent → Pay Rent: ≈ 14,819 (recurring monthly payments).
+  • Pay Rent → Tenant Cancels Appartment: ≈ 2,680 (common termination path).
+  • Miss Rent Payment → Issue Warning: ≈ 945; Issue Warning → Accept Late Payment: ≈ 855; Issue Warning → Evict Tenant: ≈ 90.
+- Performance times (median/average per edge as provided, units as in source, many ≈ 80,000):
+  • Apply → Set Appointment ≈ 82,731; Set Appointment → View ≈ 82,730; View → Hand In ≈ 81,965; Hand In → Check ≈ 44,106; Check → Screen ≈ 37,860; Screen → Sign ≈ 80,492; Sign → Move In ≈ 81,093; Late-payment handling edges ≈ 80,000–84,000.
+  (These reflect typical elapsed time between events per edge; exact units not specified.)
+
+Key challenges and pain points
+- High attrition: ≈ 72% of applicants are rejected, many after substantial effort (viewing, paperwork, screening), causing wasted capacity.
+- Structural bypasses: the Petri net allows skipping directly to the decision place, creating a governance risk that a contract could be signed without full completion of viewing/paperwork/screening (even if rarely observed).
+- Late-payment rework: repeated late payments are accepted frequently (≈ 855 warnings leading to ≈ 794 accepted late payments), creating a loop that can perpetuate delinquency; escalation to eviction is inconsistent (≈ 90) relative to warnings issued.
+- Cycle-time hotspots: Appointment scheduling and viewing latency (~82k per edge), paperwork-to-screening latency (~38–44k), and extensive screening adds further delay, impacting applicant experience.
+- Termination management: Tenant cancellations are numerous and occur after paid cycles; there is no explicit control in the observed model to ensure all balances are settled before cancellation (silent routing may allow cancellation despite recent misses).

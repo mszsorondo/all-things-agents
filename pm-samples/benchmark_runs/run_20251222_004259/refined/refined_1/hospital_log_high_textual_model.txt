@@ -1,0 +1,101 @@
+# AS-IS Process Model
+
+Process overview and purpose
+- Purpose: End-to-end patient episode from initial registration (Front Desk or Emergency Room) through assessments, diagnosis, treatment, and discharge, including rework when treatment is unsuccessful and the observed path where success is not recorded before discharge.
+- Scope: Single patient journey per case, from first registration to discharge. The process is strictly sequential with exclusive choices and a single rework loop between Treatment unsuccessful and Diagnosis. No parallel activities occur.
+
+Activities
+- Register at FD, Register at ER, Examination, Expert Examination, Thorough Examination, Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge.
+
+Start conditions
+- Exactly one start event per case:
+  - Register at FD, or
+  - Register at ER
+- No re-registration after start.
+
+Assessment (pre-diagnosis) stage
+- Occurs at most once per case, only before the first Diagnosis.
+- Immediately after registration, an exclusive choice:
+  - Examination, or
+  - Expert Examination, or
+  - Thorough Examination, or
+  - Skip all assessments and proceed toward Diagnosis
+- Conditional dependencies:
+  - If Examination occurs, it must be immediately followed by Thorough Examination before the first Diagnosis. Examination may not be followed directly by Diagnosis.
+  - Expert Examination may be followed either by Thorough Examination or directly by Diagnosis.
+  - Thorough Examination, when it occurs, happens only once and only before the first Diagnosis.
+- Assessment tasks cardinality and exclusivity:
+  - Examination: 0 or 1, only before first Diagnosis.
+  - Expert Examination: 0 or 1, only before first Diagnosis.
+  - Examination and Expert Examination are mutually exclusive; at most one of them may appear in a case.
+  - Thorough Examination: 0 or 1, only before first Diagnosis (may follow either Examination or Expert Examination, or be reached directly from Registration).
+
+Transition to diagnosis
+- After assessment completes (including any skips), the case proceeds to the first Diagnosis.
+- The first Diagnosis must be directly preceded by either:
+  - Registration (if assessments are skipped), or
+  - Expert Examination, or
+  - Thorough Examination
+- Examination cannot directly precede Diagnosis.
+
+Diagnostic and treatment cycle
+- Diagnosis is mandatory before any Treatment.
+- From each Diagnosis, the next event is exactly one Treatment (no other tasks may occur between Diagnosis and Treatment).
+- After each Treatment, an exclusive choice:
+  1) Treatment successful → must be immediately followed by Discharge.
+  2) Treatment unsuccessful → must be immediately followed by Diagnosis (rework loop).
+  3) Discharge directly after Treatment (no success recorded).
+- The only loop in the process is: Treatment → Treatment unsuccessful → Diagnosis → Treatment (and it can repeat multiple times).
+- No assessment activities (Examination, Expert Examination, Thorough Examination) occur after the first Diagnosis, including during rework loops.
+
+End conditions
+- Each case ends with exactly one Discharge.
+- Discharge occurs either:
+  - Immediately after Treatment successful, or
+  - Immediately after Treatment when the success outcome is skipped.
+- Discharge never occurs after Treatment unsuccessful without an intervening Treatment.
+
+Cardinality and occurrence rules
+- Registration: exactly one (FD or ER).
+- Assessment tasks (mutually exclusive where applicable):
+  - Examination: 0 or 1, only before first Diagnosis; if present, must be immediately followed by Thorough Examination.
+  - Expert Examination: 0 or 1, only before first Diagnosis.
+  - Examination and Expert Examination are mutually exclusive; at most one of them may appear in a case.
+  - Thorough Examination: 0 or 1, only before first Diagnosis (may be reached directly from Registration, or after Examination or Expert Examination).
+- Diagnosis: at least 1; exactly one Diagnosis must precede each Treatment. Between consecutive Treatments, there is exactly one Diagnosis.
+- Treatment: at least 1.
+- Treatment outcomes:
+  - Treatment successful: 0 or 1 per case; if it occurs, it is immediately followed by Discharge and ends the case.
+  - Treatment unsuccessful: 0 or more; if it occurs, it is immediately followed by Diagnosis.
+- Discharge: exactly 1 per case; no events follow Discharge.
+
+Permitted directly-follows relations (and only these)
+- Register at FD → one of {Examination, Expert Examination, Thorough Examination, Diagnosis}
+- Register at ER → one of {Examination, Expert Examination, Thorough Examination, Diagnosis}
+- Examination → Thorough Examination
+- Expert Examination → one of {Thorough Examination, Diagnosis}
+- Thorough Examination → Diagnosis
+- Diagnosis → Treatment
+- Treatment → one of {Treatment successful, Treatment unsuccessful, Discharge}
+- Treatment unsuccessful → Diagnosis
+- Treatment successful → Discharge
+
+Explicitly invalid orderings
+- Any activity before Registration, or any second Registration.
+- Examination → Diagnosis directly is invalid (Thorough Examination is mandatory after any Examination and before Diagnosis).
+- Any assessment activity (Examination, Expert Examination, Thorough Examination) after the first Diagnosis or within rework loops.
+- Two assessment tasks of the same type repeated, or both Examination and Expert Examination in the same case.
+- Any event between Diagnosis and the immediately following Treatment.
+- Any event between Treatment successful and Discharge.
+- Any event between Treatment unsuccessful and the next Diagnosis.
+- Discharge before any Treatment; Discharge after Treatment unsuccessful; multiple Discharges; any event after Discharge.
+- Treatment successful or Treatment unsuccessful without a preceding Treatment.
+- Consecutive Diagnoses without an intervening Treatment; consecutive Treatments without an intervening Diagnosis.
+
+Observed variations supported
+- Skipping all pre-diagnosis assessments: Registration → Diagnosis.
+- Direct-to-Thorough after Registration: Registration → Thorough Examination → Diagnosis.
+- Expert-only path: Registration → Expert Examination → Diagnosis.
+- Examination with mandatory Thorough: Registration → Examination → Thorough Examination → Diagnosis.
+- Rework via one or more cycles of Treatment unsuccessful → Diagnosis → Treatment.
+- Direct discharge without success recording: Treatment → Discharge.

@@ -1,0 +1,96 @@
+IDEAL Process Model
+
+1. Process overview and purpose
+
+This IDEAL description defines a streamlined, compliant target process for rental applications and tenancy lifecycle based on the observed behaviors in the AS-IS Petri net. The objective is to eliminate undocumented skips, enforce mandatory checks (paperwork and screening), standardize the screening depth, establish a clear escalation and eviction policy, and reduce rework loops by setting explicit remediation and payment timelines.
+
+Purpose: ensure consistent applicant handling, reduce compliance risk, reduce cycle time to move-in, and implement clear escalation steps for missed rent to reduce unnecessary evictions and repetitive missed-payment cycles.
+
+2. Key stakeholders and roles involved
+
+All roles below are grounded in the activity labels from the source model; no new actors are invented:
+- Applicant / Prospective tenant — initiates application and attends viewings, signs contract, pays rent.
+- Letting agent / Property management — responsible for receiving applications, setting appointments, checking paperwork, screening (including triggering extensive screening), issuing warnings, accepting payments, and executing eviction when policy criteria are met.
+- Screening service / background-check team — conducts standard and extensive screening according to defined triggers.
+
+3. Detailed step-by-step IDEAL process flow
+
+Start conditions and trigger
+- Start: Applicant submits an application to "Apply for Viewing Appointment." This is required to enter the process. No path allows bypassing this start.
+
+Pre-conditions
+- All applicants must have an application record created before any downstream activity (Set Appointment, View Property, Hand In Paperwork) begins.
+
+Main flow
+1) Appointment scheduling and viewing
+   - Activity: Letting agent receives the application and performs "Set Appointment." Applicants cannot proceed to view without a recorded appointment.
+   - Activity: "View The Property" — applicant attends viewing. Failure to attend triggers a short automated re-schedule flow or application closure after defined repeated no-shows (not invented; implied by natural handling of viewings).
+
+2) Paperwork submission and mandatory checks
+   - After viewing, applicant must "Hand In The Paperwork." This step is mandatory and cannot be skipped in the IDEAL flow.
+   - Activity: "Check Paperwork" — property management validates identity, income proof, references. If paperwork is incomplete, the process routes back to the applicant with a clear checklist and a limited remediation window (e.g., 3 business days). If not remedied, the application is rejected.
+
+3) Screening and decision
+   - After paperwork is checked, property management runs "Screen Prospective Tenant" (standard screening on all applicants).
+   - Decision point: If standard screening raises flags (criminal record, insufficient income, poor references), then "Extensive Screening" is triggered automatically per policy.
+   - Outcomes of screening:
+       a) Clear pass (standard screening passes) -> proceed to "Sign Contract."
+       b) Flagged -> perform "Extensive Screening." If extensive screening clears the applicant, proceed to "Sign Contract." If not, the result is "Reject Prospective Tenant." All screening decisions are recorded with rationale.
+
+4) Contract signing and move-in
+   - Activity: "Sign Contract" occurs only after paperwork and screening are completed and passed.
+   - Activity: "Move In" takes place after a signed contract, with move-in checklist captured.
+
+5) Tenancy — payments and exception handling (clear escalation)
+   - Regular cycle: Tenant must "Pay Rent" on scheduled due dates.
+   - If a payment is missed: automatic process triggers "Miss Rent Payment" event -> automated first-step notification and a grace period (e.g., 5 calendar days) for remediation.
+   - If payment remains unpaid after the grace period: system issues a formal "Issue Warning" including clear next steps and options (payment plan, contact details). Warnings are capped (e.g., up to 2 warnings before escalation).
+   - If tenant makes a late payment within the remediation window, the letting agent may "Accept Late Payment" and record an action: if repeated within a configured tolerance (e.g., two late payments within 12 months), the case is escalated to a probationary monitoring status (recorded).
+   - If the tenant does not remedy payment after warnings and remediation windows, the process escalates to a formal arrears handling workflow that includes documented notices and, if necessary, eviction proceedings. Eviction is a controlled, recorded action only after policy conditions are fulfilled (notice served, statutory waiting periods observed).
+
+6) Exit conditions
+   - Voluntary exit: "Tenant Cancels Appartment" executed by the tenant; process records move-out and final account reconciliation.
+   - Involuntary exit: "Evict Tenant" performed only after clear policy criteria and documented warnings/notices; eviction action is recorded with preconditions met.
+   - Rejection: "Reject Prospective Tenant" occurs only after due process (paperwork incomplete after remediation window or screening fails). Rejections include recorded reasons.
+
+Parallel activities and synchronization
+- Background checks (Screen Prospective Tenant / Extensive Screening) can run in parallel with administrative checks (Check Paperwork) only if both sets of data are present; however, the IDEAL process enforces that both must be completed before the Sign Contract transition fires.
+- Payment triggers and reminders are automated and can run in parallel with monitoring tasks; however, eviction decisions require synchronization: the eviction task will be enabled only after warnings and grace periods have elapsed.
+
+Exception handling and rework loops
+- Paperwork incomplete -> route back to applicant to "Hand In The Paperwork" with a deadline. If unresolved, the case is rejected.
+- Screening flags -> trigger "Extensive Screening." If extensive screening resolves in favor, proceed; otherwise, reject.
+- Missed payment -> follow the defined remediation timeline and limited warning loop; if tenant remedies within allowed attempts, resume normal tenancy. Repeated abuse triggers probation and then eviction if unresolved.
+
+End states and outcomes
+- Successful tenancy remains active until one of: contract termination by tenant, eviction following policy, or lease expiry followed by move-out. Each end state is recorded with outcome and reason.
+
+4. Process metrics and target performance characteristics
+- Compliance metrics:
+   - 100% of applicants must have paperwork checked before contract signing.
+   - 100% of signed contracts must have documented screening results.
+- Time metrics (targets):
+   - Time from application to decision (Sign/Reject): <= 5 business days.
+   - Time from signed contract to move-in: <= 7 calendar days.
+   - Missed payment remediation window: first notification within 24 hours of missed payment; formal warning within 5 calendar days.
+- Quality metrics:
+   - Reduction in proportion of cases with skipped mandatory steps: target 0%.
+   - Reduce repeated missed-payment cycles by X% (e.g., 50%) by enforcing remediation and probation.
+- Operational metrics:
+   - Percentage of evictions that followed full policy workflow (target 100%).
+   - Average number of days from first missed payment to resolution.
+
+5. Improvements made (IDEAL) vs AS-IS pain points
+- Removed invisible skips: all skip_* bypasses observed in AS-IS are closed in IDEAL; appointment, paperwork, and screening are mandatory and sequenced.
+- Standardized screening: explicit triggers for "Extensive Screening" reduce ad-hoc checks and improve auditability.
+- Formal remediation timeline for missed payments reduces repeated loops and clarifies when eviction is appropriate.
+- Documentation and recording requirements at decision points (rejections, warnings, acceptances of late payment) improve auditability and compliance.
+- Clear separation of automated notifications (payments) and human decisions (eviction) reduce unnecessary evictions and improve tenant relations.
+
+6. Implementation notes and controls
+- Technical controls: enforce required sequence via application system checks (prevent Sign Contract until paperwork and screening flags are completed); add mandatory fields and status checks.
+- Policy controls: define precise thresholds for triggering extensive screening and eviction (number of missed payments, amount due, time elapsed).
+- Monitoring: build dashboards for skipped steps, rework loops, warning counts, and eviction compliance.
+
+Summary (IDEAL):
+The IDEAL model enforces mandatory steps, reduces variability, and codifies clear remediation and escalation rules to handle missed rent payments. This both reduces compliance risk and improves operational predictability while preserving key behaviors from the AS-IS model (screening, warnings, ability to accept late payments).

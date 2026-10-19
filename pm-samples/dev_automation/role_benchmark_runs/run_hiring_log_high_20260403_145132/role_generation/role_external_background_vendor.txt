@@ -1,0 +1,46 @@
+AS-IS Process Model — External Background Vendor
+============================================================
+
+Title: AS-IS Process Model — External Background Vendor
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Perform outsourced, in-depth background investigations (Extensive Background Check) that HR cannot complete internally.
+- Responsibilities: execute Extensive Background Check on candidate cases assigned to the vendor, produce findings/results, and hand results back to internal HR stakeholders or escalate to senior decision-makers. Occasionally the vendor’s investigation leads directly to case closure.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Extensive Background Check: the only observable activity performed by this role in the event log. This represents deep investigations (employment verification, criminal records, reference checks, etc.) outsourced from HR.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation: External Background Vendor is activated when HR (HR-pro or HR-dummy) routes a case to an Extensive Background Check. In observed data, the vendor activity follows Background Check or Screening Interview in many traces (Background Check -> Extensive Background Check is frequent in DFG and variants).
+- Observed outcomes after the vendor’s activity (AS-IS):
+  - Extensive Background Check -> Application Rejected (vendor findings can lead directly to rejection in some traces).
+  - Extensive Background Check -> Coding Interview / Technical track (in some observed cases the vendor returns control and the candidate proceeds to technical interviews).
+  - Extensive Background Check -> Senior Partner / HR (results are handed back to internal HR or senior decision-makers for further action).
+- Decision points: The vendor itself does not record decision criteria in the log; it only performs the investigation and returns results. Any decision about next steps (reject, proceed, escalate) is made by the receiving internal role (HR-pro, HR-dummy, Senior Partner) after receiving the vendor’s findings.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+- Who hands work TO External Background Vendor (observed):
+  - HR-dummy (some handovers observed),
+  - HR-pro (primary internal requester),
+  - Senior Partner (rare handoffs observed).
+- Who receives work FROM External Background Vendor (observed):
+  - HR-dummy (vendor hands results back to HR-dummy in some traces),
+  - Coding Interviewer (small observed flow to technical track after vendor clearance),
+  - Senior Partner (escalation path),
+  - HR-pro (receives results for offer/rejection decisions).
+- Note: Handover weights in the log show small but non-zero flows to coding interviewer and senior partner, indicating the vendor occasionally triggers further internal actions beyond returning to HR.
+
+Section 5: Variants and Exceptions (all observed paths)
+- Observed variants involving the vendor (AS-IS):
+  - Background Check -> Extensive Background Check -> Application Rejected (common escalate-to-rejection path).
+  - Background Check -> Extensive Background Check -> Coding Interview -> ... (cases where vendor clears the candidate and the candidate continues to technical interviews).
+  - Screening Interview -> Background Check -> Extensive Background Check -> Senior Partner -> Make Job Offer/Application Rejected (escalation chain observed in longer variants).
+- Exceptions/rework: The vendor does not appear to perform repeated Extensive Background Check events per case in the observed traces (no self-loops observed), but the process can include multiple external checks across different stages in rare, long variants.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Extensive Background Check paths have high performance (long durations in variant and DFG performance metrics), indicating that outsourcing is a time-consuming bottleneck when used.
+- Handover to external vendor is relatively low-volume compared to internal checks, but when invoked it substantially increases case throughput time.
+- Small observed direct handovers from the vendor to technical interviewers or senior partners suggest occasional non-standard routing (possible ad-hoc decisions by vendor or parallel scheduling) — this may cause coordination complexity.
+- Because the vendor only performs the investigative activity and does not make hiring decisions in the log, delays in returning results translate directly into stalls for downstream decision-makers.
+
+(End of AS-IS description for External Background Vendor)

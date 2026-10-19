@@ -1,0 +1,76 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_ILP
+============================================================
+
+
+=== PETRI NET (ILP MINER) INTERPRETATION GUIDE ===
+
+The ILP (Integer Linear Programming) Miner constructs Petri nets that perfectly
+fit the observed behavior by solving an optimization problem.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ 3, 4, 5, ..., sink, source ]
+transitions: [ (Activity, 'Activity'), (■, None), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+PLACE NAMING:
+- Numeric identifiers (3, 4, 5, ...) for intermediate places
+- 'source' and 'sink' for start/end
+- Minimized number of places (optimization objective)
+
+SPECIAL TRANSITIONS:
+- (■, None) or similar: Silent/tau transitions for routing
+- Visible activities: (ActivityName, 'ActivityName')
+
+KEY CHARACTERISTICS:
+- Perfect fitness: ALL observed traces can replay
+- Minimal structure: Fewest places/arcs that explain behavior
+- May include silent transitions for complex routing
+- Numerically named places (optimization result)
+
+OPTIMIZATION OBJECTIVE:
+- Minimize structural complexity
+- Subject to: All traces must be replayable
+- Token flow conservation at each step
+
+ADVANTAGES:
+- Guaranteed perfect fitness
+- Mathematically rigorous
+- No heuristic parameters to tune
+- Finds minimal explaining structure
+
+LIMITATIONS:
+- Computationally expensive for large logs
+- May overfit to observed behavior
+- Does not handle noise well
+- Scalability issues with many activities
+
+WHEN TO USE:
+- Small to medium-sized logs
+- When perfect fitness is required
+- Clean logs without noise
+- Understanding exact behavioral boundaries
+
+
+--- DISCOVERED MODEL ---
+[ILP Miner]
+
+
+If I have a Petri net:
+
+places: [ 10, 11, 12, 2, 3, 4, 5, 7, 8, 9, sink, source ]
+transitions: [ (Diagnosis, 'Diagnosis'), (Discharge, 'Discharge'), (Examination, 'Examination'), (Expert Examination, 'Expert Examination'), (Register at ER, 'Register at ER'), (Register at FD, 'Register at FD'), (Thorough Examination, 'Thorough Examination'), (Treatment successful, 'Treatment successful'), (Treatment unsuccessful, 'Treatment unsuccessful'), (Treatment, 'Treatment'), (▶, None) ]
+arcs: [ (Diagnosis, 'Diagnosis')->4, (Discharge, 'Discharge')->sink, (Examination, 'Examination')->10, (Examination, 'Examination')->11, (Expert Examination, 'Expert Examination')->3, (Expert Examination, 'Expert Examination')->7, (Register at ER, 'Register at ER')->10, (Register at ER, 'Register at ER')->11, (Register at ER, 'Register at ER')->12, (Register at ER, 'Register at ER')->3, (Register at ER, 'Register at ER')->7, (Register at ER, 'Register at ER')->8, (Register at FD, 'Register at FD')->10, (Register at FD, 'Register at FD')->11, (Register at FD, 'Register at FD')->12, (Register at FD, 'Register at FD')->3, (Register at FD, 'Register at FD')->7, (Register at FD, 'Register at FD')->8, (Thorough Examination, 'Thorough Examination')->11, (Thorough Examination, 'Thorough Examination')->7, (Thorough Examination, 'Thorough Examination')->8, (Treatment successful, 'Treatment successful')->5, (Treatment unsuccessful, 'Treatment unsuccessful')->10, (Treatment unsuccessful, 'Treatment unsuccessful')->11, (Treatment unsuccessful, 'Treatment unsuccessful')->12, (Treatment unsuccessful, 'Treatment unsuccessful')->3, (Treatment unsuccessful, 'Treatment unsuccessful')->7, (Treatment unsuccessful, 'Treatment unsuccessful')->8, (Treatment, 'Treatment')->5, (Treatment, 'Treatment')->9, (▶, None)->2, 10->(Diagnosis, 'Diagnosis'), 10->(Examination, 'Examination'), 11->(Diagnosis, 'Diagnosis'), 11->(Examination, 'Examination'), 11->(Thorough Examination, 'Thorough Examination'), 12->(Diagnosis, 'Diagnosis'), 2->(Register at ER, 'Register at ER'), 2->(Register at FD, 'Register at FD'), 3->(Diagnosis, 'Diagnosis'), 3->(Expert Examination, 'Expert Examination'), 4->(Treatment, 'Treatment'), 5->(Discharge, 'Discharge'), 5->(Treatment successful, 'Treatment successful'), 5->(Treatment unsuccessful, 'Treatment unsuccessful'), 7->(Diagnosis, 'Diagnosis'), 7->(Expert Examination, 'Expert Examination'), 7->(Thorough Examination, 'Thorough Examination'), 8->(Diagnosis, 'Diagnosis'), 8->(Thorough Examination, 'Thorough Examination'), 9->(Discharge, 'Discharge'), 9->(Treatment unsuccessful, 'Treatment unsuccessful'), source->(▶, None) ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']
+
+

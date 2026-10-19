@@ -1,0 +1,61 @@
+**IDEAL Process Model**
+
+### Process Overview and Purpose
+The IDEAL process model represents an improved, streamlined version of the loan application process. It eliminates rework loops, collapses redundant denials, enforces sequential logic with optional single-step mitigations for risks (collateral, co-signer), and ensures all cases reach a single underwriting decision. The purpose is efficient, compliant processing of loan applications from request to approval or denial, minimizing waste and maximizing approval rates through early clear decisions.
+
+### Key Stakeholders and Roles Involved
+Roles are not explicitly specified in the input models; activities assigned to implied bank staff (e.g., coordinators for appointments/applications, verifiers, assessors, single underwriter).
+
+### Detailed Step-by-Step Process Flow
+1. **Start Conditions and Triggers**: Process triggered by customer loan request, starting with "Request Appointment".
+
+2. **Appointment Scheduling** (XOR gateway):
+   - **Appointment Denied**: Rare; ends process if basic eligibility fails (e.g., incomplete request).
+   - **Set Appointment**: Standard path; schedule and notify customer.
+
+3. **Application Submission**:
+   - **Hand In Credit Application**: Customer submits at appointment.
+
+4. **Verification**:
+   - **Verify Borrowers Information**: Comprehensive check of details, credit history, etc.
+
+5. **Post-Verification Decision** (XOR gateway with clear criteria):
+   - **Application Rejected**: If verification fails basic thresholds (e.g., invalid info, poor credit); ends process.
+   - **Proceed**: If viable, move to risk mitigations.
+
+6. **Optional Risk Mitigations** (inclusive OR gateway, single execution each, no loops):
+   - **Make Visit to Assess Collateral** (if collateral required, e.g., high-risk loan): Single site visit.
+   - **Request Co-Signer On Loan** (if income/guarantor needed): Single request; await response.
+   - These optional, sequential (collateral first if needed, then co-signer), no interleaving or repeats. Synchronization before submission.
+
+7. **Underwriting**:
+   - **Submit File to Underwriter**: Consolidated submission after all checks/mitigations.
+
+8. **Final Decision** (XOR gateway):
+   - **Loan Denied**: If underwriter rejects based on full review.
+   - **Sign Loan Agreement**: If approved.
+
+9. **Parallel Activities and Synchronization Points**: None required; sequential flow. Mitigations synchronize implicitly before submission.
+
+10. **Exception Handling and Error Paths**:
+    - Centralized denials: Early (appointment/app rejection) for quick fails; final underwriter denial.
+    - No early "Loan Denied"; all viable cases reach underwriter.
+
+11. **Rework Loops and Escalation Procedures**: Eliminated; if mitigations fail, escalate directly to underwriter denial. No loops.
+
+12. **End Conditions and Outcomes**:
+    - End after denial or signing.
+    - Targets: Higher approval rate, single denial post-underwriter for viable cases.
+
+### Process Metrics and Performance Characteristics
+- Expected cycle time reduction: ~50% by removing loops (e.g., main path <200k time units).
+- Throughput increase via no rework; denial rate targeted <50%.
+- Metrics: 100% cases follow streamlined paths; bottlenecks at verification/underwriter addressed via automation potential.
+
+### Key Challenges and Pain Points (Improvements Made)
+- **Removed loops**: No more repeated visits/co-signer requests; single optional steps save ~200k+ time units per looped case.
+- **Consolidated denials**: Single post-underwriter denial; early rejections streamlined.
+- **Eliminated deviations**: No "skipped_examination"; full verification mandatory unless auto-approved.
+- **Clear sequencing**: Optional mitigations in fixed order, reducing variability from 20+ variants to ~8 paths.
+- **Bottleneck fixes**: Faster verification/submit; potential for parallel mitigations if implemented.
+- **Overall**: Compliant, efficient process with better customer experience and governance.

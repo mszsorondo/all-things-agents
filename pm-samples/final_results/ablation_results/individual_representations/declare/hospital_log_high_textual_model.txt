@@ -1,0 +1,166 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- This declarative model represents a single clinical care episode constrained to a strict, linear path: Diagnosis → Treatment → Treatment successful → Discharge.
+- Purpose: ensure that every case goes from an initial diagnostic step through one treatment cycle, reaches a successful outcome, and then is discharged. The model encodes compliance-style requirements that strictly forbid deviations or additional steps.
+
+Key stakeholders and roles involved
+- Roles/actors are not specified in the provided model. Activities are described at a process level without lane/role assignments.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start event is implicit in the constraints. The first recorded activity in a conformant trace is Diagnosis.
+- Trigger: a new clinical case is opened (implicit); no explicit initialization activity is modeled.
+
+Activities and sequence flow
+1) Diagnosis (must occur; exactly once)
+   - Constraint set mandates that Diagnosis occurs exactly one time per case.
+   - Chain succession and alternate constraints require that Treatment immediately follows Diagnosis; no other modeled activities can occur between them.
+
+2) Treatment (must occur; exactly once)
+   - Treatment occurs exactly once per case.
+   - Chain succession requires that Treatment successful immediately follows Treatment.
+   - Negative constraint: Treatment unsuccessful must not occur (Absence).
+
+3) Treatment successful (must occur; exactly once)
+   - Occurs exactly once per case.
+   - Chain succession requires that Discharge immediately follows Treatment successful.
+
+4) Discharge (must occur; exactly once)
+   - Occurs exactly once per case.
+   - Ends the case.
+
+Decision points and gateways
+- None allowed. The constraint set enforces a single permissible ordering with no branching.
+- All coexistence and succession constraints imply that if any one of the four activities occurs, then all four occur exactly once in that exact order.
+
+Parallel activities and synchronization points
+- None. The model forbids concurrency and enforces immediate adjacency between each consecutive activity.
+
+Exception handling and error paths
+- None encoded. Any deviation (e.g., a second diagnosis, an unsuccessful treatment outcome, an intermediate step between the mandated pairs) violates constraints and is nonconformant.
+
+Rework loops and escalation procedures
+- None. The model enforces “Exactly 1” for Diagnosis, Treatment, Treatment successful, and Discharge and permits no loops or repetitions.
+
+End conditions and outcomes
+- Single end state: Discharge following Treatment successful.
+- No alternative end states are permitted.
+
+Process metrics and performance characteristics
+- Permitted trace pattern: exactly one trace structure is valid: Diagnosis → Treatment → Treatment successful → Discharge.
+- Cardinality: each activity occurs exactly once; Treatment unsuccessful is prohibited.
+- Temporal adjacency: immediate succession constraints (chain) require that:
+  - Treatment immediately follows Diagnosis
+  - Treatment successful immediately follows Treatment
+  - Discharge immediately follows Treatment successful
+- Variability: zero; no optionality, no branching, no rework, and no parallelism exist within the modeled scope.
+- Implicit dependency: strong co-existence—if any of the four activities occurs, all four must occur.
+
+Key challenges and pain points
+- Overly rigid and potentially unrealistic for clinical practice:
+  - Prohibits representing unsuccessful treatments; adverse outcomes cannot be recorded.
+  - No allowance for re-diagnosis, treatment adjustments, or multiple treatment cycles.
+  - Immediate adjacency (chain) forbids any other modeled steps between the four activities (e.g., observation, counseling, or documentation) within the modeled scope.
+  - No exception handling for complications, contraindications, or patient-driven decisions.
+  - Only a single successful path exists; this may incentivize non-reporting of unsuccessful outcomes or out-of-model workarounds.
+- Governance risk: the model encodes only “successful” care and discharge; it lacks controls for monitoring repeated interventions or clinical review when success is not reached.
+
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: preserve the core care path while adding realistic, governed flexibility:
+  - Permit explicit recording of unsuccessful outcomes (Treatment unsuccessful).
+  - Enable controlled rework loops (re-diagnosis and/or additional treatment cycles) until success or a clinically appropriate termination.
+  - Maintain clear termination via Discharge after either a successful or unsuccessful outcome, as clinically justified.
+- Scope remains within the given activity set: Diagnosis, Treatment, Treatment successful, Treatment unsuccessful, Discharge.
+
+Key stakeholders and roles involved
+- Roles/actors are not specified in the provided model. The process is described at a process level without lane/role assignments.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Start event: a new clinical case is opened (implicit).
+- Initial activity: Diagnosis is the first modeled activity of a case.
+
+Activities and sequence flow
+1) Diagnosis (at least once; may repeat when clinically indicated)
+   - Establish or refine the clinical understanding of the case.
+   - On completion, proceed to Treatment. The strict “immediate next” requirement is relaxed; non-modeled operational steps (e.g., waiting, documentation) may occur in time, but within this model the next recorded activity is Treatment.
+
+2) Treatment (one or more cycles)
+   - Administer an intervention aligned to the current diagnosis.
+   - After each Treatment, record the outcome using one of the two modeled result activities:
+     a) Treatment successful
+     b) Treatment unsuccessful
+
+3a) If Treatment successful
+   - Proceed to Discharge.
+   - The “immediate adjacency” constraint is relaxed; however, within this model the next modeled step is Discharge.
+
+3b) If Treatment unsuccessful
+   - A governed rework loop is allowed using only existing activities:
+     - Option 1: Re-diagnosis (repeat Diagnosis) to reassess and then perform another Treatment cycle.
+     - Option 2: Repeat Treatment directly without re-diagnosis when clinically appropriate.
+   - This loop may repeat until success is achieved or termination criteria are met.
+   - Exception termination: when clinically indicated (e.g., no further beneficial interventions anticipated), proceed to Discharge after an unsuccessful outcome.
+
+4) Discharge (case termination)
+   - Ends the case following either:
+     - Treatment successful, or
+     - Treatment unsuccessful (when further intervention is not indicated).
+
+Decision points and gateways
+- Exclusive decision after Treatment:
+  - Outcome is either Treatment successful or Treatment unsuccessful.
+- Inclusive/iterative behavior:
+  - Following Treatment unsuccessful, either re-diagnose, re-treat, or (if indicated) discharge. The loop continues until a terminating outcome is reached.
+
+Parallel activities and synchronization points
+- None modeled. The process remains sequential within the provided activity set.
+
+Exception handling and error paths
+- Explicitly modeled unsuccessful outcome path (Treatment unsuccessful).
+- Termination without success is allowed via Discharge when further treatment is not appropriate.
+- The process supports multiple iterations to manage complications or non-response.
+
+Rework loops and escalation procedures
+- Rework loop:
+  - Treatment unsuccessful → (Diagnosis optional) → Treatment → outcome decision.
+  - Loop continues until Treatment successful or Discharge after unsuccessful.
+- Governance considerations (policy-level, non-activity constraints):
+  - Define maximum number of allowed treatment cycles before mandatory reassessment (carried by the Diagnosis activity).
+  - Define clinical criteria for discharging after unsuccessful outcomes.
+  - These controls shape the loop without introducing new activity labels.
+
+End conditions and outcomes
+- Discharge after Treatment successful (desired path).
+- Discharge after Treatment unsuccessful (clinically justified termination).
+- All cases terminate with Discharge; the path taken is explicitly recorded.
+
+Process metrics and performance characteristics
+- Cycle-aware metrics:
+  - Number of treatment cycles per case.
+  - Rate of Treatment successful vs Treatment unsuccessful.
+  - Time from first Diagnosis to Discharge.
+  - Time and number of cycles to first success.
+- Conformance metrics:
+  - No cases with Discharge before any Treatment outcome.
+  - All Treatment executions are followed by an outcome recording (successful or unsuccessful).
+- Variability:
+  - Controlled variability via loop; Diagnosis and Treatment may repeat; outcomes determine path length.
+
+Improvements made vs. AS-IS
+- Restored the clinically necessary outcome branch by allowing Treatment unsuccessful (previously forbidden).
+- Introduced a controlled rework loop using only existing activities (Diagnosis and Treatment), replacing the rigid “Exactly 1” constraints.
+- Relaxed immediate adjacency requirements so that necessary operational steps can occur between modeled activities without violating process logic.
+- Clarified termination conditions: Discharge is permitted after success or, when appropriate, after an unsuccessful outcome.
+- Enhanced transparency and governance: unsuccessful outcomes are explicitly recorded; process supports iterative care and accountable termination, improving quality monitoring and realism.
+
+")

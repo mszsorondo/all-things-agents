@@ -1,0 +1,88 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Purpose: A streamlined, governable loan origination process that minimizes waste, enforces correct sequencing, and makes decisions transparent.
+- Key improvement: Replace ambiguous parallelism with clear, sequential decisioning; ensure signing happens only after explicit approval; standardize when co-signer and collateral assessment are required.
+
+Key stakeholders and roles involved
+- Applicant/Requester (submits request and application, signs agreement).
+- Underwriter (receives submission and renders an explicit decision). Note: no new actors are introduced beyond what is implied by the source.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Trigger: Customer submits Request Appointment.
+
+1) Appointment triage and scheduling (exclusive decision)
+- Activity: Review appointment request.
+- Decision: 
+  a) Appointment Denied (case ends).
+  b) Set Appointment (proceed).
+
+2) Application intake and verification (sequential)
+- Activities: Set Appointment -> Hand In Credit Application -> Verify Borrowers Information.
+- Decision after verification (exclusive):
+  a) Application Rejected (case ends early).
+  b) Verified OK -> proceed to requirements determination.
+
+3) Requirements determination for underwriting package (inclusive, rule-based)
+- Determine whether the case requires any of the following before submission (based on policy thresholds, risk, or missing data):
+  • Co-signer required? If yes, Request Co-Signer On Loan and collect documentation; if no, skip explicitly (recorded decision).
+  • Collateral assessment required? If yes, Make Visit to Assess Collateral. Visits are limited by policy (e.g., up to N attempts) with a defined completion criterion. If no, skip explicitly (recorded decision).
+- Execution semantics:
+  • If both are required, they may be worked in parallel to minimize elapsed time, but both must complete before submission.
+  • If neither is required, proceed immediately.
+  • The ad-hoc fast-track (skipped_examination) is removed from the standard path; if a fast-track is necessary, it must be governed by explicit criteria and documented as “Fast-track authorized” (a recorded decision, not a hidden skip).
+
+4) Submit to Underwriter (single entry point)
+- Activity: Submit File to Underwriter once all required preconditions are met.
+
+5) Underwriter decision (explicit, exclusive gateway)
+- Decision outcomes:
+  a) Loan Denied (terminal negative outcome).
+  b) Approved -> proceed to contract execution.
+
+6) Contract execution
+- Activity: Sign Loan Agreement (only after explicit approval).
+- Case ends upon successful signing.
+
+Parallel activities and synchronization points (simplified and explicit)
+- The only allowed parallelism is within Step 3 (co-signer and collateral assessment), bounded by a single join before submission.
+- There is no parallel denial track. Denial occurs only as the explicit outcome of the underwriter decision.
+
+Exception handling and error paths
+- Early exits remain: Appointment Denied; Application Rejected.
+- Collateral assessment loop is controlled:
+  • Define maximum number of visits/attempts and clear termination criteria.
+  • If criteria cannot be met within limits, route to Application Rejected (pre-underwriting) or submit with recommendation to deny, depending on policy.
+- Fast-track use (if retained) requires documented approval criteria and audit logging; otherwise, disable the skipped_examination path.
+
+Rework loops and escalation procedures
+- Rework minimized by rule-based pre-checks before submission.
+- Escalation paths (if needed) can be defined outside the core flow (e.g., escalate verification delays or co-signer unavailability), but are not invented here due to lack of explicit source activities.
+
+End conditions and outcomes
+- Appointment Denied.
+- Application Rejected.
+- Loan Denied (explicit underwriter outcome).
+- Sign Loan Agreement (only after approval).
+
+Process metrics and performance characteristics (targets)
+- Reduce late-stage denials by earlier rule-based screening:
+  • Target: decrease proportion of Loan Denied from ~48% to ≤30% by improving verification and requirements determination before submission.
+- Shorten intake lead times:
+  • Target SLA for Request Appointment -> Set Appointment: reduce average from ~82,658 units to ≤50,000 units.
+  • Target SLA for Set Appointment -> Hand In Credit Application: from ~82,659 to ≤50,000 units.
+- Bound collateral rework:
+  • Maximum visits per case set by policy; target average loop count ≤1.2; eliminate extreme outliers (≥6 visits) observed in AS-IS.
+- Enforce sequencing quality:
+  • 0% of cases with signing before submission/approval; remove the skipped_examination path except under pre-approved fast-track rules with audit logging.
+- Visibility and auditability:
+  • Introduce explicit recorded decisions for “Co-signer required?” and “Collateral required?” to replace invisible skips.
+
+Improvements made (summary)
+- Removed ambiguous parallel denial track; replaced with explicit Underwriter decision after a single submission entry point.
+- Consolidated positive path so Sign Loan Agreement only occurs post-approval; eliminated hidden completion skips around signing.
+- Standardized optional pre-underwriting tasks (co-signer, collateral) with clear rules; retained controlled parallelism only where it saves time.
+- Removed or strictly governed the fast-track (skipped_examination) to close compliance gaps.
+- Introduced explicit decision recording to replace invisible transitions, improving traceability and conformance.
+- Set SLAs and loop bounds to reduce cycle time and variability without inventing new operational activities.

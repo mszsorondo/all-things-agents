@@ -1,0 +1,228 @@
+This process model is organized by ROLE. Each section describes the process from the perspective of one participant. Together, all sections describe the complete end-to-end process.
+
+============================================================
+ROLE 1: Appointment Agent (Hotline / Front Desk)
+============================================================
+
+Title: AS-IS Process Model — Appointment Agent (Hotline / Front Desk)
+
+Section 1: Role Overview (purpose, responsibilities)
+This role covers the human-facing intake channels that schedule appointments or deny them: the Hotline and the five frontline resources (Resource 1..5). Collectively they perform customer contact and appointment management. Their primary responsibility is to receive customer requests for an appointment, decide whether to accept or deny the appointment request, and—when accepted—create/set the appointment so the case can continue (the Online System then records the hand-in of the credit application). They are a process entry point in the majority of traces.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Request Appointment: Receive or create an appointment request from a customer (this is the observed trace start activity).
+- Set Appointment: Confirm and record the appointment (creates the condition for the applicant to hand in the credit application later, typically recorded by the Online System).
+- Appointment Denied: Deny the appointment request (terminal path for a subset of cases).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated when a customer initiates contact (observed as the trace start: Request Appointment). In the log, Request Appointment is the initialization activity.
+
+Typical sequence(s) observed:
+- Typical (majority): Request Appointment -> Set Appointment -> handover to Online System (the Online System then records Hand In Credit Appliaction). This sequence is the dominant entry path in the log.
+- Alternative (minor): Request Appointment -> Appointment Denied (terminal). This occurs without Set Appointment or later processing.
+
+Decision points and criteria handled by this role:
+- After Request Appointment the agent chooses between Set Appointment and Appointment Denied. The dataset shows both outcomes; about ~9% of traces end with Appointment Denied while the rest proceed to Set Appointment. The log does not contain a business-rule field for the decision; only observed outcomes.
+
+Ordering and optionality rules (AS-IS):
+- Request Appointment always occurs before either Set Appointment or Appointment Denied (initialization constraint in the log). 
+- Set Appointment is required for the majority of cases that continue; Appointment Denied is an alternative terminal branch.
+- There is no observed instance where Set Appointment occurs without a preceding Request Appointment.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO this role:
+- Not observed as receiving work from internal resources (these resources are the intake). Some small internal handover edges exist between Hotline and Resource X (internal transfers), but in the behavioral logs the role mainly starts the case.
+
+Who this role hands work TO:
+- Online System: after Set Appointment the agent’s activity is followed by Hand In Credit Appliaction recorded by the Online System. The handover edges in the organizational network show strong transfers from Hotline/Resource 1..5 -> Online System (observed weights ~0.029–0.037). This is the normal routing.
+
+Section 5: Variants and Exceptions (all observed paths)
+Observed variants involving this role (from the variant list / DFG):
+- Request Appointment -> Set Appointment -> ... (most cases). This is the main path and leads to the downstream activities recorded by Online System and Loan Officer.
+- Request Appointment -> Appointment Denied (≈9% of cases). Terminal; no further processing observed.
+
+Observed exceptions and rework:
+- Occasional internal reassignments among Hotline/Resource staff (small handover weights Hotline->Resource X and Resource X -> Hotline). These represent transfers or callbacks but do not change the high-level control flow.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Appointment Denied is a non-negligible terminal branch (~9%). If that share is unintended, it is worthy of investigation.
+- A strong, consistent handover to the Online System exists after Set Appointment—this is stable and predictable (few alternate handoffs).
+- There are small internal reassignments/transfers (Hotline <-> Resources) that add complexity to workload distribution.
+
+Notes for someone assuming this role
+- You will generally start cases with Request Appointment and must either Set Appointment or mark Appointment Denied. When you Set Appointment, the case continues automatically (the Online System records the Hand In Credit Appliaction and the Loan Officer takes over). There is no observed additional mandatory activity after Set Appointment from this role.
+
+============================================================
+ROLE 2: Loan Officer
+============================================================
+
+Title: AS-IS Process Model — Loan Officer
+
+Section 1: Role Overview (purpose, responsibilities)
+Loan Officers (the five individual Loan Officer resources grouped as one logical role) are front-line case handlers who perform the substantive verification of borrower information, request additional checks (co-signer or collateral visits), possibly skip examinations for fast-track cases, and submit the prepared file to Underwriter. They may also record Application Rejected in some traces. Loan Officers initiate downstream escalation to Underwriting or to decision outcomes (signing or denial). They perform the bulk of case work following intake.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Verify Borrowers Information: Review and validate applicant information, income, documents, etc. This is the mandatory activity after Hand In Credit Appliaction.
+- Make Visit to Assess Colatteral: Perform one or multiple field visits to assess collateral value/condition. Observed to be repeatable (Make Visit -> Make Visit self-loops exist).
+- Request Co-Signer On Loan: Ask for co-signer where borrower conditions require.
+- skipped_examination: In some cases the Loan Officer records that examinations were skipped (fast-track), leading to a direct Sign Loan Agreement path in some variants.
+- Application Rejected: In cases that end before underwriting or by LO decision, the officer may mark Application Rejected (terminal in that branch).
+- Submit File to Underwriter: After preparation/verification, the Loan Officer sends the file to Underwriter for final credit decision.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated when Online System or appointment-handling action performed Hand In Credit Appliaction. Hand In Credit Appliaction -> Verify Borrowers Information has strong DFG frequency (9038 events), so Loan Officers begin their work with Verify Borrowers Information.
+
+Typical sequence(s) observed (ALL observed orderings):
+- Core (most common): Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> (Underwriter decision: Loan Denied OR Sign Loan Agreement). This is the main sequence with about 29% Loan Denied and 16% Sign Loan Agreement in the top variants.
+- With collateral assessment(s): Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral (one or more times, possibly repeated many times) -> Submit File to Underwriter -> Underwriter decision. The process can contain multiple Make Visit repetitions; DFG and variants show many traces with repeated Make Visit occurrences (up to 7-8 times in rare cases).
+- With co-signer request: Verify Borrowers Information -> Request Co-Signer On Loan -> Submit File to Underwriter (or interleaved with Make Visit actions). Request Co-Signer On Loan may be followed by Make Visit actions (DFG shows Request Co-Signer On Loan -> Make Visit frequency = 733) and then Submit File to Underwriter.
+- Fast-track skip: Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement (observed in ~3% of traces). In these cases the Loan Officer records skipped_examination and the case directly signs.
+- Application Rejected: Verify Borrowers Information -> Application Rejected (observed ~16% of variants). This is a terminal path where the Loan Officer or the system rejects the application without forwarding to underwriter.
+
+Decision points and criteria handled by this role:
+- After Verify Borrowers Information the Loan Officer may decide to:
+  - Submit File to Underwriter (standard)
+  - Request Co-Signer On Loan (if borrower insufficient)
+  - Make Visit to Assess Colatteral (if collateral needs evaluation)
+  - Mark Application Rejected (terminate the case)
+  - Mark skipped_examination (opt for fast approval) leading to direct signing in some cases
+
+Ordering and optionality notes (AS-IS):
+- Verify Borrowers Information is always observed after Hand In Credit Appliaction.
+- Request Co-Signer On Loan and Make Visit to Assess Colatteral are optional and can occur in either order relative to each other; the logs show both interleavings (Make Visit -> Request Co-Signer and Request Co-Signer -> Make Visit) and multiple repeats of Make Visit.
+- skipped_examination is optional and, when present, generally precedes Sign Loan Agreement.
+- Submit File to Underwriter typically occurs after completion of verification and any required co-signer or collateral visits, though some traces show Submit File occurring after only Verify Borrowers Information.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Loan Officers:
+- Online System: hands off Hand In Credit Appliaction to Loan Officers (strong edge Online System -> Loan Officer).
+- Appointment Agent indirectly via Online System (Set Appointment -> Online System -> LO).
+
+Who Loan Officers hand work TO:
+- Underwriter roles (Chill UW1/2/3, Strict UW1/2/3, MostChillUW): via Submit File to Underwriter. Handover network shows Loan Officers frequently hand off to Underwriters (weights vary; LO -> Chill UW or Strict UW small but present). This leads to final decisions (Loan Denied or Sign Loan Agreement).
+- In cases of Application Rejected, Loan Officers terminally close the case (no underwriter handoff).
+
+Section 5: Variants and Exceptions (all observed paths)
+All observed variants involving Loan Officers (extracted from variant list and DFG):
+- Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Loan Denied
+- ... -> Submit File to Underwriter -> Sign Loan Agreement
+- ... -> skipped_examination -> Sign Loan Agreement (skipped_examination may replace Submit File in some traces)
+- ... -> Request Co-Signer On Loan -> Submit File to Underwriter -> Loan Denied/Sign Loan Agreement
+- ... -> Make Visit to Assess Colatteral (repeated 1..N times) -> Submit File to Underwriter -> Loan Denied/Sign Loan Agreement
+- ... -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral (repeats) -> Submit File to Underwriter -> Loan Denied/Sign Loan Agreement
+- Verify Borrowers Information -> Application Rejected (terminal branch)
+
+Rework loops and exceptions:
+- Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral self-loop indicates repeated visits (rework). Some rare traces show many repeated Make Visit events (up to 7–8 repetitions).
+- Interleaving between Request Co-Signer and Make Visit may cause back-and-forth activities before submitting to underwriter.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Collateral visits are a major source of long-case durations and rework: variants with repeated Make Visit occurrences have substantially higher performance (case duration); many high-performance variants include multiple Make Visit events.
+- Request Co-Signer On Loan often triggers additional Make Visit activity and lengthens the process.
+- There is variability among Loan Officers (different individuals), but activity sets are consistent across Loan Officer resources, justifying grouping into a single logical role.
+- Application Rejected is a frequent terminal decision that occurs at LO-level without underwriter involvement for a sizable portion of cases; this creates a bifurcation in downstream workload.
+
+Notes for someone assuming this role
+- Your primary duty is to verify borrower information and decide the next steps: directly submit to underwriter, request co-signer, schedule collateral visits (possibly multiple), mark application rejected, or in rare cases skip examination and proceed to direct signing. Expect to work with Underwriter peers after Submit File to Underwriter.
+
+============================================================
+ROLE 3: Online System (Self-Service Intake)
+============================================================
+
+Title: AS-IS Process Model — Online System (Self-Service Intake)
+
+Section 1: Role Overview (purpose, responsibilities)
+The Online System represents the automated, self-service intake channel that records the Hand In Credit Appliaction activity on behalf of applicants (or as next step after Set Appointment). It serves as the primary mechanism that transfers work from intake (Appointment Agent) to Loan Officers by creating the case event 'Hand In Credit Appliaction'. It is the most frequent resource in the log.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Hand In Credit Appliaction: Record the submission of the credit application (most often recorded after Set Appointment).
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated after Set Appointment (strongly correlated: DFG shows Request Appointment -> Set Appointment and Set Appointment -> Hand In Credit Appliaction frequencies are equal at 9038). It may also be triggered by direct online submissions without human-set appointments, but the log shows Set Appointment precedes Hand In Credit Appliaction for recorded traces.
+
+Typical sequence(s) observed:
+- Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information (performed by Loan Officers). The Online System typically only executes Hand In Credit Appliaction and then the case is handled by Loan Officers.
+
+Decision points and criteria handled by this role:
+- The Online System does not make decisions in the logged activities; it records Hand In Credit Appliaction and then hands off to Loan Officers. No branching decisions by the Online System are observed.
+
+Ordering and optionality rules (AS-IS):
+- Hand In Credit Appliaction always occurs after Set Appointment in observed traces; it is part of the mandatory sequence Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information.
+- Online System does not perform any additional activities in the log.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO this role:
+- Appointment Agent (Hotline / Resource 1..5): Strong handovers observed (weights ~0.029–0.037) from these resources to Online System.
+- Resource 5/4/3/2/1 also show handover edges to Online System reflecting that both human agents and other channels feed the system.
+
+Who this role hands work TO:
+- Loan Officers (Loan Officer 1..5): Observed edges Online System -> Loan Officer X (weights ~0.036). The Online System triggers the next visible activity Verify Borrowers Information which Loan Officers perform.
+
+Section 5: Variants and Exceptions (all observed paths)
+Observed variants involving this role:
+- Set Appointment -> Hand In Credit Appliaction -> Verify Borrowers Information (most frequent).
+- Online System rarely appears in appointment-denied traces (Request Appointment -> Appointment Denied paths do not include the Online System).
+
+Exceptions and rework:
+- None observed for the Online System in the logged activities; no repeats or alternative activities recorded for this resource.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Online System is a reliable, single-activity resource with predictable handovers. It is central to case intake, and any delays here would affect many cases.
+- Because it records a single activity, any performance problems should be looked for in the timing between Set Appointment and Hand In Credit Appliaction or in the system-to-loan-officer handover.
+
+Notes for someone assuming this role
+- The role is primarily automated: ensure Hand In Credit Appliaction is recorded promptly after Set Appointment. No decision-making is required in the logs.
+
+============================================================
+ROLE 4: Underwriter (Chill / Strict variants)
+============================================================
+
+Title: AS-IS Process Model — Underwriter (Chill / Strict variants)
+
+Section 1: Role Overview (purpose, responsibilities)
+Underwriters (grouping Chill UW1–3, Strict UW1–3, and MostChillUW into a single logical role "Underwriter" with sub-behavioral differences noted) are responsible for the final credit decision after receiving a prepared file from Loan Officers. They perform the decision step that results in either Loan Denied or Sign Loan Agreement. Different underwriter subtypes (Chill vs Strict vs MostChill) exist but perform the same logged activities; any differences are inferred from naming and frequencies.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Loan Denied: Record the case as denied by underwriter.
+- Sign Loan Agreement: Record the case as approved and sign the loan agreement.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated upon receiving Submit File to Underwriter from Loan Officers (DFG shows Submit File to Underwriter -> Loan Denied and -> Sign Loan Agreement with combined frequency 7082 submits leading to 4787 denials and 2295 signings in DFG/variants).
+
+Typical sequence(s) observed:
+- Submit File to Underwriter -> Loan Denied (most common outcome in submitted cases).
+- Submit File to Underwriter -> Sign Loan Agreement (less frequent outcome).
+
+Decision points and criteria handled by this role:
+- The core decision handled by Underwriters is binary (in the log): deny the loan (Loan Denied) or approve/sign the loan (Sign Loan Agreement). The log does not include the decision criteria—only the outcomes.
+
+Ordering and optionality rules (AS-IS):
+- Underwriters only appear after Submit File to Underwriter in the observed traces; there are no observed loops or additional activities performed by Underwriters besides the terminal decision activities.
+- Some Loan Denied or Sign Loan Agreement events are handled by "MostChillUW" or other named underwriters; however, the sample shows all Underwriter variants perform only these terminal activities.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Underwriters:
+- Loan Officers: Submit File to Underwriter is performed by Loan Officers and handed to Underwriters (various LO -> UW edges indicated in the handover network).
+
+Who Underwriters hand work TO:
+- Finalization: Underwriters perform terminal actions and do not hand work to other roles in observed traces; Loan Denied and Sign Loan Agreement are terminal activities leading to case completion.
+
+Section 5: Variants and Exceptions (all observed paths)
+Observed variants involving Underwriters:
+- Submit File to Underwriter -> Loan Denied (frequent; appears in many variants; DFG frequency: Submit->Loan Denied = 4787)
+- Submit File to Underwriter -> Sign Loan Agreement (less frequent; DFG frequency: Submit->Sign = 2295)
+
+Exceptions and sub-behaviors:
+- Some signings occur following skipped_examination (Loan Officer-level) without Submit File to Underwriter in a minority of traces (skipped_examination -> Sign Loan Agreement, frequency 332). This indicates that some cases reach Sign Loan Agreement without Underwriter processing; those signings are logged as performed by underwriters or MostChillUW in the resource mapping (MostChillUW: Sign Loan Agreement; Chill/Strict UWs also sign). The handover network shows small direct LO -> MostChillUW edges as well.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Underwriters appear as a thin role performing only a terminal decision; bulk of processing time and rework happen before Submit File to Underwriter.
+- The split between Loan Denied and Sign Loan Agreement is skewed toward denial in the observed data.
+- There are named underwriter subtypes (Chill vs Strict vs MostChill) but the logged activities don't show different actions beyond denial/signing; differences likely lie in decision tendencies (not captured directly) and could be inferred by aggregating their denial/approval rates externally.
+
+Notes for someone assuming this role
+- Expect to receive files from Loan Officers and make a single logged decision per case (deny or sign). There is no observed rework or additional logged activities performed by Underwriters in the current dataset.

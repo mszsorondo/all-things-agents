@@ -1,0 +1,217 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+AS-IS Process Model
+
+Process overview and purpose
+- Scope: End-to-end recruitment lifecycle from application submission to either final rejection or a job offer.
+- Purpose: Screen, assess, and decide on candidates using multiple screening stages (telephonic, background, technical, behavioral) with the ability to issue, repeat, or rescind offers and to reject or re-activate applications at any time.
+- Observed reality: The process is highly flexible and permissive. Several activities are optional, multiple activities can run in parallel, and rework/reversal is common, including repeated rejections and repeated offers.
+
+Key stakeholders and roles involved
+- Roles/resources observed in the log (not always tied to a single activity): HR-dummy, HR-pro, HR-pro and Senior Partner, Senior Partner, Coding Interviewer, Front Desk, Online System, deepResearch Inc.
+- Note: The event log does not reliably map each activity to one responsible role; the names suggest likely involvement (e.g., Coding Interviewer in Coding Interview), but the assignments are not explicit in the source.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A candidate submits an application.
+- Start activity (always first): Hand In Job Application.
+
+Core flow and control logic (all observed paths)
+
+1) Optional early screening branch (may be entirely skipped)
+- Decision: After Hand In Job Application, the process may:
+  - Skip initial screening entirely, or
+  - Enter a screening block that begins with Telephonic Screening.
+- Telephonic Screening (optional overall):
+  - If taken, it is followed by the following mandatory-in-branch parallel block:
+    - Background Check and Screening Interview are both performed, but in parallel:
+      - Both must occur before proceeding further in this branch.
+      - Valid orderings and interleavings:
+        - Background Check then Screening Interview
+        - Screening Interview then Background Check
+        - Interleaved execution (any overlap)
+  - Optional after the above parallel checks:
+    - Extensive Background Check (optional; may be performed once).
+  - Optional technical assessment path:
+    - Coding Interview is optional.
+    - If Coding Interview occurs, then up to three specialized technical interviews may follow, each optional and allowed in any order and interleaving (parallel):
+      - ML Interview (optional)
+      - Backend Interview (optional)
+      - Frontend Interview (optional)
+    - Valid subsets after Coding Interview:
+      - None (no specialized interview)
+      - Any single: ML only, Backend only, or Frontend only
+      - Any pair: ML+Backend, ML+Frontend, Backend+Frontend
+      - All three: ML+Backend+Frontend
+    - Valid orderings for any chosen subset: Any order, including immediate back-to-back or overlapped execution; pairwise orderings are unconstrained.
+- Skip behavior observed:
+  - The entire Telephonic Screening plus subsequent checks can be skipped.
+  - Even when Telephonic Screening is taken, Coding Interview and specialized interviews remain optional.
+
+2) Decision/evaluation outcomes and endgame (runs in parallel)
+- After the initial phase (including the possibility of skipping it entirely), the process proceeds into a decision/evaluation stage where two threads may proceed in parallel and interleave arbitrarily:
+  A) Application Rejected thread (optional; looping):
+     - Application Rejected can occur zero or more times.
+     - Self-loop is allowed: Application Rejected may repeat back-to-back.
+     - It can occur at virtually any time after the application is handed in:
+       - Immediately after Hand In Job Application (direct rejection)
+       - After Telephonic Screening
+       - After Background Check and/or Screening Interview
+       - After Extensive Background Check
+       - After Coding Interview or any specialized interview
+       - Between, before, or after Behavioral Interview(s) or Make Job Offer(s)
+     - Rejection does not necessarily terminate the case; the case can continue, be reactivated, move to Behavioral Interview, and even receive a subsequent Make Job Offer.
+  B) Behavioral/Offer thread (optional; ordered with internal loops):
+     - Behavioral Interview may occur zero or more times (loop/rework permitted).
+     - After any number of Behavioral Interview iterations, Make Job Offer may occur zero or more times (loop/rework permitted).
+     - Behavioral Interview typically precedes the first Make Job Offer in the same thread.
+     - Make Job Offer can repeat (e.g., revised offers, re-issuance).
+- Interactions between the parallel threads:
+  - Rejection may interleave at any point with Behavioral Interview(s) and Offer(s).
+  - Observed transitions include:
+    - Application Rejected followed by Behavioral Interview
+    - Application Rejected followed by Make Job Offer (case revived from rejection)
+    - Make Job Offer followed by Application Rejected (offer rescinded/declined or decision reversed)
+  - Because Rejection and Behavioral/Offer proceed in parallel, the case can oscillate between states (e.g., Rejected -> Behavioral -> Offer -> Rejected -> Offer).
+
+Decision points with criteria and possible outcomes (as observed)
+- Proceed with initial screening?
+  - Yes: Telephonic Screening, then both Background Check and Screening Interview (parallel), then optionally Extensive Background Check, then optionally Coding Interview and optional specialized technical interviews.
+  - No: Skip directly to the decision/evaluation stage (Rejection and/or Behavioral/Offer).
+- Request Extensive Background Check?
+  - Yes: Perform Extensive Background Check after Background Check and Screening Interview complete.
+  - No: Continue without it.
+- Conduct Coding Interview?
+  - Yes: Unlocks optional specialized interviews (ML, Backend, Frontend).
+  - No: Specialized technical interviews do not occur.
+- Which specialized technical interviews?
+  - Any subset of ML, Backend, Frontend; any order; may all be skipped.
+- Behavioral and Offer decisions:
+  - Behavioral Interview repetitions allowed.
+  - Make Job Offer optional, can be repeated after Behavioral Interview(s).
+  - Rejection may occur before/after/in-between these activities; it does not necessarily close the case permanently.
+
+Parallel activities and synchronization points
+- Parallel 1: Background Check and Screening Interview execute in parallel and must both complete before moving to Extensive Background Check (if any) or beyond in that branch.
+- Parallel 2: If Coding Interview occurs, ML/Backend/Frontend interviews are parallel-capable; any selected combination can run in any order or overlap.
+- Parallel 3: The Application Rejected thread and the Behavioral/Offer thread run in parallel; their events can interleave arbitrarily.
+
+Exception handling and error paths (observed behaviors)
+- Direct rejection immediately after Hand In Job Application (no screening).
+- Rejection after any screening step, including after Extensive Background Check or after technical interviews.
+- Re-activation after rejection: Application Rejected followed by Behavioral Interview and/or Make Job Offer.
+- Offer rescinded/declined: Make Job Offer followed by Application Rejected.
+- Repeated status-setting:
+  - Application Rejected may repeat multiple times (self-loop).
+  - Make Job Offer may repeat (self-loop), e.g., corrected or renegotiated offers.
+  - Behavioral Interview may repeat quickly (e.g., multiple interviewers/sessions recorded as separate events).
+
+Rework loops and escalation procedures
+- Behavioral Interview loop: zero or more iterations before proceeding to any offer.
+- Make Job Offer loop: zero or more iterations after behavioral stage.
+- Application Rejected loop: zero or more iterations at any time after submission, including consecutive rejections.
+- Cross-loop transitions:
+  - Rejection -> Behavioral -> Offer and its permutations are all observed.
+  - Offer -> Rejection is also observed.
+  - These loops can result in multiple oscillations before case completion.
+
+End conditions and outcomes
+- The process completes when no further actions follow the last terminal status update. Observed terminal activities:
+  - Application Rejected (case closed if not reactivated again)
+  - Make Job Offer (case closed if not followed by another action)
+- Note: Because both Rejected and Offer can loop and can follow each other, either can appear as the final event in a completed case. Both final states are valid.
+
+Valid activity orderings (explicit listing of flexible parts)
+- Background Check vs Screening Interview (when Telephonic Screening branch is taken):
+  - Allowed orders: Background Check → Screening Interview, Screening Interview → Background Check, or interleaved.
+- Specialized technical interviews (only if Coding Interview occurred):
+  - Allowed subsets: {}, {ML}, {Backend}, {Frontend}, {ML,Backend}, {ML,Frontend}, {Backend,Frontend}, {ML,Backend,Frontend}.
+  - Allowed orders within any chosen subset: any order; activities may overlap.
+- Interleavings with Application Rejected, Behavioral Interview, Make Job Offer:
+  - Application Rejected can occur:
+    - Immediately after Hand In Job Application
+    - Before/during/after Telephonic Screening, Background Check, Screening Interview, Extensive Background Check, Coding Interview, ML/Backend/Frontend Interview(s)
+    - Before, between, or after Behavioral Interview(s) and Make Job Offer(s)
+    - Multiple times in succession
+  - Behavioral Interview can occur multiple times; typically precedes the first Make Job Offer.
+  - Make Job Offer can occur multiple times; may be followed by Application Rejected or another Make Job Offer.
+
+Process metrics and performance characteristics
+
+Volumes (activity occurrences in the log)
+- Hand In Job Application: 10,000
+- Application Rejected: 9,654 (includes self-repetitions)
+- Telephonic Screening: 8,799
+- Screening Interview: 7,809
+- Background Check: 7,809
+- Coding Interview: 3,904
+- Behavioral Interview: 3,796
+- Make Job Offer: 3,401
+- Frontend Interview: 2,913
+- ML Interview: 2,334
+- Extensive Background Check: 2,099
+- Backend Interview: 1,351
+- Interpretation: Many cases are rejected (often multiple times). Only a subset proceed to coding and specialized technical interviews; offers are fewer and may repeat.
+
+Case volume
+- Approximate number of cases: 10,000 (one Hand In Job Application per case).
+
+Key waiting times (average time between consecutive events; indicative)
+- Hand In Job Application → Application Rejected: ~146,346 seconds (~40.7 hours)
+- Telephonic Screening → Application Rejected: ~143,282 seconds (~39.8 hours)
+- Background/Screening → Application Rejected: ~155–156k seconds (~43–44 hours)
+- Telephonic Screening → Background Check / Screening Interview: ~81,903–81,906 seconds (~22.8 hours)
+- Screening/Background → Coding Interview: ~129,885–129,892 seconds (~36.1 hours)
+- Screening/Background → Extensive Background Check: ~84,235–84,418 seconds (~23.4 hours)
+- Behavioral Interview → Make Job Offer: ~80,430 seconds (~22.3 hours)
+- Self-loops (rework intensity):
+  - Behavioral Interview → Behavioral Interview: ~47 seconds between repeats (very tight loop)
+  - Make Job Offer → Make Job Offer: ~71 seconds between repeats
+  - Application Rejected → Application Rejected: ~9,901 seconds (~2.75 hours) between repeats
+- Zero-time indicators (0.000s) between specialized interviews suggest parallel/near-simultaneous logging (ML↔Frontend, Backend↔Frontend, ML↔Backend).
+
+Dominant variants (illustrative)
+- Telephonic Screening with parallel Background Check and Screening Interview leading to rejection (~26% combined across top two variants; ~3.7 days average duration).
+- Direct rejection after submission (~12%).
+- Telephonic Screening then immediate rejection (~9%).
+- Complex, low-frequency variants include long chains of technical interviews and oscillations among Rejected, Behavioral, and Offer, confirming the permissive, rework-heavy nature.
+
+Key challenges and pain points observed
+- High rework and reversals:
+  - Repeated Application Rejected events within the same case.
+  - Offers may be issued multiple times and can be followed by rejection, indicating reversals or rescissions.
+  - Behavioral Interview often loops tightly, hinting at fragmented interview sessions or split panels recorded as separate events.
+- Inconsistent entry into early screening:
+  - Entire Telephonic Screening and subsequent checks can be skipped, creating divergent paths and policy inconsistency across candidates.
+- Parallel complexity:
+  - Background Check and Screening Interview in parallel require careful synchronization before proceeding; misalignment can cause coordination overhead.
+  - Specialized technical interviews run in any order; scheduling overhead and context switching likely.
+- Throughput delays:
+  - ~1 day waits between telephonic screening and the first in-depth check/interview.
+  - ~1.5 days to reach Coding Interview from initial checks.
+  - ~1–2 days to reach rejection after various checkpoints, suggesting decision latency.
+- End-state ambiguity:
+  - Both Rejected and Offer are repeatable and can follow each other; termination depends on no further actions being taken, which may cause uncertainty and extended case lifecycles.
+- Governance/compliance risk:
+  - Ability to move from Rejected to Behavioral/Offer (and vice versa) implies informal re-activation and may complicate auditability of final decisions.
+
+Summary of the AS-IS control-flow (concise)
+- Start: Hand In Job Application (always)
+- Optional screening block:
+  - Telephonic Screening (optional)
+  - Parallel must-complete pair: Background Check || Screening Interview (any order)
+  - Optional: Extensive Background Check
+  - Optional: Coding Interview → optional parallel set {ML, Backend, Frontend} in any subset and order
+- Decision/evaluation (parallel with interleavings):
+  - Application Rejected: 0..n times, can occur anywhere after start (including consecutively)
+  - Behavioral Interview: 0..n times, typically precedes offers
+  - Make Job Offer: 0..n times, usually after behavioral; may alternate with Rejected
+- End: Case completes after a final Application Rejected or a final Make Job Offer with no subsequent activity.
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

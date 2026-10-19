@@ -1,0 +1,77 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL model defines a streamlined, compliant loan application process that minimizes rework, enforces mandatory checks, reduces unnecessary field visits, and improves first-time-right submission rates to the underwriter. The goal is to shorten cycle times, reduce denial rates at underwriter by improving pre-submission controls, and eliminate uncontrolled repetitions (particularly Make Visit loops), while preserving necessary checks (verification, collateral assessment, co-signer when required).
+
+Key stakeholders and roles
+- Applicant / Customer: requests appointment, provides documents, signs agreement when approved.
+- Front-office / Loan Clerk: handles appointments, intake, initial completeness checks.
+- Verification Team / Credit Officer: conducts borrower verification, decides on co-signer requirement, initiates collateral assessment when mandatory, and performs pre-submission quality check.
+- Field Assessor / Appraiser: performs Make Visit to Assess Collateral — limited to a maximum of 2 visits per case unless escalated.
+- Underwriter: receives a validated submission (only after pre-submission checks), makes final approval/denial decision.
+- Escalation Manager / Team Lead: handles complex or repeatedly failing cases (used to limit loops and manage exceptions).
+
+Detailed step-by-step process flow (IDEAL)
+Start conditions and triggers
+1. Start event: Applicant requests an appointment (Request Appointment).
+2. Intake: Loan Clerk sets appointment (Set Appointment) and conducts an initial completeness check at or before Hand In Credit Application.
+
+Main process sequence (cleaned, enforced flow)
+3. Hand In Credit Application: Applicant submits application and required documents to the Loan Clerk.
+4. Front-office completeness check: Immediately after Hand In, Loan Clerk verifies that required documents are present (ID, income proof, collateral docs if applicable). If incomplete, Loan Clerk requests missing documents from applicant and holds the application (loop limited to 2 iterations) — this prevents incomplete files entering verification.
+Decision point A: completeness
+- If incomplete after 2 tries -> Application Rejected (clear rejection with reason and applicant notification). Escalation Manager reviews borderline cases.
+- If complete -> Proceed to Verify Borrowers Information.
+
+5. Verify Borrowers Information: Verification Team performs background and financial checks.
+Decision point B: verification outcomes
+- If verification passes without conditions -> proceed to Pre-Submission Quality Check.
+- If verification reveals issues that can be resolved by adding a co-signer -> Request Co-Signer On Loan and notify applicant to provide co-signer information. This creates a controlled sub-flow; after co-signer info is received, re-run verification (single re-check) and proceed.
+- If verification requires collateral assessment (determined by rules or collateral value threshold) -> initiate Make Visit to Assess Collateral (see controlled field assessment below).
+- If verification results in clear fail/unacceptable risk -> Application Rejected. Escalation Manager reviews if applicant appeals.
+
+Controlled field assessment (Make Visit to Assess Collateral)
+6. Make Visit to Assess Collateral: Field Assessor performs site visit(s) only when mandated by explicit verification rules (e.g., collateral value threshold, inconsistencies in documents).
+- Limit: maximum 2 visits per case without escalation. Additional visits require approval from Escalation Manager and documented rationale.
+- After visit(s), Assessor submits a standardized collateral report into the file.
+- Possible outcomes: report satisfactory -> proceed; report insufficient -> request co-signer or recommend rejection.
+
+7. Pre-Submission Quality Check: Before sending to Underwriter, Verification Team performs a pre-submission checklist ensuring all mandatory steps were executed (verification done, collateral report attached if required, co-signer validated). If pre-submission check fails, return to the specific step (co-signer or assessor) — limited to one rework cycle for the whole file.
+
+8. Submit File to Underwriter: Only files that pass the pre-submission quality check are forwarded.
+Decision point C: Underwriter decision
+- Approve -> Sign Loan Agreement is prepared and executed (Sign Loan Agreement). Process ends with customer signing and loan disbursal.
+- Deny -> Loan Denied. Denied cases include a structured feedback reason. Escalation Manager may review appeals.
+
+Exception handling and escalations
+- Appointment Denied: At Request Appointment stage, if appointment cannot be scheduled (e.g., applicant outside territory, missing eligibility), front-office may deny appointment. This remains a terminal outcome.
+- Application Rejected: Controlled at completeness or verification stages with clear rejection reasons and documented appeal paths.
+- Escalation path: Cases requiring >2 field visits, >2 document resubmissions, or multiple verification failures are escalated to Escalation Manager for a decision; this avoids endless loops.
+
+End conditions and outcomes
+- Sign Loan Agreement: Approved and signed — primary positive outcome.
+- Loan Denied: Final negative outcome at underwriter or after unsuccessful appeal with documented reason.
+- Application Rejected: Final outcome for incomplete or ineligible applications.
+- Appointment Denied: Early termination for appointment scheduling failures.
+
+Process metrics and performance targets
+- First-time completeness rate: target >= 90% (reduce intake rework). Measure: percent of Hand In Credit Applications that pass initial completeness check without resubmission.
+- Verification pass-to-submit ratio: target Submit/Verify >= 80% (reduce submits that lead to denials by improving verification and pre-submission checks).
+- Underwriter denial rate: target <= 25% of submissions (reduce from observed current rate). Measure: Submit -> Loan Denied frequency / total Submit.
+- Mean time from Request Appointment to Submit File: target <= current median reduced by 50% (actual numeric targets set after baseline measurement). Focus on reducing delays from repeated Make Visit loops.
+- Max field visits per case: 2 without escalation; monitor frequency of escalations.
+- Rework loops: limit to 1–2 controlled iterations; track cases exceeding thresholds.
+
+Improvements made (IDEAL vs AS-IS)
+- Controlled pre-submission quality gate prevents incomplete or low-quality files reaching underwriter, thereby reducing denial rates and rework.
+- Restriction of Make Visit repetitions and formalization of collateral assessment with standardized reports reduces variability and cycle time.
+- Formalized co-signer sub-flow with one re-check avoids repeated uncontrolled switching between co-signer and assessor steps.
+- Introduction of Escalation Manager role to break long-running loops and make exception decisions reduces uncontrolled iterations and ensures oversight.
+- Clear measurement of metrics and targets to monitor process health and drive continuous improvement.
+
+Remaining considerations and deployment notes
+- Do not remove mandatory checks; ensure skipped_examination behavior is eliminated by enforcing pre-submission check. Any rare need to skip must be logged with managerial approval.
+- Update IT/workflow systems to enforce limits (number of visits, rework cycles) and to provide pre-submission checklist automation.
+- Train front-office and verification teams on new acceptance criteria and escalation procedures to ensure compliance.
+
+-- End of IDEAL Process Model --

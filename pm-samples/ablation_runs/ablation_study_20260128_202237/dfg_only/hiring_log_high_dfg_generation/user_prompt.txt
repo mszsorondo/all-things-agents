@@ -1,0 +1,91 @@
+
+============================================================
+REPRESENTATION 1: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Hand In Job Application -> Telephonic Screening ( frequency = 8799  performance = 82439.794 )
+Telephonic Screening -> Background Check ( frequency = 3961  performance = 81906.421 )
+Background Check -> Screening Interview ( frequency = 3961  performance = 0.000 )
+Telephonic Screening -> Screening Interview ( frequency = 3848  performance = 81903.291 )
+Screening Interview -> Background Check ( frequency = 3848  performance = 0.000 )
+Behavioral Interview -> Make Job Offer ( frequency = 1850  performance = 80430.348 )
+Screening Interview -> Coding Interview ( frequency = 1517  performance = 129892.231 )
+Coding Interview -> Frontend Interview ( frequency = 1513  performance = 80785.480 )
+Background Check -> Coding Interview ( frequency = 1413  performance = 129884.902 )
+Background Check -> Application Rejected ( frequency = 1391  performance = 155319.566 )
+Screening Interview -> Application Rejected ( frequency = 1389  performance = 155969.168 )
+Coding Interview -> ML Interview ( frequency = 1304  performance = 80808.637 )
+Hand In Job Application -> Application Rejected ( frequency = 1201  performance = 146345.624 )
+Extensive Background Check -> Application Rejected ( frequency = 1125  performance = 171097.167 )
+Screening Interview -> Extensive Background Check ( frequency = 1055  performance = 84418.059 )
+Background Check -> Extensive Background Check ( frequency = 1044  performance = 84234.989 )
+Behavioral Interview -> Behavioral Interview ( frequency = 1032  performance = 47.047 )
+Telephonic Screening -> Application Rejected ( frequency = 990  performance = 143281.671 )
+Extensive Background Check -> Coding Interview ( frequency = 974  performance = 124295.087 )
+Behavioral Interview -> Application Rejected ( frequency = 914  performance = 17085.635 )
+ML Interview -> Frontend Interview ( frequency = 913  performance = 0.000 )
+Frontend Interview -> ML Interview ( frequency = 878  performance = 0.000 )
+Make Job Offer -> Make Job Offer ( frequency = 861  performance = 70.746 )
+Frontend Interview -> Behavioral Interview ( frequency = 853  performance = 80294.558 )
+ML Interview -> Behavioral Interview ( frequency = 754  performance = 80355.227 )
+Application Rejected -> Behavioral Interview ( frequency = 740  performance = 46.485 )
+Coding Interview -> Backend Interview ( frequency = 701  performance = 80655.317 )
+Application Rejected -> Make Job Offer ( frequency = 690  performance = 68184.068 )
+Application Rejected -> Application Rejected ( frequency = 654  performance = 9901.235 )
+Frontend Interview -> Application Rejected ( frequency = 653  performance = 81262.502 )
+ML Interview -> Application Rejected ( frequency = 546  performance = 81266.427 )
+Frontend Interview -> Backend Interview ( frequency = 529  performance = 0.000 )
+Backend Interview -> Frontend Interview ( frequency = 487  performance = 0.000 )
+Backend Interview -> Behavioral Interview ( frequency = 417  performance = 80439.149 )
+Coding Interview -> Application Rejected ( frequency = 386  performance = 80727.324 )
+Backend Interview -> Application Rejected ( frequency = 295  performance = 81404.454 )
+Backend Interview -> ML Interview ( frequency = 152  performance = 0.000 )
+ML Interview -> Backend Interview ( frequency = 121  performance = 0.000 )
+Make Job Offer -> Application Rejected ( frequency = 110  performance = 67.309 )
+
+
+

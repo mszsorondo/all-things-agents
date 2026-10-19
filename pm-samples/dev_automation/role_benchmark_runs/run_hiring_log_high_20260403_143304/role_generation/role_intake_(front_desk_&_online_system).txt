@@ -1,0 +1,44 @@
+AS-IS Process Model — Intake (Front Desk & Online System)
+============================================================
+
+Title: AS-IS Process Model — Intake (Front Desk & Online System)
+
+Section 1: Role Overview (purpose, responsibilities)
+- Purpose: Receive and record job applications (case creation) and forward them into the hiring pipeline.
+- Responsibilities observed: perform the activity Hand In Job Application (via Front Desk or Online System), create the case context and hand the case to HR screening resources. This role does not perform interviews, make offers, or reject applications directly in the log; it primarily initiates work and hands it to HR resources.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Hand In Job Application: create/submit the candidate’s application record in the system (performed by Online System or Front Desk).
+  - Observed frequencies: Hand In Job Application is the unique start activity in the log (initialization constraint).
+  - No other activities are performed by this role in the event log.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+- Activation trigger: This role is activated when a candidate submits an application (applicant arrives in-person at Front Desk or uses the Online System). In the logs Hand In Job Application is the initialization (start) activity for traces.
+- Immediate next steps (observed): After Hand In Job Application, the case most commonly proceeds to Telephonic Screening (majority of cases). However, the data shows multiple observed orderings after Hand In Job Application:
+  - Hand In Job Application -> Telephonic Screening (dominant path)
+  - Hand In Job Application -> Application Rejected (observed in ~12% of traces)
+  - Hand In Job Application -> Telephonic Screening -> ... (further processing by HR/Interviewers)
+- Decision points handled by this role: None observed. Intake only submits the application and forwards; decisions (reject/advance) are made by HR or interviewers later.
+
+Section 4: Interactions (who hands work TO this role, who receives work from this role)
+- Who hands work TO Intake: None observed in the log (Intake is the start of the trace). The event log shows Hand In Job Application as initialization.
+- Who Intake hands work TO (observed handover network):
+  - Primarily → HR-dummy (observed Online System -> HR-dummy and Front Desk -> HR-dummy handovers).
+  - Also → HR-pro (smaller fraction observed: Online System -> HR-pro and Front Desk -> HR-pro).
+  - In practice Intake hands the newly created case into the HR screening pool (HR-dummy and/or HR-pro).
+
+Section 5: Variants and Exceptions (all observed paths involving this role)
+- Main (high-frequency) paths that include Intake:
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> ... (this is the prefix for the dominant, longer variants)
+- Medium and low-frequency observed alternatives starting from Intake:
+  - Hand In Job Application -> Application Rejected (a sizable minority -> immediate early rejection without Telephonic Screening)
+  - Hand In Job Application -> Telephonic Screening -> Application Rejected (telephonic screening leads directly to rejection)
+  - Hand In Job Application -> Telephonic Screening -> Background Check -> Screening Interview -> Extensive Background Check -> ... (cases that require extra checks and then technical/behavioral interviews)
+- Optionality: Telephonic Screening is common but not mandatory (some traces skip it and go directly to Application Rejected).
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Intake is strictly a case-creation role; no decision making observed despite some cases being rejected immediately after intake — this suggests rejections are executed by HR resources after intake rather than at intake.
+- There is a non-trivial share of traces where cases are rejected immediately after Hand In Job Application; this creates short-lived cases that still consume intake effort but do not proceed further.
+- Handover concentration: Intake forwards most work to HR-dummy; ensuring clear SLAs for that handover could reduce waiting at the screening queue.
+
+Notes: All statements above are strictly based on observed activities and handover frequencies in the event log; no unobserved behaviours were assumed.

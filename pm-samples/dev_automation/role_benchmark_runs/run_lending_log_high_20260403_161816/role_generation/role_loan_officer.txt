@@ -1,0 +1,72 @@
+AS-IS Process Model — Loan Officer
+============================================================
+
+Title: AS-IS Process Model — Loan Officer
+
+Section 1: Role Overview (purpose, responsibilities)
+Loan Officers (the five individual Loan Officer resources grouped as one logical role) are front-line case handlers who perform the substantive verification of borrower information, request additional checks (co-signer or collateral visits), possibly skip examinations for fast-track cases, and submit the prepared file to Underwriter. They may also record Application Rejected in some traces. Loan Officers initiate downstream escalation to Underwriting or to decision outcomes (signing or denial). They perform the bulk of case work following intake.
+
+Section 2: Activities Performed (complete list with descriptions)
+- Verify Borrowers Information: Review and validate applicant information, income, documents, etc. This is the mandatory activity after Hand In Credit Appliaction.
+- Make Visit to Assess Colatteral: Perform one or multiple field visits to assess collateral value/condition. Observed to be repeatable (Make Visit -> Make Visit self-loops exist).
+- Request Co-Signer On Loan: Ask for co-signer where borrower conditions require.
+- skipped_examination: In some cases the Loan Officer records that examinations were skipped (fast-track), leading to a direct Sign Loan Agreement path in some variants.
+- Application Rejected: In cases that end before underwriting or by LO decision, the officer may mark Application Rejected (terminal in that branch).
+- Submit File to Underwriter: After preparation/verification, the Loan Officer sends the file to Underwriter for final credit decision.
+
+Section 3: Process Flow (when activated, what happens, decision points)
+Activation:
+- Activated when Online System or appointment-handling action performed Hand In Credit Appliaction. Hand In Credit Appliaction -> Verify Borrowers Information has strong DFG frequency (9038 events), so Loan Officers begin their work with Verify Borrowers Information.
+
+Typical sequence(s) observed (ALL observed orderings):
+- Core (most common): Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> (Underwriter decision: Loan Denied OR Sign Loan Agreement). This is the main sequence with about 29% Loan Denied and 16% Sign Loan Agreement in the top variants.
+- With collateral assessment(s): Hand In Credit Appliaction -> Verify Borrowers Information -> Make Visit to Assess Colatteral (one or more times, possibly repeated many times) -> Submit File to Underwriter -> Underwriter decision. The process can contain multiple Make Visit repetitions; DFG and variants show many traces with repeated Make Visit occurrences (up to 7-8 times in rare cases).
+- With co-signer request: Verify Borrowers Information -> Request Co-Signer On Loan -> Submit File to Underwriter (or interleaved with Make Visit actions). Request Co-Signer On Loan may be followed by Make Visit actions (DFG shows Request Co-Signer On Loan -> Make Visit frequency = 733) and then Submit File to Underwriter.
+- Fast-track skip: Verify Borrowers Information -> skipped_examination -> Sign Loan Agreement (observed in ~3% of traces). In these cases the Loan Officer records skipped_examination and the case directly signs.
+- Application Rejected: Verify Borrowers Information -> Application Rejected (observed ~16% of variants). This is a terminal path where the Loan Officer or the system rejects the application without forwarding to underwriter.
+
+Decision points and criteria handled by this role:
+- After Verify Borrowers Information the Loan Officer may decide to:
+  - Submit File to Underwriter (standard)
+  - Request Co-Signer On Loan (if borrower insufficient)
+  - Make Visit to Assess Colatteral (if collateral needs evaluation)
+  - Mark Application Rejected (terminate the case)
+  - Mark skipped_examination (opt for fast approval) leading to direct signing in some cases
+
+Ordering and optionality notes (AS-IS):
+- Verify Borrowers Information is always observed after Hand In Credit Appliaction.
+- Request Co-Signer On Loan and Make Visit to Assess Colatteral are optional and can occur in either order relative to each other; the logs show both interleavings (Make Visit -> Request Co-Signer and Request Co-Signer -> Make Visit) and multiple repeats of Make Visit.
+- skipped_examination is optional and, when present, generally precedes Sign Loan Agreement.
+- Submit File to Underwriter typically occurs after completion of verification and any required co-signer or collateral visits, though some traces show Submit File occurring after only Verify Borrowers Information.
+
+Section 4: Interactions (who hands work to this role, who receives work from this role)
+Who hands work TO Loan Officers:
+- Online System: hands off Hand In Credit Appliaction to Loan Officers (strong edge Online System -> Loan Officer).
+- Appointment Agent indirectly via Online System (Set Appointment -> Online System -> LO).
+
+Who Loan Officers hand work TO:
+- Underwriter roles (Chill UW1/2/3, Strict UW1/2/3, MostChillUW): via Submit File to Underwriter. Handover network shows Loan Officers frequently hand off to Underwriters (weights vary; LO -> Chill UW or Strict UW small but present). This leads to final decisions (Loan Denied or Sign Loan Agreement).
+- In cases of Application Rejected, Loan Officers terminally close the case (no underwriter handoff).
+
+Section 5: Variants and Exceptions (all observed paths)
+All observed variants involving Loan Officers (extracted from variant list and DFG):
+- Hand In Credit Appliaction -> Verify Borrowers Information -> Submit File to Underwriter -> Loan Denied
+- ... -> Submit File to Underwriter -> Sign Loan Agreement
+- ... -> skipped_examination -> Sign Loan Agreement (skipped_examination may replace Submit File in some traces)
+- ... -> Request Co-Signer On Loan -> Submit File to Underwriter -> Loan Denied/Sign Loan Agreement
+- ... -> Make Visit to Assess Colatteral (repeated 1..N times) -> Submit File to Underwriter -> Loan Denied/Sign Loan Agreement
+- ... -> Request Co-Signer On Loan -> Make Visit to Assess Colatteral (repeats) -> Submit File to Underwriter -> Loan Denied/Sign Loan Agreement
+- Verify Borrowers Information -> Application Rejected (terminal branch)
+
+Rework loops and exceptions:
+- Make Visit to Assess Colatteral -> Make Visit to Assess Colatteral self-loop indicates repeated visits (rework). Some rare traces show many repeated Make Visit events (up to 7–8 repetitions).
+- Interleaving between Request Co-Signer and Make Visit may cause back-and-forth activities before submitting to underwriter.
+
+Section 6: Key Observations (pain points, inefficiencies observed in the data)
+- Collateral visits are a major source of long-case durations and rework: variants with repeated Make Visit occurrences have substantially higher performance (case duration); many high-performance variants include multiple Make Visit events.
+- Request Co-Signer On Loan often triggers additional Make Visit activity and lengthens the process.
+- There is variability among Loan Officers (different individuals), but activity sets are consistent across Loan Officer resources, justifying grouping into a single logical role.
+- Application Rejected is a frequent terminal decision that occurs at LO-level without underwriter involvement for a sizable portion of cases; this creates a bifurcation in downstream workload.
+
+Notes for someone assuming this role
+- Your primary duty is to verify borrower information and decide the next steps: directly submit to underwriter, request co-signer, schedule collateral visits (possibly multiple), mark application rejected, or in rare cases skip examination and proceed to direct signing. Expect to work with Underwriter peers after Submit File to Underwriter.

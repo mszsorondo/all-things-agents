@@ -1,0 +1,140 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Handle credit/loan requests from initial appointment through intake, verification, optional enrichment (co-signer and collateral assessment), submission to an underwriter, and final decision (approval with signing or denial), including early denials and a rare fast‑track that bypasses full examination.
+- Scope: From the applicant’s initial Request Appointment to one of the final outcomes: Appointment Denied, Application Rejected (during verification), Loan Denied (after underwriter review), or Sign Loan Agreement (approval).
+- Model sources reconciled: Inductive Miner Petri net (sound WF-net with silent joins/splits), Directly-Follows Graph (DFG), and top observed variants. The description below captures all behaviors allowed by the model and observed in the data, including loops, optional paths, and rare variants.
+
+Key stakeholders and roles involved
+- Applicant/Borrower: Requests appointment and hands in the application; may provide co-signer details; participates in collateral assessment visits.
+- Co-Signer (if requested): Provides information and commitments when a co-signer is needed.
+- Underwriter: Receives the submitted file and issues the final accept/deny decision leading to either Sign Loan Agreement or Loan Denied.
+- Note: Other operational roles (e.g., scheduling, verification, collateral assessors) are implied by task names but not explicitly specified in the sources; therefore, they are not assigned here.
+
+Detailed step-by-step process flow
+
+1) Start conditions and triggers
+- Trigger: Request Appointment (always the first visible step).
+- Immediate decision after the request:
+  - Appointment Denied (ends the case) OR
+  - Set Appointment (continues the case).
+
+2) Appointment handling
+- Request Appointment -> Set Appointment (common) or -> Appointment Denied (about 9% of cases). If denied, process ends.
+
+3) Application intake
+- After Set Appointment: Hand In Credit Application (intake).
+- Then: Verify Borrowers Information (initial eligibility/creditworthiness checks).
+
+4) Post-verification decision (multi-branch with optional activities)
+From Verify Borrowers Information, the process can take one of several paths:
+
+A. Immediate internal rejection (exclusive)
+- Application Rejected (about 16%). Case ends.
+
+B. Continue with assessment and enrichment before underwriter submission (inclusive/optional set, possibly repeated and in varying order)
+- Zero or more of the following may occur before submitting to the underwriter:
+  - Request Co-Signer On Loan (optional, typically once).
+  - Make Visit to Assess Collateral (optional; can repeat multiple times, sometimes many; rework observed with long chains of repeated visits).
+- Valid orderings and interleavings observed:
+  - Directly Submit File to Underwriter with no optional steps.
+  - Only Request Co-Signer On Loan, then Submit.
+  - Only Make Visit to Assess Collateral (any number of times), then Submit.
+  - Both activities in either order:
+    - Request Co-Signer -> Make Visit(s) -> Submit.
+    - Make Visit(s) -> Request Co-Signer -> Submit.
+  - Alternating sequences with multiple collateral visits around a co-signer request:
+    - Request Co-Signer -> Make Visit -> Make Visit -> ... -> Submit.
+    - Make Visit -> Request Co-Signer -> Make Visit -> ... -> Submit.
+  - Make Visit to Assess Collateral may repeat many times (rework loop); observed variants include 6–10+ consecutive visits before submission.
+- Synchronization: Regardless of which optional activities occurred (or were skipped), they merge back into a single flow before Submit File to Underwriter.
+
+C. Fast-track bypass of detailed examination (rare)
+- skipped_examination -> Sign Loan Agreement (about 3%): Direct jump from verification to signing without underwriter submission visible in the log.
+- Rare completion without visible signing: The Petri net allows a silent completion immediately after skipped_examination (i.e., case may end without a recorded Sign Loan Agreement event). This was not a common observed pattern but is permitted by the discovered model and may reflect logging gaps or non-standard closure.
+
+5) Submission to the underwriter and final decision (exclusive)
+- Submit File to Underwriter, then:
+  - Loan Denied (most frequent single end-state after submission; about 29%),
+  - OR Sign Loan Agreement (approval; about 16% in the straight-through path, more when counting low-frequency paths that also sign after optional steps).
+- End of process after either outcome.
+
+6) End conditions and outcomes
+- Appointment Denied (early end).
+- Application Rejected (during verification, before underwriter).
+- Loan Denied (after underwriter review).
+- Sign Loan Agreement (approved case; standard completion).
+- Rare model-permitted completion after skipped_examination without an explicit Sign event.
+
+Exception handling and error paths
+- Early termination:
+  - Appointment Denied occurs right after Request Appointment (no intake).
+  - Application Rejected occurs right after verification (pre-underwriter).
+- Fast-track:
+  - skipped_examination used to bypass normal examination and proceed straight to signing (or, rarely, to silent completion). This is exceptional compared to the mainstream submission-to-underwriter pattern.
+- Rework:
+  - Make Visit to Assess Collateral can repeat many times before submission (extended loops seen in low-frequency variants).
+- No explicit escalations, holds, or rollbacks after an underwriter decision are visible in the sources.
+
+Control logic summary (explicit behavioral rules)
+- Start: Always Request Appointment.
+- XOR at appointment: Appointment Denied (end) OR Set Appointment (continue).
+- Sequence: Set Appointment -> Hand In Credit Application -> Verify Borrowers Information.
+- Post-Verify branching:
+  - XOR to Application Rejected (end), OR
+  - Inclusive/optional set of pre-underwriter activities comprising:
+    - Request Co-Signer On Loan (0 or 1 times), and
+    - Make Visit to Assess Collateral (0 to many times, any count),
+    - in any order and interleaving,
+    - after which the flow converges to Submit File to Underwriter.
+  - Special fast-track: skipped_examination may immediately precede Sign Loan Agreement (and in rare cases, completion without a visible Sign event).
+- Underwriter decision (XOR): After Submit File to Underwriter, either Loan Denied (end) OR Sign Loan Agreement (end).
+
+Process metrics and performance characteristics
+- Path frequencies (top observed variants; approximate):
+  - Request -> Set -> Hand In -> Verify -> Submit -> Loan Denied: ~29%.
+  - Request -> Set -> Hand In -> Verify -> Submit -> Sign: ~16%.
+  - Request -> Set -> Hand In -> Verify -> Application Rejected: ~16%.
+  - Request -> Appointment Denied: ~9%.
+  - Verify -> skipped_examination -> Sign: ~3%.
+  - Remaining cases distribute across optional co-signer and collateral-visit combinations (each typically 1–4% in the listed variants), including long rework chains of Make Visit.
+- Activity-to-activity average waiting times (DFG means; seconds):
+  - Request Appointment -> Set Appointment: ~82,658 s (~23 hours).
+  - Set Appointment -> Hand In Credit Application: ~82,659 s (~23 hours).
+  - Hand In -> Verify Borrowers Information: ~42,028 s (~11.7 hours).
+  - Verify -> Application Rejected: ~32,266 s (~9.0 hours).
+  - Verify -> Submit File to Underwriter: ~48,327 s (~13.4 hours).
+  - Submit -> Loan Denied: ~82,666 s (~23 hours).
+  - Submit -> Sign Loan Agreement: ~80,725 s (~22.4 hours).
+- Variant-level case durations (means; examples):
+  - Straight denial after underwriter: ~337,687 s (~3.9 days).
+  - Straight approval after underwriter: ~339,454 s (~3.9 days).
+  - Rejected during verification: ~236,355 s (~2.7 days).
+  - Appointment denied: ~86,227 s (~1.0 day).
+  - Fast-track skipped_examination -> sign: ~260,013 s (~3.0 days).
+- Rework intensity:
+  - Make Visit to Assess Collateral shows a self-loop; repeated visits (including 6–10+ times) substantially increase throughput time in rare variants.
+
+Key challenges and pain points observed in the current process
+- High attrition before approval:
+  - Significant proportions end in Appointment Denied (~9%) or Application Rejected (~16%) before underwriter review.
+  - Post-underwriter denials are common (~29% of straight-through cases), indicating stringent criteria or upstream screening gaps.
+- Long waits between major steps:
+  - ~23 hours average between request and setting an appointment, and similar waits around submission-to-decision, contributing to multi-day total durations even without rework.
+- Rework on collateral assessment:
+  - Extensive repetition of Make Visit to Assess Collateral in some cases (long tails) drives lengthy cycle times and variability.
+- Process variability and optionality:
+  - The inclusive nature of pre-underwriter activities (co-signer, collateral visits) and their flexible ordering create many variants, complicating predictability and SLA adherence.
+- Fast-track control risk:
+  - The skipped_examination path to signing bypasses normal submission/decision steps; while rare, it represents a potential compliance or logging risk. The model also permits completion without a recorded signing event in this path.
+- Data quality/traceability:
+  - Rare silent-completion after skipped_examination (allowed by the model) suggests possible logging gaps where the explicit Sign Loan Agreement event is missing.
+
+End conditions and outcomes
+- The process completes in one of the following ways:
+  - Appointment Denied (early termination after the request).
+  - Application Rejected (post-verification, pre-underwriter).
+  - Loan Denied (post-underwriter decision).
+  - Sign Loan Agreement (approved and finalized), or rarely, silent completion immediately after skipped_examination without a visible sign.
+
+This AS-IS description is permissive by design, accepting every observed variant and all behavior allowed by the discovered model, including optional/exclusive choices, inclusive sets, and the collateral visit loop, ensuring any trace following any observed path is valid.

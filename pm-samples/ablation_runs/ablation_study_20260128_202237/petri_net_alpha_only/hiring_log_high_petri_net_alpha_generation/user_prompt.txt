@@ -1,0 +1,66 @@
+
+============================================================
+REPRESENTATION 1: PETRI_NET_ALPHA
+============================================================
+
+
+=== PETRI NET (ALPHA MINER) INTERPRETATION GUIDE ===
+
+The Alpha Miner discovers Petri nets based on ordering relations in the event log.
+
+OUTPUT FORMAT:
+--------------
+The output follows this structure:
+"If I have a Petri net:
+
+places: [ place1, place2, ... ]
+transitions: [ (id, 'Label'), ... ]
+arcs: [ source->target, ... ]
+
+initial marking: ['source:1']
+final marking: ['sink:1']"
+
+KEY DIFFERENCES FROM INDUCTIVE MINER:
+- Places are often named as tuples like ({'A'}, {'B'}) representing the activities they connect
+- No silent/tau transitions (Alpha miner doesn't handle invisible transitions)
+- May produce disconnected or incomplete nets for complex logs
+
+ORDERING RELATIONS USED:
+1. Direct succession (>): A directly followed by B in some trace
+2. Causality (->): A > B and not B > A
+3. Parallelism (||): A > B and B > A (both orders observed)
+4. Choice (#): A and B never directly follow each other
+
+READING THE OUTPUT:
+- Places named as {A}, {B} tuples: Connect activity A to activity B
+- 'start' and 'end' places: Process entry/exit points
+- All transitions are visible (labeled activities)
+- Arcs show flow: Activity->place or place->Activity
+
+LIMITATIONS:
+- Cannot handle loops of length 1 or 2
+- Sensitive to noise
+- Assumes complete event logs
+- May miss implicit dependencies
+
+WHEN TO USE:
+- Simple, well-structured processes
+- Educational purposes
+- Quick initial discovery
+- Logs with clear sequential patterns
+
+
+--- DISCOVERED MODEL ---
+[Alpha Miner]
+
+
+If I have a Petri net:
+
+places: [ ({'Background Check'}, {'Coding Interview'}), ({'Background Check'}, {'Extensive Background Check'}), ({'Coding Interview'}, {'Backend Interview'}), ({'Coding Interview'}, {'Frontend Interview'}), ({'Coding Interview'}, {'ML Interview'}), ({'Extensive Background Check'}, {'Coding Interview'}), ({'Hand In Job Application'}, {'Telephonic Screening'}), ({'Screening Interview'}, {'Coding Interview'}), ({'Screening Interview'}, {'Extensive Background Check'}), ({'Telephonic Screening'}, {'Background Check'}), ({'Telephonic Screening'}, {'Screening Interview'}), end, start ]
+transitions: [ (Application Rejected, 'Application Rejected'), (Backend Interview, 'Backend Interview'), (Background Check, 'Background Check'), (Behavioral Interview, 'Behavioral Interview'), (Coding Interview, 'Coding Interview'), (Extensive Background Check, 'Extensive Background Check'), (Frontend Interview, 'Frontend Interview'), (Hand In Job Application, 'Hand In Job Application'), (ML Interview, 'ML Interview'), (Make Job Offer, 'Make Job Offer'), (Screening Interview, 'Screening Interview'), (Telephonic Screening, 'Telephonic Screening') ]
+arcs: [ (Application Rejected, 'Application Rejected')->end, (Background Check, 'Background Check')->({'Background Check'}, {'Coding Interview'}), (Background Check, 'Background Check')->({'Background Check'}, {'Extensive Background Check'}), (Coding Interview, 'Coding Interview')->({'Coding Interview'}, {'Backend Interview'}), (Coding Interview, 'Coding Interview')->({'Coding Interview'}, {'Frontend Interview'}), (Coding Interview, 'Coding Interview')->({'Coding Interview'}, {'ML Interview'}), (Extensive Background Check, 'Extensive Background Check')->({'Extensive Background Check'}, {'Coding Interview'}), (Hand In Job Application, 'Hand In Job Application')->({'Hand In Job Application'}, {'Telephonic Screening'}), (Make Job Offer, 'Make Job Offer')->end, (Screening Interview, 'Screening Interview')->({'Screening Interview'}, {'Coding Interview'}), (Screening Interview, 'Screening Interview')->({'Screening Interview'}, {'Extensive Background Check'}), (Telephonic Screening, 'Telephonic Screening')->({'Telephonic Screening'}, {'Background Check'}), (Telephonic Screening, 'Telephonic Screening')->({'Telephonic Screening'}, {'Screening Interview'}), ({'Background Check'}, {'Coding Interview'})->(Coding Interview, 'Coding Interview'), ({'Background Check'}, {'Extensive Background Check'})->(Extensive Background Check, 'Extensive Background Check'), ({'Coding Interview'}, {'Backend Interview'})->(Backend Interview, 'Backend Interview'), ({'Coding Interview'}, {'Frontend Interview'})->(Frontend Interview, 'Frontend Interview'), ({'Coding Interview'}, {'ML Interview'})->(ML Interview, 'ML Interview'), ({'Extensive Background Check'}, {'Coding Interview'})->(Coding Interview, 'Coding Interview'), ({'Hand In Job Application'}, {'Telephonic Screening'})->(Telephonic Screening, 'Telephonic Screening'), ({'Screening Interview'}, {'Coding Interview'})->(Coding Interview, 'Coding Interview'), ({'Screening Interview'}, {'Extensive Background Check'})->(Extensive Background Check, 'Extensive Background Check'), ({'Telephonic Screening'}, {'Background Check'})->(Background Check, 'Background Check'), ({'Telephonic Screening'}, {'Screening Interview'})->(Screening Interview, 'Screening Interview'), start->(Hand In Job Application, 'Hand In Job Application') ]
+
+initial marking: ['start:1']
+final marking: ['end:1']
+
+

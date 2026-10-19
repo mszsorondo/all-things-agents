@@ -1,0 +1,78 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is an improved, streamlined version of the recruitment process for technical positions (software development, frontend/backend, machine learning). It eliminates rework loops, enforces logical sequencing, removes redundant/out-of-order activities (e.g., fixed Background Check after Screening), collapses repeated offers/behavioral interviews, prevents post-rejection continuations, and structures technical interviews as a parallel branch for efficiency. Rejections are final at gateways, reducing waste. The purpose is efficient candidate evaluation and selection, targeting higher throughput, compliance, and reduced cycle time (estimated 40-50% improvement by removing loops/variability).
+
+#### Key Stakeholders and Roles Involved
+Roles inferred and standardized (no invention beyond source implications):
+- HR/Recruiter: Initial application handling, Telephonic Screening, Screening Interview, Background Checks, Make Job Offer.
+- Technical Team: Coding Interview, specialized Frontend/Backend/ML Interviews.
+- Hiring Manager: Behavioral Interview.
+
+#### Detailed Step-by-Step Process Flow
+Linear sequence with parallel for tech interviews, clear gateways. No skips/loops except explicit rework (none in ideal).
+
+1. **Start Conditions and Triggers**: Process starts upon "Hand In Job Application" receipt (e.g., via portal/email).
+
+2. **Initial Screening**:
+   - **Telephonic Screening** (mandatory, to filter basics; no skips).
+
+3. **HR Evaluation**:
+   - **Screening Interview** (structured panel/video).
+   - **Background Check** (standard, post-screening; no swaps or skips).
+
+4. **Technical Assessment**:
+   - **Coding Interview** (mandatory gatekeeper).
+
+5. **Specialized Technical Interviews** (Parallel Split – inclusive gateway: perform all applicable based on role):
+   - Parallel branches:
+     - **Frontend Interview**.
+     - **Backend Interview**.
+     - **ML Interview** (if applicable).
+   - Synchronization: Join (AND-join) after all selected branches complete.
+
+6. **Final Interviews**:
+   - **Behavioral Interview** (single instance, no loops).
+   - **Extensive Background Check** (if advanced checks needed, post-tech).
+
+7. **Decision and Closure**:
+   - **Gateway: Hire Decision** – Criteria: Pass all prior gates, positive feedback.
+     - Yes → **Make Job Offer** (single instance).
+     - No → **Application Rejected** (final end).
+
+**Decision Points**:
+- Post each major phase (Screening, Background, Coding, Tech Join, Behavioral): Pass/Fail.
+  - Fail → Reject (end).
+  - Pass → Continue.
+- Inclusive for tech: Select required specialties upfront.
+
+**Parallel Activities and Synchronization**:
+- Tech interviews parallel (split after Coding, join before Behavioral) to speed up (vs. sequential loops in AS-IS).
+
+**Exception Handling and Error Paths**:
+- All rejects route to single "Application Rejected" end event (no continuations).
+- Escalation: If background fail → Reject; no rework.
+
+**Rework Loops and Escalation Procedures**:
+- Eliminated entirely; single pass per activity.
+- Escalation: Only for critical issues (e.g., background discrepancy → Reject).
+
+**End Conditions and Outcomes**:
+- Success: "Make Job Offer" accepted (implicit) → Process End (Hired).
+- Failure: "Application Rejected" → Process End.
+
+#### Process Metrics and Performance Characteristics
+- Targeted cycle time: 3-5 days (vs. AS-IS 5-9+ days), by parallel tech and no loops.
+- Rejection rates: Concentrated early (post-screening/telephonic ~50%), late ~10%.
+- Throughput: Increase to 20-30% offers via better filtering.
+- Resource: Balanced load (parallel reduces interviewer wait).
+- KPIs: 100% compliance, zero repeats.
+
+#### Key Challenges and Pain Points (for AS-IS) or Improvements Made (for IDEAL)
+- **Improvements**:
+  - Fixed early sequence (Telephonic → Screening → Background → Coding) eliminates swaps (~30% variants).
+  - Parallel tech interviews replace disordered loops (saves 20-30% time).
+  - Single Behavioral/Offer instances remove repeats (1032/861 freq loops gone).
+  - Final rejects only; no post-reject paths (fixes anomalies).
+  - Mandatory critical steps (no skips), better gateways reduce wasteful late rejections.
+  - Overall: Simplified to ~5-7 variants max, actionable for automation/governance.

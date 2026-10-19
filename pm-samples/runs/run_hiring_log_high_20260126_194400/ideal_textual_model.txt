@@ -1,0 +1,108 @@
+IDEAL Process Model
+
+Process overview and purpose
+- The IDEAL (to-be) hiring process is a streamlined, governed recruitment pipeline that eliminates observed inefficiencies, enforces correct sequencing, closes data-quality gaps, and reduces unnecessary rework. The primary goals are to: minimize time-to-hire, reduce redundant interviews and background checks, ensure consistent decision gates, protect candidate experience, and maintain auditable case handling (no re-opening of terminated cases without explicit controls).
+
+Key stakeholders and roles involved
+- Applicant: submits application and attends interviews.
+- Recruiter / Hiring Coordinator (RC): central case owner responsible for intake, scheduling, and case status updates. Only RC can re-open a closed case via documented change control.
+- Telephonic Screener: conducts initial screening and applies standardized pass/fail criteria.
+- Background Check Team: performs Background Check; Extensive Background Check only triggered by specific, documented criteria.
+- Technical Interview Panel: coordinated set of interviewers (Coding, Frontend, Backend, ML) managed by RC to avoid redundant or unordered evaluations.
+- Hiring Manager / Behavioral Interviewer: performs final behavioral assessment and final recommendation.
+- HR / Offer Owner: issues Make Job Offer or Application Rejected and records final outcome.
+
+Start conditions and triggers
+- Start: Hand In Job Application. The Recruiter logs the case, assigns a unique case status, and schedules Telephonic Screening.
+- Precondition: Candidate profile completeness and consent for background checks recorded before proceeding to background checks.
+
+Detailed step-by-step process flow (IDEAL)
+1. Hand In Job Application (Start)
+   - Recruiter validates application completeness and checks mandatory criteria (right to work, minimum qualifications). If incomplete, RC requests missing information; case is on hold until complete.
+
+2. Telephonic Screening (Gate 1)
+   - Telephonic Screener applies standardized checklist (role fit, communication, basic qualifications). Outcomes:
+     - Pass: proceed to Background Check OR direct to Technical Interview if role-specific policy allows (only one path chosen by RC according to hiring policy).
+     - Fail: Application Rejected (closed). Re-opening requires RC escalation and documented rationale.
+     - Hold: request more information or reschedule.
+   - Decision rule: Default path is Telephonic Screening -> Technical Interview scheduling; Background Check initiated only after passing Telephonic Screening and meeting preconditions (consent + red flags evaluation).
+
+3. Background Check (Gate 2, conditional)
+   - Background Check is performed after candidate passes Telephonic Screening and before in-person technical interviews for roles requiring vetting.
+   - Outcomes:
+     - Clear: proceed to Technical Interview Panel scheduling.
+     - Flags found: escalate to Extensive Background Check (EBC) if flags meet documented criteria (criminal record, employment discrepancy). If EBC confirms disqualifying findings -> Application Rejected.
+     - Insufficient consent/data: hold and request candidate action.
+   - Performance rule: Background Check must complete within defined SLA (e.g., 5 business days); EBC has its own SLA with escalation rules.
+
+4. Technical Interview Panel (coordinated parallel evaluation)
+   - RC coordinates the panel: schedule interviews in a controlled order to avoid redundant evaluations. For most roles, the panel uses one of two structured sequences depending on the role track (e.g., Software Engineer: Coding -> System Design -> Behavioral; Data Scientist: Coding -> ML Interview -> Behavioral).
+   - Parallel vs sequential: Interviews are treated as parallelizable only if they are independent and scheduled concurrently; RC ensures results are aggregated before final decision.
+   - Decision outcomes after panel:
+     - Pass (consensus or majority per panel policy): proceed to Behavioral Interview / Hiring Manager review.
+     - Fail: Application Rejected (closed).
+     - Borderline: additional targeted interview granted (single re-evaluation round only), documented and time-boxed.
+
+5. Behavioral Interview / Hiring Manager Decision
+   - Hiring Manager / Behavioral Interviewer performs final assessment against role competencies and cultural fit.
+   - Outcomes:
+     - Recommend Hire: Recruiter prepares Make Job Offer.
+     - Recommend Reject: Application Rejected.
+     - Recommend Further Clarification: only one additional behavioral touch permitted, documented.
+
+6. Make Job Offer and Closure
+   - HR / Offer Owner issues Make Job Offer, records offer versioning with clear status (issued, accepted, retracted) and timestamps.
+   - Candidate accepts -> Hire completed (case closed successfully). Candidate rejects -> record and close. Offer retraction allowed only under documented exceptional circumstances with approval from HR leadership.
+   - Cases are terminal upon Application Rejected or Hire; re-opening requires RC-level change control and a recorded reason.
+
+Decision points with criteria and possible outcomes (IDEAL)
+- Gate 1 (Telephonic Screening): Pass/Fail/Hold based on standardized checklist.
+- Gate 2 (Background Check): Clear / Escalate to EBC / Hold.
+- Technical panel decision: Pass / Fail / Borderline (single re-eval only).
+- Behavioral/hiring manager: Hire / Reject / Clarify (single retake allowed).
+- Offer lifecycle: Issued / Accepted / Rejected / Retracted (retraction requires approval and logged reason).
+
+Parallel activities and synchronization points (IDEAL)
+- Technical interviews can be scheduled in parallel to reduce time-to-hire but are synchronized by RC before moving to final decision (RC collects all interview outcomes into a single decision meeting).
+- Background Check is completed before final offer; EBC, if needed, completes before final hiring decision.
+
+Exception handling and error paths (IDEAL)
+- Data-quality and case re-opening: strict governance — re-opening closed cases only via RC with documented rationale and audit trail.
+- Inconclusive background checks: pause pipeline, request candidate info; escalate to EBC only on documented triggers.
+- Offer retraction: allowed only for documented contractual or eligibility failures and must be approved by HR leadership; impact analysis and candidate communication plan required.
+- Late or missing interview results: Target SLAs enforced; missed results lead to auto-reminders then RC intervention.
+
+Rework loops and controlled re-evaluations
+- Re-evaluations are limited to one additional round per gate (one additional behavioral interview or a targeted technical follow-up) and must be time-boxed (e.g., within 7 calendar days).
+- No unlimited looping between interview types; panel members must document rationale for re-evaluation.
+
+End conditions and outcomes
+- Hire (Offer accepted, onboarding initiated) — process closed successfully.
+- Rejection (Application Rejected recorded and case closed) — terminal.
+- Withdrawn by candidate — terminal.
+- Re-opened cases are exceptional and require RC approval with audit trail.
+
+Process metrics and performance targets (IDEAL)
+- Telephonic Screening SLA: initial screen within 3 business days from application.
+- Background Check SLA: standard check within 5 business days; EBC within 10 business days.
+- Interview cycle time: target total time-to-hire median <= 30 days; technical panel and behavioral decision within 10 business days after Telephonic Screening pass.
+- Rework limits: average re-evaluation count per hire <= 0.2 (i.e., limited).
+- Quality metrics: offer acceptance rate >= target (e.g., 60%), retraction rate <= 1%.
+- Data quality: zero incidents of Application Rejected -> further interviews in normal operations (all such occurrences treated as governance breaches).
+
+Improvements made over AS-IS
+- Removes inconsistent ordering by enforcing Telephonic Screening before Background Check or clearly documenting exceptions.
+- Eliminates ad-hoc rework loops with strict limits and documented re-evaluation rules.
+- Reduces candidate confusion by centralizing case ownership with RC and enforcing single source of truth for case status.
+- Controls background check escalation and reduces unnecessary Extensive Background Checks.
+- Introduces SLAs and auditability to avoid unlogged re-openings and offer retractions.
+- Coordinates technical interviews to prevent redundant evaluations and reduce overall interviewer load.
+
+Implementation notes and governance
+- Introduce case management tool updates to enforce state transitions and record reasons for re-opening.
+- Define explicit checklists and scoring rubrics for Telephonic Screening and interviews.
+- Train RCs and interviewers on new sequencing and escalation rules.
+- Monitor adherence with dashboards showing cycle times, rework counts, EBC triggers, and offer lifecycle events.
+
+Concluding statement
+- The IDEAL process maintains all necessary evaluation steps but removes the high variability, enforces sequencing and governance, tightens re-evaluation rules, and introduces measurable SLAs to improve time-to-hire, candidate experience, and process transparency.

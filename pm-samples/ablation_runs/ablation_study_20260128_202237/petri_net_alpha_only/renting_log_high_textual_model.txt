@@ -1,0 +1,190 @@
+write_AS_IS_comprehensive_textual_description(content: "
+AS-IS Process Model
+
+Process overview and purpose
+- The discovered model reflects a residential tenancy lifecycle from initial inquiry through screening, contracting, move-in, and rent payment exception handling.
+- It is derived from an Alpha Miner Petri net; all activities are visible transitions with no silent steps. The miner exposes multiple decision points and an explicit late-payment rework loop. Some activities are disconnected, indicating discovery limitations and incomplete control-flow capture.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source model. Activities are presented without lane/role assignments.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start: A prospective tenant initiates the process by performing Apply for Viewing Appointment.
+
+Core activities and ordering
+1) Apply for Viewing Appointment
+   - Immediate decision (exclusive):
+     a) Reject Prospective Tenant (one observed outcome connected directly to the application), leading to process end.
+     b) Set Appointment, continuing the process.
+
+2) Set Appointment → View The Property
+   - The appointment is set, followed by the viewing.
+
+3) View The Property
+   - Decision (exclusive):
+     a) Reject Prospective Tenant, ending the process.
+     b) Hand In The Paperwork to proceed.
+
+4) Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant
+   - Paperwork is submitted and checked; then the prospective tenant is screened.
+
+5) Screen Prospective Tenant
+   - Two downstream routes are present:
+     a) Extensive Screening, then decision:
+        - Reject Prospective Tenant (end), or
+        - Sign Contract (continue).
+     b) Direct decision without escalation:
+        - Reject Prospective Tenant (end), or
+        - Sign Contract (continue).
+   - Notes on discovery artifacts: the Alpha model shows multiple places connecting Screen Prospective Tenant, View The Property, and Apply for Viewing Appointment to Reject Prospective Tenant. Practically, this reflects that rejection may occur after application, after viewing, or post-screening. The model structure may require prior steps to have happened, but business-wise it indicates multiple legitimate rejection points.
+
+6) Sign Contract → Move In
+   - Upon signing, the tenant moves in.
+
+Post–move-in rent handling (exception-centric)
+7) Move In → Miss Rent Payment (loop setup)
+   - The model directly connects Move In to the delinquency sub-process and does not show the standard on-time Pay Rent path as part of the connected flow.
+   - From Miss Rent Payment:
+     - Issue Warning, then decision:
+       a) Accept Late Payment → returns to the same “risk of Miss Rent Payment” state (loop), or
+       b) Evict Tenant → process end.
+
+Parallel activities and synchronization points
+- No parallel branches are explicitly discovered. All visible activities are sequenced or appear as choices.
+
+Exception handling and error paths
+- Rejection can occur at multiple stages: directly after application, after viewing, after screening, or after extensive screening.
+- Late payment loop: Miss Rent Payment → Issue Warning → Accept Late Payment cycles indefinitely; Evict Tenant ends the case.
+- Tenant Cancels Appartment is discovered as a terminal activity that leads directly to end but is disconnected (no incoming arcs). This indicates cancellations are observed but the miner could not anchor them to specific prior steps; in practice, cancellations likely terminate a case at various pre-contract points.
+- Pay Rent exists as a discovered transition but is completely disconnected from the main flow. Normal on-time rent payments are therefore not represented in the connected model.
+
+Rework loops and escalation procedures
+- Late payment rework loop: Accept Late Payment feeds back to a state from which Miss Rent Payment can occur again, enabling repeated cycles of late payment and warning without an explicit limit before eviction.
+- Paperwork/screening does not show explicit rework in the discovered net; however, the multiple rejection points imply back-and-forth may occur prior to a final decision.
+
+End conditions and outcomes
+- Reject Prospective Tenant (ends case).
+- Tenant Cancels Appartment (ends case; disconnected in the discovered net).
+- Evict Tenant (ends case).
+- Ongoing tenancy with regular payments is not represented because Pay Rent is disconnected; the model focuses the post–move-in flow on exceptions.
+
+Process metrics and performance characteristics
+- Structural characteristics:
+  - Multiple exclusive decision points (post-application, post-viewing, post-screening, post-extensive screening).
+  - One explicit rework loop in the delinquency sub-process (Accept Late Payment → Miss Rent Payment risk → Issue Warning).
+  - Disconnected transitions (Pay Rent, Tenant Cancels Appartment) suggesting incomplete discovery or variant behavior not properly anchored.
+- Suggested (non-numeric) measures to monitor:
+  - Lead time from Apply for Viewing Appointment to Sign Contract.
+  - Conversion rates at each decision point (reject after application, after viewing, after screening).
+  - Rate of escalations to Extensive Screening.
+  - Post–move-in delinquency metrics: frequency of Miss Rent Payment, number of late-payment cycles before Evict Tenant, time from Miss Rent Payment to Accept Late Payment.
+  - Cancellation rate (Tenant Cancels Appartment), and at which stages it tends to occur (requires log enrichment since the model is disconnected here).
+
+Key challenges and pain points
+- Incomplete normal-flow modeling: Pay Rent is not connected, so the model over-emphasizes exceptions after move-in and omits the standard on-time payment path.
+- Disconnected cancellation: Tenant Cancels Appartment is terminal but unanchored, obscuring where cancellation happens.
+- Ambiguous rejection connectivity: Multiple merges to Reject Prospective Tenant reduce clarity about the exact criteria and timing; the miner’s places imply combined prerequisites that are not business-meaningful.
+- Unlimited late-payment rework: The Accept Late Payment loop has no explicit cap, enabling repeated cycles that can inflate operational effort and arrears before eviction.
+- Potential bottlenecks: Screening and Extensive Screening are central gates but without visible SLAs or escalation paths besides rejection; this can prolong cycle time.
+")
+
+write_IDEAL_comprehensive_textual_description(content: "
+IDEAL Process Model
+
+Process overview and purpose
+- A streamlined, governance-aligned tenancy process that clarifies decision points, restores the standard on-time payment path, bounds rework in delinquency, and cleanly positions cancellation. It preserves all legitimate behaviors found in the source while removing discovery artifacts and tightening control.
+
+Key stakeholders and roles involved
+- Roles are not specified in the source; responsibilities are therefore left unassigned in this description. The flow highlights where decisions occur and should be owned.
+
+Detailed step-by-step process flow
+Start conditions and triggers
+- Start: Prospective tenant performs Apply for Viewing Appointment.
+
+Core activities and ordering (with explicit, exclusive decisions)
+1) Apply for Viewing Appointment
+   - Exclusive decision (clear criteria applied up front):
+     a) Reject Prospective Tenant → End (for clear ineligibility or failure to meet initial criteria).
+     b) Set Appointment → continue.
+
+2) Set Appointment → View The Property
+   - Appointment is confirmed; viewing occurs as scheduled.
+
+3) View The Property
+   - Exclusive decision:
+     a) Reject Prospective Tenant → End (e.g., landlord declines after viewing).
+     b) Hand In The Paperwork → continue.
+
+4) Hand In The Paperwork → Check Paperwork → Screen Prospective Tenant
+   - Paperwork is validated first; screening is then performed.
+
+5) Screen Prospective Tenant
+   - Exclusive decision:
+     a) Escalate to Extensive Screening when risk or ambiguity warrants it.
+        - Extensive Screening → exclusive decision:
+          i) Reject Prospective Tenant → End, or
+          ii) Sign Contract → continue.
+     b) No escalation needed:
+        - Exclusive decision:
+          i) Reject Prospective Tenant → End, or
+          ii) Sign Contract → continue.
+   - Note: Only one path fires (either escalate or not), eliminating the ambiguity seen in the mined model.
+
+6) Sign Contract → Move In
+   - Tenant takes possession per contract terms.
+
+Post–move-in rent handling (normal and exception paths)
+7) Normal monthly cycle:
+   - Pay Rent (on-time) → tenancy continues to next cycle.
+   - This restores the standard business path omitted in the discovered net.
+
+8) Exception cycle (when payment is missed):
+   - Miss Rent Payment → Issue Warning → exclusive decision:
+     a) Accept Late Payment → return to the normal cycle (subsequent months are expected to follow Pay Rent).
+     b) Evict Tenant → End.
+   - Governance improvement: Bound the number and/or frequency of late-payment loops before eviction (e.g., predefined tolerance and timeline), using the existing steps Issue Warning, Accept Late Payment, and Evict Tenant. This caps rework and provides predictable outcomes without adding new activities.
+
+Cancellation handling
+- Tenant Cancels Appartment is permitted as an early termination before Sign Contract:
+  - It may occur after Apply for Viewing Appointment, after Set Appointment, or after View The Property but prior to Sign Contract.
+  - Cancellation ends the case immediately upon occurrence.
+  - This anchors the previously disconnected activity to clear pre-contract stages without changing its behavior.
+
+Parallel activities and synchronization points
+- No parallel work is required in the idealized flow. Activities remain sequenced, and decisions are exclusive to avoid ambiguity.
+
+Exception handling, rework, and escalation
+- Rejection remains possible at distinct, well-defined gates (post-application, post-viewing, post-screening/extensive screening).
+- Late-payment rework is controlled by policy limits on repeated Accept Late Payment cycles before Evict Tenant.
+- Clear end-of-case outcomes are defined for each terminal path.
+
+End conditions and outcomes
+- Reject Prospective Tenant.
+- Tenant Cancels Appartment (pre-contract).
+- Evict Tenant (post–move-in delinquency).
+- Ongoing tenancy with periodic Pay Rent (non-terminal, normal operation).
+
+Process metrics and performance characteristics
+- Cycle-time SLAs:
+  - Apply for Viewing Appointment → Set Appointment → View The Property lead time.
+  - Hand In The Paperwork → Screen Prospective Tenant → decision lead time.
+  - Extensive Screening turnaround time where invoked.
+- Conversion and quality metrics:
+  - Rejection rates by gate (post-application, post-viewing, post-screening).
+  - Escalation rate to Extensive Screening and acceptance rate after escalation.
+- Tenancy financial health:
+  - On-time Pay Rent rate.
+  - Incidence of Miss Rent Payment and mean number of late cycles before Accept Late Payment or Evict Tenant.
+  - Average time from Miss Rent Payment to Accept Late Payment.
+- Compliance and governance:
+  - Adherence to warning and eviction timelines.
+  - Conformance to bounded late-payment cycles.
+
+Improvements made versus AS-IS
+- Clarified exclusive decision logic at each gate, removing ambiguous multi-merge artifacts and preventing concurrent contradictory outcomes.
+- Restored the normal Pay Rent path as the default post–move-in flow to balance the exception-centric view.
+- Anchored Tenant Cancels Appartment to pre-contract stages for transparent termination handling.
+- Introduced governance limits on repeated late-payment cycles (policy-level improvement using existing activities) to reduce operational churn and arrears.
+- Defined clear terminal states and non-terminal continuation, improving process transparency and measurability.
+")

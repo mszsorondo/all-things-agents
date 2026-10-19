@@ -1,0 +1,81 @@
+### IDEAL Process Model
+
+#### Process Overview and Purpose
+The IDEAL process model is an improved, streamlined version of the recruitment process. It enforces a logical, sequential funnel with clear decision gateways, eliminates reworks/loops, fixes sequencing issues, removes late rejections and post-reject continuations, collapses redundant checks/loops, and ensures progression only on passes. The purpose remains evaluating applicants efficiently to select top candidates via standardized screenings, interviews, and verifications, culminating in a single job offer or rejection. Variability is minimized to a single happy path with early exits.
+
+#### Key Stakeholders and Roles Involved
+Roles not explicitly specified; inferred general involvement:
+- Applicant
+- HR/Recruiters (screening, telephonic, background)
+- Technical team (coding, specialized interviews)
+- Behavioral interviewer
+- Hiring manager (offer)
+
+#### Detailed Step-by-Step Process Flow
+**Start Conditions and Triggers:** Triggered by "Hand In Job Application".
+
+1. **Hand In Job Application** (mandatory start).
+
+2. **Telephonic Screening** (made mandatory for initial fit check).
+
+3. **Screening Interview** (fixed before background to qualify interest/skills).
+
+4. **Background Check** (standard verification post-screening).
+
+   **Decision Gateway 1 (post-background):** Pass? → Proceed; Fail → **Application Rejected** → End (early exit).
+
+5. **Coding Interview** (core technical assessment).
+
+   **Decision Gateway 2:** Pass? → Proceed; Fail → Reject → End.
+
+6. **Technical Interviews Block** (sequential to fix order variability; optional skips removed):
+   - **Frontend Interview**
+   - **Backend Interview**
+   - **ML Interview** (sequence ensures coverage; parallel not needed as no true concurrency in source).
+
+   **Decision Gateway 3 (after all tech):** Overall pass? → Proceed; Fail → Reject → End.
+
+7. **Behavioral Interview** (single instance, no loop).
+
+   **Decision Gateway 4:** Pass? → Proceed; Fail → Reject → End.
+
+8. **Extensive Background Check** (moved to late stage pre-offer for high-risk candidates; replaces early optional).
+
+   **Decision Gateway 5:** Clear? → Proceed; Fail → Reject → End.
+
+9. **Make Job Offer** (single execution, no loop).
+
+**End Conditions and Outcomes:**
+- Success: Job Offer made → Process ends positively (assume acceptance or handle post-offer separately).
+- Rejection: At any gateway → **Application Rejected** → End.
+
+**Decision Points:**
+- Exclusive (XOR) gateways after each major step.
+- Criteria: Interviewer evaluation (pass/fail based on skills, fit, checks).
+- No inclusive/parallel splits; all sequential for simplicity.
+
+**Parallel Activities and Synchronization Points:**
+- None; fully sequential to avoid synchronization issues.
+
+**Exception Handling and Error Paths:**
+- Centralized reject paths from gateways; no late/post-offer rejects.
+- Escalation: Implicit in decisions (e.g., fail → reject).
+
+**Rework Loops and Escalation Procedures:**
+- Eliminated all loops/skips; no re-interviews unless new application.
+- Escalations handled via gateways (e.g., borderline → extensive check).
+
+#### Process Metrics and Performance Characteristics
+- Expected cycle time: Reduced by 50-70% (no loops, fixed order; est. ~250k-350k ms vs. AS-IS 450k-530k).
+- Throughput: Higher offer rate via early filters preventing deep failures.
+- Variability: Single path with branches only for rejects.
+- Bottlenecks resolved: Fixed sequence, no shuffles.
+
+#### Key Improvements Made
+- Standardized sequence: Telephonic → Screening → BG → Coding → Tech seq → Behavioral → Extensive BG → Offer.
+- Removed order swaps (BG/Screening fixed), tech shuffles (sequential), self-loops.
+- Early rejections only; no post-behavioral/offer rejects or post-reject continuations.
+- Optional steps mandatory where value-adding (telephonic); extensive BG late-gated.
+- Eliminated reworks, improving efficiency and candidate experience.
+- Clear funnel reduces costs, faster decisions, better compliance.
+- Enforces governance: Progression only on passes, single offer.

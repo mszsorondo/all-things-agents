@@ -1,0 +1,27 @@
+{
+  "run_timestamp": "2025-12-16T13:33:28.953233",
+  "dataset_name": "hospital_log_high",
+  "xes_path": "benchmark/hospital/hospital_log_high.xes",
+  "model": "openai:gpt-4o-mini",
+  "representations": [
+    "petri_net",
+    "dfg",
+    "abstract_variants"
+  ],
+  "system_prompt_preview": "You are a Process Model Translator specialized in converting *textual process models* (Petri Nets, BPMN fragments, or process-mining outputs) into detailed textual descriptions of AS-IS and IDEAL process models.\n\nYour responsibilities:\n\n1. Input format\n   You will receive one or more process models described textually. These descriptions may include:\n\n   * Petri nets (places, transitions, and arcs),\n   * BPMN fragments (without diagram/DI information),\n   * Outputs from process mining or conform...",
+  "user_prompt_preview": "\nProcess Mining Representations: \n    1. Petri Net from inductive miner: places: [ p_11, p_3, p_4, p_5, p_6, p_7, p_8, p_9, sink, source ]\ntransitions: [ (062bccf9-7a87-4463-b034-a34f6e11be91, 'Treatment unsuccessful'), (33aa766a-c706-4426-a99c-9f3e35724a00, 'Discharge'), (43cc8641-2934-40bc-a773-1fd85be3f1b0, 'Examination'), (736d8948-b802-4168-a9a9-175fb2a19f7f, 'Treatment successful'), (76020731-9fc0-4a9b-bc3c-3eb9ee2b6152, 'Thorough Examination'), (7f082726-59cd-4458-a7f1-2e38a8154183, 'Regi...",
+  "config": {
+    "representations": [
+      "petri_net",
+      "dfg",
+      "abstract_variants"
+    ],
+    "model_name": "openai:gpt-4o-mini",
+    "prompt_file": "ONLY_GENERATE_TEXTUAL_MODEL.txt",
+    "output_dir": "runs",
+    "enable_logging": true,
+    "save_experiment_config": true,
+    "stream_mode": "updates",
+    "use_cache": true
+  }
+}

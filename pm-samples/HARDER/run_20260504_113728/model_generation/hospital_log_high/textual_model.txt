@@ -1,0 +1,149 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage a patient episode from arrival/registration through clinical assessment, diagnosis, treatment, and discharge.
+- Scope: Starts when a patient registers either at the Emergency Room (ER) or Front Desk (FD) and ends at Discharge.
+- Observed behavior: The process contains alternative pre-diagnosis assessment routes, optional steps, and an iterative treatment loop that can repeat multiple times before final discharge. Some cases discharge without an explicit “Treatment successful” record.
+
+Key stakeholders and roles involved
+- Roles/actors are not specified in the source data. Activities are listed as observed steps without role assignments.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- Trigger: A patient episode begins when the patient registers at either:
+  - Register at ER, or
+  - Register at FD
+- The start is exclusive (a case begins with one of these, not both).
+
+Activities (as observed)
+- Register at ER
+- Register at FD
+- Examination (standard examination)
+- Expert Examination (specialist-level assessment)
+- Thorough Examination (in-depth assessment)
+- Diagnosis
+- Treatment
+- Treatment unsuccessful (explicit outcome marker)
+- Treatment successful (explicit outcome marker)
+- Discharge (process completion)
+
+Core control flow and valid orderings
+
+1) Entry and pre-diagnosis assessment (exclusive alternatives followed by an optional step)
+- Immediately after Register at ER or Register at FD, one of the following mutually exclusive paths occurs:
+  a) Examination
+  b) Expert Examination
+  c) Skip directly to the next stage without either examination (implicit in the model)
+- Then, from the next stage, Thorough Examination is optional:
+  - If performed: … -> Thorough Examination -> …
+  - If skipped: … -> (no thorough exam) -> …
+- All pre-diagnosis assessment paths converge at Diagnosis.
+
+Explicitly enumerated valid pre-diagnosis sequences (all occur with both ER and FD as the starting registration):
+- Register at ER/FD -> Examination -> Thorough Examination -> Diagnosis
+- Register at ER/FD -> Examination -> Diagnosis
+- Register at ER/FD -> Expert Examination -> Thorough Examination -> Diagnosis
+- Register at ER/FD -> Expert Examination -> Diagnosis
+- Register at ER/FD -> Thorough Examination -> Diagnosis (skipping the initial Examination/Expert Examination)
+- Register at ER/FD -> Diagnosis (skipping both the initial exam and the thorough exam)
+
+Notes:
+- Examination and Expert Examination are exclusive; they do not co-occur in the same case.
+- Thorough Examination, when it occurs, follows whichever of the two examinations (if any) was done, or it can follow registration directly if the initial exam was skipped.
+- The Petri net’s silent transitions account for the observed ability to skip examinations and go straight to Diagnosis.
+
+2) Diagnosis to Treatment
+- After Diagnosis, the process always proceeds to Treatment (no observed alternative end before Treatment).
+
+3) Post-treatment outcomes and the rework loop
+- After Treatment, there is an exclusive choice among three outcomes:
+  a) Treatment unsuccessful -> loop back to Diagnosis
+     - Pattern: … -> Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment -> …
+     - This rework loop can repeat multiple times (observed up to at least five cycles in rare variants).
+  b) Treatment successful -> Discharge
+     - Pattern: … -> Treatment -> Treatment successful -> Discharge
+  c) Direct Discharge without an explicit success record
+     - Pattern: … -> Treatment -> Discharge
+     - This is a valid and observed path (the model allows a silent step that bypasses the “Treatment successful” record before discharge).
+
+Synchronization and merging points
+- All pre-diagnosis alternatives merge at Diagnosis.
+- The treatment loop (if any) ultimately resolves to Discharge, either after an explicit Treatment successful or by discharging directly after a Treatment without that success record.
+- No true parallelism is observed; all branching is by exclusive choice, followed by merges.
+
+Exception handling and error paths (as actually observed)
+- Skipped assessments: Some cases bypass all examinations (no Examination, no Expert Examination, no Thorough Examination) and move straight from registration to Diagnosis.
+- Missing success marker before discharge: A non-trivial portion of cases go from Treatment directly to Discharge without the “Treatment successful” activity being recorded.
+- Rework: “Treatment unsuccessful” explicitly triggers a return to Diagnosis and another Treatment cycle; this may repeat multiple times before eventual discharge.
+
+Rework loops and escalation
+- Rework loop structure:
+  [Treatment -> Treatment unsuccessful -> Diagnosis -> Treatment]n, n ≥ 1
+  Eventually followed by either:
+  - Treatment -> Treatment successful -> Discharge, or
+  - Treatment -> Discharge (no explicit success recorded)
+- Observed depth: Up to at least five unsuccessful cycles in rare cases.
+- No alternate escalation or termination endpoints were observed; all cases end in Discharge.
+
+End conditions and outcomes
+- Single end event: Discharge.
+- Two discharge patterns exist:
+  - With explicit success: … -> Treatment successful -> Discharge
+  - Without explicit success: … -> Treatment -> Discharge
+
+Process metrics and performance characteristics
+
+Frequencies (selected, from directly-follows counts and top variants)
+- Start alternatives are both common:
+  - Register at FD -> next step and Register at ER -> next step occur in comparable volumes (e.g., FD->Expert Examination: 2,888; ER->Expert Examination: 2,866).
+- Dominant “happy-path”-type variants (selected):
+  - FD -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge: ~15%
+  - ER -> Expert Examination -> Thorough Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge: ~14%
+  - FD -> Expert Examination -> Diagnosis -> Treatment -> Treatment successful -> Discharge: ~8%
+  - ER/FD -> Examination -> (optional Thorough Examination) -> Diagnosis -> Treatment -> Treatment successful -> Discharge: each ~5–7%
+- Rework prevalence (transition-level view):
+  - After Treatment, direct successors observed:
+    - Treatment -> Treatment successful: 9,005
+    - Treatment -> Treatment unsuccessful: 1,746
+    - Treatment -> Discharge: 995
+  - Approximate split of outcomes from Treatment steps: ~77% successful, ~15% unsuccessful (rework), ~8% direct discharge (no explicit success record).
+- Looping: Rare but present; a small share of cases iterate the unsuccessful loop multiple times before completing.
+
+Performance (average time differences, indicative order of magnitude)
+- Diagnosis -> Treatment: ~60,000 seconds (~16.7 hours)
+- Treatment -> Treatment successful: ~60,001 seconds (~16.7 hours)
+- Treatment successful -> Discharge: ~40,001 seconds (~11.1 hours)
+- Treatment -> Discharge (without success record): ~100,003 seconds (~27.8 hours) — notably slower than when a success record exists
+- Pre-diagnosis steps (typical):
+  - Register -> Examination/Expert Examination: ~40,000 seconds (~11.1 hours)
+  - Examination/Expert Examination -> Thorough Examination: ~60,000 seconds (~16.7 hours)
+  - Examination/Expert Examination -> Diagnosis (when thorough is skipped): ~60,000 seconds (~16.7 hours)
+- Whole-case durations (selected variants; average throughput):
+  - Typical non-rework paths with success: ~260,000–320,000 seconds (~3.0–3.7 days)
+  - Paths with multiple rework cycles: ~580,000–1,120,000 seconds (~6.7–13.0 days)
+
+Key challenges and pain points observed in the current process
+- High variability before Diagnosis:
+  - Multiple exclusive paths (Examination, Expert Examination, or skipping them), plus optional Thorough Examination, lead to inconsistent assessment depth across cases.
+  - Some cases bypass all examinations and go straight to Diagnosis, which may contribute to later rework.
+- Rework after Treatment:
+  - Approximately 15% of observed post-treatment outcomes are explicitly labeled “Treatment unsuccessful,” forcing a return to Diagnosis and additional treatment cycles.
+  - Rare cases repeat this loop many times, driving very long case durations (up to ~13 days on average in the longest observed variants).
+- Data/completion quality:
+  - About 8–10% of post-treatment transitions go directly to Discharge without an explicit “Treatment successful” record. This may indicate documentation gaps or an alternate clinical discharge decision-making path not captured by a success marker.
+- Waiting times/bottlenecks:
+  - Many handoffs show day-scale delays (~11–17 hours) between steps.
+  - The “Treatment -> Discharge” path without a success record is significantly slower than the “Treatment successful -> Discharge” path, suggesting post-treatment administrative or clinical confirmation delays when success is not explicitly recorded.
+- Predictability and throughput:
+  - The combination of optional assessments and the treatment rework loop yields highly variable overall durations (ranging from ~3 days to ~13 days on average, depending on loops), complicating resource planning and patient flow predictability.
+
+This AS-IS description permits every observed variant:
+- All start alternatives (Register at ER or FD).
+- All pre-diagnosis orderings (Examination vs Expert Examination vs skip; Thorough Examination optional; both exams do not co-occur).
+- Mandatory Diagnosis before Treatment.
+- Post-treatment exclusive outcomes:
+  - Treatment unsuccessful -> loop to Diagnosis (repeatable, any number of times, including multiple).
+  - Treatment successful -> Discharge.
+  - Direct Discharge after Treatment without an explicit success record.
+- Single terminal event: Discharge.

@@ -1,0 +1,71 @@
+
+============================================================
+REPRESENTATION 1: DFG
+============================================================
+
+
+=== DIRECTLY-FOLLOWS GRAPH (DFG) INTERPRETATION GUIDE ===
+
+A DFG shows the frequency of direct succession between activities.
+
+OUTPUT FORMAT:
+--------------
+"If I have a process with flow:
+
+Activity A -> Activity B ( frequency = 1234  performance = 82439.794 )
+Activity B -> Activity C ( frequency = 567  performance = 81906.421 )
+Activity C -> Activity D ( frequency = 345  performance = 0.000 )
+..."
+
+READING THE OUTPUT:
+- Each line: "Source -> Target ( frequency = N  performance = T )"
+- frequency: Number of times this direct succession was observed
+- performance: Average time between activities (in seconds, 0.000 if instant)
+- Lines are typically sorted by frequency (descending)
+
+INTERPRETATION:
+1. HIGH FREQUENCY EDGES (>1000): Main process flow paths
+2. MEDIUM FREQUENCY (100-1000): Common alternative paths
+3. LOW FREQUENCY (<100): Rare variants or exceptions
+4. SELF-LOOPS (A -> A): Activity repetition (rework)
+5. PERFORMANCE VALUES:
+   - High values: Bottlenecks or waiting times
+   - 0.000: Activities happen simultaneously or instantly after
+
+LIMITATIONS:
+- Cannot distinguish XOR (exclusive) from AND (parallel) splits
+- May show paths that don't complete (A->B doesn't mean B always follows A)
+- Sensitive to noise in event logs
+
+USE FOR:
+- Quick process overview
+- Identifying bottlenecks (high performance values)
+- Finding main vs alternative paths
+- Detecting loops and rework
+
+
+--- DISCOVERED MODEL ---
+If I have a process with flow:
+
+Diagnosis -> Treatment ( frequency = 11746  performance = 60000.515 )
+Treatment successful -> Discharge ( frequency = 9005  performance = 40000.809 )
+Treatment -> Treatment successful ( frequency = 9005  performance = 60000.920 )
+Thorough Examination -> Diagnosis ( frequency = 5922  performance = 60000.484 )
+Expert Examination -> Thorough Examination ( frequency = 3637  performance = 60000.837 )
+Register at FD -> Expert Examination ( frequency = 2888  performance = 40000.311 )
+Register at ER -> Expert Examination ( frequency = 2866  performance = 39999.839 )
+Expert Examination -> Diagnosis ( frequency = 2117  performance = 60001.158 )
+Examination -> Thorough Examination ( frequency = 1968  performance = 60001.727 )
+Register at ER -> Examination ( frequency = 1826  performance = 39999.967 )
+Register at FD -> Examination ( frequency = 1783  performance = 40000.349 )
+Treatment unsuccessful -> Diagnosis ( frequency = 1746  performance = 40000.741 )
+Treatment -> Treatment unsuccessful ( frequency = 1746  performance = 60001.635 )
+Examination -> Diagnosis ( frequency = 1641  performance = 60001.797 )
+Treatment -> Discharge ( frequency = 995  performance = 100002.807 )
+Register at FD -> Diagnosis ( frequency = 163  performance = 80001.325 )
+Register at ER -> Thorough Examination ( frequency = 159  performance = 79999.434 )
+Register at FD -> Thorough Examination ( frequency = 158  performance = 80001.253 )
+Register at ER -> Diagnosis ( frequency = 157  performance = 80003.134 )
+
+
+

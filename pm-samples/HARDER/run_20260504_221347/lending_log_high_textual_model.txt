@@ -1,0 +1,171 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: Manage consumer loan requests from initial appointment request through preliminary intake, verification, possible pre-underwriting work, underwriting decision, and finalization (agreement signing or denial).
+- Scope covered by the event log and discovered models: From Request Appointment to one of four end states: Appointment Denied, Application Rejected, Loan Denied, or Sign Loan Agreement.
+- Key characteristics:
+  - A single mandatory front-end path for most cases: Request Appointment → Set Appointment → Hand In Credit Appliaction → Verify Borrowers Information.
+  - After verification, multiple alternative outcomes and paths: early rejection, a rare “skip examination” fast-track to signing, or a pre-underwriting work package (co-signer request and/or collateral visits, potentially repeated) leading to underwriting submission and decision.
+
+Key stakeholders and roles involved
+- Online System and Hotline: Front-door channels used to request and set appointments and to submit application data.
+- Loan Officers (Loan Officer 1–5): Handle intake, verification, and pre-underwriting work (e.g., collecting additional information, requesting co-signers, coordinating collateral visits, submitting to underwriting).
+- Field/Support Resources (Resource 1–5, 3–5, 4, etc.): Frequently appear around collateral visits and supporting activities.
+- Underwriters:
+  - Chill UW1–UW3 and Strict UW1–UW3: Underwriting resources producing outcomes (Loan Denied or enabling Sign Loan Agreement).
+  - MostChillUW: Observed on the “skipped_examination” fast-track path that leads directly to signing.
+Note: The event log lists resources but does not tie each activity to a single named resource. The assignments above reflect commonly observed involvement based on resource naming and typical responsibilities.
+
+Detailed step-by-step process flow
+
+Start conditions and triggers
+- The process is always initiated by Request Appointment (100% of cases; 10,000 instances). Triggering channels include Hotline and Online System.
+
+1) Request Appointment (start)
+- Immediately followed by an exclusive decision:
+  - Path 1: Appointment Denied
+    - The appointment request is refused without further processing.
+    - End state: Appointment Denied (9% of cases; 962/10,000).
+    - Average time from request to denial: ~86,227 seconds (~24 hours).
+  - Path 2: Appointment Confirmed and Intake
+    - Proceed to Set Appointment.
+
+2) Set Appointment (exactly once when path 2 is taken)
+- Scheduled via Online System/Hotline; sets date/time for intake.
+
+3) Hand In Credit Appliaction (exactly once when path 2 is taken)
+- Applicant submits the credit application through the Online System or assisted by a Loan Officer.
+
+4) Verify Borrowers Information (exactly once when path 2 is taken)
+- Loan Officer verifies identity, income, credit profile, and supporting documentation.
+
+5) Post-verification branching (exclusive decision)
+- After verification, one of the following occurs:
+
+  5A) Application Rejected
+  - The application is rejected at verification (e.g., due to incomplete or insufficient documentation).
+  - End state: Application Rejected (16% of cases; 1,624/10,000).
+  - Typical time from verification to rejection: ~32,266 seconds (~9 hours).
+  - No further processing on the case.
+
+  5B) Proceed to evaluation (two alternative sub-paths)
+
+    5B-1) “Skipped examination” fast-track
+    - Activity: skipped_examination (observed when the process bypasses the normal submission/evaluation steps).
+    - Immediately followed by Sign Loan Agreement (observed in all such cases; near-zero delay).
+    - End state: Sign Loan Agreement.
+    - Frequency: ~3% of all cases; 332 skip_examination events, each followed by signing.
+
+    5B-2) Pre-underwriting work (optional and potentially concurrent), then underwriting submission and decision
+    - Before submitting to underwriting, the process may execute either, both, or neither of the following activities. These activities can occur in any order, can interleave, and collateral visits can repeat:
+      - Request Co-Signer On Loan: optional; occurs 0 or 1 time per case.
+      - Make Visit to Assess Colatteral: optional; 0 to many repetitions per case (observed loops up to many visits).
+    - All valid orderings and interleavings observed/allowed before Submit File to Underwriter include:
+      - Neither activity occurs → directly Submit File to Underwriter.
+      - Only Request Co-Signer On Loan → then Submit.
+      - Only Make Visit to Assess Colatteral repeated N≥1 times (e.g., Visit ×N) → then Submit.
+      - Request Co-Signer first, then Visit ×N → then Submit.
+      - Visit ×i, then Request Co-Signer, then Visit ×j (i, j ≥ 0; at least one visit overall) → then Submit.
+      - Interleavings such as: Visit → Request Co-Signer → Visit → Visit → Submit (any mix where Request Co-Signer appears at most once, visits can appear any number of times).
+    - Synchronization/merge: Once the pre-underwriting work chosen for the case (if any) is done, flow merges into Submit File to Underwriter.
+    - Submit File to Underwriter: mandatory gateway into underwriting for this sub-path.
+
+    Underwriting decision (exclusive decision after submission)
+    - Loan Denied
+      - End state: Loan Denied (48% of cases overall; 4,787/10,000).
+      - Typically follows Submit File to Underwriter with ~82,666 seconds (~23 hours) to decision.
+    - Sign Loan Agreement
+      - End state: Sign Loan Agreement (26% of cases overall; 2,627/10,000).
+      - Typically follows Submit File to Underwriter with ~80,725 seconds (~22.4 hours) to signing.
+
+Parallel activities and synchronization points
+- Pre-underwriting work (Request Co-Signer and Collateral Visits) is modeled as parallel/independent optional activities:
+  - Both can occur in any order and interleave.
+  - Request Co-Signer occurs at most once; Collateral Visit can repeat zero or many times.
+  - After these, activities converge at a merge point before Submit File to Underwriter.
+
+Exception handling and error paths
+- Early termination at appointment stage: Appointment Denied (no intake work is performed afterward).
+- Early termination at verification: Application Rejected.
+- “Skipped examination” path: a fast-track that bypasses Submit File to Underwriter and leads directly to Sign Loan Agreement. It is rare (~3%) and occurs immediately prior to signing, suggesting an exception/policy-based approval.
+
+Rework loops and escalation procedures
+- Rework loop: Make Visit to Assess Colatteral may repeat multiple times (self-loop observed), often interleaving with or surrounding a Request Co-Signer step. This contributes significantly to longer end-to-end durations in affected cases.
+- No explicit escalation steps are logged; however, extended sequences of visits indicate iterative resolution attempts before underwriting submission.
+
+End conditions and outcomes
+- Appointment Denied (9%): Process ends at initial intake gate.
+- Application Rejected (16%): Process ends at verification gate.
+- Loan Denied (48%): Process ends with an underwriting denial after submission.
+- Sign Loan Agreement (26%): Process ends with a signed agreement either:
+  - Directly after skipped_examination (fast-track), or
+  - Following Submit File to Underwriter (standard route).
+
+Process metrics and performance characteristics
+
+Volumes and distributions (approximate, across 10,000 cases)
+- Start: Request Appointment = 10,000 (100%).
+- End states:
+  - Appointment Denied = 962 (9%).
+  - Application Rejected = 1,624 (16%).
+  - Loan Denied = 4,787 (48%).
+  - Sign Loan Agreement = 2,627 (26%).
+- Intermediate activity frequencies (events):
+  - Set Appointment = 9,038
+  - Hand In Credit Appliaction = 9,038
+  - Verify Borrowers Information = 9,038
+  - Submit File to Underwriter = 7,082
+  - Request Co-Signer On Loan = 1,772
+  - Make Visit to Assess Colatteral = 2,522
+  - skipped_examination = 332
+
+Average waiting times between key steps (seconds; indicative of bottlenecks)
+- Request Appointment → Set Appointment: ~82,658 s (~23.0 hours)
+- Set Appointment → Hand In Credit Appliaction: ~82,659 s (~23.0 hours)
+- Hand In Credit Appliaction → Verify Borrowers Information: ~42,028 s (~11.7 hours)
+- Verify Borrowers Information → Submit File to Underwriter: ~48,327 s (~13.4 hours)
+- Verify Borrowers Information → Application Rejected: ~32,266 s (~9.0 hours)
+- Submit File to Underwriter → Loan Denied: ~82,666 s (~23.0 hours)
+- Submit File to Underwriter → Sign Loan Agreement: ~80,725 s (~22.4 hours)
+- skipped_examination → Sign Loan Agreement: ~0 s (immediate)
+- Make Visit to Assess Colatteral → Make Visit to Assess Colatteral (loop): ~22,399 s (~6.2 hours) average between visits
+
+Throughput time by common variants (whole-case durations; approximate)
+- Standard denial after underwriting: ~337,687 s (~3.91 days) [29% of cases]
+- Standard approval after underwriting: ~339,454 s (~3.93 days) [16%]
+- Rejected at verification: ~236,355 s (~2.73 days) [16%]
+- Appointment denied: ~86,227 s (~1.0 day) [9%]
+- Fast-track approval (skipped_examination → sign): ~260,013 s (~3.01 days) [~3%]
+- Long-tail cases with many collateral visits: up to ~469,827 s (~5.44 days)
+
+Resource perspective (as observed in the log)
+- Front-end/system channels: Online System, Hotline.
+- Case workers: Loan Officer 1–5.
+- Field/support resources for collateral: Resource 1–5 family.
+- Underwriters: Chill UW1–UW3, Strict UW1–UW3; MostChillUW involved in the skip-examination fast-track.
+Note: Actual activity-to-resource mapping varies per case and is not uniquely determined in the input; names above enumerate the actors active in this process.
+
+Key challenges and pain points observed in the current process
+- Multiple high-latency handoffs:
+  - ~23 hours between Request → Set Appointment and Set → Hand In Application.
+  - ~22–23 hours for the underwriting decision after submission.
+- Rework on collateral assessment:
+  - Repeated Make Visit to Assess Colatteral loops (sometimes many times) significantly extend end-to-end time (up to ~5.4 days).
+  - Interleaving of visits and co-signer steps indicates iterative, information-seeking behavior before submission.
+- Process variability and exceptions:
+  - The “skipped_examination” path bypasses standard submission and leads directly to signing. While rare, it creates compliance/consistency risk if policies for fast-tracking are not tightly controlled.
+- High denial rate after underwriting:
+  - Nearly half of all cases end in Loan Denied, implying upstream screening/verification and pre-underwriting checks may not sufficiently filter non-viable applications.
+- Workload and decision heterogeneity:
+  - Presence of both “Strict” and “Chill” underwriters hints at differing decision thresholds; without balancing, this may introduce outcome variability and perceived inconsistency.
+- Data quality and standardization:
+  - Spelling inconsistencies (e.g., “Appliaction”, “Colatteral”) suggest master-data or taxonomy issues that can complicate reporting and automation.
+
+Summary of control logic (for reference)
+- Start: Request Appointment.
+- XOR 1: Appointment Denied OR continue to Set Appointment → Hand In Credit Appliaction → Verify Borrowers Information.
+- XOR 2 (post-verification): Application Rejected OR continue via:
+  - Path A: skipped_examination → (optionally but observed always) Sign Loan Agreement → End.
+  - Path B: Pre-underwriting work (Request Co-Signer On Loan [0/1], Make Visit to Assess Colatteral [0..*], in any order/interleaving) → Submit File to Underwriter → XOR: Loan Denied OR Sign Loan Agreement → End.
+
+This AS-IS model captures all observed variants, including optional and repeatable behaviors, parallel/interleaved pre-underwriting activities, the exception fast-track to signing, and all four end states with their frequencies and timing characteristics.

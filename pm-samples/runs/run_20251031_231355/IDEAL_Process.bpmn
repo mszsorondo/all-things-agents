@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.signavio.com/bpmn20" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath">
+	<bpmn:process id="IdealProcess" isClosed="false" isExecutable="false" processType="None">
+		<bpmn:startEvent id="startEvent" name="Start">
+			<bpmn:outgoing>flow_HandoverJobApp</bpmn:outgoing>
+		</bpmn:startEvent>
+		<bpmn:task id="task_HandInJobApplication" name="Hand In Job Application">
+			<bpmn:incoming>flow_HandoverJobApp</bpmn:incoming>
+			<bpmn:outgoing>flow_TelephonicScreening</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_TelephonicScreening" name="Telephonic Screening">
+			<bpmn:incoming>flow_TelephonicScreening</bpmn:incoming>
+			<bpmn:outgoing>flow_BackgroundCheck</bpmn:outgoing>
+			<bpmn:outgoing>flow_ScreeningInterview</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_BackgroundCheck" name="Background Check">
+			<bpmn:incoming>flow_BackgroundCheck</bpmn:incoming>
+			<bpmn:outgoing>flow_ScreeningInterview</bpmn:outgoing>
+			<bpmn:outgoing>flow_CodingInterview</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_ScreeningInterview" name="Screening Interview">
+			<bpmn:incoming>flow_ScreeningInterview</bpmn:incoming>
+			<bpmn:outgoing>flow_CodingInterview</bpmn:outgoing>
+			<bpmn:outgoing>flow_BehavioralInterview</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_CodingInterview" name="Coding Interview">
+			<bpmn:incoming>flow_CodingInterview</bpmn:incoming>
+			<bpmn:outgoing>flow_FrontendInterview</bpmn:outgoing>
+			<bpmn:outgoing>flow_MLInterview</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_FrontendInterview" name="Frontend Interview">
+			<bpmn:incoming>flow_FrontendInterview</bpmn:incoming>
+			<bpmn:outgoing>flow_BehavioralInterview</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_BehavioralInterview" name="Behavioral Interview">
+			<bpmn:incoming>flow_BehavioralInterview</bpmn:incoming>
+			<bpmn:outgoing>flow_MakeJobOffer</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_MakeJobOffer" name="Make Job Offer">
+			<bpmn:incoming>flow_MakeJobOffer</bpmn:incoming>
+			<bpmn:outgoing>flow_End</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:endEvent id="endEvent" name="End">
+			<bpmn:incoming>flow_End</bpmn:incoming>
+		</bpmn:endEvent>
+		<bpmn:sequenceFlow id="flow_HandoverJobApp" sourceRef="startEvent" targetRef="task_HandInJobApplication" />
+		<bpmn:sequenceFlow id="flow_TelephonicScreening" sourceRef="task_HandInJobApplication" targetRef="task_TelephonicScreening" />
+		<bpmn:sequenceFlow id="flow_BackgroundCheck" sourceRef="task_TelephonicScreening" targetRef="task_BackgroundCheck" />
+		<bpmn:sequenceFlow id="flow_ScreeningInterview" sourceRef="task_TelephonicScreening" targetRef="task_ScreeningInterview" />
+		<bpmn:sequenceFlow id="flow_CodingInterview" sourceRef="task_ScreeningInterview" targetRef="task_CodingInterview" />
+		<bpmn:sequenceFlow id="flow_FrontendInterview" sourceRef="task_CodingInterview" targetRef="task_FrontendInterview" />
+		<bpmn:sequenceFlow id="flow_MakeJobOffer" sourceRef="task_BehavioralInterview" targetRef="task_MakeJobOffer" />
+		<bpmn:sequenceFlow id="flow_End" sourceRef="task_MakeJobOffer" targetRef="endEvent" />
+	</bpmn:process>
+	<bpmndi:BPMNDiagram id="BPMNDiagram_1">
+		<bpmndi:BPMNPlane bpmnElement="IdealProcess">
+		</bpmndi:BPMNPlane>
+	</bpmndi:BPMNDiagram>
+</bpmn:definitions>

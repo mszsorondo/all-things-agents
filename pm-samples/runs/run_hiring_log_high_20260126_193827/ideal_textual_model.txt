@@ -1,0 +1,84 @@
+IDEAL Process Model
+
+Process overview and purpose
+- Overview: This proposed target ('to-be') model preserves the essential recruiting objectives from the AS-IS but enforces clear, deterministic sequencing, eliminates redundant or anomalous behavior, removes noncompliant terminal reversals, and reduces candidate rework and lead time. The streamlined model emphasizes a single initial screening step, parallel but controlled background checks, a clear, role-driven technical interview plan (only the interviews required by the role), and a single behavioral decision point before offers.
+- Purpose: Improve time-to-hire, reduce redundant assessments, improve data quality and compliance (no actions after terminal states), and improve candidate experience while preserving fairness and thoroughness.
+
+Key stakeholders and roles involved
+- Applicant: submits application.
+- Recruiter (or HR Screener): performs one consolidated initial screen and coordinates scheduling.
+- Background Check Team: conducts Background Check; Extensive Background Check is triggered only by explicit flags.
+- Technical Interviewers: role-specific interviewers (Coding / Frontend / Backend / ML) who execute a defined technical evaluation plan.
+- Hiring Manager / Behavioral Interviewer: conducts a single behavioral interview and makes hire/no-hire recommendation.
+- Decision Authority: formal owner of Make Job Offer action (recruiter + hiring manager consensus).
+
+Detailed step-by-step process flow
+- Start conditions and trigger
+  1. Start: Candidate submits application (Hand In Job Application). This event initiates the streamlined workflow.
+
+- Step 1 — Consolidated Initial Screening (replace Telephonic Screening + Screening Interview duplication)
+  2. Recruiter performs one Initial Screening (consolidated Telephonic Screening + Screening Interview). Decision criteria:
+     - Reject immediately (terminal) if application fails minimum eligibility criteria.
+     - Proceed to technical/role assessment if candidate meets basic fit and availability.
+  3. SLA: Initial Screening completed within 2 business days of application receipt.
+
+- Step 2 — Background Check (parallel, gated)
+  4. For candidates who pass Initial Screening, trigger a standard Background Check immediately. Background Check is performed in parallel with scheduling of technical interviews but is a gated precondition for final offer.
+     - If Background Check returns critical flags, escalate to Extensive Background Check (explicit escalation step). Only upon explicit escalation is Extensive Background Check performed.
+     - If Background Check fails, process leads to terminal Application Rejected; no further interviews occur unless candidate appeals (handled outside standard path).
+  5. SLA: Background Check completed within 5 business days (or faster with expedited handling for prioritized roles).
+
+- Step 3 — Technical Evaluation (role-driven and minimized)
+  6. Coding Interview is the primary technical gate for engineering candidates. Based on the role profile, schedule only the necessary technical interviews (e.g., Coding + one specialized interview: Frontend OR Backend OR ML). Avoid mandatory full matrix of all technical interviews.
+     - Decision criteria after Coding Interview: pass -> specialized technical interview (if required) -> proceed; fail -> Application Rejected (terminal).
+     - Where multiple technical interviewers are required, schedule them in a coordinated block (same day or contiguous days) to reduce candidate wait time and avoid repeated re-evaluations.
+  7. Disallow unconstrained reciprocal looping across technical interviews; if an interviewer requests re-evaluation, schedule a single targeted re-assessment rather than repeating entire interview rounds.
+  8. SLA: Complete technical evaluation within 7 business days from initial technical scheduling.
+
+- Step 4 — Behavioral Interview and final decision
+  9. Conduct a single Behavioral Interview with the hiring manager / decision panel after technical evaluation completes and while Background Check is in progress or completed. Behavioral Interview is the formal evaluation of cultural fit and role fit.
+     - Decision outcomes: 'Recommend Hire' or 'Reject'. Rejection is terminal; hire recommendation proceeds to formal offer preparation.
+  10. Make Job Offer is issued only when:
+     - Candidate passed technical and behavioral evaluations, AND
+     - Background Check is clear or any flagged concerns have been resolved (Extensive Background Check completed with acceptable outcome), AND
+     - Recruiter and Hiring Manager have jointly authorized the offer.
+  11. Make Job Offer is a terminal state; the process enforces immutability of terminal outcomes (no further interviews or contradictory logging after an official rejection or offer issuance).
+  12. SLA: Offer decision and issuance within 3 business days of the Behavioral Interview.
+
+- Exception handling, appeals, and escalations
+  13. Explicit appeal path: If a case is rejected but required to be re-evaluated (rare), use a formal appeal mechanism outside the standard flow that records who authorizes the re-open and why. Such appeals are audited and rare.
+  14. Background Check escalations: only triggered by defined findings and routed to a compliance reviewer for Extensive Background Check; decisions after extensive checks documented clearly.
+  15. No ambiguous transitions allowed (e.g., Application Rejected -> Behavioral Interview or Application Rejected -> Make Job Offer). All status transitions must be auditable and irreversible without a documented appeal.
+
+- Parallel activities and synchronization
+  16. Background Check can run in parallel with scheduling technical interviews but not be bypassed for final offer. Technical interviews are coordinated to minimize handoffs and avoid iterative cross-interview loops.
+  17. Synchronization point before offer: hiring decision requires both technical/behavioral recommendation and cleared background check.
+
+- End conditions and outcomes
+  18. Terminal states: Application Rejected (final) or Make Job Offer (final). Any further actions (e.g., offer acceptance, onboarding) are out of scope for this hiring-selection process model.
+
+Process metrics and performance targets (IDEAL)
+- Target throughput and SLAs:
+  - Initial Screening: <= 2 business days (target completion rate 95%).
+  - Background Check: <= 5 business days (standard); Escalation resolution <= 7 business days.
+  - Technical evaluation: <= 7 business days from first technical interview.
+  - Final decision and offer issuance: <= 3 business days after Behavioral Interview.
+  - Target end-to-end median lead time: reduce by 40–60% from current observed medians for typical hire variants.
+- Quality metrics:
+  - Zero incidents of terminal-state reversal (Application Rejected or Make Job Offer should not be followed by further interviews or contradictory statuses) — monitor via audit log.
+  - Reduce number of interview repeats (technical or behavioral) by 80% through coordinated scheduling and clear pass/fail criteria.
+  - Candidate experience KPIs: time-to-first-response (within 2 days), interview scheduling lead time (<= 3 working days), and offer turnaround time (<= 3 days).
+
+Improvements made vs AS-IS
+- Deterministic sequencing: removes unstable ordering between screening and background checks and ensures background checks are performed consistently (and escalated only when needed).
+- Consolidation: Telephonic Screening and Screening Interview are consolidated into a single Initial Screening to eliminate duplication.
+- Reduced rework: technical interviews are role-driven and coordinated; reciprocal loops across ML/Frontend/Backend are disallowed unless a documented re-assessment is needed.
+- Robust terminal-state enforcement: no activity occurs after an explicit rejection or offer without formal appeal; removes Application Rejected -> Make Job Offer anomalies.
+- SLA-driven operation: introduces concrete time targets to reduce waiting times and identifies Background Check as a focus area for process improvement.
+- Auditability and escalation policy: explicit handling for Extensive Background Check and appeals improves governance and compliance.
+
+Risks and governance notes
+- Some specialized roles legitimately require multiple technical assessments; the IDEAL model accommodates this but insists on coordination and justification for extra rounds.
+- Implementation requires changes to scheduling tools, HR policies (appeal handling), and logging to prevent inconsistent terminal-state transitions.
+
+(End of IDEAL description)

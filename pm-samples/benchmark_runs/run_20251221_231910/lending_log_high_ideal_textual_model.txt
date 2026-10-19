@@ -1,0 +1,69 @@
+# IDEAL Process Model
+
+## Process Overview and Purpose
+The IDEAL process model represents an optimized version of the loan application handling process. The primary purpose is to improve efficiency, reduce bottlenecks, and enhance the applicant experience by streamlining activities, minimizing unnecessary rework, and ensuring timely decision-making. This process aims to facilitate a smoother flow from initial appointment requests through to loan approval or denial.
+
+## Key Stakeholders and Roles Involved
+- **Applicant**: Engages in the process by requesting appointments and submitting required documentation.
+- **Loan Officer**: Responsible for managing the application process, including setting appointments, verifying information, and making relevant decisions.
+- **Underwriter**: Reviews submitted files, assesses risk, and makes final decisions regarding loan approvals.
+- **Co-Signer**: Assists when additional security is necessary based on loan assessment.
+
+## Detailed Step-by-Step Process Flow
+
+### Start Conditions and Triggers
+- The process is initiated when the **Applicant** requests an appointment for discussing a loan application.
+
+### Process Activities/Tasks in Optimized Sequence
+1. **Request Appointment**: The Applicant initiates an appointment request.
+2. **Set Appointment**: The Loan Officer schedules an appointment directly.
+3. **Hand In Credit Application**: The Applicant submits the necessary credit application form either before or during the appointment.
+4. **Verify Borrowers Information**: The Loan Officer conducts a thorough verification of the supplied information.
+5. **Decision Point - Application Outcome**:
+   - Outcomes:
+     - If applicant's information is insufficient: Proceed to **Application Rejected**.
+     - If a co-signer is needed: **Request Co-Signer On Loan**.
+     - If collateral assessment is relevant: **Make Visit to Assess Collateral**.
+     - If further loans under review: Proceed to **Submit File to Underwriter**. 
+
+6. **Submit File to Underwriter**: The application is formally submitted for underwriter review.
+   
+7. **Underwriter Decision**:
+   - If the application is approved: Move to **Sign Loan Agreement**.
+   - If denied: Conclude with **Loan Denied**.
+
+### Decision Points with Clear Criteria and Outcomes
+- **Decision 1** (After Verifying Borrower's Information):
+  - If eligibility criteria are met with the application:
+    - Move to **Submit File to Underwriter**.
+  - If information is lacking or invalid:
+    - Move to **Application Rejected** directly without redundant interactions.
+  - If additional security is needed:
+    - Proceed to **Request Co-Signer On Loan**.
+  - If collateral assessment is necessary:
+    - Move to **Make Visit to Assess Collateral**.
+
+### Parallel Activities and Synchronization Points
+- Activities such as **Request Co-Signer On Loan** and **Make Visit to Assess Collateral** can occur concurrently after the verification step, improving the efficiency of the application process and preventing delays.
+
+### Streamlined Exception Handling
+- Clear communication to applicants about insufficient application details can be established, reducing ambiguity and confusion.
+- Denial outcomes will be communicated promptly, and feedback will be provided for future applications when necessary.
+
+### End Conditions and Outcomes
+- The process concludes under the following scenarios:
+  - **Application Rejected**: The Applicant is informed about the rejection, culminating in the process.
+  - **Loan Approved**: Successful signing of the **Loan Agreement**, indicating a completed transaction.
+
+## Expected Process Metrics and Performance Improvements
+- Reduction in cycle time for processing appointments and applications due to elimination of unnecessary steps and rework loops.
+- Increased application approval likelihood through clear pathways for approval; streamlined handling of additional documentation or co-signers.
+- Enhanced applicant satisfaction owing to smoother communication and reduced wait times.
+
+## Key Improvements Made Compared to the AS-IS Model
+- **Streamlined Decision-Making**: Removed multiple decision points and redundancies ensuring a more logical path to resolution.
+- **Reduced Rework Loops**: Eliminated unnecessary iterations by minimizing the potential for returned applications based on incomplete information.
+- **Optimized Parallel Execution**: Incorporated concurrent handling of co-signer requests and collateral assessments to speed up the overall process.
+- **Clearer Exception Handling**: Improved communication strategies for applicants regarding their application status and required actions.
+
+This IDEAL process model outlines a vision for a more efficient loan application process that maintains core business functions while focusing on the elimination of inefficiencies and enhancement of user experience.

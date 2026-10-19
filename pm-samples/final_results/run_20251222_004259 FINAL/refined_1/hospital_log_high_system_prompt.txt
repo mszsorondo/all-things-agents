@@ -1,0 +1,83 @@
+You are an expert business process analyst. You will be given a business process description and a trace (sequence of activities).
+
+Business Process Description:
+# AS-IS Process Model
+
+Process overview and scope
+- Purpose: End-to-end patient episode from first registration through assessment, diagnosis, treatment (with possible rework), and discharge, as observed in event logs.
+- Scope: One case per patient episode. The process is strictly sequential (no concurrency), with exclusive choices and a single rework loop around Treatment/Diagnosis.
+
+Activities
+- Register at FD, Register at ER (mutually exclusive case starts)
+- Examination, Expert Examination (mutually exclusive preliminary assessments)
+- Thorough Examination (optional deep assessment)
+- Diagnosis
+- Treatment
+- Treatment successful, Treatment unsuccessful
+- Discharge
+
+Start and end
+- Start: Exactly one of Register at FD or Register at ER occurs first and exactly once per case.
+- End: Discharge occurs exactly once and only as the final event in the case.
+
+Pre-diagnosis assessment segment (occurs once per case, before the first Diagnosis)
+- Immediately after registration, exactly one of the following mutually exclusive routes is taken:
+  1) Examination → [optional Thorough Examination] → Diagnosis
+  2) Expert Examination → [optional Thorough Examination] → Diagnosis
+  3) Skip preliminary exam → [optional Thorough Examination] → Diagnosis
+- Constraints:
+  - At most one of Examination or Expert Examination may occur (they are mutually exclusive and occur at most once).
+  - Thorough Examination may occur at most once, only in this pre-diagnosis segment. It may follow either Examination, Expert Examination, or a direct skip from registration.
+  - No Examination, Expert Examination, or Thorough Examination is allowed after any Diagnosis.
+
+Diagnosis and treatment cycle
+- The first Diagnosis immediately follows the pre-diagnosis segment.
+- After any Diagnosis, exactly one Treatment occurs.
+- After each Treatment, exactly one of the following mutually exclusive outcomes occurs:
+  1) Treatment successful → Discharge (case ends).
+  2) Treatment unsuccessful → return to Diagnosis (rework loop). The cycle Diagnosis → Treatment may repeat multiple times due to repeated unsuccessful treatments.
+  3) Direct Discharge without a recorded success label (Treatment → Discharge) (case ends).
+- Constraints:
+  - Every Treatment must be directly preceded by exactly one Diagnosis.
+  - Treatment unsuccessful must be followed by Diagnosis (not Discharge), before any subsequent Treatment.
+  - Treatment successful may occur at most once per case and only immediately after Treatment, and must be followed by Discharge.
+  - When the “no-outcome-recorded” path is taken, Treatment goes directly to Discharge; no Treatment successful occurs in that cycle.
+  - No activities occur after Discharge.
+
+Allowed high-level ordering (grammar-like view)
+- Start:
+  - (Register at FD | Register at ER)
+- Pre-diagnosis segment (exactly one of):
+  - Examination [→ Thorough Examination]? → Diagnosis
+  - Expert Examination [→ Thorough Examination]? → Diagnosis
+  - [Skip exam] [→ Thorough Examination]? → Diagnosis
+- Treatment loop:
+  - Repeat 1..N times:
+    - Diagnosis → Treatment → (Treatment unsuccessful → continue loop | Treatment successful → Discharge end | Discharge end)
+
+Explicit validity notes and constraints (to ensure precision)
+- Valid:
+  - Registration → Examination → Diagnosis → Treatment → Treatment unsuccessful → Diagnosis → Treatment → Treatment successful → Discharge
+  - Registration → Expert Examination → Thorough Examination → Diagnosis → Treatment → Discharge (no success label)
+  - Registration → [skip exams] → Diagnosis → Treatment → Treatment successful → Discharge
+  - Multi-loop variants with repeated Treatment unsuccessful (e.g., two or three loops) before final success or direct discharge.
+- Invalid (reject):
+  - Any Examination/Expert Examination/Thorough Examination after any Diagnosis.
+  - Both Examination and Expert Examination in the same case.
+  - More than one occurrence of Examination, Expert Examination, or Thorough Examination.
+  - Treatment before any Diagnosis.
+  - Treatment successful or Treatment unsuccessful without an immediately preceding Treatment.
+  - Treatment unsuccessful → Discharge (disallowed).
+  - Any activity after Discharge.
+  - Multiple Discharges or multiple Registrations in one case.
+
+Notes on observed data behavior (from mining)
+- The “Treatment → Discharge” path without recording “Treatment successful” is allowed (observed) and ends the case.
+- Rework via Treatment unsuccessful may repeat multiple times before eventual success or direct discharge.
+- No concurrency is present; all paths are strictly sequential with XOR branching and a single rework loop around Diagnosis/Treatment.
+
+Your task: Determine if the given trace is VALID (conforms to the observed business process) or INVALID (contains anomalies).
+
+IMPORTANT: The business model describes processes as they are observed, which may include inefficiencies or non-ideal behaviors that still occur in practice.
+
+Respond with ONLY one word: "VALID" or "INVALID".

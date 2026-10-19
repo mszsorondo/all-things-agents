@@ -1,0 +1,93 @@
+AS-IS Process Model
+
+Process overview and purpose
+- Purpose: This process model describes the observed hiring/recruitment lifecycle as discovered by process mining (inductive miner Petri net, directly-follows graph (DFG) and abstract variants). The process starts when a candidate submits an application and ends either when the candidate is rejected or receives a job offer. The mined model shows a flexible, frequently non-linear interview sequence, multiple background-check variants, many skip/optional steps, and numerous rework and abnormal transitions (including candidates re-entering the interview pipeline after being marked rejected).
+- Scope: Candidate application intake through final disposition (Application Rejected or Make Job Offer).
+
+Key stakeholders and roles (inferred from activity names)
+- Candidate: person submitting the application and participating in interviews.
+- Recruiter / Screening agent (inferred): conducts telephonic screening.
+- Technical interviewers (inferred): conduct Coding, ML, Frontend, Backend interviews.
+- Behavioral interviewer / Hiring manager (inferred): conducts behavioral interviews and final assessment.
+- Background-check vendor or HR (inferred): performs Background Check and Extensive Background Check.
+- HR / Offer authority (inferred): issues Make Job Offer and records Application Rejected outcomes.
+Note: The mining output does not explicitly name roles; these are conservative inferences drawn from activity labels.
+
+Detailed step-by-step AS-IS process flow
+Start conditions and triggers
+1. Start event: Candidate "Hand In Job Application" (source->Hand In Job Application). This is the observed start in the Petri net and DFG.
+
+Core observed sequence patterns (high-level)
+- Most common initial path: Hand In Job Application -> Telephonic Screening (frequency in DFG: 8,799) — telephonic screening is the primary gating activity.
+- From Telephonic Screening, multiple outcomes occur: proceed to Background Check (3,961), proceed directly to Screening Interview (3,848), or immediate Application Rejected (990). There are sizable differences in frequency, indicating inconsistent decision rules.
+
+Detailed activities and branching logic
+2. Telephonic Screening (Recruiter)
+- Decision outcomes observed: send candidate to Screening Interview; request Background Check; reject candidate; or occasionally skip to other paths.
+- Measured flows: Telephonic Screening -> Background Check (3,961); Telephonic Screening -> Screening Interview (3,848); Telephonic Screening -> Application Rejected (990).
+
+3. Screening Interview
+- After Screening Interview the process diverges widely. Observed outgoing transitions include:
+  - Screening Interview -> Background Check (3,961) (in many traces Background Check happens after Screening Interview)
+  - Screening Interview -> Coding Interview (1,517)
+  - Screening Interview -> Application Rejected (1,389)
+  - Screening Interview -> Extensive Background Check (1,055)
+- The Petri net and DFG indicate Background Check and Screening Interview can occur in either order (Background Check -> Screening Interview exists with the same 3,961 frequency and Screening Interview -> Background Check with 3,848), meaning the sequence is not consistently enforced.
+
+4. Background Check and Extensive Background Check
+- Background Check has multiple roles: it sometimes precedes technical interviews, sometimes follows them, and sometimes leads straight to rejection (Background Check -> Application Rejected frequency 1,391). Extensive Background Check is used in many cases (Extensive Background Check -> Application Rejected 1,125; Extensive Background Check -> Coding Interview 974), suggesting inconsistent application of deeper checks.
+- The observed behavior indicates Background Check and Extensive Background Check are applied inconsistently and sometimes redundantly.
+
+5. Technical interview sequences (Coding, ML, Frontend, Backend)
+- Observed common progression: Screening Interview -> Coding Interview -> ML Interview -> Frontend Interview -> Behavioral Interview -> Make Job Offer (many long variants). Frequencies show a core technical pipeline but with significant reordering and loops:
+  - Coding Interview -> Frontend Interview (1,513)
+  - Coding Interview -> ML Interview (1,304) and ML -> Frontend (913)
+  - Frontend <-> ML cycles: Frontend -> ML (878) and ML -> Frontend (913). There are repeated back-and-forth transitions indicating rework, interview retries, or parallel/interleaved assessment steps.
+  - Coding Interview -> Backend Interview (701); Backend <-> Frontend interactions also exist (Backend -> Frontend 487; Frontend -> Backend 529) which further indicate non-linear technical assessment.
+- Behavioral Interview frequently follows technical interviews but sometimes appears earlier or in loops: Frontend -> Behavioral Interview (853); ML -> Behavioral Interview (754); Backend -> Behavioral Interview (417). Behavioral Interview also self-loops (Behavioral Interview -> Behavioral Interview frequency 1,032) showing repeated behavioral assessments.
+
+6. Decision points leading to final disposition
+- Application Rejected is a frequent end-state. Many traces end with rejection at different stages:
+  - Direct rejection after Hand In Job Application (1,201)
+  - After Screening Interview or Background Check (1,389; 1,391)
+  - After Extensive Background Check (1,125)
+  - After technical interviews (several edges from Coding/Frontend/ML/Backend to Application Rejected)
+- Make Job Offer is another final outcome; however, the DFG shows odd patterns such as Application Rejected -> Make Job Offer (690) and Make Job Offer -> Make Job Offer (861) meaning offers can be issued after rejection events or repeated, indicating data or process control problems.
+
+Parallelism, optional steps, and skip behavior
+- The Petri net contains many skip and tauSplit/tauJoin places (skip_* transitions, tauSplit_9, tauSplit_4, tauSplit_14 and corresponding tauJoins). This indicates substantial optionality: some candidates skip technical interviews, some skip background checks, and some sequences run in different orders. Observed skipping is nontrivial (numerous skip_* transitions), producing many variant traces.
+- The technical interview teams (ML, Frontend, Backend) appear to be partially parallelizable or at least unsynchronized in practice; the mining shows many different orders and reordering between them.
+
+Rework loops and anomalous transitions
+- Rework/retry loops are pervasive:
+  - Technical interviews loop among each other (ML <-> Frontend; Backend <-> Frontend etc.).
+  - Behavioral Interview self-loop (1,032 occurrences) suggests repeated behavioral assessments.
+  - Application Rejected -> Behavioral Interview (740) and Application Rejected -> Make Job Offer (690) indicate candidates marked as rejected later re-enter interviews or receive offers — a major anomaly.
+  - Make Job Offer -> Make Job Offer (861) suggests repeated offer actions (possibly re-issuing or correction of offers).
+
+Exception handling and escalation
+- There is no clear dedicated exception path in the mined model. Instead, exceptions manifest as ad-hoc transitions (e.g., Application Rejected -> Make Job Offer). The data indicates lack of formal appeal or re-evaluation process; instead, ad-hoc rework exists.
+
+End conditions and outcomes
+- Final observed marking in Petri net is 'sink' linked from tauJoin_15; mined final states correspond to either Application Rejected or Make Job Offer. Frequency of rejection is high across many variants; offers occur but often after long, convoluted sequences.
+
+Process metrics and performance characteristics (from DFG and variants)
+- Key edge frequencies (DFG): Hand In Job Application -> Telephonic Screening = 8,799 (primary intake).
+- Telephonic Screening -> Background Check = 3,961; -> Screening Interview = 3,848; -> Application Rejected = 990.
+- Screening Interview -> Coding Interview = 1,517; -> Application Rejected = 1,389; -> Extensive Background Check = 1,055.
+- Coding Interview -> ML Interview = 1,304; -> Frontend Interview = 1,513; -> Backend Interview = 701.
+- ML <-> Frontend cycles: ML -> Frontend 913; Frontend -> ML 878.
+- Application Rejected -> Make Job Offer = 690 (anomalous), Application Rejected -> Behavioral Interview = 740.
+- Performance numbers given in the DFG (large numeric values per edge) indicate substantial delays in many transitions (e.g. Background Check -> Application Rejected performance = 155,319.566). These numeric performance values are the mined average times between the two events as reported; high values indicate bottlenecks or long waiting times.
+- Variants: two dominant rejection variants each with ~1,389–1,391 occurrences. Direct-skip rejection (Hand In -> Application Rejected) occurs 1,201 times.
+
+Key challenges and pain points (AS-IS)
+- Inconsistent gating rules: Background Check sometimes happens before/after interviews; no consistent policy.
+- High variability and non-deterministic interview ordering between technical tracks (ML, Frontend, Backend), causing candidate confusion and interviewer inefficiency.
+- Rework and looping: multiple interview replays and repeated behavioral assessments indicate poor assessment quality or unclear pass/fail criteria.
+- Data/process anomalies: transitions such as Application Rejected -> Make Job Offer and repeated Make Job Offer actions reveal control and data-logging problems.
+- Long cycle times in many transitions (large DFG performance values), indicating bottlenecks especially around background checks and late-stage decisions.
+- High rejection rates at different stages, with inconsistent reasons and inability to prevent previously rejected candidates from re-entering further steps.
+
+Summary of AS-IS
+The mined process shows a highly flexible but poorly controlled hiring pipeline: strong initial screening volume, multiple inconsistent branches (background checks applied inconsistently), significant rework and non-linear technical assessments with loops between interview types, and anomalous transitions that indicate governance or data problems (rejections followed by offers). These behaviors yield long and variable lead times and inefficiencies across interviewing teams and HR operations.

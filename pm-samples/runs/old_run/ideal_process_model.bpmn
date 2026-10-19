@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.signavio.com/bpmn20" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath">
+	<bpmn:process id="process_ideal" isClosed="false" isExecutable="false">
+		<bpmn:startEvent id="startEvent" name="Start">
+			<bpmn:outgoing>flow_start_hand_in</bpmn:outgoing>
+		</bpmn:startEvent>
+		<bpmn:task id="task_hand_in" name="Hand In Job Application">
+			<bpmn:incoming>flow_start_hand_in</bpmn:incoming>
+			<bpmn:outgoing>flow_hand_in_telephonic</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_telephonic" name="Telephonic Screening">
+			<bpmn:incoming>flow_hand_in_telephonic</bpmn:incoming>
+			<bpmn:outgoing>flow_telephonic_background</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_background" name="Background Check">
+			<bpmn:incoming>flow_telephonic_background</bpmn:incoming>
+			<bpmn:outgoing>flow_background_screening</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_screening" name="Screening Interview">
+			<bpmn:incoming>flow_background_screening</bpmn:incoming>
+			<bpmn:outgoing>flow_screening_decision</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:exclusiveGateway id="gateway_screening_decision" name="Screening Decision">
+			<bpmn:incoming>flow_screening_decision</bpmn:incoming>
+			<bpmn:outgoing>flow_decision_approved</bpmn:outgoing>
+			<bpmn:outgoing>flow_decision_rejected</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:task id="task_application_rejected" name="Application Rejected">
+			<bpmn:incoming>flow_decision_rejected</bpmn:incoming>
+			<bpmn:outgoing>flow_end_application_rejected</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_coding" name="Coding Interview">
+			<bpmn:incoming>flow_decision_approved</bpmn:incoming>
+			<bpmn:outgoing>flow_coding_frontend</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:task id="task_frontend" name="Frontend Interview">
+			<bpmn:incoming>flow_coding_frontend</bpmn:incoming>
+			<bpmn:outgoing>flow_end_success</bpmn:outgoing>
+		</bpmn:task>
+		<bpmn:endEvent id="endEvent_success" name="Successful End">
+			<bpmn:incoming>flow_end_success</bpmn:incoming>
+		</bpmn:endEvent>
+		<bpmn:endEvent id="endEvent_rejected" name="Rejection End">
+			<bpmn:incoming>flow_end_application_rejected</bpmn:incoming>
+		</bpmn:endEvent>
+		<bpmn:sequenceFlow id="flow_start_hand_in" sourceRef="startEvent" targetRef="task_hand_in"/>
+		<bpmn:sequenceFlow id="flow_hand_in_telephonic" sourceRef="task_hand_in" targetRef="task_telephonic"/>
+		<bpmn:sequenceFlow id="flow_telephonic_background" sourceRef="task_telephonic" targetRef="task_background"/>
+		<bpmn:sequenceFlow id="flow_background_screening" sourceRef="task_background" targetRef="task_screening"/>
+		<bpmn:sequenceFlow id="flow_screening_decision" sourceRef="task_screening" targetRef="gateway_screening_decision"/>
+		<bpmn:sequenceFlow id="flow_decision_rejected" sourceRef="gateway_screening_decision" targetRef="task_application_rejected"/>
+		<bpmn:sequenceFlow id="flow_decision_approved" sourceRef="gateway_screening_decision" targetRef="task_coding"/>
+		<bpmn:sequenceFlow id="flow_coding_frontend" sourceRef="task_coding" targetRef="task_frontend"/>
+		<bpmn:sequenceFlow id="flow_end_success" sourceRef="task_frontend" targetRef="endEvent_success"/>
+		<bpmn:sequenceFlow id="flow_end_application_rejected" sourceRef="task_application_rejected" targetRef="endEvent_rejected"/>
+	</bpmn:process>
+	<bpmndi:BPMNDiagram id="ideal_BPMN_diagram">
+		<bpmndi:BPMNPlane bpmnElement="process_ideal">
+		</bpmndi:BPMNPlane>
+	</bpmndi:BPMNDiagram>
+</bpmn:definitions>
