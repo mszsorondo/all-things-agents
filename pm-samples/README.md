@@ -11,7 +11,8 @@
 <p align="center">
 Marco Sánchez Sorondo<sup>1,2</sup> · Claudio E. Righetti<sup>1</sup> · Paulo Veiga<sup>1</sup><br>
 <sup>1</sup>Departamento de Computación, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires, Argentina<br>
-<sup>2</sup>Universidad Austral, Argentina
+<sup>2</sup>Universidad Austral, Argentina<br>
+Contact: <a href="mailto:msanchezsorondo@austral.edu.ar">msanchezsorondo@austral.edu.ar</a>
 </p>
 
 <p align="center">RISE AI Summit 2026 · Santiago, Chile · <a href="docs/poster_rise2026.pdf">Poster (PDF)</a></p>
@@ -59,7 +60,7 @@ flowchart LR
 ```
 
 1. **Discovery.** PM4Py discovers several representations of the same process from the log: Petri nets (Inductive, Alpha, Heuristics, ILP), directly-follows graph, process tree, heuristics net, DECLARE constraints, log skeleton, trace variants and log attributes. Each representation shows a different aspect of the process.
-2. **Interpretation and generation.** An LLM agent reads the textual abstraction of each representation (`pm4py.llm`) and writes an integrated textual model. It produces an AS-IS model (how the process runs) and an IDEAL model (how it should run).
+2. **Interpretation and generation.** Each representation is converted into a textual form. We designed most of these textual representations ourselves, so that LLMs can understand both their syntax and their semantics, rather than relying on the abstractions of `pm4py.llm`. An LLM agent reads them and writes an integrated textual model. It produces an AS-IS model (how the process runs) and an IDEAL model (how it should run).
 3. **Optimize, execute, evaluate.** A small validator uses the textual model to classify traces. The agent receives the traces the validator got wrong and rewrites the model to correct them. These errors play the role of *textual gradients* (Yuksekgonul et al., TextGrad). The cycle keeps the best model of the whole trajectory, not the last one.
 
 Discovery, generation and optimization run without human intervention.
