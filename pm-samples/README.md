@@ -196,11 +196,9 @@ The textual model is **part of the automation's code**. Changing it changes the 
 
 - APM depends on the availability and quality of event logs. Many organizations log their processes partially or not at all, and the textual model cannot describe behavior that the log does not record.
 - The four logs are simulated and use descriptive activity names ("Approve credit application" rather than "ACT_07"). Real logs with cryptic names, missing events or noise will lower performance.
-- Classification is binary. Conformance checking in practice often needs graded answers.
-- We evaluated a single validator model; other small models may behave differently.
 - Textual abstractions sent to external APIs may contain sensitive business information. On-premise models or anonymization mitigate this.
 
-Agentic systems built with APM should not decide without human supervision when the decision affects people (hiring, loan approval), has legal or regulatory implications, or carries risk of harm. In those cases we recommend that the system propose, a person approve, and the reasoning stay documented for review.
+Agentic systems built with APM should not decide without human supervision when the decision affects people (hiring, loan approval), has legal or regulatory implications, or carries risk of harm. In those cases we recommend a **human-in-the-loop** architecture: the system proposes, a person approves, and the reasoning stays documented for review.
 
 ## Future work
 
