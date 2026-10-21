@@ -16,7 +16,7 @@ Marco Sánchez Sorondo<sup>1,2</sup> · Claudio E. Righetti<sup>1</sup> · Paulo
 
 <p align="center">RISE AI Summit 2026 · Santiago, Chile · <a href="docs/poster_rise2026.pdf">Poster (PDF)</a></p>
 
-This repository contains the code and results of the work, which extends the Licenciatura thesis of the first author at the Universidad de Buenos Aires.
+This repository contains the code and results of the work.
 
 ---
 
@@ -206,7 +206,7 @@ Agentic systems built with APM should not decide without human supervision when 
 
 **Fine-tuning the generator.** The textual model is the prompt of the validator, so improving the generator is a form of prompt optimization. The [`apm/finetuning/`](apm/finetuning/) module, still in development, trains a local generator (7–8B parameters, QLoRA) with reinforcement learning: the reward is the F1 that the validator obtains with the generated textual model. Planned variants include supervised pre-training on the best textual models of previous runs and preference optimization (DPO) with pairs of better and worse models. If this works, a fine-tuned local generator would address both lines at once: data would remain inside the organization, and the generator would be optimized for the descriptions that small validators classify best.
 
-**Other directions** from the paper and thesis:
+**Other directions** from the paper:
 
 - Validation with real organizational logs, with more activities, variants and noise.
 - Multi-agent interpretation, in which specialized agents interpret specific representations and an orchestrator consolidates them.
