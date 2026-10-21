@@ -22,22 +22,22 @@ This repository contains the code and results of the work, which extends the Lic
 
 ## In brief
 
-Organizations record what happens in their processes: every application received, every interview held, every loan approved leaves an event in a system log. APM reads those logs and writes a **textual process model**: a document in plain language that describes how the process actually runs, including its main flows, exceptions, business rules and constraints.
+APM takes as input an event log, the record of executed activities that an information system keeps for a process, and generates a **textual process model**: a natural-language description of the behavior recorded in the log, including main flows, exceptions, business rules and constraints. APM requires such a log; it can describe only the behavior the log contains.
 
 The same document serves two readers:
 
 - **People** (executives, analysts, developers, auditors) who need to understand the process.
 - **AI agents** that need to operate within it. The textual model becomes part of the agent's instructions.
 
-We tested whether these documents capture the process faithfully. A small AI model, given only the textual model, decides whether each sequence of events is valid or invalid for that process. With GPT-5 as the generator, the small model reaches a mean F1 of 0.954 on four processes, and 0.988 after automatic refinement of the document. On a similar task (classifying traces with swapped activities as valid or anomalous), Rebmann et al. (2024) report that open 7–8B language models prompted with a few examples and no explicit process context perform comparably to a random classifier (macro F1 0.49–0.51); fine-tuning raises them to 0.79.
+We evaluated whether these documents capture the behavior recorded in the log. A small AI model, given only the textual model, decides whether each sequence of events is valid or invalid for that process. With GPT-5 as the generator, the small model reaches a mean F1 of 0.954 on four processes, and 0.988 after automatic refinement of the document. On a similar task (classifying traces with swapped activities as valid or anomalous), Rebmann et al. (2024) report that open 7–8B language models prompted with a few examples and no explicit process context perform comparably to a random classifier (macro F1 0.49–0.51); fine-tuning raises them to 0.79.
 
 ## The problem
 
-Companies adopt agentic systems based on Large Language Models (LLMs), but building and maintaining them requires people who understand both the business and the technology. Process knowledge is often tacit: rules, exceptions and heuristics that nobody wrote down. Someone has to translate it into instructions for the agent, and update them when the process changes.
+Agentic systems based on Large Language Models (LLMs) promise productivity gains, but designing, implementing, evaluating and maintaining them requires specialists in both business logic and agentic software. Processes encode tacit rules, exceptions and heuristics that are rarely documented, and translating them into instructions for an agent, and keeping those instructions up to date, depends on those specialists.
 
-Process Mining already discovers how processes run from event logs. Its outputs (Petri nets, directly-follows graphs, process trees, declarative constraints) are precise, but specialists are needed to read them, and they are not written for LLM-based agents.
+Where event logs exist, Process Mining discovers formal models of how the process was executed. Its outputs (Petri nets, directly-follows graphs, process trees, declarative constraints) are precise but require specialist knowledge to read, and they are not designed as context for LLM-based agents.
 
-APM connects both worlds: it turns the formal outputs of Process Mining into a text that people and agents can use.
+APM converts these formal outputs into text that people and LLM-based agents can use.
 
 ## How APM works
 
@@ -66,7 +66,7 @@ Discovery, generation and optimization run without human intervention.
 
 ## How we measure quality
 
-The **Model Fidelity Benchmark** checks whether the textual model contains enough of the process for someone else to apply it.
+The **Model Fidelity Benchmark** checks whether a separate model, given only the textual model, can distinguish valid traces from invalid ones.
 
 - A small reasoning model (GPT-5-mini) receives the textual model as its only context.
 - It classifies each trace as VALID or INVALID, one trace per request, answering with one word.
@@ -128,7 +128,7 @@ We rewrote the optimized model for two contrasting audiences and evaluated each 
 | Executives | 0.969 | 1.000 | 7.0 |
 | Children | 0.969 | 1.000 | 6.5 |
 
-Both adaptations keep the fidelity of the original. In Hiring, the version written for children improves F1 from 0.873 to 0.943: explaining the process in simple terms forced the adapter to remove ambiguous formulations.
+Both adaptations keep the fidelity of the original. In Hiring, the version written for children improves F1 from 0.873 to 0.943: our interpretation is that explaining the process in simple terms led the adapter to remove ambiguous formulations.
 
 ### Decomposition by role
 
@@ -182,18 +182,19 @@ We extended the benchmark beyond event swapping to nine perturbation types, with
 
 <p align="center"><img src="docs/assets/extended_benchmark.png" alt="Fraction of invalid traces detected for each of the nine perturbation types" width="720"></p>
 
-*Fraction of invalid traces detected, mean over the four datasets.* The validator detects order violations almost always. Insertions and the deletion of the first or last event are the hardest cases.
+*Fraction of invalid traces detected, mean over the four datasets.* The validator detects between 98.0% and 99.5% of the swap-based perturbations; insertions (86.5–88.0%) and the deletion of the first or last event (77.0%) are the hardest cases.
 
 ## What the textual model is for
 
-- **Documentation** for executives, analysts, developers and auditors, written from the observed behavior of the process.
+- **Documentation** for executives, analysts, developers and auditors, derived from the behavior recorded in the log.
 - **Context for agents**: the textual model, or one model per role, goes into the agent's system prompt.
-- **Low-cost validation**: a small model with the textual model as context can check executions of the process, which allows on-premise deployment and continuous monitoring.
+- **Low-cost validation**: in our experiments a small model with the textual model as context classified traces with high F1, which makes on-premise validation and continuous conformance monitoring feasible.
 
 The textual model is **part of the automation's code**. Changing it changes the agent's behavior, as changing source code changes a program. Treat it like code: version it, review it, and test it, with the benchmark as the test suite. The developer still has to provide what the textual model does not: tools that act on real systems, the decision of which activities an agent may execute and which ones stay with people, integrations, and human supervision points.
 
 ## Limitations and responsible use
 
+- APM depends on the availability and quality of event logs. Many organizations log their processes partially or not at all, and the textual model cannot describe behavior that the log does not record.
 - The four logs are simulated and use descriptive activity names ("Approve credit application" rather than "ACT_07"). Real logs with cryptic names, missing events or noise will lower performance.
 - Classification is binary. Conformance checking in practice often needs graded answers.
 - We evaluated a single validator model; other small models may behave differently.
@@ -203,9 +204,9 @@ Agentic systems built with APM should not decide without human supervision when 
 
 ## Future work
 
-**Local models to preserve privacy and safety.** In the current experiments the generator and the validator run on external APIs, so event logs and textual models leave the organization. The next step is to run the whole pipeline on open-weight models deployed on-premise, so that business data never leaves the company's infrastructure. Because a small validator already works with the textual model as context, the validation side fits on modest hardware; the open question is how small a local generator can be while keeping fidelity.
+**Local models to preserve privacy and safety.** In the current experiments the generator and the validator run on external APIs, so event logs and textual models leave the organization. The next step is to run the whole pipeline on open-weight models deployed on-premise, so that business data does not leave the organization's infrastructure. Because a small validator already works with the textual model as context, the validation side fits on modest hardware; the open question is how small a local generator can be while keeping fidelity.
 
-**Fine-tuning the generator.** The textual model is the prompt of the validator, so improving the generator is a form of prompt optimization. The [`finetuning/`](finetuning/) module, still in development, trains a local generator (7–8B parameters, QLoRA) with reinforcement learning: the reward is the F1 that the validator obtains with the generated textual model. Planned variants include supervised pre-training on the best textual models of previous runs and preference optimization (DPO) with pairs of better and worse models. A fine-tuned local generator would combine both goals: data stays inside the organization, and the model learns to write the descriptions that small validators understand best.
+**Fine-tuning the generator.** The textual model is the prompt of the validator, so improving the generator is a form of prompt optimization. The [`finetuning/`](finetuning/) module, still in development, trains a local generator (7–8B parameters, QLoRA) with reinforcement learning: the reward is the F1 that the validator obtains with the generated textual model. Planned variants include supervised pre-training on the best textual models of previous runs and preference optimization (DPO) with pairs of better and worse models. If this works, a fine-tuned local generator would address both lines at once: data would remain inside the organization, and the generator would be optimized for the descriptions that small validators classify best.
 
 **Other directions** from the paper and thesis:
 
