@@ -30,7 +30,7 @@ The same document serves two readers:
 - **People** (executives, analysts, developers, auditors) who need to understand the process.
 - **AI agents** that need to operate within it. The textual model becomes part of the agent's instructions.
 
-We evaluated whether these documents capture the behavior recorded in the log. A small AI model, given only the textual model, decides whether each sequence of events is valid or invalid for that process. With GPT-5 as the generator, the small model reaches a mean F1 of 0.954 on four processes, and 0.988 after automatic refinement of the document. On a similar task (classifying traces with swapped activities as valid or anomalous), Rebmann et al. (2024) report that open 7–8B language models prompted with a few examples and no explicit process context perform comparably to a random classifier (macro F1 0.49–0.51); fine-tuning raises them to 0.79.
+We evaluated whether these documents capture the behavior recorded in the log. A small AI model, given only the textual model, decides whether each sequence of events is valid or invalid for that process. With GPT-5 as the generator, the small model reaches a mean F1 of 0.954 on four processes, and 0.988 after automatic refinement of the document. On a similar task (classifying traces with swapped activities as valid or anomalous), Rebmann et al. (2024) report that language models without explicit process context perform comparably to a random classifier (macro F1 0.49–0.51); fine-tuning raises them to 0.79.
 
 ## The problem
 
