@@ -200,7 +200,7 @@ The textual model is **part of the automation's code**. Changing it changes the 
 
 Agentic systems built with APM should not decide without human supervision when the decision affects people (hiring, loan approval), has legal or regulatory implications, or carries risk of harm. In those cases we recommend a **human-in-the-loop** architecture: the system proposes, a person approves, and the reasoning stays documented for review.
 
-## Future work
+## Ongoing work
 
 **Local models to preserve privacy and safety.** In the current experiments the generator and the validator run on external APIs, so event logs and textual models leave the organization. The next step is to run the whole pipeline on open-weight models deployed on-premise, so that business data does not leave the organization's infrastructure. Because a small validator already works with the textual model as context, the validation side fits on modest hardware; the open question is how small a local generator can be while keeping fidelity.
 
