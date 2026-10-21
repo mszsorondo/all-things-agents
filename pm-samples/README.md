@@ -204,7 +204,7 @@ Agentic systems built with APM should not decide without human supervision when 
 
 **Local models to preserve privacy and safety.** In the current experiments the generator and the validator run on external APIs, so event logs and textual models leave the organization. The next step is to run the whole pipeline on open-weight models deployed on-premise, so that business data does not leave the organization's infrastructure. Because a small validator already works with the textual model as context, the validation side fits on modest hardware; the open question is how small a local generator can be while keeping fidelity.
 
-**Fine-tuning the generator.** The textual model is the prompt of the validator, so improving the generator is a form of prompt optimization. The [`finetuning/`](finetuning/) module, still in development, trains a local generator (7–8B parameters, QLoRA) with reinforcement learning: the reward is the F1 that the validator obtains with the generated textual model. Planned variants include supervised pre-training on the best textual models of previous runs and preference optimization (DPO) with pairs of better and worse models. If this works, a fine-tuned local generator would address both lines at once: data would remain inside the organization, and the generator would be optimized for the descriptions that small validators classify best.
+**Fine-tuning the generator.** The textual model is the prompt of the validator, so improving the generator is a form of prompt optimization. The [`apm/finetuning/`](apm/finetuning/) module, still in development, trains a local generator (7–8B parameters, QLoRA) with reinforcement learning: the reward is the F1 that the validator obtains with the generated textual model. Planned variants include supervised pre-training on the best textual models of previous runs and preference optimization (DPO) with pairs of better and worse models. If this works, a fine-tuned local generator would address both lines at once: data would remain inside the organization, and the generator would be optimized for the descriptions that small validators classify best.
 
 **Other directions** from the paper and thesis:
 
@@ -219,19 +219,22 @@ Agentic systems built with APM should not decide without human supervision when 
 
 ## For developers
 
+All code and results are in [`apm/`](apm/). Run the commands below from that folder.
+
 ### Setup
 
 ```bash
+cd apm
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env    # add OPENAI_API_KEY (and optionally ANTHROPIC, XAI, DEEPSEEK keys)
 ```
 
-See [INSTALLATION.md](INSTALLATION.md) for details. Requires Python 3.9 or later.
+See [apm/INSTALLATION.md](apm/INSTALLATION.md) for details. Requires Python 3.9 or later.
 
 ### Data
 
-The scripts expect the logs of Pohl et al. (2023) at:
+The scripts expect the logs of Pohl et al. (2023) at (relative to `apm/`):
 
 ```
 benchmark/hiring/hiring_log_high.xes
@@ -244,7 +247,7 @@ The repository does not include the `.xes` files. Download them from the collect
 
 ### Experiments and where to find them
 
-| Experiment | Script | Results in this repository |
+| Experiment | Script (in `apm/`) | Results (in `apm/`) |
 |---|---|---|
 | Discovery and textual model generation | `enhanced_agentic_miner.py` | — |
 | Model Fidelity Benchmark | `phase5_benchmark.py` | `final_results/` |
